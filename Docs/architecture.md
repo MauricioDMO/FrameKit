@@ -46,7 +46,7 @@ Las rutas viven bajo `/{locale}/editor`; `proxy.ts` añade el locale según `Acc
 
 La barra lateral, los campos, la vista previa y el editor son Client Components porque usan navegación, eventos, estado, `ResizeObserver`, fuentes del documento y descarga del navegador.
 
-Cada `config.ts` declara `languages`, `metadata`, `fields` y `content`. El idioma del diseño se resuelve contra `languages`; si no existe, se usa su primera clave. Ese idioma determina título, descripción, etiquetas, placeholders, valores iniciales, nombre de descarga y el `locale` recibido por la plantilla. El selector es el primer control del formulario. El contenido se guarda en `sessionStorage` por slug para sobrevivir al cambio del idioma de la interfaz durante la sesión.
+Cada `config.ts` declara `languages`, `metadata`, `fields` y `content`. Los campos son obligatorios por defecto y pueden declararse con `required: false`. El idioma del diseño se resuelve contra `languages`; si no existe, se usa su primera clave. Ese idioma determina título, descripción, etiquetas, placeholders, valores iniciales, nombre de descarga y el `locale` recibido por la plantilla. El selector es el primer control del formulario. El contenido se guarda en `sessionStorage` por slug para sobrevivir al cambio del idioma de la interfaz durante la sesión.
 
 El cliente nunca recibe rutas del sistema ni usa `node:fs`; recibe únicamente configuraciones y nodos serializables.
 

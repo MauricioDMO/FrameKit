@@ -31,9 +31,9 @@ Para una plantilla nueva, lee las cuatro. Para ajustar solamente el aspecto visu
 1. Elige una ruta semántica bajo `src/templates` con segmentos en minúsculas y guiones.
 2. Crea `_folder.json` cuando una categoría nueva necesite título, orden o traducción explícita.
 3. Crea `config.ts` con `defineTemplateConfig` y declara primero `languages`.
-4. Define en `fields` solo valores que el usuario deba editar.
+4. Define en `fields` solo valores que el usuario deba editar. Son obligatorios por defecto; declara `required: false` solo para los opcionales.
 5. Completa `metadata`, `label`, `placeholder` cuando exista y `content` para cada clave de `languages`; cada contenido debe incluir todos los `field.key`.
-6. Crea `template.tsx` con una exportación por defecto que acepte `TemplateProps` y usa `locale` para cada texto fijo dentro del PNG.
+6. Crea `template.tsx`, importa su `config` vecino y usa `TemplateProps<typeof config>` para que `data` solo admita los `field.key` declarados. Usa `locale` para cada texto fijo dentro del PNG.
 7. Mantén formularios, navegación y descarga fuera de la plantilla.
 8. Guarda recursos propios bajo `public/` y referencia sus rutas desde `/`.
 9. Ejecuta `pnpm templates:generate`, `pnpm lint` y `pnpm build`.

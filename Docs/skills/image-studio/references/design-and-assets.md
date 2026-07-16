@@ -7,7 +7,9 @@
 ```tsx
 import type { TemplateProps } from '@/lib/templates/types'
 
-export default function Template({ data, width, height, locale }: TemplateProps) {
+import config from './config'
+
+export default function Template({ data, width, height, locale }: TemplateProps<typeof config>) {
   const cta = locale === 'es' ? 'Conoce más' : 'Learn more'
 
   return (
@@ -19,7 +21,7 @@ export default function Template({ data, width, height, locale }: TemplateProps)
 }
 ```
 
-La raíz debe respetar exactamente `width` y `height`. El editor se encarga de escalar la vista previa. `locale` corresponde a una clave de `config.languages` seleccionada en el primer control del formulario, no al idioma de la interfaz.
+La raíz debe respetar exactamente `width` y `height`. El editor se encarga de escalar la vista previa. `TemplateProps<typeof config>` limita `data` a los campos del `config.ts` vecino. `locale` corresponde a una clave de `config.languages` seleccionada en el primer control del formulario, no al idioma de la interfaz.
 
 ## Dirección visual
 

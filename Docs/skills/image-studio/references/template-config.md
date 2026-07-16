@@ -66,7 +66,7 @@ type TemplateFieldType =
   | 'number'
 ```
 
-`required`, `min` y `max` son opcionales. `min` y `max` tienen sentido principalmente para `number`.
+`required`, `min` y `max` son opcionales. Si se omite `required`, el editor lo resuelve como `true`; usa `required: false` para un campo opcional. `min` y `max` tienen sentido principalmente para `number`.
 
 ## Idiomas del diseño
 

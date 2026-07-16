@@ -69,12 +69,12 @@ export default defineTemplateConfig({
     {
       key: 'title',
       type: 'textarea',
-      required: true,
       label: { es: 'Título', en: 'Title' },
     },
     {
       key: 'accentColor',
       type: 'color',
+      required: false,
       label: { es: 'Color principal', en: 'Primary color' },
     },
   ],
@@ -85,7 +85,7 @@ export default defineTemplateConfig({
 })
 ```
 
-Cada clave de `languages` debe existir en `metadata`, `label`, `placeholder` cuando exista y `content`. Cada entrada de `content` debe declarar todos los `field.key`. **Idioma del diseño** selecciona toda esa configuración.
+Cada clave de `languages` debe existir en `metadata`, `label`, `placeholder` cuando exista y `content`. Cada entrada de `content` debe declarar todos los `field.key`. Los campos son obligatorios por defecto; usa `required: false` para permitir que queden vacíos. **Idioma del diseño** selecciona toda esa configuración.
 
 ## 3. Crear `template.tsx`
 
@@ -94,12 +94,14 @@ El componente recibe `data`, `width`, `height` y `locale`. Usa `locale` para loc
 ```tsx
 import type { TemplateProps } from '@/lib/templates/types'
 
+import config from './config'
+
 export default function HorizontalBanner({
   data,
   width,
   height,
   locale,
-}: TemplateProps) {
+}: TemplateProps<typeof config>) {
   const cta = locale === 'es' ? 'Conoce más' : 'Learn more'
 
   return (
@@ -114,7 +116,7 @@ export default function HorizontalBanner({
 }
 ```
 
-Mantén fuera del componente los botones, formularios y funciones de descarga. La plantilla solo representa la imagen.
+`TemplateProps<typeof config>` limita `data` a los `field.key` declarados en el `config.ts` vecino. Mantén fuera del componente los botones, formularios y funciones de descarga. La plantilla solo representa la imagen.
 
 ## 4. Añadir recursos
 
