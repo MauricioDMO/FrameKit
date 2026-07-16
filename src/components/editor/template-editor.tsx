@@ -159,8 +159,8 @@ export function TemplateEditor({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7">
+    <div className="flex min-h-screen flex-col xl:h-full xl:min-h-0">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4d675a]">
             {messages.templateEditor}
@@ -201,8 +201,8 @@ export function TemplateEditor({
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-5 p-4 sm:p-5 xl:grid-cols-[340px_1fr]">
-        <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-5 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:max-h-[calc(100vh-132px)] xl:overflow-y-auto">
+      <div className="grid min-h-0 flex-1 gap-5 p-4 sm:p-5 xl:grid-cols-[340px_1fr] xl:overflow-hidden">
+        <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-5 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto">
           <div className="flex items-baseline justify-between border-b border-black/8 pb-4">
             <h2 className="font-black tracking-tight">{messages.content}</h2>
             <span className="text-xs text-[#5f6963]">
@@ -239,6 +239,8 @@ export function TemplateEditor({
           width={contentConfig.width}
           height={contentConfig.height}
           label={messages.preview}
+          actualSizeLabel={messages.actualSize}
+          fitToViewLabel={messages.fitToView}
         >
           <div
             ref={exportRef}

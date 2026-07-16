@@ -19,6 +19,8 @@ interface Messages {
     downloadPng: string
     content: string
     preview: string
+    actualSize: string
+    fitToView: string
     contentLanguageLabel: string
     missingComponent: string
     exportError: string
@@ -56,6 +58,8 @@ export const messages = {
       downloadPng: 'Descargar PNG',
       content: 'Contenido',
       preview: 'Vista previa',
+      actualSize: 'Tamaño real',
+      fitToView: 'Ajustar',
       contentLanguageLabel: 'Idioma del diseño',
       missingComponent: 'No se encontró el componente. Ejecuta',
       exportError: 'No se pudo exportar la plantilla:',
@@ -92,6 +96,8 @@ export const messages = {
       downloadPng: 'Download PNG',
       content: 'Content',
       preview: 'Preview',
+      actualSize: 'Actual size',
+      fitToView: 'Fit to view',
       contentLanguageLabel: 'Design language',
       missingComponent: 'Component not found. Run',
       exportError: 'Could not export the template:',

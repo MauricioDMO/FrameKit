@@ -2,8 +2,8 @@ import { defineTemplateConfig } from '@/lib/templates/types'
 
 export default defineTemplateConfig({
   order: 10,
-  width: 1080,
-  height: 1080,
+  width: 1440,
+  height: 1440,
   languages: {
     es: 'Español',
     en: 'English',
