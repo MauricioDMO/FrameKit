@@ -15,7 +15,7 @@ import {
   localizeTemplateConfig,
 } from '@/lib/templates/types'
 
-import { EditorField } from './editor-field'
+import { EditorField } from './fields'
 import { TemplatePreview } from './template-preview'
 
 interface TemplateEditorProps {

@@ -1,13 +1,11 @@
 import type { Locale } from '@/i18n/locales'
+import type { TemplateFieldType as RegisteredTemplateFieldType } from '@/components/editor/fields'
 
-export type TemplateData = Record<string, string>
+export type TemplateData<
+  Config extends { fields: readonly { key: string }[] } = TemplateConfig,
+> = Record<Config['fields'][number]['key'], string>
 
-export type TemplateFieldType =
-  | 'text'
-  | 'textarea'
-  | 'url'
-  | 'color'
-  | 'number'
+export type TemplateFieldType = RegisteredTemplateFieldType
 
 interface TemplateFieldBase {
   key: string
@@ -17,7 +15,8 @@ interface TemplateFieldBase {
   max?: number
 }
 
-export interface TemplateField extends TemplateFieldBase {
+export interface TemplateField extends Omit<TemplateFieldBase, 'required'> {
+  required: boolean
   label: string
   placeholder?: string
 }
@@ -50,7 +49,7 @@ export interface TemplateConfig {
   height: number
   languages: Record<string, string>
   metadata: Record<string, TemplateMetadata>
-  fields: Array<
+  fields: ReadonlyArray<
     TemplateFieldBase & {
       label: Record<string, string>
       placeholder?: Record<string, string>
@@ -72,8 +71,8 @@ export function defineTemplateConfig<
   metadata: Metadata & ExactKeys<Metadata, keyof Languages>
   fields: Fields
   content: Content & ExactKeys<Content, keyof Languages>
-}): TemplateConfig {
-  return config as unknown as TemplateConfig
+}): typeof config {
+  return config
 }
 
 export interface LocalizedTemplateConfig {
@@ -126,6 +125,7 @@ export function localizeTemplateConfig(
     fileName: metadata.fileName,
     fields: config.fields.map(({ label, placeholder, ...field }) => ({
       ...field,
+      required: field.required ?? true,
       label: label[language],
       placeholder: placeholder?.[language],
     })),
@@ -138,8 +138,10 @@ export interface FolderConfig {
   translations: Record<Locale, { title: string }>
 }
 
-export interface TemplateProps {
-  data: TemplateData
+export interface TemplateProps<
+  Config extends { fields: readonly { key: string }[] } = TemplateConfig,
+> {
+  data: TemplateData<Config>
   width: number
   height: number
   locale: string

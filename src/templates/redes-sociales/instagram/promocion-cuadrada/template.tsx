@@ -1,11 +1,13 @@
 import type { TemplateProps } from '@/lib/templates/types'
 
+import config from './config'
+
 export default function InstagramSquarePromotion({
   data,
   width,
   height,
   locale,
-}: TemplateProps) {
+}: TemplateProps<typeof config>) {
   const accentColor = data.accentColor || '#b9f8d2'
   const labels =
     locale === 'es'
