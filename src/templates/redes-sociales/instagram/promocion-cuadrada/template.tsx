@@ -4,8 +4,13 @@ export default function InstagramSquarePromotion({
   data,
   width,
   height,
+  locale,
 }: TemplateProps) {
   const accentColor = data.accentColor || '#b9f8d2'
+  const labels =
+    locale === 'es'
+      ? { workshop: 'Taller digital', studio: '01 / Estudio', cta: 'Hablemos' }
+      : { workshop: 'Digital workshop', studio: '01 / Studio', cta: 'Let\'s talk' }
 
   return (
     <article
@@ -42,12 +47,12 @@ export default function InstagramSquarePromotion({
                 Silver Wolf
               </p>
               <p className="mt-1 text-[12px] uppercase tracking-[0.24em] text-white/55">
-                Digital workshop
+                {labels.workshop}
               </p>
             </div>
           </div>
           <span className="text-[13px] font-bold uppercase tracking-[0.2em] text-white/60">
-            01 / Studio
+            {labels.studio}
           </span>
         </header>
 
@@ -80,7 +85,7 @@ export default function InstagramSquarePromotion({
             className="rounded-full px-7 py-3 text-[14px] font-black uppercase tracking-[0.14em] text-[#092118]"
             style={{ backgroundColor: accentColor }}
           >
-            Hablemos
+            {labels.cta}
           </p>
         </footer>
       </div>

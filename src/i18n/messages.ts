@@ -1,0 +1,116 @@
+import type { Locale } from './locales'
+
+interface Messages {
+  metadata: {
+    title: string
+    description: string
+  }
+  sidebar: {
+    workshop: string
+    navigationLabel: string
+    noTemplates: string
+    languageLabel: string
+    languageNames: Record<Locale, string>
+  }
+  editor: {
+    templateEditor: string
+    reset: string
+    generating: string
+    downloadPng: string
+    content: string
+    preview: string
+    contentLanguageLabel: string
+    missingComponent: string
+    exportError: string
+    exportAlert: string
+  }
+  emptyState: {
+    ready: string
+    title: string
+    description: string
+  }
+  notFound: {
+    title: string
+    description: string
+    backToEditor: string
+  }
+}
+
+export const messages = {
+  es: {
+    metadata: {
+      title: 'Image Studio',
+      description: 'Editor de imágenes basado en plantillas React',
+    },
+    sidebar: {
+      workshop: 'Taller visual',
+      navigationLabel: 'Plantillas',
+      noTemplates: 'No hay plantillas disponibles.',
+      languageLabel: 'Idioma de la interfaz',
+      languageNames: { es: 'Español', en: 'English' },
+    },
+    editor: {
+      templateEditor: 'Editor de plantilla',
+      reset: 'Restablecer',
+      generating: 'Generando...',
+      downloadPng: 'Descargar PNG',
+      content: 'Contenido',
+      preview: 'Vista previa',
+      contentLanguageLabel: 'Idioma del diseño',
+      missingComponent: 'No se encontró el componente. Ejecuta',
+      exportError: 'No se pudo exportar la plantilla:',
+      exportAlert: 'No fue posible generar la imagen.',
+    },
+    emptyState: {
+      ready: 'Lienzo preparado',
+      title: 'Selecciona una plantilla',
+      description:
+        'Elige un formato en la navegación para editar su contenido y exportarlo como PNG.',
+    },
+    notFound: {
+      title: 'Plantilla no encontrada',
+      description: 'Esta ruta no corresponde a una plantilla disponible en el catálogo.',
+      backToEditor: 'Volver al editor',
+    },
+  },
+  en: {
+    metadata: {
+      title: 'Image Studio',
+      description: 'A React template-based image editor',
+    },
+    sidebar: {
+      workshop: 'Visual workshop',
+      navigationLabel: 'Templates',
+      noTemplates: 'No templates are available.',
+      languageLabel: 'App language',
+      languageNames: { es: 'Español', en: 'English' },
+    },
+    editor: {
+      templateEditor: 'Template editor',
+      reset: 'Reset',
+      generating: 'Generating...',
+      downloadPng: 'Download PNG',
+      content: 'Content',
+      preview: 'Preview',
+      contentLanguageLabel: 'Design language',
+      missingComponent: 'Component not found. Run',
+      exportError: 'Could not export the template:',
+      exportAlert: 'The image could not be generated.',
+    },
+    emptyState: {
+      ready: 'Canvas ready',
+      title: 'Select a template',
+      description:
+        'Choose a format from the navigation to edit its content and export it as a PNG.',
+    },
+    notFound: {
+      title: 'Template not found',
+      description: 'This route does not match a template available in the catalog.',
+      backToEditor: 'Back to editor',
+    },
+  },
+} satisfies Record<Locale, Messages>
+
+export function getMessages(locale: Locale) {
+  return messages[locale]
+}

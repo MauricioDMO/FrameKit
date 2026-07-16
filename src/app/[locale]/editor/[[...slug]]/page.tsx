@@ -2,16 +2,21 @@ import { ImageIcon } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
 import { TemplateEditor } from '@/components/editor/template-editor'
+import { hasLocale } from '@/i18n/locales'
+import { getMessages } from '@/i18n/messages'
 import { getTemplateConfig } from '@/lib/templates/get-template-config'
 
 interface EditorPageProps {
-  params: Promise<{ slug?: string[] }>
+  params: Promise<{ locale: string; slug?: string[] }>
 }
 
 export default async function EditorPage({ params }: EditorPageProps) {
-  const { slug = [] } = await params
+  const { locale, slug = [] } = await params
+  if (!hasLocale(locale)) notFound()
 
-  if (slug.length === 0) return <EditorEmptyState />
+  const messages = getMessages(locale)
+
+  if (slug.length === 0) return <EditorEmptyState messages={messages.emptyState} />
 
   const config = await getTemplateConfig(slug)
   if (!config) notFound()
@@ -23,11 +28,17 @@ export default async function EditorPage({ params }: EditorPageProps) {
       key={templateSlug}
       templateSlug={templateSlug}
       config={config}
+      locale={locale}
+      messages={messages.editor}
     />
   )
 }
 
-function EditorEmptyState() {
+function EditorEmptyState({
+  messages,
+}: {
+  messages: ReturnType<typeof getMessages>['emptyState']
+}) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen">
       <div className="max-w-md text-center">
@@ -35,14 +46,13 @@ function EditorEmptyState() {
           <ImageIcon size={28} strokeWidth={1.7} />
         </div>
         <p className="mt-7 text-xs font-bold uppercase tracking-[0.24em] text-[#577066]">
-          Lienzo preparado
+          {messages.ready}
         </p>
         <h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#17221d]">
-          Selecciona una plantilla
+          {messages.title}
         </h1>
         <p className="mt-3 leading-7 text-[#657168]">
-          Elige un formato en la navegación para editar su contenido y exportarlo
-          como PNG.
+          {messages.description}
         </p>
       </div>
     </div>

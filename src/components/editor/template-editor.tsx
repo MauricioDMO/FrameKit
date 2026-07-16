@@ -1,10 +1,19 @@
 'use client'
 
 import { Download, RotateCcw } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { templateRegistry } from '@/generated/template-registry'
-import type { TemplateConfig, TemplateData } from '@/lib/templates/types'
+import type { Locale } from '@/i18n/locales'
+import type { getMessages } from '@/i18n/messages'
+import type {
+  TemplateConfig,
+  TemplateData,
+} from '@/lib/templates/types'
+import {
+  hasTemplateLanguage,
+  localizeTemplateConfig,
+} from '@/lib/templates/types'
 
 import { EditorField } from './editor-field'
 import { TemplatePreview } from './template-preview'
@@ -12,16 +21,100 @@ import { TemplatePreview } from './template-preview'
 interface TemplateEditorProps {
   templateSlug: string
   config: TemplateConfig
+  locale: Locale
+  messages: ReturnType<typeof getMessages>['editor']
 }
 
-export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
+interface EditorContent {
+  locale: string
+  data: TemplateData
+}
+
+function getDefaultContent(config: TemplateConfig, locale: Locale): EditorContent {
+  const localizedConfig = localizeTemplateConfig(config, locale)
+
+  return {
+    locale: localizedConfig.language,
+    data: { ...localizedConfig.content },
+  }
+}
+
+function getStoredContent(
+  config: TemplateConfig,
+  templateSlug: string,
+): EditorContent | null {
+  try {
+    const stored = JSON.parse(
+      window.sessionStorage.getItem(`image-studio:${templateSlug}`) ?? 'null',
+    ) as Partial<EditorContent> | null
+
+    if (!stored || !stored.locale || !hasTemplateLanguage(config, stored.locale)) {
+      return null
+    }
+
+    if (!stored.data || !Object.values(stored.data).every((value) => typeof value === 'string')) {
+      return null
+    }
+
+    return { locale: stored.locale, data: stored.data }
+  } catch {
+    return null
+  }
+}
+
+export function TemplateEditor({
+  templateSlug,
+  config,
+  locale,
+  messages,
+}: TemplateEditorProps) {
   const exportRef = useRef<HTMLDivElement>(null)
-  const [data, setData] = useState<TemplateData>(() => ({ ...config.defaults }))
+  const [content, setContent] = useState(() =>
+    getDefaultContent(config, locale),
+  )
+  const [hydrated, setHydrated] = useState(false)
+  const contentLocale = content.locale
+  const contentConfig = localizeTemplateConfig(config, contentLocale)
+  const data = content.data
   const [exporting, setExporting] = useState(false)
   const Template = templateRegistry[templateSlug]
 
+  useEffect(() => {
+    const storedContent = getStoredContent(config, templateSlug)
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      if (storedContent) setContent(storedContent)
+      setHydrated(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [config, templateSlug])
+
+  useEffect(() => {
+    if (!hydrated) return
+
+    window.sessionStorage.setItem(
+      `image-studio:${templateSlug}`,
+      JSON.stringify(content),
+    )
+  }, [content, hydrated, templateSlug])
+
   function updateField(key: string, value: string) {
-    setData((current) => ({ ...current, [key]: value }))
+    setContent((current) => ({
+      ...current,
+      data: { ...current.data, [key]: value },
+    }))
+  }
+
+  function changeContentLocale(nextLocale: string) {
+    setContent({
+      locale: nextLocale,
+      data: { ...localizeTemplateConfig(config, nextLocale).content },
+    })
   }
 
   async function exportPng() {
@@ -34,20 +127,20 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
 
       const { domToPng } = await import('modern-screenshot')
       const image = await domToPng(element, {
-        width: config.width,
-        height: config.height,
+        width: contentConfig.width,
+        height: contentConfig.height,
         scale: 1,
       })
       const link = document.createElement('a')
 
       link.href = image
       link.download = `${
-        config.fileName ?? templateSlug.replaceAll('/', '-')
+        contentConfig.fileName ?? templateSlug.replaceAll('/', '-')
       }.png`
       link.click()
     } catch (error) {
-      console.error('No se pudo exportar la plantilla:', error)
-      window.alert('No fue posible generar la imagen.')
+      console.error(messages.exportError, error)
+      window.alert(messages.exportAlert)
     } finally {
       setExporting(false)
     }
@@ -56,7 +149,7 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
   if (!Template) {
     return (
       <div className="p-8 text-sm">
-        No se encontró el componente. Ejecuta{' '}
+        {messages.missingComponent}{' '}
         <code className="rounded bg-black/8 px-2 py-1">
           pnpm templates:generate
         </code>
@@ -70,26 +163,31 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4d675a]">
-            Editor de plantilla
+            {messages.templateEditor}
           </p>
           <h1 className="mt-1 text-xl font-black tracking-[-0.025em]">
-            {config.title}
+            {contentConfig.title}
           </h1>
-          {config.description && (
+          {contentConfig.description && (
             <p className="mt-1 max-w-2xl text-sm text-[#6c756f]">
-              {config.description}
+              {contentConfig.description}
             </p>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setData({ ...config.defaults })}
+            onClick={() =>
+              setContent((current) => ({
+                ...current,
+                data: { ...contentConfig.content },
+              }))
+            }
             className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9]"
           >
             <RotateCcw size={15} />
-            Restablecer
+            {messages.reset}
           </button>
           <button
             type="button"
@@ -98,7 +196,7 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
             className="inline-flex items-center gap-2 rounded-xl bg-[#173d31] px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-[#0f2c23] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download size={15} />
-            {exporting ? 'Generando...' : 'Descargar PNG'}
+            {exporting ? messages.generating : messages.downloadPng}
           </button>
         </div>
       </header>
@@ -106,13 +204,29 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
       <div className="grid min-h-0 flex-1 gap-5 p-4 sm:p-5 xl:grid-cols-[340px_1fr]">
         <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-5 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:max-h-[calc(100vh-132px)] xl:overflow-y-auto">
           <div className="flex items-baseline justify-between border-b border-black/8 pb-4">
-            <h2 className="font-black tracking-tight">Contenido</h2>
+            <h2 className="font-black tracking-tight">{messages.content}</h2>
             <span className="text-xs text-[#5f6963]">
-              {config.width} × {config.height}
+              {contentConfig.width} × {contentConfig.height}
             </span>
           </div>
           <div className="mt-5 space-y-5">
-            {config.fields.map((field) => (
+            <label className="block">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-[#59665f]">
+                {messages.contentLanguageLabel}
+              </span>
+              <select
+                value={contentLocale}
+                onChange={(event) => changeContentLocale(event.target.value)}
+                className="w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3.5 py-2.5 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10"
+              >
+                {Object.entries(config.languages).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {contentConfig.fields.map((field) => (
               <EditorField
                 key={field.key}
                 field={field}
@@ -123,12 +237,21 @@ export function TemplateEditor({ templateSlug, config }: TemplateEditorProps) {
           </div>
         </aside>
 
-        <TemplatePreview width={config.width} height={config.height}>
+        <TemplatePreview
+          width={contentConfig.width}
+          height={contentConfig.height}
+          label={messages.preview}
+        >
           <div
             ref={exportRef}
-            style={{ width: config.width, height: config.height }}
+            style={{ width: contentConfig.width, height: contentConfig.height }}
           >
-            <Template data={data} width={config.width} height={config.height} />
+            <Template
+              data={data}
+              width={contentConfig.width}
+              height={contentConfig.height}
+              locale={contentLocale}
+            />
           </div>
         </TemplatePreview>
       </div>

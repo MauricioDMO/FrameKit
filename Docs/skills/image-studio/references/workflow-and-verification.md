@@ -30,12 +30,12 @@ El generador debe informar el nuevo número de plantillas. Lint y build deben te
 
 Con `pnpm dev` activo:
 
-1. Abre `/editor/<slug>`.
-2. Confirma que la plantilla aparece en la categoría correcta.
+1. Abre `/es/editor/<slug>` y `/en/editor/<slug>`.
+2. Confirma que la plantilla aparece en la categoría correcta con títulos y etiquetas localizados.
 3. Modifica al menos un campo de texto y un campo visual si existe.
-4. Comprueba que **Restablecer** recupera los valores iniciales.
-5. Descarga el PNG.
-6. Verifica nombre, dimensiones, imágenes y tipografía del archivo.
+4. Cambia el primer control del formulario, **Idioma del diseño**, y confirma valores iniciales, título, etiquetas, texto fijo del PNG y nombre de descarga para cada clave de `languages`.
+5. Cambia **Idioma de la interfaz** y confirma que traduce controles sin perder el lienzo editado durante la sesión.
+6. Descarga el PNG y verifica nombre, dimensiones, imágenes y tipografía del archivo.
 7. Revisa una vista móvil del editor cuando se modificó infraestructura compartida.
 
 ## Diagnóstico rápido
@@ -47,7 +47,7 @@ Con `pnpm dev` activo:
 | El componente no carga | Comprueba la exportación por defecto y regenera el registro. |
 | El fondo falta en el PNG | Usa un recurso local o corrige CORS. |
 | El tamaño es incorrecto | Revisa `width` y `height` en `config.ts`. |
-| TypeScript rechaza el config | Corrige el objeto marcado con `satisfies TemplateConfig`. |
+| TypeScript rechaza el config | Corrige la clave o campo indicado dentro de `defineTemplateConfig`. |
 
 ## Informe final
 

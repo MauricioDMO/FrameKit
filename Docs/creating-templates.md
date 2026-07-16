@@ -21,61 +21,75 @@ src/templates/publicidad/banner-horizontal/
 Produce:
 
 ```text
-/editor/publicidad/banner-horizontal
+/es/editor/publicidad/banner-horizontal
 ```
 
 Una categoría puede incluir `_folder.json`:
 
 ```json
 {
-  "title": "Publicidad",
-  "order": 20
+  "order": 20,
+  "translations": {
+    "es": { "title": "Publicidad" },
+    "en": { "title": "Advertising" }
+  }
 }
 ```
 
-Sin este archivo, el sistema convierte el nombre de carpeta en un título legible.
+Sin este archivo, el sistema convierte el nombre de carpeta en un título legible. Inclúyelo siempre que el título de la categoría deba traducirse.
 
 ## 2. Definir `config.ts`
 
-Usa `satisfies TemplateConfig` para obtener autocompletado y validación de TypeScript:
+Usa `defineTemplateConfig` para inferir los idiomas desde `languages` y exigirlos en toda la configuración:
 
 ```ts
-import type { TemplateConfig } from '@/lib/templates/types'
+import { defineTemplateConfig } from '@/lib/templates/types'
 
-const config = {
-  title: 'Banner horizontal',
-  description: 'Banner para campañas web.',
+export default defineTemplateConfig({
   order: 10,
   width: 1600,
   height: 900,
-  fileName: 'banner-horizontal',
+  languages: {
+    es: 'Español',
+    en: 'English',
+  },
+  metadata: {
+    es: {
+      title: 'Banner horizontal',
+      description: 'Banner para campañas web.',
+      fileName: 'banner-horizontal',
+    },
+    en: {
+      title: 'Horizontal banner',
+      description: 'Banner for web campaigns.',
+      fileName: 'horizontal-banner',
+    },
+  },
   fields: [
     {
       key: 'title',
-      label: 'Título',
       type: 'textarea',
       required: true,
+      label: { es: 'Título', en: 'Title' },
     },
     {
       key: 'accentColor',
-      label: 'Color principal',
       type: 'color',
+      label: { es: 'Color principal', en: 'Primary color' },
     },
   ],
-  defaults: {
-    title: 'Una idea que merece ser vista',
-    accentColor: '#b9f8d2',
+  content: {
+    es: { title: 'Una idea que merece ser vista', accentColor: '#b9f8d2' },
+    en: { title: 'An idea worth seeing', accentColor: '#b9f8d2' },
   },
-} satisfies TemplateConfig
-
-export default config
+})
 ```
 
-Cada `field.key` debe tener un valor string correspondiente en `defaults`.
+Cada clave de `languages` debe existir en `metadata`, `label`, `placeholder` cuando exista y `content`. Cada entrada de `content` debe declarar todos los `field.key`. **Idioma del diseño** selecciona toda esa configuración.
 
 ## 3. Crear `template.tsx`
 
-El componente recibe únicamente `data`, `width` y `height`:
+El componente recibe `data`, `width`, `height` y `locale`. Usa `locale` para localizar cualquier texto fijo dentro del PNG.
 
 ```tsx
 import type { TemplateProps } from '@/lib/templates/types'
@@ -84,13 +98,17 @@ export default function HorizontalBanner({
   data,
   width,
   height,
+  locale,
 }: TemplateProps) {
+  const cta = locale === 'es' ? 'Conoce más' : 'Learn more'
+
   return (
     <article
       className="flex items-center bg-zinc-950 p-20 text-white"
       style={{ width, height }}
     >
       <h1 className="text-7xl font-black">{data.title}</h1>
+      <p>{cta}</p>
     </article>
   )
 }

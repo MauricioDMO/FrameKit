@@ -36,11 +36,14 @@ La ubicación:
 src/templates/documentos/cotizacion/config.ts
 ```
 
-genera:
+genera las dos rutas con el mismo slug:
 
 ```text
-/editor/documentos/cotizacion
+/es/editor/documentos/cotizacion
+/en/editor/documentos/cotizacion
 ```
+
+El prefijo controla el idioma de la interfaz. El idioma del diseño se elige dentro del editor y no cambia el slug.
 
 ## Categorías
 
@@ -48,12 +51,15 @@ genera:
 
 ```json
 {
-  "title": "Redes sociales",
-  "order": 10
+  "order": 10,
+  "translations": {
+    "es": { "title": "Redes sociales" },
+    "en": { "title": "Social media" }
+  }
 }
 ```
 
-Usa intervalos de diez para permitir inserciones futuras. Si se omite, el nombre de la carpeta se convierte en un título.
+Usa intervalos de diez para permitir inserciones futuras. Si se omite, el nombre de la carpeta se convierte en un título sin traducción; añade el archivo cuando la categoría sea visible.
 
 ## Archivos generados
 

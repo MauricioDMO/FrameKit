@@ -2,38 +2,46 @@
 
 import { Images } from 'lucide-react'
 
+import type { Locale } from '@/i18n/locales'
+import type { getMessages } from '@/i18n/messages'
 import type { TemplateNavigationNode } from '@/lib/templates/types'
 
+import { LanguageSelect } from './language-select'
 import { NavigationNode } from './navigation-node'
 
 export function TemplateSidebar({
   navigation,
+  locale,
+  messages,
 }: {
   navigation: TemplateNavigationNode[]
+  locale: Locale
+  messages: ReturnType<typeof getMessages>['sidebar']
 }) {
   return (
     <aside className="border-b border-white/10 bg-[#10271f] text-white lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0">
-      <header className="flex h-[82px] items-center border-b border-white/10 px-5">
-        <div className="flex items-center gap-3">
+      <header className="flex h-[82px] items-center justify-between gap-3 border-b border-white/10 px-5">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-[#c8f7d9] text-[#10271f]">
             <Images size={20} strokeWidth={2.2} />
           </div>
           <div>
             <p className="font-black tracking-[-0.02em]">Image Studio</p>
             <p className="mt-0.5 text-[11px] uppercase tracking-[0.16em] text-[#91ae9f]">
-              Taller visual
+              {messages.workshop}
             </p>
           </div>
         </div>
+        <LanguageSelect locale={locale} messages={messages} />
       </header>
 
       <nav
-        aria-label="Plantillas"
+        aria-label={messages.navigationLabel}
         className="max-h-[38vh] overflow-y-auto p-3 lg:h-[calc(100vh-82px)] lg:max-h-none"
       >
         {navigation.length === 0 ? (
           <p className="px-3 py-4 text-sm text-[#91ae9f]">
-            No hay plantillas disponibles.
+            {messages.noTemplates}
           </p>
         ) : (
           navigation.map((node) => (

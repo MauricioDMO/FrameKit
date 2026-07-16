@@ -2,37 +2,58 @@
 
 [Volver al skill](../SKILL.md)
 
-Importa el tipo compartido y usa `satisfies`:
+Usa `defineTemplateConfig`. Las claves de `languages` son la fuente de verdad para todo el contenido localizado:
 
 ```ts
-import type { TemplateConfig } from '@/lib/templates/types'
+import { defineTemplateConfig } from '@/lib/templates/types'
 
-const config = {
-  title: 'Historia promocional',
-  description: 'Historia vertical para Instagram.',
+export default defineTemplateConfig({
   order: 10,
   width: 1080,
   height: 1920,
-  fileName: 'historia-promocional',
-  fields: [],
-  defaults: {},
-} satisfies TemplateConfig
-
-export default config
+  languages: { es: 'Español', en: 'English' },
+  metadata: {
+    es: { title: 'Historia promocional', fileName: 'historia-promocional' },
+    en: { title: 'Promotional story', fileName: 'promotional-story' },
+  },
+  fields: [
+    {
+      key: 'title',
+      type: 'textarea',
+      label: { es: 'Título', en: 'Title' },
+      placeholder: { es: 'Oferta de temporada', en: 'Seasonal offer' },
+    },
+  ],
+  content: {
+    es: { title: 'Oferta de temporada' },
+    en: { title: 'Seasonal offer' },
+  },
+})
 ```
 
 ## Propiedades
 
 | Propiedad | Requerida | Descripción |
 | --- | --- | --- |
-| `title` | Sí | Nombre visible en la navegación y cabecera. |
-| `description` | No | Explicación breve del uso. |
 | `order` | Sí | Orden ascendente entre plantillas hermanas. |
 | `width` | Sí | Ancho final del PNG en píxeles. |
 | `height` | Sí | Alto final del PNG en píxeles. |
-| `fileName` | No | Nombre de descarga sin extensión. |
-| `fields` | Sí | Controles que genera el editor. |
-| `defaults` | Sí | Valores iniciales indexados por `field.key`. |
+| `languages` | Sí | Record de claves del idioma de diseño y su nombre visible. |
+| `metadata` | Sí | Título y metadatos por idioma. |
+| `fields` | Sí | Controles del editor con etiquetas localizadas. |
+| `content` | Sí | Valores iniciales por idioma. |
+
+Cada idioma requiere `metadata[language].title`. `description` y `fileName` son opcionales.
+
+## Reglas de tipos
+
+`defineTemplateConfig` hace fallar TypeScript si:
+
+- Falta una clave de `languages` en `metadata`, un `label`, un `placeholder` declarado o `content`.
+- Se declara una clave localizada que no existe en `languages`.
+- Un idioma en `content` no incluye todos los `field.key`.
+
+Conserva las mismas claves, tipos y restricciones de campo para cada idioma. Solo localiza etiquetas, placeholders y valores de contenido.
 
 ## Tipos de campo
 
@@ -45,41 +66,12 @@ type TemplateFieldType =
   | 'number'
 ```
 
-Cada campo acepta:
+`required`, `min` y `max` son opcionales. `min` y `max` tienen sentido principalmente para `number`.
 
-```ts
-{
-  key: 'price',
-  label: 'Precio',
-  type: 'number',
-  placeholder: '99',
-  required: true,
-  min: 0,
-  max: 9999,
-}
-```
+## Idiomas del diseño
 
-`placeholder`, `required`, `min` y `max` son opcionales. `min` y `max` tienen sentido principalmente para `number`.
+El primer control del formulario muestra `languages`. Al cambiarlo, el editor usa ese idioma para título, descripción, etiquetas, placeholders, valores iniciales, nombre del PNG y `locale` de `TemplateProps`. Si el idioma de la interfaz no está declarado, se usa la primera clave de `languages`.
 
-## Correspondencia con `defaults`
-
-Los valores de datos siempre son strings:
-
-```ts
-fields: [
-  { key: 'title', label: 'Título', type: 'textarea' },
-  { key: 'price', label: 'Precio', type: 'number' },
-],
-defaults: {
-  title: 'Oferta de temporada',
-  price: '99',
-},
-```
-
-No agregues campos para elementos constantes de identidad visual. Déjalos directamente en `template.tsx` salvo que el usuario necesite modificarlos desde el editor.
-
-## Validación
-
-TypeScript valida configuraciones locales durante lint/build. No añadas Zod para estas configuraciones. Si la información proviene de una API, base de datos o usuario, valida esa entrada en su límite antes de convertirla en `TemplateConfig`.
+No agregues campos para elementos constantes de identidad visual. Déjalos en `template.tsx`; si contienen texto, localízalos con `locale`.
 
 Continúa con [Diseño y recursos](design-and-assets.md) para consumir `data` correctamente.

@@ -9,4 +9,4 @@ pnpm install
 pnpm dev
 ```
 
-Abre [http://localhost:3000/editor](http://localhost:3000/editor).
+Abre [http://localhost:3000](http://localhost:3000). El idioma de la interfaz se detecta desde el navegador; también puedes entrar directamente en `/es/editor` o `/en/editor`. Cada plantilla permite elegir por separado el idioma del diseño que se exporta.

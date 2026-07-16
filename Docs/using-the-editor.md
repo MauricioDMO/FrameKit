@@ -5,17 +5,24 @@
 ## Abrir una plantilla
 
 1. Ejecuta `pnpm dev`.
-2. Abre `http://localhost:3000/editor`.
+2. Abre `http://localhost:3000`.
 3. Expande las categorías de la barra lateral.
 4. Selecciona una plantilla.
 
 La URL refleja la ubicación de la plantilla. Por ejemplo:
 
 ```text
-/editor/redes-sociales/instagram/promocion-cuadrada
+/es/editor/redes-sociales/instagram/promocion-cuadrada
 ```
 
-Puedes guardar o compartir esa URL dentro de la misma instalación.
+Puedes guardar o compartir esa URL.
+
+## Idiomas
+
+- **Idioma de la interfaz** está en la barra lateral. Cambia la URL, navegación, botones y etiquetas del formulario. Conserva el idioma y los cambios del diseño actual durante la sesión.
+- **Idioma del diseño** es el primer control del formulario. No cambia la URL; carga título, descripción, etiquetas, placeholders, valores iniciales, textos fijos del PNG y nombre de descarga del idioma elegido.
+
+Al abrir una plantilla por primera vez, el diseño usa el idioma de la interfaz. Cambiar **Idioma del diseño** reinicia el lienzo con los valores de ese idioma.
 
 ## Editar el contenido
 
@@ -33,11 +40,11 @@ Los controles disponibles son:
 
 ## Restablecer
 
-Pulsa **Restablecer** para volver a los valores definidos en `config.defaults`. Los cambios del editor no modifican archivos del proyecto.
+Pulsa **Restablecer** para volver a los valores definidos en `config.content[idiomaDelDiseño]`. Los cambios del editor no modifican archivos del proyecto.
 
 ## Descargar PNG
 
-Pulsa **Descargar PNG**. La aplicación espera a que las fuentes estén listas, captura la plantilla a su tamaño real y descarga el archivo indicado por `config.fileName`.
+Pulsa **Descargar PNG**. La aplicación espera a que las fuentes estén listas, captura la plantilla a su tamaño real y descarga el archivo indicado por `config.metadata[idiomaDelDiseño].fileName`.
 
 La escala visible de la vista previa no cambia la resolución final. Una plantilla de `1080 × 1080` genera un PNG de `1080 × 1080`.
 

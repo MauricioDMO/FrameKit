@@ -21,6 +21,7 @@ export function EditorField({ field, value, onChange }: EditorFieldProps) {
       <label className="block">
         {label}
         <textarea
+          name={field.key}
           rows={4}
           required={field.required}
           placeholder={field.placeholder}
@@ -40,12 +41,14 @@ export function EditorField({ field, value, onChange }: EditorFieldProps) {
         {label}
         <div className="flex items-center gap-2">
           <input
+            name={field.key}
             type="color"
             value={pickerValue}
             onChange={(event) => onChange(event.target.value)}
             className="h-11 w-14 shrink-0 cursor-pointer rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] p-1"
           />
           <input
+            name={`${field.key}-value`}
             type="text"
             value={value}
             onChange={(event) => onChange(event.target.value)}
@@ -60,6 +63,7 @@ export function EditorField({ field, value, onChange }: EditorFieldProps) {
     <label className="block">
       {label}
       <input
+        name={field.key}
         type={field.type === 'url' ? 'text' : field.type}
         inputMode={field.type === 'url' ? 'url' : undefined}
         required={field.required}

@@ -15,5 +15,6 @@ export async function getTemplateConfig(
     return null
   }
 
-  return templateConfigRegistry[segments.join('/')] ?? null
+  const config = templateConfigRegistry[segments.join('/')]
+  return config ?? null
 }

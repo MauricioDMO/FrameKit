@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from 'react'
 interface TemplatePreviewProps {
   width: number
   height: number
+  label: string
   children: ReactNode
 }
 
 export function TemplatePreview({
   width,
   height,
+  label,
   children,
 }: TemplatePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -40,7 +42,7 @@ export function TemplatePreview({
   return (
     <section
       ref={containerRef}
-      aria-label="Vista previa"
+      aria-label={label}
       className="relative flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner"
     >
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px]" />

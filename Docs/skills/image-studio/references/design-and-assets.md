@@ -7,16 +7,19 @@
 ```tsx
 import type { TemplateProps } from '@/lib/templates/types'
 
-export default function Template({ data, width, height }: TemplateProps) {
+export default function Template({ data, width, height, locale }: TemplateProps) {
+  const cta = locale === 'es' ? 'Conoce más' : 'Learn more'
+
   return (
     <article style={{ width, height }}>
       {data.title}
+      <p>{cta}</p>
     </article>
   )
 }
 ```
 
-La raíz debe respetar exactamente `width` y `height`. El editor se encarga de escalar la vista previa.
+La raíz debe respetar exactamente `width` y `height`. El editor se encarga de escalar la vista previa. `locale` corresponde a una clave de `config.languages` seleccionada en el primer control del formulario, no al idioma de la interfaz.
 
 ## Dirección visual
 
@@ -52,6 +55,10 @@ Usa clases estáticas para estructura y estilos inline para valores configurable
 ```
 
 No construyas clases como `bg-[${data.color}]`; Tailwind no puede descubrirlas al compilar.
+
+## Texto localizado
+
+Los valores editables salen de `data`; los textos fijos deben depender de `locale`. No fijes texto en un solo idioma dentro de una plantilla que se vaya a exportar.
 
 ## Imágenes
 

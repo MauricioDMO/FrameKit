@@ -1,4 +1,7 @@
 {
-  "title": "Redes sociales",
-  "order": 10
+  "order": 10,
+  "translations": {
+    "es": { "title": "Redes sociales" },
+    "en": { "title": "Social media" }
+  }
 }

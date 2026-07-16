@@ -50,6 +50,10 @@ Prefiere recursos locales bajo `public/`. Si necesitas recursos remotos, configu
 
 El tamaño final proviene de `width` y `height` en `config.ts`. La escala de la vista previa solo afecta la presentación dentro del editor.
 
+## El diseño no cambia de idioma
+
+Cada clave de `languages` debe existir en `metadata`, `label`, `placeholder` cuando exista y `content`. Cada entrada de `content` debe incluir todos los `field.key`. Comprueba que el texto fijo de `template.tsx` use `locale` de `TemplateProps`, no un literal en un único idioma.
+
 ## Los cambios estructurales no se detectan
 
 El watcher observa altas y eliminaciones. Si moviste varias carpetas o el registro quedó inconsistente, ejecuta de nuevo:
@@ -63,9 +67,9 @@ pnpm templates:generate
 TypeScript valida los archivos `config.ts`. Corrige la propiedad indicada y conserva:
 
 ```ts
-const config = {
+export default defineTemplateConfig({
   // configuración
-} satisfies TemplateConfig
+})
 ```
 
 Consulta la [referencia de configuración para agentes](skills/image-studio/references/template-config.md) para ver todos los campos.

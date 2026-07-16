@@ -29,7 +29,7 @@ Este comando:
 2. Inicia Next.js.
 3. Observa altas y eliminaciones dentro de `src/templates`.
 
-Abre [http://localhost:3000/editor](http://localhost:3000/editor). La ruta `/` redirige automáticamente al editor.
+Abre [http://localhost:3000](http://localhost:3000). La ruta `/` detecta el idioma del navegador y redirige a `/es/editor` o `/en/editor`. En una plantilla, **Idioma de la interfaz** controla la aplicación y **Idioma del diseño** controla los valores y textos del PNG.
 
 ## Comandos
 

@@ -3,11 +3,13 @@ import 'server-only'
 import { access, readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import type {
-  FolderConfig,
-  TemplateNavigationNode,
+import {
+  localizeTemplateConfig,
+  type FolderConfig,
+  type TemplateNavigationNode,
 } from '@/lib/templates/types'
 import { templateConfigRegistry } from '@/generated/template-config-registry'
+import type { Locale } from '@/i18n/locales'
 
 const TEMPLATES_ROOT = path.join(process.cwd(), 'src', 'templates')
 
@@ -45,15 +47,17 @@ function humanizeFolderName(name: string): string {
 function sortNodes(
   first: TemplateNavigationNode,
   second: TemplateNavigationNode,
+  locale: Locale,
 ): number {
   return first.order !== second.order
     ? first.order - second.order
-    : first.title.localeCompare(second.title, 'es')
+    : first.title.localeCompare(second.title, locale)
 }
 
 async function scanDirectory(
   absoluteDirectory: string,
   parentSegments: string[],
+  locale: Locale,
 ): Promise<TemplateNavigationNode[]> {
   const entries = await readdir(absoluteDirectory, { withFileTypes: true })
   const directories = entries.filter(
@@ -71,18 +75,20 @@ async function scanDirectory(
       const config = templateConfigRegistry[slug]
 
       if (config) {
+        const translation = localizeTemplateConfig(config, locale)
+
         return {
           type: 'template',
           id: slug,
           slug,
-          title: config.title,
-          description: config.description,
+          title: translation.title,
+          description: translation.description,
           order: config.order ?? 1000,
-          href: `/editor/${slug}`,
+          href: `/${locale}/editor/${slug}`,
         } satisfies TemplateNavigationNode
       }
 
-      const children = await scanDirectory(absolutePath, segments)
+      const children = await scanDirectory(absolutePath, segments, locale)
 
       if (children.length === 0) return null
 
@@ -94,20 +100,22 @@ async function scanDirectory(
         type: 'folder',
         id: slug,
         slug,
-        title: folderConfig?.title ?? humanizeFolderName(directory.name),
+        title:
+          folderConfig?.translations[locale].title ??
+          humanizeFolderName(directory.name),
         order: folderConfig?.order ?? 1000,
-        children: children.sort(sortNodes),
+        children: children.sort((first, second) => sortNodes(first, second, locale)),
       } satisfies TemplateNavigationNode
     }),
   )
 
   return nodes
     .filter((node): node is TemplateNavigationNode => node !== null)
-    .sort(sortNodes)
+    .sort((first, second) => sortNodes(first, second, locale))
 }
 
-export async function readTemplateCatalog(): Promise<
+export async function readTemplateCatalog(locale: Locale): Promise<
   TemplateNavigationNode[]
 > {
-  return scanDirectory(TEMPLATES_ROOT, [])
+  return scanDirectory(TEMPLATES_ROOT, [], locale)
 }
