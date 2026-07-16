@@ -1,0 +1,23 @@
+{
+  "skill_name": "image-studio",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Crea una historia de Instagram de 1080x1920 para anunciar el lanzamiento de un café de especialidad. Quiero editar la etiqueta, el título, la descripción, el precio, la imagen de fondo y el color de acento. Agrúpala bajo Redes sociales > Instagram y comprueba que se pueda exportar.",
+      "expected_output": "Una plantilla completa con slug válido, config.ts tipado, template.tsx vertical, campos y defaults correspondientes, recursos compatibles con exportación, registro regenerado y verificaciones reportadas.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Añade una plantilla A4 vertical para una cotización profesional. Debe permitir editar cliente, número de cotización, fecha, descripción del servicio, precio total y datos de contacto. Mantén un diseño sobrio y legible y colócala en Documentos > Cotizaciones.",
+      "expected_output": "Una categoría documental y plantilla de aproximadamente 1240x1754 con configuración tipada, diseño adecuado para documento, datos editables y build válido.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Necesito un banner horizontal 1600x900 para una campaña de software B2B. Usa un estilo técnico oscuro, permite cambiar eyebrow, titular, beneficio principal, CTA y color de acento. Reutiliza los patrones del proyecto y no agregues dependencias.",
+      "expected_output": "Una plantilla horizontal visualmente específica, sin dependencias nuevas ni infraestructura innecesaria, con todos los campos configurados y verificaciones de generación, lint y build.",
+      "files": []
+    }
+  ]
+}

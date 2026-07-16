@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" role="img" aria-label="Bosque abstracto">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5d8875"/>
+      <stop offset="0.62" stop-color="#234c3e"/>
+      <stop offset="1" stop-color="#0b2119"/>
+    </linearGradient>
+    <radialGradient id="light" cx="72%" cy="18%" r="46%">
+      <stop offset="0" stop-color="#d7f4df" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#d7f4df" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="22"/></filter>
+  </defs>
+  <rect width="1600" height="1200" fill="url(#sky)"/>
+  <rect width="1600" height="1200" fill="url(#light)"/>
+  <g fill="#0c2b20" opacity="0.88">
+    <path d="M40 1200 250 270l70 930z"/>
+    <path d="m280 1200 340-1050 35 1050z"/>
+    <path d="m560 1200 230-730 85 730z"/>
+    <path d="m1090 1200 280-1020 84 1020z"/>
+    <path d="m1340 1200 210-690 50 690z"/>
+  </g>
+  <g fill="#8fc0a5" opacity="0.34" filter="url(#blur)">
+    <circle cx="1120" cy="230" r="170"/>
+    <circle cx="1330" cy="350" r="110"/>
+    <circle cx="950" cy="390" r="90"/>
+  </g>
+  <path d="M0 1000c330-120 580-70 800 20 270 110 520 75 800-45v225H0z" fill="#071812" opacity="0.8"/>
+</svg>
