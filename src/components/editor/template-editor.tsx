@@ -217,12 +217,10 @@ export function TemplateEditor({
               <select
                 value={contentLocale}
                 onChange={(event) => changeContentLocale(event.target.value)}
-                className="w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3.5 py-2.5 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10"
+                className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3.5 py-2.5 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10"
               >
                 {Object.entries(config.languages).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+                  <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </label>

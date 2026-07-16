@@ -26,12 +26,10 @@ export function LanguageSelect({
         aria-label={messages.languageLabel}
         value={locale}
         onChange={(event) => changeLocale(event.target.value as Locale)}
-        className="rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-xs font-bold normal-case tracking-normal text-white outline-none transition hover:bg-white/15 focus:ring-2 focus:ring-[#c8f7d9]"
+        className="studio-select studio-select--dark rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-xs font-bold normal-case tracking-normal text-white outline-none transition hover:bg-white/15 focus:ring-2 focus:ring-[#c8f7d9]"
       >
         {Object.entries(messages.languageNames).map(([value, label]) => (
-          <option key={value} value={value} className="text-[#10271f]">
-            {label}
-          </option>
+          <option key={value} value={value}>{label}</option>
         ))}
       </select>
     </label>
