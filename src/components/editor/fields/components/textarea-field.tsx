@@ -5,7 +5,7 @@ export function TextareaField({ field, value, onChange }: EditorFieldProps) {
   return (
     <textarea
       name={field.key}
-      rows={4}
+      rows={3}
       required={field.required}
       placeholder={field.placeholder}
       value={value}

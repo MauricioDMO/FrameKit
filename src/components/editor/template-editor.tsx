@@ -159,17 +159,17 @@ export function TemplateEditor({
   }
 
   return (
-    <div className="flex min-h-screen flex-col xl:h-full xl:min-h-0">
-      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7">
+    <div className="flex min-h-screen flex-col text-[#17221d] dark:text-[#e6eee9] xl:h-full xl:min-h-0">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7 dark:border-white/10 dark:bg-[#1d2923]">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4d675a]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4d675a] dark:text-[#a4b8ac]">
             {messages.templateEditor}
           </p>
           <h1 className="mt-1 text-xl font-black tracking-[-0.025em]">
             {contentConfig.title}
           </h1>
           {contentConfig.description && (
-            <p className="mt-1 max-w-2xl text-sm text-[#6c756f]">
+            <p className="mt-1 max-w-2xl text-sm text-[#6c756f] dark:text-[#b8c8be]">
               {contentConfig.description}
             </p>
           )}
@@ -184,7 +184,7 @@ export function TemplateEditor({
                 data: { ...contentConfig.content },
               }))
             }
-            className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"
           >
             <RotateCcw size={15} />
             {messages.reset}
@@ -201,23 +201,23 @@ export function TemplateEditor({
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 gap-5 p-4 sm:p-5 xl:grid-cols-[340px_1fr] xl:overflow-hidden">
-        <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-5 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto">
-          <div className="flex items-baseline justify-between border-b border-black/8 pb-4">
+      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[300px_1fr] xl:overflow-hidden">
+        <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] dark:border-white/10 dark:bg-[#1d2923] xl:min-h-0 xl:overflow-y-auto">
+          <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
             <h2 className="font-black tracking-tight">{messages.content}</h2>
-            <span className="text-xs text-[#5f6963]">
+            <span className="text-xs text-[#5f6963] dark:text-[#b8c8be]">
               {contentConfig.width} × {contentConfig.height}
             </span>
           </div>
-          <div className="mt-5 space-y-5">
+          <div className="mt-4 space-y-4">
             <label className="block">
-              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-[#59665f]">
+              <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.1em] text-[#59665f] dark:text-[#b8c8be]">
                 {messages.contentLanguageLabel}
               </span>
               <select
                 value={contentLocale}
                 onChange={(event) => changeContentLocale(event.target.value)}
-                className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3.5 py-2.5 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10"
+                className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]"
               >
                 {Object.entries(config.languages).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>

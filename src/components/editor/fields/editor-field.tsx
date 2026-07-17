@@ -4,11 +4,12 @@ import type { EditorFieldProps } from './types'
 
 export function EditorField({ field, value, onChange }: EditorFieldProps) {
   const Field = fieldComponents[field.type]
+  const Container = field.type === 'color' ? 'div' : 'label'
 
   return (
-    <label className="block">
+    <Container className="block">
       <FieldLabel label={field.label} />
       <Field field={field} value={value} onChange={onChange} />
-    </label>
+    </Container>
   )
 }

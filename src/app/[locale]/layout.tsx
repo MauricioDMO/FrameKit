@@ -32,7 +32,14 @@ export default async function LocaleLayout({
   if (!hasLocale(locale)) notFound()
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try { const theme = localStorage.getItem('theme'); if (theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark') } catch {}`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   )

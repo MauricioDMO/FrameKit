@@ -10,6 +10,8 @@ interface Messages {
     navigationLabel: string
     noTemplates: string
     languageLabel: string
+    settingsLabel: string
+    themeToggleLabel: string
     developedBy: string
     languageNames: Record<Locale, string>
   }
@@ -50,6 +52,8 @@ export const messages = {
       navigationLabel: 'Plantillas',
       noTemplates: 'No hay plantillas disponibles.',
       languageLabel: 'Idioma de la interfaz',
+      settingsLabel: 'Ajustes',
+      themeToggleLabel: 'Cambiar tema',
       developedBy: 'Desarrollado por',
       languageNames: { es: 'Español', en: 'English' },
     },
@@ -89,6 +93,8 @@ export const messages = {
       navigationLabel: 'Templates',
       noTemplates: 'No templates are available.',
       languageLabel: 'App language',
+      settingsLabel: 'Settings',
+      themeToggleLabel: 'Change theme',
       developedBy: 'Developed by',
       languageNames: { es: 'Español', en: 'English' },
     },

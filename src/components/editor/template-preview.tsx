@@ -159,9 +159,9 @@ export function TemplatePreview({
     <section
       ref={containerRef}
       aria-label={label}
-      className="relative flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner"
+      className="relative flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px] dark:opacity-50" />
       <div
         ref={stageRef}
         onPointerDown={handlePointerDown}
@@ -184,7 +184,7 @@ export function TemplatePreview({
           {children}
         </div>
       </div>
-      <div className="absolute bottom-4 right-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+      <div className="absolute bottom-4 right-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#24342c]">
         <button
           type="button"
           onClick={showActualSize}
@@ -193,7 +193,7 @@ export function TemplatePreview({
           className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition ${
             viewMode === 'actual'
               ? 'bg-[#173d31] text-white'
-              : 'text-[#4e5a53] hover:bg-[#efeee9]'
+              : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'
           }`}
         >
           <Maximize2 size={14} />
@@ -207,7 +207,7 @@ export function TemplatePreview({
           className={`inline-flex items-center gap-1.5 border-l border-black/10 px-3 py-2 text-xs font-bold transition ${
             viewMode === 'fit'
               ? 'bg-[#173d31] text-white'
-              : 'text-[#4e5a53] hover:bg-[#efeee9]'
+              : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'
           }`}
         >
           <Minimize2 size={14} />

@@ -19,7 +19,7 @@ export default async function EditorLayout({
   const navigation = await readTemplateCatalog(activeLocale)
 
   return (
-    <div className="min-h-screen bg-[#f0eee7] lg:grid lg:grid-cols-[296px_1fr] xl:h-dvh xl:min-h-0 xl:overflow-hidden">
+    <div className="min-h-screen bg-[#f0eee7] dark:bg-[#17221d] lg:grid lg:grid-cols-[296px_1fr] xl:h-dvh xl:min-h-0 xl:overflow-hidden">
       <TemplateSidebar
         navigation={navigation}
         locale={activeLocale}

@@ -1,9 +1,16 @@
+@custom-variant dark (&:where(.dark, .dark *));
 @import "tailwindcss";
 
 :root {
   color-scheme: light;
   --studio-ink: #17221d;
   --studio-paper: #f0eee7;
+}
+
+.dark {
+  color-scheme: dark;
+  --studio-ink: #e6eee9;
+  --studio-paper: #17221d;
 }
 
 * {
