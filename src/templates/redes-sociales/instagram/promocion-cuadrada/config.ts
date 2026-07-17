@@ -57,7 +57,7 @@ export default defineTemplateConfig({
   content: {
     es: {
       eyebrow: 'Estudio digital / 2026',
-      title: 'Diseñamos sitios que hacen crecer tu negocio',
+      title: 'Diseñamos sitios que hacen crecer tu **negocio**',
       description:
         'Estrategia, diseño y desarrollo para construir una presencia digital que trabaja a tu favor.',
       website: 'web.mauriciodmo.com',
@@ -66,7 +66,7 @@ export default defineTemplateConfig({
     },
     en: {
       eyebrow: 'Digital studio / 2026',
-      title: 'We design websites that grow your business',
+      title: 'We design websites that grow your **business**',
       description:
         'Strategy, design, and development to build a digital presence that works for you.',
       website: 'web.mauriciodmo.com',

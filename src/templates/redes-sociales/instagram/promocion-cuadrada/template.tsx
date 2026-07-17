@@ -1,4 +1,5 @@
 import type { TemplateProps } from '@/lib/templates/types'
+import { Markdown } from '@/components/templates/markdown'
 
 import config from './config'
 
@@ -59,30 +60,34 @@ export default function InstagramSquarePromotion({
         </header>
 
         <main className="my-auto max-w-[830px]">
-          <p
-            className="mb-8 text-[18px] font-bold uppercase tracking-[0.3em]"
+          <Markdown
+            value={data.eyebrow}
+            className="mb-8 block text-[18px] font-bold uppercase tracking-[0.3em]"
             style={{ color: accentColor }}
-          >
-            {data.eyebrow}
-          </p>
-          <h1 className="text-[82px] font-black leading-[0.94] tracking-[-0.055em]">
-            {data.title}
-          </h1>
+          />
+          <Markdown
+            value={data.title}
+            lists
+            className="text-[82px] font-medium leading-[0.94] tracking-[-0.055em]"
+          />
           <div className="mt-10 flex items-start gap-6">
             <span
               className="mt-3 h-[3px] w-16 shrink-0"
               style={{ backgroundColor: accentColor }}
             />
-            <p className="max-w-[650px] text-[25px] leading-[1.42] text-white/76">
-              {data.description}
-            </p>
+            <Markdown
+              value={data.description}
+              lists
+              className="max-w-[650px] text-[25px] leading-[1.42] text-white/76"
+            />
           </div>
         </main>
 
         <footer className="flex items-end justify-between border-t border-white/20 pt-7 pr-[36px]">
-          <p className="text-[17px] font-bold tracking-[0.08em]">
-            {data.website}
-          </p>
+          <Markdown
+            value={data.website}
+            className="text-[17px] font-bold tracking-[0.08em]"
+          />
           <p
             className="rounded-full px-7 py-3 text-[14px] font-black uppercase tracking-[0.14em] text-[#092118]"
             style={{ backgroundColor: accentColor }}
