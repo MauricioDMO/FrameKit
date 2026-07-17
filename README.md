@@ -1,4 +1,4 @@
-# Image Studio
+# FrameKit
 
 Editor de imágenes basado en plantillas React, Next.js y Tailwind CSS.
 

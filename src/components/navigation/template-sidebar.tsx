@@ -26,7 +26,7 @@ export function TemplateSidebar({
             <Images size={20} strokeWidth={2.2} />
           </div>
           <div>
-            <p className="font-black tracking-[-0.02em]">Image Studio</p>
+            <p className="font-black tracking-[-0.02em]">FrameKit</p>
             <p className="mt-0.5 text-[11px] uppercase tracking-[0.16em] text-[#91ae9f]">
               {messages.workshop}
             </p>
@@ -51,6 +51,16 @@ export function TemplateSidebar({
 
       <div className="shrink-0 border-t border-white/10 px-5 py-4">
         <LanguageSelect locale={locale} messages={messages} />
+        <p className="mt-3 text-center text-[10px] text-[#91ae9f]">
+          {messages.developedBy}{' '}
+          <a
+            href="https://mauriciodmo.com"
+            className="font-bold text-[#c8f7d9] hover:underline"
+            target="_blank"
+          >
+            MauricioDMO
+          </a>
+        </p>
       </div>
     </aside>
   )

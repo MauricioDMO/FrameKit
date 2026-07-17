@@ -1,6 +1,6 @@
-# Documentación de Image Studio
+# Documentación de FrameKit
 
-Image Studio permite crear diseños reutilizables como componentes React, editar su contenido desde un formulario y descargarlos como PNG. La interfaz y el diseño exportado pueden usar idiomas distintos.
+FrameKit permite crear diseños reutilizables como componentes React, editar su contenido desde un formulario y descargarlos como PNG. La interfaz y el diseño exportado pueden usar idiomas distintos.
 
 ## Guías
 

@@ -145,4 +145,4 @@ pnpm build
 
 No edites archivos de `src/generated/`; se sobrescriben automáticamente.
 
-Consulta [Arquitectura](architecture.md) para entender los registros y el catálogo. Los agentes deben seguir el [skill de Image Studio](skills/image-studio/SKILL.md).
+Consulta [Arquitectura](architecture.md) para entender los registros y el catálogo. Los agentes deben seguir el [skill de FrameKit](skills/image-studio/SKILL.md).

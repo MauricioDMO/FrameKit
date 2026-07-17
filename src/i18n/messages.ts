@@ -10,6 +10,7 @@ interface Messages {
     navigationLabel: string
     noTemplates: string
     languageLabel: string
+    developedBy: string
     languageNames: Record<Locale, string>
   }
   editor: {
@@ -41,7 +42,7 @@ interface Messages {
 export const messages = {
   es: {
     metadata: {
-      title: 'Image Studio',
+      title: 'FrameKit',
       description: 'Editor de imágenes basado en plantillas React',
     },
     sidebar: {
@@ -49,6 +50,7 @@ export const messages = {
       navigationLabel: 'Plantillas',
       noTemplates: 'No hay plantillas disponibles.',
       languageLabel: 'Idioma de la interfaz',
+      developedBy: 'Desarrollado por',
       languageNames: { es: 'Español', en: 'English' },
     },
     editor: {
@@ -79,7 +81,7 @@ export const messages = {
   },
   en: {
     metadata: {
-      title: 'Image Studio',
+      title: 'FrameKit',
       description: 'A React template-based image editor',
     },
     sidebar: {
@@ -87,6 +89,7 @@ export const messages = {
       navigationLabel: 'Templates',
       noTemplates: 'No templates are available.',
       languageLabel: 'App language',
+      developedBy: 'Developed by',
       languageNames: { es: 'Español', en: 'English' },
     },
     editor: {

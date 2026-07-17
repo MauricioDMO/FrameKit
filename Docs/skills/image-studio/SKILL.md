@@ -1,10 +1,10 @@
 ---
 name: image-studio
-description: Crea y modifica plantillas visuales completas para Image Studio, incluyendo idiomas propios por plantilla, config.ts tipado, componentes React/Tailwind, recursos locales, rutas del editor y verificación de exportación. Usa este skill siempre que el usuario pida crear una imagen, publicación social, historia, banner, anuncio, documento, cotización o cualquier formato visual dentro de este proyecto, aunque no mencione explícitamente la palabra plantilla.
-compatibility: Requiere acceso al proyecto Image Studio, Node.js y pnpm.
+description: Crea y modifica plantillas visuales completas para FrameKit, incluyendo idiomas propios por plantilla, config.ts tipado, componentes React/Tailwind, recursos locales, rutas del editor y verificación de exportación. Usa este skill siempre que el usuario pida crear una imagen, publicación social, historia, banner, anuncio, documento, cotización o cualquier formato visual dentro de este proyecto, aunque no mencione explícitamente la palabra plantilla.
+compatibility: Requiere acceso al proyecto FrameKit, Node.js y pnpm.
 ---
 
-# Image Studio
+# FrameKit
 
 Crea plantillas que el editor pueda descubrir, editar y exportar sin modificar su infraestructura compartida.
 
