@@ -93,6 +93,7 @@ El componente recibe `data`, `width`, `height` y `locale`. Usa `locale` para loc
 
 ```tsx
 import type { TemplateProps } from '@/lib/templates/types'
+import { Markdown } from '@/components/templates/markdown'
 
 import config from './config'
 
@@ -109,7 +110,7 @@ export default function HorizontalBanner({
       className="flex items-center bg-zinc-950 p-20 text-white"
       style={{ width, height }}
     >
-      <h1 className="text-7xl font-black">{data.title}</h1>
+      <Markdown value={data.title} lists className="text-7xl font-medium" />
       <p>{cta}</p>
     </article>
   )
@@ -117,6 +118,8 @@ export default function HorizontalBanner({
 ```
 
 `TemplateProps<typeof config>` limita `data` a los `field.key` declarados en el `config.ts` vecino. Mantén fuera del componente los botones, formularios y funciones de descarga. La plantilla solo representa la imagen.
+
+Para campos `text` y `textarea`, usa `Markdown` en lugar de interpolar `data.campo` directamente cuando el valor deba admitir formato. Pasa `lists` solo a un `textarea` que admita listas o saltos de línea; el componente entonces produce un bloque. La sintaxis disponible y sus límites están en [Markdown en campos de texto](markdown.md).
 
 ## 4. Añadir recursos
 

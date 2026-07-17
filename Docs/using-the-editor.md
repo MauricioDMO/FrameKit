@@ -32,11 +32,13 @@ Los controles disponibles son:
 
 | Tipo | Uso |
 | --- | --- |
-| `text` | Texto corto. |
-| `textarea` | Títulos o párrafos extensos. |
+| `text` | Texto corto con negrita, cursiva y tachado opcionales. |
+| `textarea` | Títulos o párrafos extensos; además admite saltos de línea y listas cuando la plantilla los renderiza. |
 | `url` | Rutas locales o URLs de imágenes. |
 | `color` | Selector y valor hexadecimal. |
 | `number` | Valores numéricos con límites opcionales. |
+
+Consulta [Markdown en campos de texto](markdown.md) para ver la sintaxis disponible. El formato aparece en el PNG solo cuando la plantilla usa el componente `Markdown` para ese campo.
 
 ## Restablecer
 

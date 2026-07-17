@@ -21,10 +21,11 @@ Lee únicamente las referencias necesarias:
 
 - [Estructura del proyecto](references/project-layout.md): rutas, categorías y archivos generados.
 - [Configuración tipada](references/template-config.md): campos de `config.ts` y controles disponibles.
+- [Markdown en texto](../../markdown.md): sintaxis compatible y componente de renderizado para campos `text` y `textarea`.
 - [Diseño y recursos](references/design-and-assets.md): calidad visual, dimensiones, imágenes y exportación.
 - [Flujo y verificación](references/workflow-and-verification.md): secuencia completa y comprobaciones finales.
 
-Para una plantilla nueva, lee las cuatro. Para ajustar solamente el aspecto visual, basta con Diseño y recursos más la plantilla existente.
+Para una plantilla nueva, lee las cuatro. Si declara campos `text` o `textarea`, lee también Markdown en texto. Para ajustar solamente el aspecto visual, basta con Diseño y recursos más la plantilla existente.
 
 ## Flujo obligatorio
 
@@ -33,7 +34,7 @@ Para una plantilla nueva, lee las cuatro. Para ajustar solamente el aspecto visu
 3. Crea `config.ts` con `defineTemplateConfig` y declara primero `languages`.
 4. Define en `fields` solo valores que el usuario deba editar. Son obligatorios por defecto; declara `required: false` solo para los opcionales.
 5. Completa `metadata`, `label`, `placeholder` cuando exista y `content` para cada clave de `languages`; cada contenido debe incluir todos los `field.key`.
-6. Crea `template.tsx`, importa su `config` vecino y usa `TemplateProps<typeof config>` para que `data` solo admita los `field.key` declarados. Usa `locale` para cada texto fijo dentro del PNG.
+6. Crea `template.tsx`, importa su `config` vecino y usa `TemplateProps<typeof config>` para que `data` solo admita los `field.key` declarados. Usa `locale` para cada texto fijo dentro del PNG. Renderiza campos `text` y `textarea` con `Markdown`; añade `lists` solo en textareas que admitan listas o saltos de línea.
 7. Mantén formularios, navegación y descarga fuera de la plantilla.
 8. Guarda recursos propios bajo `public/` y referencia sus rutas desde `/`.
 9. Ejecuta `pnpm templates:generate`, `pnpm lint` y `pnpm build`.
@@ -46,6 +47,7 @@ Para una plantilla nueva, lee las cuatro. Para ajustar solamente el aspecto visu
 - No añadas una API, estado global, dependencia o esquema runtime para una plantilla local.
 - No supongas `es` y `en`: el selector muestra únicamente las claves declaradas en `languages` y el editor entrega esa clave como `locale` a la plantilla.
 - Usa estilos inline para colores, imágenes u otros valores que provengan de `data`.
+- No interpoles un `text` o `textarea` que admita formato directamente en JSX: usa `Markdown` desde `@/components/templates/markdown`. La negrita ya recibe `font-semibold`; no añadas selectores de `strong` repetidos en cada plantilla.
 - Evita diseños genéricos: el formato debe tener jerarquía, composición y una dirección visual coherente con su propósito.
 - Conserva accesibilidad básica en el editor y usa `alt=""` para imágenes puramente decorativas.
 - Evita imágenes remotas cuando exista una alternativa local; CORS puede romper la exportación.

@@ -7,6 +7,7 @@ FrameKit permite crear diseños reutilizables como componentes React, editar su 
 - [Primeros pasos](getting-started.md): instalación, comandos y ejecución local.
 - [Uso del editor](using-the-editor.md): navegación, edición y exportación.
 - [Creación de plantillas](creating-templates.md): estructura, configuración y componente visual.
+- [Markdown en campos de texto](markdown.md): sintaxis compatible y renderizado en plantillas.
 - [Arquitectura](architecture.md): catálogo, registros generados y límites servidor/cliente.
 - [Solución de problemas](troubleshooting.md): errores habituales y sus correcciones.
 
