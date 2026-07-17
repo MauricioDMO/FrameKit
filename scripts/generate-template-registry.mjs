@@ -40,15 +40,9 @@ async function findTemplates(absoluteDirectory, segments = []) {
 
     const nextSegments = [...segments, entry.name]
     const directoryPath = path.join(absoluteDirectory, entry.name)
-    const configPath = path.join(directoryPath, 'config.ts')
+    const templatePath = path.join(directoryPath, 'template.tsx')
 
-    if (await exists(configPath)) {
-      const templatePath = path.join(directoryPath, 'template.tsx')
-
-      if (!(await exists(templatePath))) {
-        throw new Error(`Falta template.tsx en: ${directoryPath}`)
-      }
-
+    if (await exists(templatePath)) {
       templates.push({
         slug: nextSegments.join('/'),
         baseImportPath: `@/templates/${nextSegments.join('/')}`,
@@ -68,24 +62,26 @@ async function generateRegistry() {
 
   const registryEntries = templates
     .map(
-      ({ slug, baseImportPath }) => `  ${JSON.stringify(slug)}: dynamic<TemplateProps>(
-    () => import(${JSON.stringify(`${baseImportPath}/template`)}).then((module) => module.default),
-  ),`,
+      ({ slug, baseImportPath }) => `  ${JSON.stringify(slug)}: dynamic(
+    () => import(${JSON.stringify(`${baseImportPath}/template`)}).then((module) => {
+      const def = module.default
+      return function TemplateComponent(props: TemplateRenderProps) {
+        return def.render(props)
+      }
+    }),
+  ) as (props: TemplateRenderProps) => ReactElement,`,
     )
     .join('\n\n')
 
   const output = `/* Archivo generado automáticamente. No modificar. */
 'use client'
 
-import type { ComponentType } from 'react'
 import dynamic from 'next/dynamic'
+import type { ReactElement } from 'react'
 
-import type { TemplateProps } from '@/lib/templates/types'
+import type { TemplateRenderProps } from '@/lib/framekit'
 
-export const templateRegistry: Record<
-  string,
-  ComponentType<TemplateProps>
-> = {
+export const templateRegistry: Record<string, (props: TemplateRenderProps) => ReactElement> = {
 ${registryEntries}
 }
 `
@@ -93,21 +89,21 @@ ${registryEntries}
   const configImports = templates
     .map(
       ({ baseImportPath }, index) =>
-        `import config${index} from ${JSON.stringify(`${baseImportPath}/config`)}`,
+        `import def${index} from ${JSON.stringify(`${baseImportPath}/template`)}`,
     )
     .join('\n')
 
   const configEntries = templates
-    .map(({ slug }, index) => `  ${JSON.stringify(slug)}: config${index},`)
+    .map(({ slug }, index) => `  ${JSON.stringify(slug)}: def${index},`)
     .join('\n')
 
   const configOutput = `/* Archivo generado automáticamente. No modificar. */
 import 'server-only'
 
-import type { TemplateConfig } from '@/lib/templates/types'
+import type { TemplateDefinition } from '@/lib/framekit'
 ${configImports ? `\n${configImports}` : ''}
 
-export const templateConfigRegistry: Record<string, TemplateConfig> = {
+export const templateConfigRegistry: Record<string, TemplateDefinition> = {
 ${configEntries}
 }
 `
