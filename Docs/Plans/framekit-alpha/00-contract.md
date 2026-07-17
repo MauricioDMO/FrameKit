@@ -32,29 +32,29 @@ Todos los valores de `data` son `string`. Un campo `number` controla y valida un
 
 ## Implementación
 
-- [ ] Declarar `TemplateFieldKind` como la unión `text | textarea | number | color | url`.
-- [ ] Declarar una base de campo con `label`, `placeholder?`, `required?` y `defaultValue?`, todos los valores editables como `string`.
-- [ ] Limitar `min` y `max` a `fields.number`; no aceptarlos en los otros cuatro helpers.
-- [ ] Declarar `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData` como tipos públicos.
-- [ ] Hacer que `locale` en `TemplateRenderProps` sea la unión literal de las claves de `content`.
-- [ ] Hacer que `data` contenga exactamente las claves de `fields`, todas como `string`.
-- [ ] Hacer que cada entrada de `content` requiera `language: string` y acepte solo claves declaradas en `fields` además de `language`.
-- [ ] Rechazar `fields.language` a nivel de tipos y también en la validación runtime.
-- [ ] Exigir `width` y `height` como enteros positivos finitos en la validación runtime.
-- [ ] Exigir al menos una entrada en `content`; la primera clave de inserción es el locale inicial.
-- [ ] Eliminar cualquier concepto de título, descripción o nombre de descarga localizado: el título sale del último segmento del slug y el PNG se llama `<slug-con-guiones>.png`.
-- [ ] Definir la UI inicial del editor en español fijo; las categorías tampoco tendrán traducciones.
+- [x] Declarar `TemplateFieldKind` como la unión `text | textarea | number | color | url`.
+- [x] Declarar una base de campo con `label`, `placeholder?`, `required?` y `defaultValue?`, todos los valores editables como `string`.
+- [x] Limitar `min` y `max` a `fields.number`; no aceptarlos en los otros cuatro helpers.
+- [x] Declarar `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData` como tipos públicos.
+- [x] Hacer que `locale` en `TemplateRenderProps` sea la unión literal de las claves de `content`.
+- [x] Hacer que `data` contenga exactamente las claves de `fields`, todas como `string`.
+- [x] Hacer que cada entrada de `content` requiera `language: string` y acepte solo claves declaradas en `fields` además de `language`.
+- [x] Rechazar `fields.language` a nivel de tipos y también en la validación runtime.
+- [x] Exigir `width` y `height` como enteros positivos finitos en la validación runtime.
+- [x] Exigir al menos una entrada en `content`; la primera clave de inserción es el locale inicial.
+- [x] Eliminar cualquier concepto de título, descripción o nombre de descarga localizado: el título sale del último segmento del slug y el PNG se llama `<slug-con-guiones>.png`.
+- [x] Definir la UI inicial del editor en español fijo; las categorías tampoco tendrán traducciones.
 
 ## Fixtures de tipos
 
-- [ ] Crear una plantilla válida con dos idiomas y comprobar `data.title`, `data.accentColor` y `locale` como `'es' | 'en'`.
-- [ ] Crear una fixture que declare `fields: { language: fields.text(...) }` y marcarla como error esperado.
-- [ ] Crear una fixture con `content.es` sin `language` y marcarla como error esperado.
-- [ ] Crear una fixture con una clave de contenido no declarada y marcarla como error esperado.
-- [ ] Crear una fixture que pase `min` a un campo que no sea `number` y marcarla como error esperado.
-- [ ] Crear una fixture que asigne un valor no string a un campo de `content` y marcarla como error esperado.
+- [x] Crear una plantilla válida con dos idiomas y comprobar `data.title`, `data.accentColor` y `locale` como `'es' | 'en'`.
+- [x] Crear una fixture que declare `fields: { language: fields.text(...) }` y marcarla como error esperado.
+- [x] Crear una fixture con `content.es` sin `language` y marcarla como error esperado.
+- [x] Crear una fixture con una clave de contenido no declarada y marcarla como error esperado.
+- [x] Crear una fixture que pase `min` a un campo que no sea `number` y marcarla como error esperado.
+- [x] Crear una fixture que asigne un valor no string a un campo de `content` y marcarla como error esperado.
 
 ## Cierre
 
-- [ ] Typecheck acepta la plantilla válida y rechaza las cinco fixtures inválidas.
-- [ ] Ningún tipo público del contrato nuevo importa `Locale`, mensajes o tipos de la aplicación actual.
+- [x] Typecheck acepta la plantilla válida y rechaza las cinco fixtures inválidas.
+- [x] Ningún tipo público del contrato nuevo importa `Locale`, mensajes o tipos de la aplicación actual.

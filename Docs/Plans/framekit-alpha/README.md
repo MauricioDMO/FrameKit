@@ -2,8 +2,8 @@
 
 Este directorio reemplaza el plan y la documentación del contrato anterior. Las fases se ejecutan estrictamente en orden: una fase no empieza hasta que la anterior tenga todos sus checkboxes marcados y sus verificaciones ejecutadas con éxito.
 
-1. [Contrato y base de pruebas](00-contract.md)
-2. [Núcleo dentro de Studio](01-core.md)
+1. [Contrato y base de pruebas](00-contract.md) ✅
+2. [Núcleo dentro de Studio](01-core.md) ✅
 3. [Generación estática](02-codegen.md)
 4. [Editor y validación](03-editor.md)
 5. [Navegación y migración](04-migration.md)
