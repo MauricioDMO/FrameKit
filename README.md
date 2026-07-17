@@ -1,12 +1,12 @@
 # FrameKit
 
-Editor de imágenes basado en plantillas React, Next.js y Tailwind CSS.
+Editor de imágenes basado en plantillas React, Next.js y Tailwind CSS. Está migrando hacia `@mauriciodmo/framekit` y `@mauriciodmo/create-framekit`.
 
-La documentación completa está en [`Docs/README.md`](Docs/README.md).
+El trabajo activo está dividido en fases marcables en [`Docs/Plans/framekit-alpha/README.md`](Docs/Plans/framekit-alpha/README.md).
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000). El idioma de la interfaz se detecta desde el navegador; también puedes entrar directamente en `/es/editor` o `/en/editor`. Cada plantilla permite elegir por separado el idioma del diseño que se exporta.
+La experiencia y estructura final están definidas en el Plan B. El comportamiento actual aún corresponde al contrato en retirada.

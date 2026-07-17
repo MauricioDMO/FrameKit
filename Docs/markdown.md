@@ -19,10 +19,10 @@ No se interpreta HTML, enlaces, encabezados, tablas ni listas anidadas. React es
 
 ## Renderizar en una plantilla
 
-Importa el componente desde `@/components/templates/markdown` y pásale el valor del campo:
+Cuando el paquete esté extraído, importa el componente desde `@mauriciodmo/framekit` y pásale el valor del campo:
 
 ```tsx
-import { Markdown } from '@/components/templates/markdown'
+import { Markdown } from '@mauriciodmo/framekit'
 
 <Markdown
   value={data.eyebrow}
