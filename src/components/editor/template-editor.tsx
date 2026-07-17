@@ -6,21 +6,15 @@ import { useEffect, useRef, useState } from 'react'
 import { templateRegistry } from '@/generated/template-registry'
 import type { Locale } from '@/i18n/locales'
 import type { getMessages } from '@/i18n/messages'
-import type {
-  TemplateConfig,
-  TemplateData,
-} from '@/lib/templates/types'
-import {
-  hasTemplateLanguage,
-  localizeTemplateConfig,
-} from '@/lib/templates/types'
+import type { TemplateDefinition } from '@/lib/framekit'
+import type { TemplateData, TemplateFieldType } from '@/lib/templates/types'
 
 import { EditorField } from './fields'
 import { TemplatePreview } from './template-preview'
 
 interface TemplateEditorProps {
   templateSlug: string
-  config: TemplateConfig
+  config: TemplateDefinition
   locale: Locale
   messages: ReturnType<typeof getMessages>['editor']
 }
@@ -30,17 +24,17 @@ interface EditorContent {
   data: TemplateData
 }
 
-function getDefaultContent(config: TemplateConfig, locale: Locale): EditorContent {
-  const localizedConfig = localizeTemplateConfig(config, locale)
+function getDefaultContent(config: TemplateDefinition, locale: Locale): EditorContent {
+  const { language, ...data } = config.content[locale]
 
   return {
-    locale: localizedConfig.language,
-    data: { ...localizedConfig.content },
+    locale: language,
+    data,
   }
 }
 
 function getStoredContent(
-  config: TemplateConfig,
+  config: TemplateDefinition,
   templateSlug: string,
 ): EditorContent | null {
   try {
@@ -48,7 +42,7 @@ function getStoredContent(
       window.sessionStorage.getItem(`image-studio:${templateSlug}`) ?? 'null',
     ) as Partial<EditorContent> | null
 
-    if (!stored || !stored.locale || !hasTemplateLanguage(config, stored.locale)) {
+    if (!stored || !stored.locale || !(stored.locale in config.content)) {
       return null
     }
 
@@ -74,10 +68,16 @@ export function TemplateEditor({
   )
   const [hydrated, setHydrated] = useState(false)
   const contentLocale = content.locale
-  const contentConfig = localizeTemplateConfig(config, contentLocale)
   const data = content.data
   const [exporting, setExporting] = useState(false)
   const Template = templateRegistry[templateSlug]
+  const editorFields = Object.entries(config.fields).map(([key, field]) => ({
+    key,
+    type: field.kind as TemplateFieldType,
+    required: field.required ?? true,
+    label: field.label,
+    placeholder: field.placeholder,
+  }))
 
   useEffect(() => {
     const storedContent = getStoredContent(config, templateSlug)
@@ -111,9 +111,10 @@ export function TemplateEditor({
   }
 
   function changeContentLocale(nextLocale: string) {
+    const { language, ...data } = config.content[nextLocale]
     setContent({
-      locale: nextLocale,
-      data: { ...localizeTemplateConfig(config, nextLocale).content },
+      locale: language,
+      data,
     })
   }
 
@@ -127,16 +128,14 @@ export function TemplateEditor({
 
       const { domToPng } = await import('modern-screenshot')
       const image = await domToPng(element, {
-        width: contentConfig.width,
-        height: contentConfig.height,
+        width: config.width,
+        height: config.height,
         scale: 1,
       })
       const link = document.createElement('a')
 
       link.href = image
-      link.download = `${
-        contentConfig.fileName ?? templateSlug.replaceAll('/', '-')
-      }.png`
+      link.download = `${templateSlug.replaceAll('/', '-')}.png`
       link.click()
     } catch (error) {
       console.error(messages.exportError, error)
@@ -166,24 +165,21 @@ export function TemplateEditor({
             {messages.templateEditor}
           </p>
           <h1 className="mt-1 text-xl font-black tracking-[-0.025em]">
-            {contentConfig.title}
+            {templateSlug.split('/').pop()!.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
           </h1>
-          {contentConfig.description && (
-            <p className="mt-1 max-w-2xl text-sm text-[#6c756f] dark:text-[#b8c8be]">
-              {contentConfig.description}
-            </p>
-          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
+              const { language: _lang, ...data } = config.content[contentLocale]
+              void _lang
               setContent((current) => ({
                 ...current,
-                data: { ...contentConfig.content },
+                data,
               }))
-            }
+            }}
             className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"
           >
             <RotateCcw size={15} />
@@ -206,7 +202,7 @@ export function TemplateEditor({
           <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
             <h2 className="font-black tracking-tight">{messages.content}</h2>
             <span className="text-xs text-[#5f6963] dark:text-[#b8c8be]">
-              {contentConfig.width} × {contentConfig.height}
+              {config.width} × {config.height}
             </span>
           </div>
           <div className="mt-4 space-y-4">
@@ -219,12 +215,12 @@ export function TemplateEditor({
                 onChange={(event) => changeContentLocale(event.target.value)}
                 className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] outline-none transition focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]"
               >
-                {Object.entries(config.languages).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                {Object.entries(config.content).map(([value, contentEntry]) => (
+                  <option key={value} value={value}>{contentEntry.language}</option>
                 ))}
               </select>
             </label>
-            {contentConfig.fields.map((field) => (
+            {editorFields.map((field) => (
               <EditorField
                 key={field.key}
                 field={field}
@@ -236,20 +232,20 @@ export function TemplateEditor({
         </aside>
 
         <TemplatePreview
-          width={contentConfig.width}
-          height={contentConfig.height}
+          width={config.width}
+          height={config.height}
           label={messages.preview}
           actualSizeLabel={messages.actualSize}
           fitToViewLabel={messages.fitToView}
         >
           <div
             ref={exportRef}
-            style={{ width: contentConfig.width, height: contentConfig.height }}
+            style={{ width: config.width, height: config.height }}
           >
             <Template
               data={data}
-              width={contentConfig.width}
-              height={contentConfig.height}
+              width={config.width}
+              height={config.height}
               locale={contentLocale}
             />
           </div>
