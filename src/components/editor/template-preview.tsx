@@ -2,7 +2,7 @@
 
 import { Maximize2, Minimize2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 interface TemplatePreviewProps {
   width: number
@@ -54,6 +54,7 @@ export function TemplatePreview({
     view: View
   } | null>(null)
   const [view, setView] = useState<View>({ scale: 0.5, x: 0, y: 0 })
+  const [viewReady, setViewReady] = useState(false)
   const [viewMode, setViewMode] = useState<'fit' | 'actual' | 'custom'>('fit')
   const [dragging, setDragging] = useState(false)
 
@@ -75,9 +76,12 @@ export function TemplatePreview({
     setViewMode('actual')
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current
     if (!container) return
+
+    setView(getFittedView(container, width, height))
+    setViewReady(true)
 
     const observer = new ResizeObserver(() => {
       if (viewMode !== 'fit') return
@@ -159,9 +163,9 @@ export function TemplatePreview({
     <section
       ref={containerRef}
       aria-label={label}
-      className="relative flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]"
+      className="relative flex min-h-130 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px] dark:opacity-50" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px] opacity-30 dark:opacity-50" />
       <div
         ref={stageRef}
         onPointerDown={handlePointerDown}
@@ -173,18 +177,19 @@ export function TemplatePreview({
         }`}
       >
         <div
-          className="absolute left-0 top-0 shadow-[0_24px_60px_rgba(25,35,30,0.24)]"
+          className="absolute top-0 left-0 shadow-[0_24px_60px_rgba(25,35,30,0.24)]"
           style={{
             width,
             height,
             transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
             transformOrigin: 'top left',
+            visibility: viewReady ? 'visible' : 'hidden',
           }}
         >
           {children}
         </div>
       </div>
-      <div className="absolute bottom-4 right-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#24342c]">
+      <div className="absolute right-4 bottom-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#24342c]">
         <button
           type="button"
           onClick={showActualSize}

@@ -49,19 +49,19 @@ export default defineTemplate({
           <img
             src={data.backgroundImage}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-55"
+            className="absolute inset-0 size-full object-cover opacity-55"
           />
         )}
 
         <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(4,24,18,0.98)_8%,rgba(5,35,26,0.88)_51%,rgba(1,12,9,0.58)_100%)]" />
         <div
-          className="absolute -right-44 -top-44 size-[540px] rounded-full border-[100px] opacity-25"
+          className="absolute -top-44 -right-44 size-[540px] rounded-full border-[100px] opacity-25"
           style={{ borderColor: accentColor }}
         />
-        <div className="absolute bottom-[70px] right-[70px] top-[70px] w-px bg-white/25" />
+        <div className="absolute inset-y-[70px] right-[70px] w-px bg-white/25" />
 
-        <div className="relative z-10 flex h-full w-full flex-col px-[76px] py-[70px]">
-          <header className="flex items-center justify-between pr-[36px]">
+        <div className="relative z-10 flex size-full flex-col px-19 py-[70px]">
+          <header className="flex items-center justify-between pr-9">
             <div className="flex items-center gap-4">
               <span
                 className="flex size-12 items-center justify-center rounded-full text-[18px] font-black text-[#092118]"
@@ -70,15 +70,15 @@ export default defineTemplate({
                 SW
               </span>
               <div>
-                <p className="text-[18px] font-black uppercase tracking-[0.14em]">
+                <p className="text-[18px] font-black tracking-[0.14em] uppercase">
                   Silver Wolf
                 </p>
-                <p className="mt-1 text-[12px] uppercase tracking-[0.24em] text-white/55">
+                <p className="mt-1 text-[12px] tracking-[0.24em] text-white/55 uppercase">
                   {labels.workshop}
                 </p>
               </div>
             </div>
-            <span className="text-[13px] font-bold uppercase tracking-[0.2em] text-white/60">
+            <span className="text-[13px] font-bold tracking-[0.2em] text-white/60 uppercase">
               {labels.studio}
             </span>
           </header>
@@ -86,13 +86,13 @@ export default defineTemplate({
           <main className="my-auto max-w-[830px]">
             <Markdown
               value={data.eyebrow}
-              className="mb-8 block text-[18px] font-bold uppercase tracking-[0.3em]"
+              className="mb-8 block text-[18px] font-bold tracking-[0.3em] uppercase"
               style={{ color: accentColor }}
             />
             <Markdown
               value={data.title}
               lists
-              className="text-[82px] font-medium leading-[0.94] tracking-[-0.055em]"
+              className="text-[82px] leading-[0.94] font-medium tracking-[-0.055em]"
             />
             <div className="mt-10 flex items-start gap-6">
               <span
@@ -107,13 +107,13 @@ export default defineTemplate({
             </div>
           </main>
 
-          <footer className="flex items-end justify-between border-t border-white/20 pt-7 pr-[36px]">
+          <footer className="flex items-end justify-between border-t border-white/20 pt-7 pr-9">
             <Markdown
               value={data.website}
               className="text-[17px] font-bold tracking-[0.08em]"
             />
             <p
-              className="rounded-full px-7 py-3 text-[14px] font-black uppercase tracking-[0.14em] text-[#092118]"
+              className="rounded-full px-7 py-3 text-[14px] font-black tracking-[0.14em] text-[#092118] uppercase"
               style={{ backgroundColor: accentColor }}
             >
               {labels.cta}

@@ -27,13 +27,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html
       lang={locale}
-      className={theme === 'dark' ? 'dark' : undefined}
+      className={`${theme === 'dark' ? 'dark' : ''} min-h-full scheme-light dark:scheme-dark`}
       suppressHydrationWarning
     >
       <head>
         <ThemeScript />
       </head>
-      <body>
+      <body className="m-0 min-h-full bg-[#f0eee7] font-[Arial,Helvetica,sans-serif] text-[#17221d] dark:bg-[#17221d] dark:text-[#e6eee9]">
         <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
       </body>
     </html>

@@ -1,40 +1,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @import "tailwindcss";
 
-:root {
-  color-scheme: light;
-  --studio-ink: #17221d;
-  --studio-paper: #f0eee7;
-}
-
-.dark {
-  color-scheme: dark;
-  --studio-ink: #e6eee9;
-  --studio-paper: #17221d;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  background: var(--studio-paper);
-  color: var(--studio-ink);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-button,
-input,
-textarea {
-  font: inherit;
-}
-
 .studio-select {
   --studio-select-inline-padding: 0.875rem;
   appearance: none;

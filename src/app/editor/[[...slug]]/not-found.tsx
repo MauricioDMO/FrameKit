@@ -11,7 +11,7 @@ export default function TemplateNotFound() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen">
       <div className="max-w-md text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#748078]">
+        <p className="text-xs font-bold tracking-[0.24em] text-[#748078] uppercase">
           Error 404
         </p>
         <h1 className="mt-3 text-3xl font-black tracking-tight">

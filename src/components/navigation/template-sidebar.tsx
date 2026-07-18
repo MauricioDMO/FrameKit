@@ -33,7 +33,7 @@ export function TemplateSidebar({
           </div>
           <div>
             <p className="font-black tracking-[-0.02em]">FrameKit</p>
-            <p className="mt-0.5 text-[11px] uppercase tracking-[0.16em] text-[#91ae9f]">
+            <p className="mt-0.5 text-[11px] tracking-[0.16em] text-[#91ae9f] uppercase">
               {messages.workshop}
             </p>
           </div>
@@ -42,7 +42,7 @@ export function TemplateSidebar({
 
       <nav
         aria-label={messages.navigationLabel}
-        className="max-h-[38vh] overflow-y-auto p-3 lg:min-h-0 lg:max-h-none lg:flex-1"
+        className="max-h-[38vh] overflow-y-auto p-3 lg:max-h-none lg:min-h-0 lg:flex-1"
       >
         {navigation.length === 0 ? (
           <p className="px-3 py-4 text-sm text-[#91ae9f]">
@@ -70,14 +70,14 @@ export function TemplateSidebar({
           {settingsOpen && (
             <div
               id="sidebar-settings"
-              className="absolute bottom-[calc(100%+0.75rem)] left-0 right-0 z-20 rounded-xl border border-white/15 bg-[#173d31] p-3 shadow-xl"
+              className="absolute inset-x-0 bottom-[calc(100%+0.75rem)] z-20 rounded-xl border border-white/15 bg-[#173d31] p-3 shadow-xl"
             >
               <LanguageSelect />
               <button
                 type="button"
                 onClick={toggleTheme}
                 aria-label={messages.themeToggleLabel}
-                className="mt-3 inline-flex min-h-11 w-full items-center justify-between rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-bold text-[#c8f7d9] transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-[#c8f7d9]"
+                className="mt-3 inline-flex min-h-11 w-full items-center justify-between rounded-lg border border-white/20 bg-white/10 px-3 text-sm font-bold text-[#c8f7d9] transition hover:bg-white/15 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"
               >
                 {messages.themeToggleLabel}
                 <Sun size={16} className="dark:hidden" />
@@ -91,7 +91,7 @@ export function TemplateSidebar({
             aria-label={messages.settingsLabel}
             aria-controls="sidebar-settings"
             aria-expanded={settingsOpen}
-            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-sm font-bold text-[#c8f7d9] transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-[#c8f7d9]"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-sm font-bold text-[#c8f7d9] transition hover:bg-white/15 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"
           >
             <Settings size={17} />
             {messages.settingsLabel}

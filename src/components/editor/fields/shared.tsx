@@ -5,7 +5,7 @@ export const controlClass =
 
 export function FieldLabel({ label }: Pick<TemplateField, 'label'>) {
   return (
-    <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.1em] text-[#59665f] dark:text-[#b8c8be]">
+    <span className="mb-1.5 block text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">
       {label}
     </span>
   )

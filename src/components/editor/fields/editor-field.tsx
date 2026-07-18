@@ -10,7 +10,7 @@ export function EditorField({ field, value, onChange, error }: EditorFieldProps)
     <Container className="block">
       <FieldLabel label={field.label} />
       <Field field={field} value={value} onChange={onChange} error={error} />
-      {error && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
     </Container>
   )
 }

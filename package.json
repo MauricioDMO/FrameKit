@@ -7,6 +7,7 @@
     "build": "pnpm templates:generate && next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "templates:generate": "node scripts/generate-template-registry.mjs",
     "templates:watch": "node scripts/watch-template-registry.mjs"
   },
@@ -27,6 +28,7 @@
     "concurrently": "^10.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "eslint-plugin-tailwindcss": "^4.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
