@@ -9,10 +9,9 @@
 | 02   | Generación estática        | 2026-07-17    |
 | 03   | Editor                     | 2026-07-17    |
 | 04   | Navegación y migración     | 2026-07-18    |
+| 04.5 | Endurecimiento del contrato | 2026-07-18   |
 
-La tabla conserva el historial de lo verificado. Una revisión posterior encontró
-brechas de contrato que no invalidan la migración realizada, pero sí bloquean la
-extracción y publicación hasta cerrar la fase 04.5.
+La tabla conserva el historial de lo verificado.
 
 ## Revisión posterior
 
@@ -77,7 +76,6 @@ extracción y publicación hasta cerrar la fase 04.5.
 
 | Plan | Descripción       |
 | ---- | ----------------- |
-| 04.5 | Endurecimiento del contrato |
 | 05   | Application tests |
 | 06   | Workspace         |
 | 07   | Framekit package  |

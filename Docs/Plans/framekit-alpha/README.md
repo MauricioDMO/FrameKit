@@ -7,7 +7,7 @@ Este directorio reemplaza el plan y la documentación del contrato anterior. Las
 - [x] 02. [Generación estática](02-codegen.md)
 - [x] 03. [Editor y validación](03-editor.md)
 - [x] 04. [Navegación y migración](04-migration.md)
-- [ ] 04.5. [Endurecimiento del contrato](04.5-hardening.md)
+- [x] 04.5. [Endurecimiento del contrato](04.5-hardening.md)
 - [ ] 05. [Pruebas de la aplicación](05-application-tests.md)
 - [ ] 06. [Workspace](06-workspace.md)
 - [ ] 07. [Paquete framekit](07-framekit-package.md)
