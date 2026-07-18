@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "test": "pnpm templates:generate && vitest run",
+    "typecheck": "pnpm templates:generate && tsc --noEmit && tsc --noEmit -p src/lib/framekit/__fixtures__/tsconfig.json",
     "templates:generate": "node scripts/generate-template-registry.mjs",
     "templates:watch": "node scripts/watch-template-registry.mjs"
   },
