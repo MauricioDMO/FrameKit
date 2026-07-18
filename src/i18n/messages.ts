@@ -28,6 +28,14 @@ interface Messages {
     missingComponent: string
     exportError: string
     exportAlert: string
+    loadingLabel: string
+    loadError: string
+    invalidDefinition: string
+    errorRequired: string
+    errorInvalidNumber: string
+    errorNumberTooSmall: string
+    errorNumberTooLarge: string
+    errorInvalidUrl: string
   }
   emptyState: {
     ready: string
@@ -70,6 +78,14 @@ export const messages = {
       missingComponent: 'No se encontró el componente. Ejecuta',
       exportError: 'No se pudo exportar la plantilla:',
       exportAlert: 'No fue posible generar la imagen.',
+      loadingLabel: 'Cargando...',
+      loadError: 'Error al cargar la plantilla',
+      invalidDefinition: 'La plantilla no es válida',
+      errorRequired: 'Este campo es requerido',
+      errorInvalidNumber: 'Ingresa un número válido',
+      errorNumberTooSmall: 'El valor debe ser mayor o igual a {min}',
+      errorNumberTooLarge: 'El valor debe ser menor o igual a {max}',
+      errorInvalidUrl: 'Ingresa una URL válida',
     },
     emptyState: {
       ready: 'Lienzo preparado',
@@ -111,6 +127,14 @@ export const messages = {
       missingComponent: 'Component not found. Run',
       exportError: 'Could not export the template:',
       exportAlert: 'The image could not be generated.',
+      loadingLabel: 'Loading...',
+      loadError: 'Error loading template',
+      invalidDefinition: 'Invalid template',
+      errorRequired: 'This field is required',
+      errorInvalidNumber: 'Enter a valid number',
+      errorNumberTooSmall: 'Value must be at least {min}',
+      errorNumberTooLarge: 'Value must be at most {max}',
+      errorInvalidUrl: 'Enter a valid URL',
     },
     emptyState: {
       ready: 'Canvas ready',
