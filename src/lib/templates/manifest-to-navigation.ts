@@ -1,5 +1,25 @@
-import type { TemplateNavigationNode } from './types'
 import { templateManifest } from '@/.framekit/manifest'
+
+export interface TemplateNavigationFolder {
+  type: 'folder'
+  id: string
+  slug: string
+  title: string
+  children: TemplateNavigationNode[]
+}
+
+export interface TemplateNavigationItem {
+  type: 'template'
+  id: string
+  slug: string
+  title: string
+  description?: string
+  href: string
+}
+
+export type TemplateNavigationNode =
+  | TemplateNavigationFolder
+  | TemplateNavigationItem
 
 function humanizeSegment(name: string): string {
   return name
@@ -31,7 +51,6 @@ export function manifestToNavigation(): TemplateNavigationNode[] {
             id: slug,
             slug,
             title: folderTitle,
-            order: 1000,
             href: `/editor/${slug}`,
           }
           folderMap.set(folderSlug, item)
@@ -41,7 +60,6 @@ export function manifestToNavigation(): TemplateNavigationNode[] {
             id: folderSlug,
             slug: folderSlug,
             title: folderTitle,
-            order: 1000,
             children: [],
           }
           folderMap.set(folderSlug, folder)
@@ -69,8 +87,6 @@ export function manifestToNavigation(): TemplateNavigationNode[] {
   function sortNodes(nodes: TemplateNavigationNode[]): TemplateNavigationNode[] {
     return nodes
       .sort((a, b) => {
-        const orderCompare = a.order - b.order
-        if (orderCompare !== 0) return orderCompare
         return a.title.localeCompare(b.title)
       })
       .map((node) => {

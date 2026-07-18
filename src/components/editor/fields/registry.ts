@@ -14,5 +14,3 @@ export const fieldComponents = {
   color: ColorField,
   number: NumberField,
 } satisfies Record<string, ComponentType<EditorFieldProps>>
-
-export type TemplateFieldType = keyof typeof fieldComponents

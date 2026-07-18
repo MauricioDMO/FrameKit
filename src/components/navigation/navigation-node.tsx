@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
-import type { TemplateNavigationNode } from '@/lib/templates/types'
+import type { TemplateNavigationNode } from '@/lib/templates/manifest-to-navigation'
 
 interface NavigationNodeProps {
   node: TemplateNavigationNode

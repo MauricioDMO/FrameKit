@@ -4,7 +4,7 @@ import { Images, Moon, Settings, Sun } from 'lucide-react'
 import { useState } from 'react'
 
 import { useLocale } from '@/i18n/locale-provider'
-import type { TemplateNavigationNode } from '@/lib/templates/types'
+import type { TemplateNavigationNode } from '@/lib/templates/manifest-to-navigation'
 
 import { LanguageSelect } from './language-select'
 import { NavigationNode } from './navigation-node'

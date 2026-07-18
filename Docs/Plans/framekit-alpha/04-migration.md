@@ -1,43 +1,60 @@
 # 04. Navegación y migración
 
-## Navegación derivada del manifiesto
+Este plan refleja el estado actual del repositorio. La migración no implica
+eliminar el i18n de la interfaz ni fijar el idioma de la aplicación en
+español.
 
-- [ ] Crear una función pura que reciba `templateManifest` y devuelva nodos `{ type: 'category' | 'template', slug, title, children? }`.
-- [ ] Crear una categoría por cada segmento intermedio de un slug; reutilizar el mismo nodo cuando varios slugs compartan prefijo.
-- [ ] Usar el nombre humanizado de la carpeta para categorías y el `title` del manifiesto para plantillas.
-- [ ] Ordenar en cada nivel por título usando orden alfabético español; no mezclar categorías y plantillas por una prioridad artificial.
-- [ ] No representar categorías vacías, porque el generador ya las excluye del manifiesto.
-- [ ] Generar enlaces como `/editor/<slug>` sin locale de interfaz.
-- [ ] Sustituir la barra lateral actual para que reciba este árbol serializable y no dependa de `TemplateNavigationNode` antiguo.
+## Ya implementado y verificado
 
-## Rutas y UI
+- [x] `scripts/generate-template-registry.mjs` busca `template.tsx` a cualquier profundidad y genera `src/.framekit/manifest.ts` y `src/.framekit/registry.ts`.
+- [x] `manifestToNavigation()` deriva categorías de los segmentos intermedios, reutiliza prefijos compartidos, humaniza los nombres de carpeta y usa el título del manifiesto para la plantilla.
+- [x] La navegación genera enlaces con el formato `/editor/<slug>` y ordena cada nivel únicamente por título usando locale español; no depende de órdenes artificiales.
+- [x] La barra lateral de `src/app/editor/layout.tsx` recibe la navegación derivada del manifiesto.
+- [x] Los tipos de navegación (`TemplateNavigationNode` y sus variantes) viven junto a `manifestToNavigation()` y ya no dependen de `src/lib/templates/types.ts`.
+- [x] La ruta `src/app/editor/[[...slug]]/page.tsx` valida el slug contra el manifiesto y carga la plantilla mediante `templateRegistry`.
+- [x] La raíz (`src/app/page.tsx`) redirige a `/editor`.
+- [x] La plantilla piloto está migrada a `src/templates/redes-sociales/instagram/promocion-cuadrada/template.tsx`; su `config.ts` ya no existe.
+- [x] `src/generated/`, `read-template-catalog.ts`, `get-template-config.ts` y `src/lib/templates/types.ts` ya no existen; el registro usa `src/.framekit/`.
+- [x] `pnpm templates:generate` termina correctamente y registra una plantilla.
+- [x] `pnpm build` termina correctamente y expone `/editor/[[...slug]]`.
+- [x] `pnpm lint` termina sin errores; mantiene cinco avisos existentes de variables `error` sin usar en los componentes de campos.
 
-- [ ] Mover `src/app/[locale]/editor/[[...slug]]/page.tsx` a `src/app/editor/[[...slug]]/page.tsx`.
-- [ ] Mover la composición de barra lateral y contenido desde `src/app/[locale]/editor/layout.tsx` a `src/app/editor/layout.tsx`.
-- [ ] Crear un `src/app/layout.tsx` único que cargue `globals.css`, fije `lang="es"` y conserve la inicialización de tema oscuro.
-- [ ] Cambiar la página raíz para redirigir a `/editor` o presentar un enlace directo a esa ruta; no detectar `Accept-Language`.
-- [ ] Reemplazar todos los mensajes del editor por textos fijos en español en el componente de editor durante alpha.
-- [ ] Eliminar `LanguageSelect` de la barra lateral; conservar solo el selector de idioma de contenido dentro del editor.
-- [ ] Mantener las rutas de plantilla compartibles: `/editor/redes-sociales/instagram/promocion-cuadrada`.
+## Trabajo restante: navegación y contrato legado
 
-## Retirada del contrato anterior
+- [x] Dejar de depender de `src/lib/templates/types.ts` desde la navegación; los tipos de navegación están en `manifest-to-navigation.ts`.
+- [x] Retirar `defineTemplateConfig`, `FolderConfig`, `TemplateConfig` y los tipos auxiliares antiguos junto con sus importadores.
+- [x] Comprobar en ejecución que `/editor/redes-sociales/instagram/promocion-cuadrada` carga la plantilla y que un slug inexistente responde como no encontrado.
+- [x] No se añaden rutas con locale: las rutas compartibles siguen siendo `/editor/redes-sociales/instagram/promocion-cuadrada`.
 
-- [ ] Eliminar `src/i18n/`, `src/proxy.ts`, `src/app/[locale]/` y los componentes exclusivamente usados por idioma de interfaz.
-- [ ] Eliminar `src/lib/templates/types.ts`, `get-template-config.ts`, `read-template-catalog.ts` y el directorio cuando no tenga importadores.
-- [ ] Eliminar `src/components/templates/markdown.tsx` cuando `Markdown` viva en `src/lib/framekit`.
-- [ ] Eliminar `src/generated/` y sustituir sus importaciones por `src/.framekit/`.
-- [ ] Eliminar cada `config.ts` y `_folder.json` de `src/templates` tras trasladar sus datos a `template.tsx` o a la estructura de carpetas.
-- [ ] Eliminar referencias a los comandos y archivos antiguos en README, documentación y scripts.
-- [ ] Actualizar la documentación de uso solo después de que el flujo descrito funcione realmente; no documentar opciones futuras del CLI.
+## Decisiones de i18n de interfaz que se conservan
 
-## Inventario de la plantilla actual
+- [x] Se conserva `src/i18n/`, que actualmente define `es` y `en`, carga mensajes para la interfaz y expone `LocaleProvider`.
+- [x] Se conserva `LanguageSelect` en los ajustes de la barra lateral; cambia el idioma de la interfaz y persiste la cookie `locale`.
+- [x] El idioma inicial de la interfaz usa la cookie y, si no existe, `Accept-Language`, con `es` como fallback. No se fija `lang="es"`.
+- [x] `src/proxy.ts` no existe actualmente; no se debe pedir su eliminación ni introducir una dependencia de ese archivo.
 
-- [ ] Convertir `redes-sociales/instagram/promocion-cuadrada` primero y comprobar la ruta nueva.
-- [ ] Verificar que `redes-sociales` e `instagram` se muestren como categorías por su nombre de carpeta, sin sus `_folder.json`.
-- [ ] Borrar los dos `_folder.json` existentes después de comprobar el título derivado.
+## Idioma de contenido que se conserva
 
-## Cierre
+- [x] El idioma del contenido se selecciona dentro del editor a partir de las claves de `definition.content`.
+- [x] La plantilla piloto conserva contenido `es` y `en`, incluido el campo visible `language` y el renderizado dependiente del locale seleccionado.
+- [x] El locale de contenido (`selectedLocale`) es independiente del locale de la interfaz (`LocaleProvider`); cambiar uno no elimina ni fija el otro.
+- [x] Verificar manualmente en el navegador que ambos selectores pueden cambiarse por separado y que la exportación usa el contenido seleccionado.
 
-- [ ] Una búsqueda del repositorio no devuelve importaciones activas de `config.ts`, `_folder.json`, `defineTemplateConfig`, `template-config-registry`, `readTemplateCatalog` ni `getTemplateConfig`.
-- [ ] El build standalone no necesita archivos de plantilla fuera de los imports ya incluidos por `registry.ts`.
-- [ ] La aplicación funciona en `/editor` y la selección de idioma controla solo contenido de plantilla.
+## Retirada de `_folder.json`
+
+Los dos archivos heredados ya no existen: `redes-sociales/_folder.json` e
+`redes-sociales/instagram/_folder.json`.
+
+- [x] El scanner ignora los archivos cuyo nombre empieza por `_`, por lo que `_folder.json` no participa en el manifiesto.
+- [x] La navegación actual deriva `Redes Sociales` e `Instagram` de los segmentos de carpeta, no de las traducciones de `_folder.json`.
+- [x] Los dos `_folder.json` fueron eliminados; sus traducciones no se trasladan al i18n de interfaz ni al contrato de contenido.
+- [x] Después de eliminarlos, `pnpm templates:generate` sigue produciendo el manifiesto de la plantilla piloto.
+
+## Criterios de cierre
+
+- [x] `rg --files src/templates | rg '(^|/)_folder\.json$'` no devuelve resultados.
+- [x] `rg -n 'defineTemplateConfig|template-config-registry|readTemplateCatalog|getTemplateConfig|FolderConfig|TemplateConfig' src` no devuelve referencias al contrato legado.
+- [x] `pnpm templates:generate` termina correctamente y `src/.framekit/manifest.ts` contiene `redes-sociales/instagram/promocion-cuadrada`.
+- [x] `pnpm lint` termina sin errores y `pnpm build` termina correctamente; lint mantiene cinco avisos existentes.
+- [x] Con la aplicación ejecutándose, `/` redirige a `/editor`, `/editor` carga la navegación y `/editor/redes-sociales/instagram/promocion-cuadrada` carga la plantilla.
+- [x] La navegación no contiene rutas `/es/...` ni `/en/...`; el selector de interfaz conserva `es` y `en`, y el selector de contenido sigue funcionando de forma independiente.
