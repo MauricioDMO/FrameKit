@@ -2,16 +2,17 @@
 
 ## Verificados ✅
 
-| Plan | Descripción                | Verificado el |
-| ---- | -------------------------- | ------------- |
-| 00   | Contrato y base de pruebas | 2026-07-17    |
-| 01   | Núcleo dentro de Studio    | 2026-07-17    |
-| 02   | Generación estática        | 2026-07-17    |
-| 03   | Editor                     | 2026-07-17    |
-| 04   | Navegación y migración     | 2026-07-18    |
-| 04.5 | Endurecimiento del contrato | 2026-07-18   |
-| 05   | Pruebas de la aplicación   | 2026-07-18    |
+| Plan | Descripción                 | Verificado el |
+| ---- | --------------------------- | ------------- |
+| 00   | Contrato y base de pruebas  | 2026-07-17    |
+| 01   | Núcleo dentro de Studio     | 2026-07-17    |
+| 02   | Generación estática         | 2026-07-17    |
+| 03   | Editor                      | 2026-07-17    |
+| 04   | Navegación y migración      | 2026-07-18    |
+| 04.5 | Endurecimiento del contrato | 2026-07-18    |
+| 05   | Pruebas de la aplicación    | 2026-07-18    |
 | 06   | Workspace                   | 2026-07-18    |
+| 07   | Paquete framekit            | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -93,16 +94,24 @@ La tabla conserva el historial de lo verificado.
 - Studio consume `@mauriciodmo/framekit` y `@mauriciodmo/framekit/editor` mediante `workspace:*`.
 - La API existente del paquete, incluidos validadores, resolvers, descriptores y errores estructurados, queda pública.
 - `apps/studio/src/.framekit/manifest.ts` y `registry.ts` son generados e ignorados por Git.
-- `apps/studio/src/app/globals.css` escanea `packages/framekit/src` para incluir los estilos del árbol, editor y fields durante la transición.
+- `apps/studio/src/app/globals.css` conserva solo los estilos de Studio e importa el CSS compilado público del paquete.
 - La guía operativa está en [`Docs/workspace.md`](../../workspace.md).
 - Verificado con `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` y `pnpm --filter studio dev`.
 
+### Detalle 07-framekit-package.md
+- `@mauriciodmo/framekit` es ESM publicable en versión `0.1.0-alpha.1`.
+- `tsdown` compila las entradas raíz y editor con declaraciones, preservando módulos para separar helpers de servidor y componentes cliente de Next.
+- `@tailwindcss/cli` genera `dist/styles.css`; Studio lo consume mediante `@mauriciodmo/framekit/styles.css`.
+- `exports` no expone `src/*`; el paquete incluye solo `dist`, README y LICENSE en el tarball.
+- La API raíz y `/editor` se conserva, incluidos validadores, resolvers, descriptores, errores y helpers de navegación.
+- La allowlist de pnpm permite el build nativo de `@parcel/watcher`, requerido por la cadena CSS.
+- Verificado con `pnpm install`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm --filter @mauriciodmo/framekit pack --dry-run` y Studio en `pnpm --filter studio dev`.
+
 ## Pendientes 🔲
 
-| Plan | Descripción       |
-| ---- | ----------------- |
-| 07   | Framekit package  |
-| 08   | CLI               |
-| 09   | Create framekit   |
-| 10   | Distribution      |
-| 11   | Release           |
+| Plan | Descripción     |
+| ---- | --------------- |
+| 08   | CLI             |
+| 09   | Create framekit |
+| 10   | Distribution    |
+| 11   | Release         |

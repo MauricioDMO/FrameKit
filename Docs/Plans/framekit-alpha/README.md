@@ -13,7 +13,7 @@ La estructura actual y los comandos de trabajo están documentados en
 - [x] 04.5. [Endurecimiento del contrato](04.5-hardening.md)
 - [x] 05. [Pruebas de la aplicación](05-application-tests.md)
 - [x] 06. [Workspace](06-workspace.md)
-- [ ] 07. [Paquete framekit](07-framekit-package.md)
+- [x] 07. [Paquete framekit](07-framekit-package.md)
 - [ ] 08. [CLI](08-cli.md)
 - [ ] 09. [Creador de proyectos](09-create-framekit.md)
 - [ ] 10. [Distribución](10-distribution.md)
@@ -27,7 +27,7 @@ La estructura actual y los comandos de trabajo están documentados en
 - No crear capas de compatibilidad para `config.ts`, `_folder.json` o la API antigua: el proyecto no ha sido publicado.
 - No adelantar CLI ni creador antes de que Studio funcione con el contrato nuevo.
 - La API que ya forma parte de `packages/framekit/src/index.ts` es pública al pasar al paquete, incluidos validadores, resolvers, descriptores y errores estructurados; las fases posteriores no deben ocultarla.
-- La fase 06 ya está verificada: Studio consume el paquete mediante `workspace:*`, el codegen queda dentro del paquete y los estilos transitorios se incorporan desde `packages/framekit/src`.
+- La fase 06 entregó el código reutilizable en `packages/framekit`; la fase 07 lo compila a ESM y genera el CSS publicable desde `dist`.
 - Ejecutar los comandos de cierre de una fase desde una instalación limpia cuando esa fase modifique dependencias o estructura del repositorio.
 
 ## Dependencias entre fases

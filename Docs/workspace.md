@@ -83,9 +83,9 @@ pnpm --filter @mauriciodmo/framekit test
 pnpm --filter @mauriciodmo/framekit typecheck
 ```
 
-En esta fase el paquete aun es privado y se consume desde su fuente TypeScript
-del workspace. La compilacion publicable con `dist`, exports npm y CSS generado
-pertenece a la fase 07.
+El paquete se compila a ESM en `dist` antes de que Studio lo consuma. Sus
+exports publicos apuntan a los artefactos compilados; el CLI de consumidor
+continua reservado para la fase 08.
 
 ## Plantillas
 
@@ -147,14 +147,13 @@ varios archivos.
 
 ## Estilos
 
-Studio importa Tailwind desde `apps/studio/src/app/globals.css`. Esa hoja
-tambien escanea `packages/framekit/src`, porque durante la fase 06 el editor se
-consume directamente desde el workspace. Por eso las clases del arbol de
-navegacion y de los fields pertenecen al paquete, pero se generan dentro del
-CSS de Studio.
+Studio importa Tailwind desde `apps/studio/src/app/globals.css` y añade el CSS
+compilado del paquete. Las clases del arbol de navegacion, los fields y el
+editor se generan dentro de `packages/framekit/dist/styles.css`.
 
-La entrada `packages/framekit/src/styles.css` ya existe como preparacion para
-la fase 07. Todavia no es el CSS compilado publicable.
+La entrada `packages/framekit/src/styles.css` se compila a
+`packages/framekit/dist/styles.css`. Studio importa esa ruta publica y no
+escanea `packages/framekit/src` directamente.
 
 ## Cuando algo falla
 
@@ -168,7 +167,7 @@ Si faltan estilos, verifica que `apps/studio/src/app/globals.css` conserve:
 
 ```css
 @import "tailwindcss";
-@source "../../../../packages/framekit/src";
+@import "@mauriciodmo/framekit/styles.css";
 ```
 
 Si una plantilla no aparece, revisa que exista `template.tsx` y que todos sus
@@ -184,6 +183,6 @@ pnpm --filter studio typecheck
 
 ## Siguiente fase
 
-La fase 07 convertira `packages/framekit` en un paquete compilado y publicable.
+La fase 07 convierte `packages/framekit` en un paquete compilado y publicable.
 La fase 08 reemplazara el caller privado por el binario `framekit` para que un
 proyecto consumidor pueda ejecutar `generate`, `check`, `dev` y `build`.
