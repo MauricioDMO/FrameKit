@@ -2,18 +2,18 @@
 
 Este directorio reemplaza el plan y la documentación del contrato anterior. Las fases se ejecutan estrictamente en orden: una fase no empieza hasta que la anterior tenga todos sus checkboxes marcados y sus verificaciones ejecutadas con éxito.
 
-1. [Contrato y base de pruebas](00-contract.md) ✅
-2. [Núcleo dentro de Studio](01-core.md) ✅
-3. [Generación estática](02-codegen.md)
-4. [Editor y validación](03-editor.md)
-5. [Navegación y migración](04-migration.md)
-6. [Pruebas de la aplicación](05-application-tests.md)
-7. [Workspace](06-workspace.md)
-8. [Paquete framekit](07-framekit-package.md)
-9. [CLI](08-cli.md)
-10. [Creador de proyectos](09-create-framekit.md)
-11. [Distribución](10-distribution.md)
-12. [Publicación alpha](11-release.md)
+0. [x] [Contrato y base de pruebas](00-contract.md)
+1. [x] [Núcleo dentro de Studio](01-core.md) 
+2. [x] [Generación estática](02-codegen.md)
+3. [x] [Editor y validación](03-editor.md)
+4. [ ] [Navegación y migración](04-migration.md)
+5. [ ] [Pruebas de la aplicación](05-application-tests.md)
+6. [ ] [Workspace](06-workspace.md)
+7. [ ] [Paquete framekit](07-framekit-package.md)
+8. [ ] [CLI](08-cli.md)
+9. [ ] [Creador de proyectos](09-create-framekit.md)
+10. [ ] [Distribución](10-distribution.md)
+11. [ ] [Publicación alpha](11-release.md)
 
 ## Cómo marcar el plan
 
@@ -25,20 +25,20 @@ Este directorio reemplaza el plan y la documentación del contrato anterior. Las
 
 ## Dependencias entre fases
 
-| Fase | Requiere | Produce |
-| --- | --- | --- |
-| 00 | Ninguna | Contrato tipado cerrado. |
-| 01 | 00 | API nueva y plantilla piloto. |
-| 02 | 01 | Manifiesto y registro estáticos. |
-| 03 | 01, 02 | Editor de una definición y validación. |
-| 04 | 02, 03 | Studio sin contrato anterior. |
-| 05 | 04 | Cobertura de la aplicación estable. |
-| 06 | 05 | Workspace funcional. |
-| 07 | 06 | Paquete principal consumido por Studio. |
-| 08 | 07 | CLI publicable. |
-| 09 | 08 | Creador de proyectos. |
-| 10 | 09 | Pruebas con tarballs. |
-| 11 | 10 | Alpha publicada. |
+| Fase | Requiere | Produce                                 |
+| ---- | -------- | --------------------------------------- |
+| 00   | Ninguna  | Contrato tipado cerrado.                |
+| 01   | 00       | API nueva y plantilla piloto.           |
+| 02   | 01       | Manifiesto y registro estáticos.        |
+| 03   | 01, 02   | Editor de una definición y validación.  |
+| 04   | 02, 03   | Studio sin contrato anterior.           |
+| 05   | 04       | Cobertura de la aplicación estable.     |
+| 06   | 05       | Workspace funcional.                    |
+| 07   | 06       | Paquete principal consumido por Studio. |
+| 08   | 07       | CLI publicable.                         |
+| 09   | 08       | Creador de proyectos.                   |
+| 10   | 09       | Pruebas con tarballs.                   |
+| 11   | 10       | Alpha publicada.                        |
 
 ## Resultado
 
