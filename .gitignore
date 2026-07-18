@@ -45,3 +45,6 @@ next-env.d.ts
 
 # generated template registries
 /src/generated/
+
+# framekit generated files
+/src/.framekit/

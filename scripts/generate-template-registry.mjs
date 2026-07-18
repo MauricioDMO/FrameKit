@@ -3,18 +3,7 @@ import path from 'node:path'
 
 const PROJECT_ROOT = process.cwd()
 const TEMPLATES_ROOT = path.join(PROJECT_ROOT, 'src', 'templates')
-const OUTPUT_PATH = path.join(
-  PROJECT_ROOT,
-  'src',
-  'generated',
-  'template-registry.ts',
-)
-const CONFIG_OUTPUT_PATH = path.join(
-  PROJECT_ROOT,
-  'src',
-  'generated',
-  'template-config-registry.ts',
-)
+const FRAMEKIT_DIR = path.join(PROJECT_ROOT, 'src', '.framekit')
 
 async function exists(filePath) {
   try {
@@ -25,27 +14,48 @@ async function exists(filePath) {
   }
 }
 
+function validateSegment(segment, physicalPath) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(segment)) {
+    throw new Error(`Segmento inválido '${segment}' en ruta física: ${physicalPath}`)
+  }
+}
+
 async function findTemplates(absoluteDirectory, segments = []) {
   const entries = await readdir(absoluteDirectory, { withFileTypes: true })
   const templates = []
 
   for (const entry of entries) {
-    if (
-      !entry.isDirectory() ||
-      entry.name.startsWith('.') ||
-      entry.name.startsWith('_')
-    ) {
+    if (entry.name.startsWith('.') || entry.name.startsWith('_')) {
+      continue
+    }
+
+    if (!entry.isDirectory()) {
       continue
     }
 
     const nextSegments = [...segments, entry.name]
     const directoryPath = path.join(absoluteDirectory, entry.name)
+
+    for (const seg of nextSegments) {
+      validateSegment(seg, directoryPath)
+    }
+
     const templatePath = path.join(directoryPath, 'template.tsx')
 
     if (await exists(templatePath)) {
+      const childEntries = await readdir(directoryPath, { withFileTypes: true })
+      const hasChildTemplates = childEntries.some(
+        (e) => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('_')
+      )
+      if (hasChildTemplates) {
+        throw new Error(
+          `La plantilla '${nextSegments.join('/')}' no puede contener plantillas hijas. Directorio: ${directoryPath}`
+        )
+      }
+
       templates.push({
         slug: nextSegments.join('/'),
-        baseImportPath: `@/templates/${nextSegments.join('/')}`,
+        segments: nextSegments,
       })
       continue
     }
@@ -60,68 +70,60 @@ async function generateRegistry() {
   const templates = await findTemplates(TEMPLATES_ROOT)
   templates.sort((a, b) => a.slug.localeCompare(b.slug))
 
-  const registryEntries = templates
-    .map(
-      ({ slug, baseImportPath }) => `  ${JSON.stringify(slug)}: dynamic(
-    () => import(${JSON.stringify(`${baseImportPath}/template`)}).then((module) => {
-      const def = module.default
-      return function TemplateComponent(props: TemplateRenderProps) {
-        return def.render(props)
-      }
-    }),
-  ) as (props: TemplateRenderProps) => ReactElement,`,
-    )
-    .join('\n\n')
+  const manifestEntries = templates
+    .map(({ slug, segments }) => {
+      const lastSegment = slug.split('/').pop()
+      const title = lastSegment
+        .split('-')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+      return `  {
+    slug: ${JSON.stringify(slug)},
+    title: ${JSON.stringify(title)},
+    segments: ${JSON.stringify(segments)},
+  }`
+    })
+    .join(',\n')
 
-  const output = `/* Archivo generado automáticamente. No modificar. */
+  const manifestOutput = `/* Archivo generado automáticamente. No modificar. */
+
+export const templateManifest: Array<{
+  slug: string
+  title: string
+  segments: string[]
+}> = [
+${manifestEntries}
+]
+`
+
+  const registryEntries = templates
+    .map(({ slug }) => {
+      const importPath = `../templates/${slug}/template`
+      return `  ${JSON.stringify(slug)}: () => import(${JSON.stringify(importPath)}),`
+    })
+    .join('\n')
+
+  const registryOutput = `/* Archivo generado automáticamente. No modificar. */
 'use client'
 
-import dynamic from 'next/dynamic'
-import type { ReactElement } from 'react'
+import type { TemplateDefinition } from '@/lib/framekit'
 
-import type { TemplateRenderProps } from '@/lib/framekit'
-
-export const templateRegistry: Record<string, (props: TemplateRenderProps) => ReactElement> = {
+export const templateRegistry: Record<string, () => Promise<{ default: TemplateDefinition }>> = {
 ${registryEntries}
 }
 `
 
-  const configImports = templates
-    .map(
-      ({ baseImportPath }, index) =>
-        `import def${index} from ${JSON.stringify(`${baseImportPath}/template`)}`,
-    )
-    .join('\n')
-
-  const configEntries = templates
-    .map(({ slug }, index) => `  ${JSON.stringify(slug)}: def${index},`)
-    .join('\n')
-
-  const configOutput = `/* Archivo generado automáticamente. No modificar. */
-import 'server-only'
-
-import type { TemplateDefinition } from '@/lib/framekit'
-${configImports ? `\n${configImports}` : ''}
-
-export const templateConfigRegistry: Record<string, TemplateDefinition> = {
-${configEntries}
-}
-`
-
-  await mkdir(path.dirname(OUTPUT_PATH), { recursive: true })
+  await mkdir(FRAMEKIT_DIR, { recursive: true })
   await Promise.all([
-    writeIfChanged(OUTPUT_PATH, output),
-    writeIfChanged(CONFIG_OUTPUT_PATH, configOutput),
+    writeIfChanged(path.join(FRAMEKIT_DIR, 'manifest.ts'), manifestOutput),
+    writeIfChanged(path.join(FRAMEKIT_DIR, 'registry.ts'), registryOutput),
   ])
 
   console.log(`Registro generado: ${templates.length} plantilla(s)`)
 }
 
 async function writeIfChanged(filePath, content) {
-  const current = (await exists(filePath))
-    ? await readFile(filePath, 'utf8')
-    : ''
-
+  const current = (await exists(filePath)) ? await readFile(filePath, 'utf8') : ''
   if (current !== content) await writeFile(filePath, content, 'utf8')
 }
 
