@@ -7,6 +7,17 @@ export type TemplateDataValidationError =
   | { code: 'number_too_large'; max: number }
   | { code: 'invalid_url' }
 
+function isValidUrl(value: string): boolean {
+  if (value.startsWith('/')) return true
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export function validateTemplateData(
   definition: TemplateDefinition,
   data: Record<string, string>,
@@ -50,9 +61,7 @@ export function validateTemplateData(
       if (trimmed === '') {
         continue
       }
-      const isPath = trimmed.startsWith('/')
-      const isHttp = trimmed.startsWith('http:') || trimmed.startsWith('https:')
-      if (!isPath && !isHttp) {
+      if (!isValidUrl(trimmed)) {
         errors[key] = { code: 'invalid_url' }
         continue
       }
