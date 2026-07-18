@@ -11,8 +11,6 @@ export default defineConfig({
   unbundle: true,
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   sourcemap: false,
-  deps: {
-    neverBundle: ['next', 'react', 'react-dom', 'lucide-react', 'modern-screenshot'],
-  },
+  external: ['next', 'react', 'react-dom', 'lucide-react', 'modern-screenshot'],
   outDir: 'dist',
 })
