@@ -1,5 +1,11 @@
 import { templateManifest } from '@/.framekit/manifest'
 
+export interface TemplateManifestEntry {
+  slug: string
+  title: string
+  segments: string[]
+}
+
 export interface TemplateNavigationFolder {
   type: 'folder'
   id: string
@@ -21,7 +27,7 @@ export type TemplateNavigationNode =
   | TemplateNavigationFolder
   | TemplateNavigationItem
 
-function humanizeSegment(name: string): string {
+export function humanizeSegment(name: string): string {
   return name
     .split('-')
     .filter(Boolean)
@@ -29,11 +35,11 @@ function humanizeSegment(name: string): string {
     .join(' ')
 }
 
-export function manifestToNavigation(): TemplateNavigationNode[] {
+export function manifestToNavigation(manifest: TemplateManifestEntry[] = templateManifest): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
   const root: TemplateNavigationNode[] = []
 
-  for (const entry of templateManifest) {
+  for (const entry of manifest) {
     const { slug, title, segments } = entry
 
     for (let i = 1; i <= segments.length; i++) {
