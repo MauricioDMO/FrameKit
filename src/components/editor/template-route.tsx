@@ -63,7 +63,7 @@ export function TemplateRoute({ slug }: TemplateRouteProps) {
         aria-label={messages.loadingLabel}
         className="flex min-h-screen flex-col text-[#17221d] xl:h-full xl:min-h-0 dark:text-[#e6eee9]"
       >
-        <header className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7 dark:border-white/10 dark:bg-[#1d2923]">
+        <header className="flex h-20.5 shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7 dark:border-white/10 dark:bg-[#1d2923]">
           <div className="h-7 w-48 animate-pulse rounded-md bg-[#cbd5ce] dark:bg-[#40564a]" />
           <div className="h-10 w-32 animate-pulse rounded-xl bg-[#dce3de] dark:bg-[#2d4036]" />
         </header>
