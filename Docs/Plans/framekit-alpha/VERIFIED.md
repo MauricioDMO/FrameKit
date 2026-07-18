@@ -2,12 +2,13 @@
 
 ## Verificados ✅
 
-| Plan | Descripción | Verificado el |
-|------|-------------|---------------|
-| 00 | Contrato y base de pruebas | 2026-07-17 |
-| 01 | Núcleo dentro de Studio | 2026-07-17 |
-| 02 | Generación estática | 2026-07-17 |
-| 03 | Editor | 2026-07-17 |
+| Plan | Descripción                | Verificado el |
+| ---- | -------------------------- | ------------- |
+| 00   | Contrato y base de pruebas | 2026-07-17    |
+| 01   | Núcleo dentro de Studio    | 2026-07-17    |
+| 02   | Generación estática        | 2026-07-17    |
+| 03   | Editor                     | 2026-07-17    |
+| 04   | Navegación y migración     | 2026-07-18    |
 
 ### Detalle 00-contract.md
 - Tipos: `TemplateFieldKind` (`text | textarea | number | color | url`)
@@ -42,15 +43,29 @@
 - Exportación PNG con `document.fonts.ready`
 - Zoom, arrastre, escala, tema conservados
 
+### Detalle 04-migration.md
+- `generate-template-registry.mjs` busca `template.tsx` a cualquier profundidad
+- Genera `src/.framekit/manifest.ts` y `registry.ts`
+- `manifestToNavigation()` deriva categorías de segmentos, reutiliza prefijos, humaniza nombres
+- Enlaces con formato `/editor/<slug>` ordenados por título
+- Tipos de navegación en `manifest-to-navigation.ts` (no en `types.ts`)
+- Ruta `[[...slug]]` valida slug contra manifiesto y carga via `templateRegistry`
+- Raíz redirige a `/editor`
+- Plantilla piloto migrada sin `config.ts`
+- `src/generated/`, `read-template-catalog.ts`, `get-template-config.ts`, `src/lib/templates/types.ts` eliminados
+- i18n con `es`/`en`, `LocaleProvider`, `LanguageSelect` conservados
+- `selectedLocale` independiente del locale de interfaz
+- `_folder.json` eliminado; scanner ignora archivos que empiezan con `_`
+- Sin referencias al contrato legado
+
 ## Pendientes 🔲
 
-| Plan | Descripción |
-|------|-------------|
-| 04 | Migration |
-| 05 | Application tests |
-| 06 | Workspace |
-| 07 | Framekit package |
-| 08 | CLI |
-| 09 | Create framekit |
-| 10 | Distribution |
-| 11 | Release |
+| Plan | Descripción       |
+| ---- | ----------------- |
+| 05   | Application tests |
+| 06   | Workspace         |
+| 07   | Framekit package  |
+| 08   | CLI               |
+| 09   | Create framekit   |
+| 10   | Distribution      |
+| 11   | Release           |
