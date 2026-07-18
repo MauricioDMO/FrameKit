@@ -10,6 +10,7 @@
 | 03   | Editor                     | 2026-07-17    |
 | 04   | Navegación y migración     | 2026-07-18    |
 | 04.5 | Endurecimiento del contrato | 2026-07-18   |
+| 05   | Pruebas de la aplicación   | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -72,11 +73,20 @@ La tabla conserva el historial de lo verificado.
 - `_folder.json` eliminado; scanner ignora archivos que empiezan con `_`
 - Sin referencias al contrato legado
 
+### Detalle 05-application-tests.md
+- Vitest usa Node por defecto y `jsdom` solo en las pruebas del editor.
+- Scanner, manifiesto, navegación, resolución, validadores y estado tienen cobertura unitaria.
+- La generación se prueba con árboles temporales, segmentos inválidos, directorios ignorados, orden estable e imports relativos.
+- La plantilla piloto se carga mediante el loader generado y se valida su `default export`.
+- Las fixtures positivas y negativas de tipos se ejecutan dentro de `pnpm typecheck`.
+- Se añadió integración para `defineTemplateBase` con componente extraído conservando la inferencia de tipos.
+- La ubicación futura de las pruebas queda separada por propiedad entre `packages/framekit` y `apps/studio`.
+- `pnpm lint`, `pnpm test`, `pnpm typecheck` y `pnpm build` pasan desde una instalación limpia.
+
 ## Pendientes 🔲
 
 | Plan | Descripción       |
 | ---- | ----------------- |
-| 05   | Application tests |
 | 06   | Workspace         |
 | 07   | Framekit package  |
 | 08   | CLI               |
