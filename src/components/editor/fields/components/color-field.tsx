@@ -1,7 +1,7 @@
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../types'
 
-export function ColorField({ field, value, onChange }: EditorFieldProps) {
+export function ColorField({ field, value, onChange, error }: EditorFieldProps) {
   const pickerValue = /^#[\da-f]{6}$/i.test(value) ? value : '#000000'
   const hexValue = value.replace(/^#+/, '')
   const pickerId = `${field.key}-picker`

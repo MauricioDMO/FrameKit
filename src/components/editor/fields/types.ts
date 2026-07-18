@@ -4,4 +4,5 @@ export interface EditorFieldProps {
   field: TemplateField
   value: string
   onChange: (value: string) => void
+  error?: string
 }
