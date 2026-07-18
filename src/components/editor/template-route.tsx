@@ -7,7 +7,7 @@ import type { TemplateDefinition } from '@/lib/framekit'
 import { validateTemplateDefinition } from '@/lib/framekit'
 import { templateRegistry } from '@/.framekit/registry'
 
-import { FrameKitEditor } from './framekit'
+import { FrameKitEditor } from '@/lib/framekit/editor'
 
 interface TemplateRouteProps {
   slug: string
@@ -90,5 +90,5 @@ export function TemplateRoute({ slug }: TemplateRouteProps) {
     return <div>{messages.invalidDefinition}</div>
   }
 
-  return <FrameKitEditor slug={slug} definition={loadState.definition} messages={messages} />
+  return <FrameKitEditor key={slug} slug={slug} definition={loadState.definition} messages={messages} />
 }

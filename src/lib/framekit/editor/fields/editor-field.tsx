@@ -1,6 +1,6 @@
 import { fieldComponents } from './registry'
 import { FieldLabel } from './shared'
-import type { EditorFieldProps } from './types'
+import type { EditorFieldProps } from '../types'
 
 export function EditorField({ field, value, onChange, error }: EditorFieldProps) {
   const Field = fieldComponents[field.type]
