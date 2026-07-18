@@ -1,5 +1,10 @@
 # 03. Editor y validación
 
+> Revisión posterior: los errores como texto fijo, la mutación durante reset, la
+> adaptación incompleta de campos y el foco del primer error se corrigen en
+> [04.5. Endurecimiento del contrato](04.5-hardening.md). Sus reglas sustituyen
+> los puntos históricos correspondientes de esta fase.
+
 ## Carga de una definición
 
 - [x] Mantener la página de ruta como Server Component solo para validar que el slug exista en `templateManifest`.
@@ -36,7 +41,7 @@ type EditorState = {
 - [x] Para `number`, aplicar `min` y `max` solo cuando exista un valor numérico válido.
 - [x] Para `url`, permitir vacío solo si no es requerido; aceptar rutas que comiencen por `/` y URLs absolutas `http:` o `https:`; rechazar los demás valores.
 - [x] No validar formato de color adicionalmente durante alpha: el control nativo y el valor string son suficientes.
-- [x] Devolver errores como `Record<fieldKey, message>` con mensajes fijos en español.
+- [x] Regla histórica: devolver mensajes fijos en español. La fase 04.5 la sustituye por códigos estructurados traducidos por la interfaz.
 - [x] Ejecutar la validación al pulsar Descargar, enfocar el primer campo inválido y abortar la exportación si hay errores.
 - [x] Limpiar el error de un campo al modificarlo; no bloquear la vista previa por errores.
 

@@ -1,5 +1,10 @@
 # 00. Contrato y base de pruebas
 
+> Revisión posterior: la verificación histórica de esta fase descubrió brechas
+> en la inferencia contextual, las fixtures y la validación de dimensiones. La
+> especificación vigente para esos puntos está en
+> [04.5. Endurecimiento del contrato](04.5-hardening.md).
+
 ## Decisiones cerradas
 
 Esta fase define el único contrato que podrá existir en `0.1.0`. No se conservará compatibilidad con `defineTemplateConfig`, arreglos de campos, `metadata`, `languages`, `order`, `fileName`, `config.ts` ni `_folder.json`.
@@ -47,7 +52,7 @@ Todos los valores de `data` son `string`. Un campo `number` controla y valida un
 
 ## Fixtures de tipos
 
-- [x] Crear una plantilla válida con dos idiomas y comprobar `data.title`, `data.accentColor` y `locale` como `'es' | 'en'`.
+- [x] Fixture histórica: crear una plantilla con locales `es` y `en`. La fase 04.5 sustituye sus assertions incompletas por una comprobación genérica contra `keyof typeof content`, sin fijar idiomas globales.
 - [x] Crear una fixture que declare `fields: { language: fields.text(...) }` y marcarla como error esperado.
 - [x] Crear una fixture con `content.es` sin `language` y marcarla como error esperado.
 - [x] Crear una fixture con una clave de contenido no declarada y marcarla como error esperado.

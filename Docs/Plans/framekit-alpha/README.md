@@ -2,18 +2,19 @@
 
 Este directorio reemplaza el plan y la documentación del contrato anterior. Las fases se ejecutan estrictamente en orden: una fase no empieza hasta que la anterior tenga todos sus checkboxes marcados y sus verificaciones ejecutadas con éxito.
 
-0. [x] [Contrato y base de pruebas](00-contract.md)
-1. [x] [Núcleo dentro de Studio](01-core.md) 
-2. [x] [Generación estática](02-codegen.md)
-3. [x] [Editor y validación](03-editor.md)
-4. [ ] [Navegación y migración](04-migration.md)
-5. [ ] [Pruebas de la aplicación](05-application-tests.md)
-6. [ ] [Workspace](06-workspace.md)
-7. [ ] [Paquete framekit](07-framekit-package.md)
-8. [ ] [CLI](08-cli.md)
-9. [ ] [Creador de proyectos](09-create-framekit.md)
-10. [ ] [Distribución](10-distribution.md)
-11. [ ] [Publicación alpha](11-release.md)
+- [x] 00. [Contrato y base de pruebas](00-contract.md)
+- [x] 01. [Núcleo dentro de Studio](01-core.md)
+- [x] 02. [Generación estática](02-codegen.md)
+- [x] 03. [Editor y validación](03-editor.md)
+- [x] 04. [Navegación y migración](04-migration.md)
+- [ ] 04.5. [Endurecimiento del contrato](04.5-hardening.md)
+- [ ] 05. [Pruebas de la aplicación](05-application-tests.md)
+- [ ] 06. [Workspace](06-workspace.md)
+- [ ] 07. [Paquete framekit](07-framekit-package.md)
+- [ ] 08. [CLI](08-cli.md)
+- [ ] 09. [Creador de proyectos](09-create-framekit.md)
+- [ ] 10. [Distribución](10-distribution.md)
+- [ ] 11. [Publicación alpha](11-release.md)
 
 ## Cómo marcar el plan
 
@@ -32,7 +33,8 @@ Este directorio reemplaza el plan y la documentación del contrato anterior. Las
 | 02   | 01       | Manifiesto y registro estáticos.        |
 | 03   | 01, 02   | Editor de una definición y validación.  |
 | 04   | 02, 03   | Studio sin contrato anterior.           |
-| 05   | 04       | Cobertura de la aplicación estable.     |
+| 04.5 | 04       | Contrato corregido antes de extraerlo.   |
+| 05   | 04.5     | Cobertura de la aplicación estable.     |
 | 06   | 05       | Workspace funcional.                    |
 | 07   | 06       | Paquete principal consumido por Studio. |
 | 08   | 07       | CLI publicable.                         |

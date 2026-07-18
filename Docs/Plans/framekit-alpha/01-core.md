@@ -1,5 +1,10 @@
 # 01. Núcleo dentro de Studio
 
+> Revisión posterior: `defineTemplateBase`, el patrón de componente extraído y
+> la prueba completa de defaults de la plantilla piloto se incorporan en
+> [04.5. Endurecimiento del contrato](04.5-hardening.md) antes de extraer el
+> núcleo al paquete.
+
 ## Objetivo
 
 Implementar y probar el contrato nuevo dentro de la aplicación actual antes de moverla a un workspace. La única plantilla existente será la prueba piloto; su `config.ts` se eliminará al cerrar esta fase.

@@ -8,7 +8,8 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto consumidor. La �
 
 - [ ] Resolver `<cwd>/src/templates`, `<cwd>/src/.framekit/manifest.ts` y `<cwd>/src/.framekit/registry.ts`.
 - [ ] Ejecutar el scanner de la fase 2 y escribir ambos archivos solo si cambiaron.
-- [ ] Fallar con código distinto de cero si no existe `src/templates`, no existe ninguna plantilla, un segmento es inválido o hay una plantilla anidada.
+- [ ] Fallar con código distinto de cero si no existe `src/templates`, no existe ninguna plantilla o un segmento recorrido es inválido.
+- [ ] Al encontrar `template.tsx`, registrar esa carpeta y no recorrer sus subdirectorios; componentes, definiciones y assets internos no son categorías ni plantillas hijas.
 - [ ] Mostrar el número de plantillas encontradas y las rutas de los errores, sin stack trace salvo modo de depuración futuro.
 
 ## `framekit check`

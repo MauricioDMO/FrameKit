@@ -20,9 +20,28 @@ packages/framekit/
 
 `core` no puede importar Next, DOM ni componentes del editor. `codegen` y `cli` pueden usar APIs de Node. `editor` es cliente y no puede importar `node:fs`, `path` ni módulos de generación.
 
+## Experiencia de autoría documentada
+
+- [ ] Documentar primero el patrón inline con `defineTemplate`, donde `render`
+  obtiene `data` y `locale` sin anotación manual.
+- [ ] Documentar como patrón para imágenes complejas `definition.ts`,
+  `artwork.tsx` y `template.tsx`, usando `defineTemplateBase` y
+  `TemplateRenderProps<typeof templateBase>`.
+- [ ] Explicar que cada plantilla define sus propios locales mediante las claves
+  de `content`; FrameKit no limita ni importa los locales de la aplicación.
+- [ ] Explicar que cada entrada de `content` autocompleta las claves de `fields`,
+  exige `language` y rechaza claves desconocidas.
+- [ ] Explicar que los campos localizados pueden omitirse y que la resolución
+  final aplica defaults, contenido y ediciones antes de validar requeridos.
+- [ ] Aclarar que `template.tsx` es el único punto descubierto por el scanner y
+  que módulos, componentes y assets vecinos son privados de la plantilla.
+- [ ] Incluir ambos patrones en el README del paquete y comprobar sus ejemplos
+  mediante `pnpm typecheck` para evitar documentación obsoleta.
+
 ## API pública
 
-- [ ] Exportar desde `@mauriciodmo/framekit`: `defineTemplate`, `fields`, `Markdown`, `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData`.
+- [ ] Exportar desde `@mauriciodmo/framekit`: `defineTemplateBase`, `defineTemplate`, `fields`, `Markdown`, `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData`.
+- [ ] Hacer que `TemplateRenderProps<typeof templateBase>` sea la forma pública de tipar un componente extraído; los dos genéricos internos de campos y locales no forman parte de la experiencia documentada.
 - [ ] Exportar desde `@mauriciodmo/framekit/editor`: `FrameKitEditor`, `FrameKitNavigation`, tipos de manifest y helpers de árbol de navegación que necesite el consumidor.
 - [ ] Exponer `@mauriciodmo/framekit/styles.css` como una ruta CSS, no como import JavaScript.
 - [ ] No exponer archivos internos, paths `src/*`, scanner ni validadores privados mediante `exports`.

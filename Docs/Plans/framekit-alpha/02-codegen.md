@@ -1,5 +1,11 @@
 # 02. Generación estática
 
+> Revisión posterior: la regla histórica que prohibía subdirectorios dentro de
+> una plantilla queda sustituida por
+> [04.5. Endurecimiento del contrato](04.5-hardening.md). El contrato vigente
+> detiene el recorrido al encontrar `template.tsx` y permite implementación
+> auxiliar dentro de esa carpeta.
+
 ## Objetivo
 
 Convertir la estructura de `src/templates` en datos e imports estáticos antes de que Next arranque. El runtime de la aplicación nunca escaneará el disco.
@@ -11,7 +17,7 @@ Convertir la estructura de `src/templates` en datos e imports estáticos antes d
 - [x] Considerar categoría a cualquier directorio descendiente sin `template.tsx` que tenga plantillas por debajo.
 - [x] Ignorar entradas que comiencen con `.` o `_`.
 - [x] Exigir que cada segmento coincida con `^[a-z0-9]+(?:-[a-z0-9]+)*$`; el error debe incluir la ruta física y el segmento inválido.
-- [x] Fallar si existe `template.tsx` dentro de otro directorio que ya es una plantilla; las plantillas no pueden contener plantillas hijas.
+- [x] Regla histórica: fallar ante subdirectorios dentro de una plantilla. Esta regla queda sustituida por la fase 04.5 y no forma parte del contrato publicable.
 - [x] Ordenar por `slug` usando comparación alfabética estable, sin propiedad `order`.
 - [x] Omitir categorías que terminen sin plantillas descendientes.
 

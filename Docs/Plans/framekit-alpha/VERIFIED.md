@@ -10,6 +10,21 @@
 | 03   | Editor                     | 2026-07-17    |
 | 04   | Navegación y migración     | 2026-07-18    |
 
+La tabla conserva el historial de lo verificado. Una revisión posterior encontró
+brechas de contrato que no invalidan la migración realizada, pero sí bloquean la
+extracción y publicación hasta cerrar la fase 04.5.
+
+## Revisión posterior
+
+- El scanner confundía cualquier subdirectorio de una plantilla con una plantilla hija.
+- `render` no infería todavía las claves concretas de `fields` y `content`.
+- Las fixtures positivas describían inferencia mediante comentarios, sin comprobarla.
+- La validación de datos contenía mensajes en español y la definición runtime no inspeccionaba cada descriptor ni `render`.
+- El reset mutaba el objeto anidado anterior y limpiaba errores con una clave de locale incorrecta.
+- El editor perdía `min` y `max` y enfocaba el contenedor del campo.
+- La plantilla piloto repetía defaults dentro de cada locale.
+- La solución acordada añade `defineTemplateBase` para separar definición y componente conservando autocompletado y tipos exactos.
+
 ### Detalle 00-contract.md
 - Tipos: `TemplateFieldKind` (`text | textarea | number | color | url`)
 - `TemplateDefinition`, `TemplateRenderProps`, `InferTemplateData` públicos
@@ -62,6 +77,7 @@
 
 | Plan | Descripción       |
 | ---- | ----------------- |
+| 04.5 | Endurecimiento del contrato |
 | 05   | Application tests |
 | 06   | Workspace         |
 | 07   | Framekit package  |
