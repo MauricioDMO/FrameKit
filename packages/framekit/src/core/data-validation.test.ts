@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields, validateTemplateData } from '@mauriciodmo/framekit'
+import { defineTemplate, fields, validateTemplateData } from '../index'
 
 function createDefinition() {
   return defineTemplate({

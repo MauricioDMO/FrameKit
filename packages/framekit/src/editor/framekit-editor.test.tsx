@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, fields } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
 import type { EditorMessages } from './types'

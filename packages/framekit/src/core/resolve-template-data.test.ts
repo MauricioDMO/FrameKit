@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields, resolveTemplateData } from '@mauriciodmo/framekit'
+import { defineTemplate, fields, resolveTemplateData } from '../index'
 
 import { extractedTemplate } from '../../tests/types/extracted-template'
 

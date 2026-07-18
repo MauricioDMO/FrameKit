@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { validateTemplateDefinition } from '@mauriciodmo/framekit'
+import { validateTemplateDefinition } from '../index'
 
 function validDefinition() {
   return {

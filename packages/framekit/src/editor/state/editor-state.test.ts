@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, fields } from '../../index'
 
 import { getInitialState, loadPersistedState, resetLocale, selectLocale, updateField } from './editor-state'
 
