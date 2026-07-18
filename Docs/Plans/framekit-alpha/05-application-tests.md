@@ -63,5 +63,5 @@ pnpm typecheck
 pnpm build
 ```
 
-- [ ] Los cuatro comandos terminan correctamente desde una instalación limpia.
+- [x] Los cuatro comandos terminan correctamente desde una instalación limpia.
 - [x] Las fixtures de tipos positivas y negativas se ejecutan dentro de `pnpm typecheck`.
