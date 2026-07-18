@@ -7,6 +7,13 @@
 - [ ] Ampliar el `tsconfig` de fixtures creado en 04.5; los casos negativos siguen usando `@ts-expect-error`.
 - [ ] No añadir pruebas visuales ni navegador end-to-end durante alpha; el build de Next y la prueba de paquete cubren la integración inicial.
 
+## Límite interno del editor
+
+- [x] Reubicar el editor reutilizable en `src/lib/framekit/editor/` como preparación para `packages/framekit/src/editor/`.
+- [x] Mantener carga de registry, rutas, estados de carga e i18n de Studio fuera del editor reutilizable.
+- [x] Separar restauración y transiciones del estado del hook de React para probarlas sin DOM.
+- [x] Mantener los mensajes como props del editor; el núcleo y el editor no importan el proveedor i18n de Studio.
+
 ## Casos unitarios obligatorios
 
 - [ ] `humanizeSegment('promocion-cuadrada')` produce `Promocion Cuadrada`.
