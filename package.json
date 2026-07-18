@@ -1,40 +1,10 @@
 {
-  "name": "framekit",
-  "version": "0.1.0",
+  "name": "framekit-workspace",
   "private": true,
   "scripts": {
-    "dev": "pnpm templates:generate && concurrently -k -n next,templates \"next dev\" \"pnpm templates:watch\"",
-    "build": "pnpm templates:generate && next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "test": "pnpm templates:generate && vitest run",
-    "typecheck": "pnpm templates:generate && tsc --noEmit && tsc --noEmit -p src/lib/framekit/__fixtures__/tsconfig.json",
-    "templates:generate": "node scripts/generate-template-registry.mjs",
-    "templates:watch": "node scripts/watch-template-registry.mjs"
-  },
-  "dependencies": {
-    "lucide-react": "^1.24.0",
-    "modern-screenshot": "^4.7.0",
-    "next": "16.2.10",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "server-only": "^0.0.1"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/react": "^16.3.2",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "chokidar": "^5.0.0",
-    "concurrently": "^10.0.3",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.10",
-    "eslint-plugin-tailwindcss": "^4.2.0",
-    "jsdom": "^29.1.1",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^4.1.10"
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "build": "pnpm -r --if-present build"
   }
 }

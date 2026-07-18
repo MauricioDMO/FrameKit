@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,7 +15,10 @@
 
 # next.js
 /.next/
-/out/
+/apps/studio/.next/
+/apps/studio/out/
+/examples/*/.next/
+/examples/*/out/
 
 # production
 /build
@@ -43,8 +46,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated template registries
-/src/generated/
-
 # framekit generated files
-/src/.framekit/
+**/src/.framekit/

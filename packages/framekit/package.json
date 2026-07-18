@@ -1,0 +1,43 @@
+{
+  "name": "@mauriciodmo/framekit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./editor": {
+      "types": "./src/editor.ts",
+      "import": "./src/editor.ts"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tests/types/tsconfig.json",
+    "codegen": "node src/codegen/generate-template-registry.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.24.0",
+    "modern-screenshot": "^4.7.0"
+  },
+  "peerDependencies": {
+    "next": ">=16 <17",
+    "react": ">=19 <20",
+    "react-dom": ">=19 <20"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "jsdom": "^29.1.1",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}

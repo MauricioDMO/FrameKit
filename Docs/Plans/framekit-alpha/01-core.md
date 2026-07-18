@@ -40,8 +40,8 @@ No se crearán adaptadores entre `src/lib/templates` y `src/lib/framekit`. Las r
 - [x] Implementar `resolveTemplateData(definition, locale, edits)` con este orden: defaults, contenido del locale sin `language`, y finalmente ediciones del usuario.
 - [x] Implementar `validateTemplateDefinition` para comprobar dimensiones, campos reservados, al menos un idioma y estructura de contenidos cuando la definición se carga en runtime.
 - [x] Mover `Markdown` y su parser a `src/lib/framekit`; su API sigue siendo `Markdown({ value, lists?, className?, style? })`.
-- [x] Exportar desde `src/lib/framekit/index.ts` únicamente `defineTemplate`, `fields`, `Markdown` y los tipos públicos.
-- [x] No exportar helpers internos de resolución ni validación hasta que el editor los necesite como API pública.
+- [x] Exportar desde `src/lib/framekit/index.ts` la API de autoría y los tipos públicos.
+- [x] Mantener públicos los helpers de resolución, validación, descriptores y errores estructurados que ya exporta el índice; son útiles para editores y consumidores que separan plantillas grandes.
 
 ## Plantilla piloto
 

@@ -1,0 +1,9 @@
+{
+  "name": "framekit-example-basic",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@mauriciodmo/framekit": "workspace:*"
+  }
+}

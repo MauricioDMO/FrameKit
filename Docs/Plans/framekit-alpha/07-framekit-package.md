@@ -42,11 +42,11 @@ La fase 06 entrega directamente en este paquete el código reutilizable, sus pru
 
 ## API pública
 
-- [ ] Exportar desde `@mauriciodmo/framekit`: `defineTemplateBase`, `defineTemplate`, `fields`, `Markdown`, `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData`.
+- [ ] Exportar desde `@mauriciodmo/framekit` toda la API existente de `src/index.ts`: `defineTemplateBase`, `defineTemplate`, `fields`, `Markdown`, `validateTemplateData`, `validateTemplateDefinition`, `resolveTemplateData`, `getLocales`, `getDefaultValues`, los descriptores de campos, `TemplateDataValidationError`, `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData`.
 - [ ] Hacer que `TemplateRenderProps<typeof templateBase>` sea la forma pública de tipar un componente extraído; los dos genéricos internos de campos y locales no forman parte de la experiencia documentada.
-- [ ] Exportar desde `@mauriciodmo/framekit/editor`: `FrameKitEditor`, `FrameKitNavigation`, tipos de manifest y helpers de árbol de navegación que necesite el consumidor.
+- [ ] Exportar desde `@mauriciodmo/framekit/editor` toda la API existente y reutilizable del editor: `FrameKitEditor`, `FrameKitNavigation`, `EditorMessages`, tipos de manifest y helpers de árbol de navegación.
 - [ ] Exponer `@mauriciodmo/framekit/styles.css` como una ruta CSS, no como import JavaScript.
-- [ ] No exponer archivos internos, paths `src/*`, scanner ni validadores privados mediante `exports`.
+- [ ] No exponer archivos internos ni paths `src/*` mediante `exports`; los validadores, resolvers, descriptores y helpers actualmente exportados son API pública intencional y deben conservarse en la entrada raíz.
 - [ ] Definir las entradas solo con ESM; no publicar salida CommonJS para alpha.
 
 ## Compilación y estilos
