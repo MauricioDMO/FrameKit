@@ -11,6 +11,7 @@
 | 04   | Navegación y migración     | 2026-07-18    |
 | 04.5 | Endurecimiento del contrato | 2026-07-18   |
 | 05   | Pruebas de la aplicación   | 2026-07-18    |
+| 06   | Workspace                   | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -34,16 +35,16 @@ La tabla conserva el historial de lo verificado.
 - UI del editor usa i18n (desviación aceptada del plan original)
 
 ### Detalle 01-core.md
-- Archivos en `src/lib/framekit/core/` y `src/lib/framekit/markdown/`
+- Código reutilizable extraído posteriormente a `packages/framekit/src/core/` y `packages/framekit/src/markdown/`
 - `fields.text`, `fields.textarea`, `fields.number` (c/min/max), `fields.color`, `fields.url`
 - `defineTemplate`, `getDefaultValues`, `getLocales`, `resolveTemplateData`, `validateTemplateDefinition`
 - `Markdown` component
-- Plantilla piloto migrada: `src/templates/redes-sociales/instagram/promocion-cuadrada/template.tsx`
+- Plantilla piloto migrada: `apps/studio/src/templates/redes-sociales/instagram/promocion-cuadrada/template.tsx`
 - `config.ts` eliminado de la plantilla piloto
 
 ### Detalle 02-codegen.md
-- Scanner en `scripts/generate-template-registry.mjs`
-- `src/.framekit/manifest.ts` y `registry.ts` generados
+- Scanner en `packages/framekit/src/codegen/generate-template-registry.mjs`
+- `apps/studio/src/.framekit/manifest.ts` y `registry.ts` generados
 - `writeIfChanged` para evitar reinicios
 - `src/generated/`, `read-template-catalog.ts`, `get-template-config.ts` eliminados
 - `outputFileTracingIncludes` eliminado de next.config
@@ -60,10 +61,10 @@ La tabla conserva el historial de lo verificado.
 
 ### Detalle 04-migration.md
 - `generate-template-registry.mjs` busca `template.tsx` a cualquier profundidad
-- Genera `src/.framekit/manifest.ts` y `registry.ts`
+- Genera `apps/studio/src/.framekit/manifest.ts` y `registry.ts`
 - `manifestToNavigation()` deriva categorías de segmentos, reutiliza prefijos, humaniza nombres
 - Enlaces con formato `/editor/<slug>` ordenados por título
-- Tipos de navegación en `manifest-to-navigation.ts` (no en `types.ts`)
+- Tipos de navegación en `packages/framekit/src/editor/navigation.ts` (no en `types.ts`)
 - Ruta `[[...slug]]` valida slug contra manifiesto y carga via `templateRegistry`
 - Raíz redirige a `/editor`
 - Plantilla piloto migrada sin `config.ts`
@@ -83,11 +84,23 @@ La tabla conserva el historial de lo verificado.
 - La ubicación futura de las pruebas queda separada por propiedad entre `packages/framekit` y `apps/studio`.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck` y `pnpm build` pasan desde una instalación limpia.
 
+### Detalle 06-workspace.md
+- El root es privado y coordina `apps/*`, `packages/*` y `examples/*` mediante pnpm.
+- Studio vive en `apps/studio/` con sus rutas, componentes, i18n, plantilla piloto, assets y scripts locales.
+- `@mauriciodmo/framekit` vive en `packages/framekit/` y recibe core, editor, Markdown, codegen, pruebas y fixtures de tipos.
+- El codegen se ejecuta desde Studio mediante el script privado del workspace; no hay imports a `packages/framekit/src`.
+- `packages/create-framekit` y `examples/basic` existen como workspaces privados independientes.
+- Studio consume `@mauriciodmo/framekit` y `@mauriciodmo/framekit/editor` mediante `workspace:*`.
+- La API existente del paquete, incluidos validadores, resolvers, descriptores y errores estructurados, queda pública.
+- `apps/studio/src/.framekit/manifest.ts` y `registry.ts` son generados e ignorados por Git.
+- `apps/studio/src/app/globals.css` escanea `packages/framekit/src` para incluir los estilos del árbol, editor y fields durante la transición.
+- La guía operativa está en [`Docs/workspace.md`](../../workspace.md).
+- Verificado con `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` y `pnpm --filter studio dev`.
+
 ## Pendientes 🔲
 
 | Plan | Descripción       |
 | ---- | ----------------- |
-| 06   | Workspace         |
 | 07   | Framekit package  |
 | 08   | CLI               |
 | 09   | Create framekit   |

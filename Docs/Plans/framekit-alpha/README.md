@@ -2,6 +2,9 @@
 
 Este directorio reemplaza el plan y la documentación del contrato anterior. Las fases se ejecutan estrictamente en orden: una fase no empieza hasta que la anterior tenga todos sus checkboxes marcados y sus verificaciones ejecutadas con éxito.
 
+La estructura actual y los comandos de trabajo están documentados en
+[`Docs/workspace.md`](../../workspace.md).
+
 - [x] 00. [Contrato y base de pruebas](00-contract.md)
 - [x] 01. [Núcleo dentro de Studio](01-core.md)
 - [x] 02. [Generación estática](02-codegen.md)
@@ -22,8 +25,9 @@ Este directorio reemplaza el plan y la documentación del contrato anterior. Las
 - Si una fase descubre trabajo adicional, añadirlo al archivo de esa fase antes de continuar.
 - La migración a workspace se hace por propiedad: Studio conserva la aplicación y el paquete recibe directamente el código reutilizable, sus pruebas y sus fixtures.
 - No crear capas de compatibilidad para `config.ts`, `_folder.json` o la API antigua: el proyecto no ha sido publicado.
-- No adelantar extracción a paquetes, CLI ni creador antes de que Studio funcione con el contrato nuevo.
-- La API que ya forma parte de `src/lib/framekit/index.ts` es pública al pasar al paquete, incluidos validadores, resolvers, descriptores y errores estructurados; las fases posteriores no deben ocultarla.
+- No adelantar CLI ni creador antes de que Studio funcione con el contrato nuevo.
+- La API que ya forma parte de `packages/framekit/src/index.ts` es pública al pasar al paquete, incluidos validadores, resolvers, descriptores y errores estructurados; las fases posteriores no deben ocultarla.
+- La fase 06 ya está verificada: Studio consume el paquete mediante `workspace:*`, el codegen queda dentro del paquete y los estilos transitorios se incorporan desde `packages/framekit/src`.
 - Ejecutar los comandos de cierre de una fase desde una instalación limpia cuando esa fase modifique dependencias o estructura del repositorio.
 
 ## Dependencias entre fases
