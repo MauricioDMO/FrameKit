@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { findTemplates } from './generate-template-registry.mjs'
+import { findTemplates, generateRegistry } from './generate-template-registry.mjs'
 
 describe('findTemplates', () => {
   it('stops at a template and ignores its private auxiliary directories', async () => {
@@ -28,6 +28,37 @@ describe('findTemplates', () => {
       ])
     } finally {
       await rm(templatesRoot, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('generateRegistry', () => {
+  it('generates entries only for discovered template folders', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-registry-'))
+    const templatesRoot = path.join(root, 'templates')
+    const framekitDir = path.join(root, '.framekit')
+
+    try {
+      const templateRoot = path.join(templatesRoot, 'social', 'campaign')
+      await mkdir(path.join(templateRoot, 'helpers'), { recursive: true })
+      await writeFile(path.join(templateRoot, 'template.tsx'), '')
+      await writeFile(path.join(templateRoot, 'helpers', 'template.tsx'), '')
+
+      await expect(generateRegistry({ templatesRoot, framekitDir })).resolves.toEqual([
+        {
+          slug: 'social/campaign',
+          segments: ['social', 'campaign'],
+        },
+      ])
+
+      await expect(readFile(path.join(framekitDir, 'manifest.ts'), 'utf8')).resolves.toContain(
+        'slug: "social/campaign"',
+      )
+      await expect(readFile(path.join(framekitDir, 'registry.ts'), 'utf8')).resolves.not.toContain(
+        'social/campaign/helpers',
+      )
+    } finally {
+      await rm(root, { recursive: true, force: true })
     }
   })
 })

@@ -7,6 +7,7 @@ import {
   validateTemplateData,
   validateTemplateDefinition,
 } from '@/lib/framekit'
+import pilotTemplate from '@/templates/redes-sociales/instagram/promocion-cuadrada/template'
 
 function validDefinition() {
   return {
@@ -127,6 +128,15 @@ describe('resolveTemplateData', () => {
 
     expect(resolveTemplateData(definition, 'aurora', { title: 'Edited title' })).toEqual({
       backgroundImage: '/images/backgrounds/forest.svg',
+      title: 'Edited title',
+    })
+  })
+
+  it('resolves the pilot defaults before localized content and edits', () => {
+    expect(resolveTemplateData(pilotTemplate, 'en', { title: 'Edited title' })).toMatchObject({
+      backgroundImage: '/images/backgrounds/forest.svg',
+      accentColor: '#b9f8d2',
+      eyebrow: 'Digital studio / 2026',
       title: 'Edited title',
     })
   })
