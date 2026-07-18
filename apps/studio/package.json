@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm templates:generate && concurrently -k -n next,templates \"next dev\" \"pnpm templates:watch\"",
-    "build": "pnpm templates:generate && next build",
+    "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && concurrently -k -n next,templates \"next dev\" \"pnpm templates:watch\"",
+    "build": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "pnpm templates:generate && vitest run",
-    "typecheck": "pnpm templates:generate && tsc --noEmit",
+    "test": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && vitest run",
+    "typecheck": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && tsc --noEmit",
     "templates:generate": "node scripts/generate-template-registry.mjs",
     "templates:watch": "node scripts/watch-template-registry.mjs"
   },
