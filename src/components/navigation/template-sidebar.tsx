@@ -3,8 +3,7 @@
 import { Images, Moon, Settings, Sun } from 'lucide-react'
 import { useState } from 'react'
 
-import type { Locale } from '@/i18n/locales'
-import type { getMessages } from '@/i18n/messages'
+import { useLocale } from '@/i18n/locale-provider'
 import type { TemplateNavigationNode } from '@/lib/templates/types'
 
 import { LanguageSelect } from './language-select'
@@ -12,19 +11,17 @@ import { NavigationNode } from './navigation-node'
 
 export function TemplateSidebar({
   navigation,
-  locale,
-  messages,
 }: {
   navigation: TemplateNavigationNode[]
-  locale: Locale
-  messages: ReturnType<typeof getMessages>['sidebar']
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const { messages: allMessages } = useLocale()
+  const messages = allMessages.sidebar
 
   function toggleTheme() {
     const next = !document.documentElement.classList.contains('dark')
     document.documentElement.classList.toggle('dark', next)
-    window.localStorage.setItem('theme', next ? 'dark' : 'light')
+    document.cookie = `theme=${next ? 'dark' : 'light'}; path=/; max-age=31536000; samesite=lax`
   }
 
   return (
@@ -75,7 +72,7 @@ export function TemplateSidebar({
               id="sidebar-settings"
               className="absolute bottom-[calc(100%+0.75rem)] left-0 right-0 z-20 rounded-xl border border-white/15 bg-[#173d31] p-3 shadow-xl"
             >
-              <LanguageSelect locale={locale} messages={messages} />
+              <LanguageSelect />
               <button
                 type="button"
                 onClick={toggleTheme}
