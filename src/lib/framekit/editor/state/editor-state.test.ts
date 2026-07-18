@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, expect, it } from 'vitest'
 
 import { defineTemplate, fields } from '@/lib/framekit'
@@ -37,6 +39,12 @@ describe('editor state', () => {
 
   it('rejects a persisted selected locale that is no longer declared', () => {
     const storage = { getItem: () => JSON.stringify({ selectedLocale: 'removed', dataByLocale: {} }) }
+
+    expect(loadPersistedState('social/campaign', definition, storage)).toBeNull()
+  })
+
+  it.each([null, 42, ''])('rejects a malformed persisted selected locale: %s', (selectedLocale) => {
+    const storage = { getItem: () => JSON.stringify({ selectedLocale, dataByLocale: {} }) }
 
     expect(loadPersistedState('social/campaign', definition, storage)).toBeNull()
   })

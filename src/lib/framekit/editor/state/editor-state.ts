@@ -17,22 +17,23 @@ export function loadPersistedState(slug: string, definition: TemplateDefinition,
     if (!stored) return null
 
     const parsed = JSON.parse(stored) as Partial<EditorState>
-    if (!parsed || typeof parsed !== 'object') return null
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
 
     const validLocales = new Set(Object.keys(definition.content))
-    if (parsed.selectedLocale && !validLocales.has(parsed.selectedLocale)) return null
+    const selectedLocale = parsed.selectedLocale
+    if (selectedLocale !== undefined && (typeof selectedLocale !== 'string' || !validLocales.has(selectedLocale))) return null
 
     const validFieldKeys = new Set(Object.keys(definition.fields))
     const dataByLocale: EditorState['dataByLocale'] = {}
 
-    if (parsed.dataByLocale && typeof parsed.dataByLocale === 'object') {
+    if (parsed.dataByLocale && typeof parsed.dataByLocale === 'object' && !Array.isArray(parsed.dataByLocale)) {
       for (const [locale, fields] of Object.entries(parsed.dataByLocale)) {
-        if (!validLocales.has(locale) || !fields || typeof fields !== 'object') continue
+        if (!validLocales.has(locale) || !fields || typeof fields !== 'object' || Array.isArray(fields)) continue
         dataByLocale[locale] = Object.fromEntries(Object.entries(fields).filter(([key, value]) => validFieldKeys.has(key) && typeof value === 'string'))
       }
     }
 
-    return { selectedLocale: parsed.selectedLocale ?? Object.keys(definition.content)[0], dataByLocale }
+    return { selectedLocale: selectedLocale ?? Object.keys(definition.content)[0], dataByLocale }
   } catch {
     // Stored sessions are untrusted; a malformed value must not prevent editing.
     return null
