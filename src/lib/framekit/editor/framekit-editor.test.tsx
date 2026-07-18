@@ -1,12 +1,31 @@
+// @vitest-environment jsdom
+
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { getMessages } from '@/i18n/messages'
 import { defineTemplate, fields } from '@/lib/framekit'
 
 import { FrameKitEditor } from './framekit-editor'
+import type { EditorMessages } from './types'
 
-const messages = getMessages('en').editor
+const messages: EditorMessages = {
+  templateEditor: 'Editor de plantillas',
+  reset: 'Restablecer',
+  generating: 'Generando',
+  downloadPng: 'Descargar PNG',
+  content: 'Contenido',
+  preview: 'Vista previa',
+  actualSize: 'Tamano real',
+  fitToView: 'Ajustar a vista',
+  contentLanguageLabel: 'Idioma del contenido',
+  exportError: 'Error de exportacion',
+  exportAlert: 'No se pudo exportar',
+  errorRequired: 'Campo obligatorio',
+  errorInvalidNumber: 'Numero invalido',
+  errorNumberTooSmall: 'Debe ser al menos {min}',
+  errorNumberTooLarge: 'Debe ser como maximo {max}',
+  errorInvalidUrl: 'URL invalida',
+}
 
 function createDefinition() {
   return defineTemplate({
