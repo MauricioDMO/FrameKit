@@ -1,11 +1,17 @@
-import type { TemplateDefinition } from '../types'
+import type { TemplateDefinition } from '../../types'
+
+export type TemplateDataValidationError =
+  | { code: 'required' }
+  | { code: 'invalid_number' }
+  | { code: 'number_too_small'; min: number }
+  | { code: 'number_too_large'; max: number }
+  | { code: 'invalid_url' }
 
 export function validateTemplateData(
   definition: TemplateDefinition,
-  locale: string,
-  data: Record<string, string>
-): Record<string, string> {
-  const errors: Record<string, string> = {}
+  data: Record<string, string>,
+): Record<string, TemplateDataValidationError> {
+  const errors: Record<string, TemplateDataValidationError> = {}
 
   for (const [key, field] of Object.entries(definition.fields)) {
     const value = data[key] ?? ''
@@ -14,7 +20,7 @@ export function validateTemplateData(
 
     if (field.kind === 'number') {
       if (isRequired && trimmed === '') {
-        errors[key] = 'Este campo es requerido'
+        errors[key] = { code: 'required' }
         continue
       }
       if (trimmed === '') {
@@ -22,15 +28,15 @@ export function validateTemplateData(
       }
       const num = Number(trimmed)
       if (!Number.isFinite(num)) {
-        errors[key] = 'Ingresa un número válido'
+        errors[key] = { code: 'invalid_number' }
         continue
       }
       if (field.min !== undefined && num < field.min) {
-        errors[key] = `El valor debe ser mayor o igual a ${field.min}`
+        errors[key] = { code: 'number_too_small', min: field.min }
         continue
       }
       if (field.max !== undefined && num > field.max) {
-        errors[key] = `El valor debe ser menor o igual a ${field.max}`
+        errors[key] = { code: 'number_too_large', max: field.max }
         continue
       }
       continue
@@ -38,7 +44,7 @@ export function validateTemplateData(
 
     if (field.kind === 'url') {
       if (isRequired && trimmed === '') {
-        errors[key] = 'Este campo es requerido'
+        errors[key] = { code: 'required' }
         continue
       }
       if (trimmed === '') {
@@ -47,14 +53,14 @@ export function validateTemplateData(
       const isPath = trimmed.startsWith('/')
       const isHttp = trimmed.startsWith('http:') || trimmed.startsWith('https:')
       if (!isPath && !isHttp) {
-        errors[key] = 'Ingresa una URL válida'
+        errors[key] = { code: 'invalid_url' }
         continue
       }
       continue
     }
 
     if (isRequired && trimmed === '') {
-      errors[key] = 'Este campo es requerido'
+      errors[key] = { code: 'required' }
     }
   }
 

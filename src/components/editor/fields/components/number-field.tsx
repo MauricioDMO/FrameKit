@@ -1,7 +1,7 @@
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../types'
 
-export function NumberField({ field, value, onChange, error }: EditorFieldProps) {
+export function NumberField({ field, value, onChange }: EditorFieldProps) {
   return (
     <input
       name={field.key}

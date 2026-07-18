@@ -38,45 +38,71 @@ export type FieldDescriptor =
   | UrlFieldDescriptor
   | NumberFieldDescriptor
 
-type NoLanguageFields<Fields extends Record<string, FieldDescriptor>> =
+export type TemplateFields = Record<string, FieldDescriptor>
+
+export type TemplateContentEntry<Fields extends TemplateFields> = {
+  language: string
+} & Partial<Record<Exclude<keyof Fields, 'language'> & string, string>>
+
+export type TemplateContent<Fields extends TemplateFields> = Record<
+  string,
+  TemplateContentEntry<Fields>
+>
+
+export type NoLanguageFields<Fields extends TemplateFields> =
   Extract<keyof Fields, 'language'> extends never ? unknown : 'fields.language is reserved'
 
-export interface TemplateDefinition {
-  width: number
-  height: number
-  fields: Record<string, FieldDescriptor>
-  content: Record<string, { language: string } & Record<string, string>>
-  render(props: TemplateRenderProps): ReactNode
+export type NoUnknownContentKeys<
+  Content extends TemplateContent<Fields>,
+  Fields extends TemplateFields,
+> = {
+  [Locale in keyof Content]: Content[Locale] & Record<
+    Exclude<keyof Content[Locale], 'language' | keyof Fields>,
+    never
+  >
+}
+
+export interface TemplateBase<
+  Fields extends TemplateFields = TemplateFields,
+  Content extends TemplateContent<Fields> = TemplateContent<Fields>,
+  Width extends number = number,
+  Height extends number = number,
+> {
+  width: Width
+  height: Height
+  fields: Fields
+  content: Content
+}
+
+export interface TemplateDefinition<
+  Fields extends TemplateFields = TemplateFields,
+  Content extends TemplateContent<Fields> = TemplateContent<Fields>,
+  Width extends number = number,
+  Height extends number = number,
+> extends TemplateBase<Fields, Content, Width, Height> {
+  render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height>>): ReactNode
 }
 
 export interface TemplateRenderProps<
-  Fields extends Record<string, FieldDescriptor> = Record<string, FieldDescriptor>,
-  Locales extends Record<string, unknown> = Record<string, { language: string }>,
+  Definition extends TemplateBase = TemplateDefinition,
 > {
-  data: { [K in keyof Fields]: string }
-  locale: keyof Locales & string
-  width: number
-  height: number
+  data: { -readonly [K in keyof Definition['fields']]: string }
+  locale: keyof Definition['content'] & string
+  width: Definition['width']
+  height: Definition['height']
 }
 
-export type InferTemplateData<Def extends TemplateDefinition> =
-  { [K in keyof Def['fields']]: string }
+export type InferTemplateData<Def extends TemplateBase> =
+  { -readonly [K in keyof Def['fields']]: string }
 
-export function defineTemplate<const Def extends TemplateDefinition>(
-  def: Def & NoLanguageFields<Def['fields']>
-): Def {
-  if (def.width <= 0 || !Number.isFinite(def.width)) {
-    throw new Error('width must be a positive finite number')
-  }
-  if (def.height <= 0 || !Number.isFinite(def.height)) {
-    throw new Error('height must be a positive finite number')
-  }
-  const fieldKeys = Object.keys(def.fields)
-  if (fieldKeys.includes('language')) {
-    throw new Error('fields.language is reserved')
-  }
-  if (Object.keys(def.content).length === 0) {
-    throw new Error('content must have at least one entry')
-  }
-  return def
+export type TemplateInput<
+  Fields extends TemplateFields,
+  Content extends TemplateContent<Fields>,
+  Width extends number,
+  Height extends number,
+> = {
+  width: Width
+  height: Height
+  fields: Fields
+  content: Content & NoUnknownContentKeys<Content, Fields>
 }

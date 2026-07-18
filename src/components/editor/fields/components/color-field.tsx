@@ -3,7 +3,7 @@ import { startTransition, useEffect, useRef, useState } from 'react'
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../types'
 
-export function ColorField({ field, value, onChange, error }: EditorFieldProps) {
+export function ColorField({ field, value, onChange }: EditorFieldProps) {
   const externalPickerValue = /^#[\da-f]{6}$/i.test(value) ? value : '#000000'
   const [pickerState, setPickerState] = useState(() => ({
     externalValue: externalPickerValue,

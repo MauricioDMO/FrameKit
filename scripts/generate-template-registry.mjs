@@ -1,5 +1,6 @@
 import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const PROJECT_ROOT = process.cwd()
 const TEMPLATES_ROOT = path.join(PROJECT_ROOT, 'src', 'templates')
@@ -20,7 +21,7 @@ function validateSegment(segment, physicalPath) {
   }
 }
 
-async function findTemplates(absoluteDirectory, segments = []) {
+export async function findTemplates(absoluteDirectory, segments = []) {
   const entries = await readdir(absoluteDirectory, { withFileTypes: true })
   const templates = []
 
@@ -43,16 +44,6 @@ async function findTemplates(absoluteDirectory, segments = []) {
     const templatePath = path.join(directoryPath, 'template.tsx')
 
     if (await exists(templatePath)) {
-      const childEntries = await readdir(directoryPath, { withFileTypes: true })
-      const hasChildTemplates = childEntries.some(
-        (e) => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('_')
-      )
-      if (hasChildTemplates) {
-        throw new Error(
-          `La plantilla '${nextSegments.join('/')}' no puede contener plantillas hijas. Directorio: ${directoryPath}`
-        )
-      }
-
       templates.push({
         slug: nextSegments.join('/'),
         segments: nextSegments,
@@ -66,8 +57,11 @@ async function findTemplates(absoluteDirectory, segments = []) {
   return templates
 }
 
-async function generateRegistry() {
-  const templates = await findTemplates(TEMPLATES_ROOT)
+export async function generateRegistry({
+  templatesRoot = TEMPLATES_ROOT,
+  framekitDir = FRAMEKIT_DIR,
+} = {}) {
+  const templates = await findTemplates(templatesRoot)
   templates.sort((a, b) => a.slug.localeCompare(b.slug))
 
   const manifestEntries = templates
@@ -97,8 +91,10 @@ ${manifestEntries}
 `
 
   const registryEntries = templates
-    .map(({ slug }) => {
-      const importPath = `../templates/${slug}/template`
+    .map(({ slug, segments }) => {
+      const templatePath = path.join(templatesRoot, ...segments, 'template')
+      const relativePath = path.relative(framekitDir, templatePath).split(path.sep).join('/')
+      const importPath = relativePath.startsWith('.') ? relativePath : `./${relativePath}`
       return `  ${JSON.stringify(slug)}: () => import(${JSON.stringify(importPath)}),`
     })
     .join('\n')
@@ -113,13 +109,14 @@ ${registryEntries}
 }
 `
 
-  await mkdir(FRAMEKIT_DIR, { recursive: true })
+  await mkdir(framekitDir, { recursive: true })
   await Promise.all([
-    writeIfChanged(path.join(FRAMEKIT_DIR, 'manifest.ts'), manifestOutput),
-    writeIfChanged(path.join(FRAMEKIT_DIR, 'registry.ts'), registryOutput),
+    writeIfChanged(path.join(framekitDir, 'manifest.ts'), manifestOutput),
+    writeIfChanged(path.join(framekitDir, 'registry.ts'), registryOutput),
   ])
 
   console.log(`Registro generado: ${templates.length} plantilla(s)`)
+  return templates
 }
 
 async function writeIfChanged(filePath, content) {
@@ -127,7 +124,9 @@ async function writeIfChanged(filePath, content) {
   if (current !== content) await writeFile(filePath, content, 'utf8')
 }
 
-generateRegistry().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  generateRegistry().catch((error) => {
+    console.error(error)
+    process.exitCode = 1
+  })
+}

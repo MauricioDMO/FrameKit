@@ -1,7 +1,7 @@
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../types'
 
-export function TextareaField({ field, value, onChange, error }: EditorFieldProps) {
+export function TextareaField({ field, value, onChange }: EditorFieldProps) {
   return (
     <textarea
       name={field.key}

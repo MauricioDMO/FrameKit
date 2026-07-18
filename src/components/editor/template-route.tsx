@@ -7,7 +7,7 @@ import type { TemplateDefinition } from '@/lib/framekit'
 import { validateTemplateDefinition } from '@/lib/framekit'
 import { templateRegistry } from '@/.framekit/registry'
 
-import { FrameKitEditor } from './framekit-editor'
+import { FrameKitEditor } from './framekit'
 
 interface TemplateRouteProps {
   slug: string

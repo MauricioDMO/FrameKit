@@ -1,5 +1,4 @@
 import { defineTemplate, fields, Markdown } from '@/lib/framekit'
-import type { TemplateRenderProps } from '@/lib/framekit'
 
 export default defineTemplate({
   width: 1440,
@@ -9,7 +8,10 @@ export default defineTemplate({
     title: fields.textarea({ label: 'Título', placeholder: 'Diseñamos tu sitio web' }),
     description: fields.textarea({ label: 'Descripción' }),
     website: fields.text({ label: 'Sitio web' }),
-    backgroundImage: fields.url({ label: 'Imagen de fondo' }),
+    backgroundImage: fields.url({
+      label: 'Imagen de fondo',
+      defaultValue: '/images/backgrounds/forest.svg',
+    }),
     accentColor: fields.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
   content: {
@@ -19,8 +21,6 @@ export default defineTemplate({
       title: 'Diseñamos sitios que hacen crecer tu **negocio**',
       description: 'Estrategia, diseño y desarrollo para construir una presencia digital que trabaja a tu favor.',
       website: 'web.mauriciodmo.com',
-      backgroundImage: '/images/backgrounds/forest.svg',
-      accentColor: '#b9f8d2',
     },
     en: {
       language: 'English',
@@ -28,11 +28,9 @@ export default defineTemplate({
       title: 'We design websites that grow your **business**',
       description: 'Strategy, design, and development to build a digital presence that works for you.',
       website: 'web.mauriciodmo.com',
-      backgroundImage: '/images/backgrounds/forest.svg',
-      accentColor: '#b9f8d2',
     },
   },
-  render({ data, locale, width, height }: TemplateRenderProps) {
+  render({ data, locale, width, height }) {
     const accentColor = data.accentColor || '#b9f8d2'
     const labels =
       locale === 'es'
