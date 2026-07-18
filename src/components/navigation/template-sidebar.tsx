@@ -26,7 +26,7 @@ export function TemplateSidebar({
 
   return (
     <aside className="flex flex-col border-b border-white/10 bg-[#10271f] text-white lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0">
-      <header className="flex h-[82px] shrink-0 items-center gap-3 border-b border-white/10 px-5">
+      <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-[#c8f7d9] text-[#10271f]">
             <Images size={20} strokeWidth={2.2} />

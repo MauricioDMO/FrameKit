@@ -193,7 +193,7 @@ export function FrameKitEditor({
           <p className="text-[10px] font-bold tracking-[0.2em] text-[#4d675a] uppercase dark:text-[#a4b8ac]">
             {messages.templateEditor}
           </p>
-          <h1 className="mt-1 text-xl font-black -tracking-wide">
+          <h1 className="mt-1 text-xl font-black tracking-tight">
             {slug.split('/').pop()!.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
           </h1>
         </div>

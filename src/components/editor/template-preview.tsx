@@ -165,7 +165,7 @@ export function TemplatePreview({
       aria-label={label}
       className="relative flex min-h-130 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#4f5e56_0.7px,transparent_0.7px)] [background-size:16px_16px] opacity-30 dark:opacity-50" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#4f5e56_0.7px,transparent_0.7px)] bg-size-[16px_16px] opacity-30 dark:opacity-50" />
       <div
         ref={stageRef}
         onPointerDown={handlePointerDown}
