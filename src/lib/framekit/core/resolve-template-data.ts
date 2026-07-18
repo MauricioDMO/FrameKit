@@ -18,7 +18,7 @@ export function resolveTemplateData(
   }
 
   for (const key in edits) {
-    if (typeof edits[key] === 'string') {
+    if (key !== 'language' && typeof edits[key] === 'string') {
       result[key] = edits[key]
     }
   }
