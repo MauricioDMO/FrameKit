@@ -20,6 +20,8 @@ packages/framekit/
 
 `core` no puede importar Next, DOM ni componentes del editor. `codegen` y `cli` pueden usar APIs de Node. `editor` es cliente y no puede importar `node:fs`, `path` ni módulos de generación.
 
+La fase 06 entrega directamente en este paquete el código reutilizable, sus pruebas y los fixtures de tipos. La fase 07 no debe repetir esa extracción: añade la compilación, exports, CSS y metadatos publicables sobre esa estructura ya migrada.
+
 ## Experiencia de autoría documentada
 
 - [ ] Documentar primero el patrón inline con `defineTemplate`, donde `render`

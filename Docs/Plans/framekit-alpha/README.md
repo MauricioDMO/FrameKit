@@ -20,6 +20,7 @@ Este directorio reemplaza el plan y la documentación del contrato anterior. Las
 
 - Marcar un checkbox solo cuando el cambio esté integrado y verificado, no cuando el código esté iniciado.
 - Si una fase descubre trabajo adicional, añadirlo al archivo de esa fase antes de continuar.
+- La migración a workspace se hace por propiedad: Studio conserva la aplicación y el paquete recibe directamente el código reutilizable, sus pruebas y sus fixtures.
 - No crear capas de compatibilidad para `config.ts`, `_folder.json` o la API antigua: el proyecto no ha sido publicado.
 - No adelantar extracción a paquetes, CLI ni creador antes de que Studio funcione con el contrato nuevo.
 - Ejecutar los comandos de cierre de una fase desde una instalación limpia cuando esa fase modifique dependencias o estructura del repositorio.
