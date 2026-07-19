@@ -101,7 +101,7 @@ La tabla conserva el historial de lo verificado.
 - La API existente del paquete, incluidos validadores, resolvers, descriptores y errores estructurados, queda pública.
 - El codegen histórico de Studio fue reemplazado posteriormente por el runtime de 07.5.
 - `apps/studio/src/app/globals.css` conserva solo los estilos de Studio e importa el CSS compilado público del paquete.
-- La guía operativa está en [`Docs/workspace.md`](../../workspace.md).
+- La guía operativa está en [Docs/en/development/repository.md](../../en/development/repository.md).
 - Verificado con `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` y `pnpm --filter studio dev`.
 
 ### Detalle 07-framekit-package.md

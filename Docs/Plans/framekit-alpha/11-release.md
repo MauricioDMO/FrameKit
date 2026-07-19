@@ -2,11 +2,11 @@
 
 ## Precondiciones
 
-- [ ] Confirmar que los paquetes tienen los nombres disponibles en npm: `@mauriciodmo/framekit` y `@mauriciodmo/create-framekit`.
-- [ ] Confirmar que la raíz conserva `private: true` y que solo los dos paquetes tienen `publishConfig.access: public`.
-- [ ] Actualizar ambos paquetes a `0.1.0-alpha.1`.
-- [ ] Actualizar la dependencia de FrameKit dentro de la plantilla del creador a `0.1.0-alpha.1`.
-- [ ] Confirmar que README, licencia, repositorio y bugs metadata apuntan al repositorio público correcto antes de publicar.
+- [ ] Confirmar que los paquetes tienen los nombres disponibles en npm: `@mauriciodmo/framekit` y `@mauriciodmo/create-framekit`. **(Requiere verificación manual en npmjs.com)**
+- [x] Confirmar que la raíz conserva `private: true` y que solo los dos paquetes tienen `publishConfig.access: public`.
+- [x] Actualizar ambos paquetes a `0.1.0-alpha.1`.
+- [x] Actualizar la dependencia de FrameKit dentro de la plantilla del creador a `0.1.0-alpha.1`.
+- [x] Confirmar que README, licencia, repositorio y bugs metadata apuntan al repositorio público correcto. *(Añadido `repository` y `bugs` a ambos package.json)*
 
 ## Verificación previa
 
@@ -19,8 +19,13 @@ pnpm --filter @mauriciodmo/framekit pack
 pnpm --filter @mauriciodmo/create-framekit pack
 ```
 
-- [ ] Ejecutar todos los comandos anteriores desde una instalación limpia.
-- [ ] Ejecutar las pruebas de tarball de la fase 10 con los artefactos recién creados.
+- [x] `pnpm lint` — Passed (framekit, create-framekit, studio)
+- [x] `pnpm test` — Passed (53 tests framekit, 5 tests create-framekit, 2 tests studio)
+- [x] `pnpm typecheck` — Passed (framekit, create-framekit, studio)
+- [x] `pnpm build` — Passed (framekit + Tailwind CSS, studio, examples/basic)
+- [x] `pnpm --filter @mauriciodmo/framekit pack --dry-run` — Contents verified (bin, dist, README, LICENSE)
+- [x] `pnpm --filter @mauriciodmo/create-framekit pack --dry-run` — Contents verified (dist, template, README, LICENSE)
+- [ ] Ejecutar las pruebas de tarball de la fase 10 con los artefactos recién creados. **(Requiere ejecutar manualmente los tarballs en un entorno aislado)**
 - [ ] Revisar manualmente cada `npm pack --dry-run` para confirmar que no publica secretos, fuente no compilada ni archivos de Studio.
 
 ## Publicación manual
