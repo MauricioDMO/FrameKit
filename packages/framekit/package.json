@@ -3,6 +3,8 @@
   "version": "0.1.0-alpha.1",
   "type": "module",
   "license": "Apache-2.0",
+  "repository": "github:MauricioDMO/FrameKit",
+  "bugs": "https://github.com/MauricioDMO/FrameKit/issues",
   "files": ["bin", "dist", "README.md", "LICENSE"],
   "bin": {
     "framekit": "./bin/framekit.js"
