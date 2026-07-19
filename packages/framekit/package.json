@@ -3,9 +3,9 @@
   "version": "0.1.0-alpha.1",
   "type": "module",
   "license": "Apache-2.0",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["bin", "dist", "README.md", "LICENSE"],
   "bin": {
-    "framekit": "./dist/cli.js"
+    "framekit": "./bin/framekit.js"
   },
   "exports": {
     ".": {

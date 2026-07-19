@@ -20,10 +20,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build FrameKit
         run: pnpm --filter @mauriciodmo/framekit build
-      - name: Add FrameKit CLI to PATH
-        run: |
-          ln -s cli.js packages/framekit/dist/framekit
-          echo "$GITHUB_WORKSPACE/packages/framekit/dist" >> "$GITHUB_PATH"
       - name: Lint workspace
         run: pnpm lint
       - name: Run tests
