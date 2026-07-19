@@ -1,16 +1,8 @@
-# Documentación de FrameKit
+# Documentación / Documentation
 
-FrameKit está en migración hacia paquetes publicables y un creador de proyectos. El contrato anterior queda retirado y no debe usarse para trabajo nuevo.
+FrameKit docs are available in English and Spanish. Choose your language:
 
-## Plan activo
+- [English](en/README.md)
+- [Español](es/README.md)
 
-- [Plan B: FrameKit alpha](Plans/framekit-alpha/README.md): fases incrementales y criterios de cierre.
-
-## Como trabajar ahora
-
-- [Inicio rápido](quickstart.md): cómo instalar, levantar Studio, crear plantillas y ejecutar una build.
-- [Workspace y ejecucion](workspace.md): estructura, comandos, plantillas, imports, estilos y solucion de problemas.
-
-## Referencia vigente
-
-- [Markdown en campos de texto](markdown.md): sintaxis compatible para plantillas.
+Development and engineering records (alpha plan) are in [Plans](Plans/framekit-alpha/)

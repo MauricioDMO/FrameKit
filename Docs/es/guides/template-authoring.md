@@ -1,0 +1,170 @@
+# Creación de plantillas
+
+Una plantilla es un directorio bajo `src/templates/` que contiene un archivo `template.tsx` con un export default. FrameKit descubre las plantillas escaneando el directorio `src/templates/` y registrando cada directorio que tenga un archivo `template.tsx`.
+
+## Convenciones de directorios
+
+Las plantillas viven en directorios dentro de `src/templates/`. Cada nombre de directorio debe seguir el patrón:
+
+```
+^[a-z0-9]+(?:-[a-z0-9]+)*$
+```
+
+Esto significa solo letras minúsculas, números y guiones — sin mayúsculas, sin guiones bajos, sin caracteres especiales. Por ejemplo: `blog-banner`, `tarjeta-social`, `encabezado-email`.
+
+**Directorios ignorados:** Los directorios que comienzan con `.` o `_` se omiten durante el descubrimiento. Usa estos prefijos para directorios privados o auxiliares que no deben tratarse como plantillas.
+
+**Límites de plantilla:** Cuando FrameKit encuentra un `template.tsx` dentro de un directorio, trata ese directorio como un límite de plantilla. Cualquier subdirectorio dentro de él forma parte de la estructura privada de la plantilla y no se explora en busca de plantillas adicionales. Esto permite organizar archivos auxiliares, componentes y recursos junto a la plantilla sin crear plantillas anidadas.
+
+## Generación de slugs
+
+El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con segmentos unidos por barras. Ejemplo: `src/templates/redes-sociales/instagram/publicacion` se convierte en `redes-sociales/instagram/publicacion`.
+
+Los títulos que se muestran en la interfaz de Studio se derivan de los nombres de los directorios dividiendo por guiones y capitalizando cada palabra. Por ejemplo, `tarjeta-social` se convierte en "Tarjeta Social" y `instagram-publicacion` se convierte en "Instagram Publicacion".
+
+Cuando existen múltiples plantillas en el mismo nivel, se ordenan alfabéticamente por su título humanizado.
+
+## Formas de creación
+
+FrameKit soporta dos formas para definir plantillas. Ambas producen el mismo resultado final; elige la forma que se ajuste a la complejidad de tu plantilla.
+
+### Plantilla en línea
+
+Para plantillas directas, define todo en un único archivo `template.tsx`:
+
+```tsx
+import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+
+export default defineTemplate({
+  width: 1200,
+  height: 800,
+  fields: {
+    title: fields.text({ label: 'Título', required: true }),
+    accentColor: fields.color({ label: 'Color de acento', defaultValue: '#b9f8d2' }),
+  },
+  content: {
+    es: {
+      language: 'Español',
+      title: 'Tu próxima historia empieza aquí',
+    },
+    en: {
+      language: 'English',
+      title: 'Your next story starts here',
+    },
+  },
+  render({ data, locale, width, height }) {
+    return (
+      <article
+        style={{
+          width,
+          height,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: 72,
+          background: 'linear-gradient(135deg, #10271f, #39775f)',
+          color: '#f5fff8',
+        }}
+      >
+        <Markdown value={data.title} style={{ fontSize: 72 }} />
+      </article>
+    )
+  },
+})
+```
+
+### Definición extraída
+
+Para plantillas con lógica de renderizado compleja, separa la definición del componente React usando `defineTemplateBase`. Esto permite colocar componentes de arte, utilitarios y recursos en subdirectorios privados sin afectar el descubrimiento de plantillas.
+
+```tsx
+// definition.ts
+import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
+import type { TemplateRenderProps } from '@mauriciodmo/framekit'
+
+export const templateBase = defineTemplateBase({
+  width: 1080,
+  height: 1080,
+  fields: {
+    title: fields.text({ label: 'Título' }),
+    accentColor: fields.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
+  },
+  content: {
+    aurora: { language: 'Aurora', title: 'Luz del norte' },
+    desert: { language: 'Desierto', title: ' Horizonte abierto' },
+  },
+})
+
+export type ArtworkProps = TemplateRenderProps<typeof templateBase>
+```
+
+```tsx
+// artwork.tsx
+import type { ArtworkProps } from './definition'
+
+export function Artwork({ data, locale, width, height }: ArtworkProps) {
+  return (
+    <article lang={locale} style={{ width, height, color: data.accentColor }}>
+      {data.title}
+    </article>
+  )
+}
+```
+
+```tsx
+// template.tsx
+import { defineTemplate } from '@mauriciodmo/framekit'
+import { Artwork } from './artwork'
+import { templateBase } from './definition'
+
+export default defineTemplate({
+  ...templateBase,
+  render: Artwork,
+})
+```
+
+## Estructura de la definición de plantilla
+
+Cada definición de plantilla requiere cinco propiedades:
+
+- `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
+- `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
+- `fields` — un registro donde cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o url)
+- `content` — un registro con al menos una entrada de locale, donde cada entrada contiene una cadena `language` y valores parciales de campos
+- `render` — una función que recibe propiedades tipadas y devuelve un nodo React
+
+## Contenido y locales
+
+Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma — puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `lunar`, `fjord` o `variante-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible por humanos, y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos no presentes en un locale usan su `defaultValue` si está declarado, de lo contrario permanecen vacíos.
+
+La clave `language` dentro de cada entrada de locale está reservada. Se usa solo como etiqueta de visualización en la interfaz de Studio y nunca se incluye en el objeto `data` que se pasa a `render`.
+
+```tsx
+content: {
+  fjord: { language: 'Fjordic', title: 'Offer' },
+  moon: { language: 'Lunar', title: 'Oferta' },
+}
+```
+
+En este ejemplo, el tipo `locale` es `'fjord' | 'moon'`, no una unión global de idiomas.
+
+## Props de renderizado
+
+La función `render` recibe un único objeto con cuatro propiedades:
+
+- `data` — un objeto que contiene todas las claves de campos como cadenas. Cada valor de campo es el valor de contenido para el locale actual o el `defaultValue` del campo.
+- `locale` — la clave del locale actualmente seleccionado, tipado como una unión de todas las claves de contenido.
+- `width` — el ancho de la plantilla como tipo literal.
+- `height` — la altura de la plantilla como tipo literal.
+
+## Regeneración automática
+
+Cuando se ejecuta `framekit dev`, FrameKit observa el directorio `src/templates/` en busca de cambios estructurales. Agregar o eliminar un directorio o archivo `template.tsx` desencadena el registro de plantillas. Editar el contenido de un archivo `template.tsx` existente depende de Hot Module Replacement (HMR) de Next.js para actualizar la instancia en ejecución.
+
+## Claves reservadas
+
+La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de campo. FrameKit rechaza esto tanto en tiempo de compilación como en ejecución. Cada entrada en `content` debe contener una propiedad `language` de tipo string.
+
+---
+
+[English](/en/guides/template-authoring.md) · [Español](/es/guides/template-authoring.md)

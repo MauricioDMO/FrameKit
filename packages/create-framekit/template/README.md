@@ -1,12 +1,24 @@
-# Proyecto FrameKit
+# FrameKit Project
 
-```bash
+```
 pnpm dev
 ```
 
-Las plantillas viven en `src/templates`. Una carpeta que contiene
-`template.tsx` aparece automáticamente en el editor.
+Templates live in `src/templates`. A directory containing `template.tsx`
+appears automatically in the Studio editor.
 
-La plantilla de ejemplo usa el patrón inline con `defineTemplate`. Para
-diseños complejos, consulta el patrón extraído con
-[`defineTemplateBase`](https://github.com/MauricioDMO/FrameKit/blob/main/packages/framekit/README.md#extracted-artwork).
+The included example template uses the inline pattern with `defineTemplate`.
+For complex layouts, see the extracted artwork pattern with
+[`defineTemplateBase`](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md#extracted-artwork).
+
+## Available commands
+
+- `pnpm dev` — start the development server
+- `pnpm check` — validate all templates
+- `pnpm build` — validate and build for production
+- `pnpm start` — start the production server
+
+## Documentation
+
+- [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
+- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)

@@ -1,0 +1,155 @@
+# Repository structure
+
+## Workspace structure
+
+FrameKit is a pnpm monorepo with a root workspace that is private and never published to npm.
+
+The root `package.json` has `"private": true` and no `name` field, so it cannot be accidentally published. Root `pnpm-workspace.yaml` defines membership with these globs:
+
+```yaml
+packages:
+  - apps/*
+  - packages/*
+  - examples/*
+```
+
+The workspace contains four child workspaces:
+
+| Workspace                   | Name                           | Private | Purpose                                                                                            |
+| --------------------------- | ------------------------------ | ------- | -------------------------------------------------------------------------------------------------- |
+| `apps/studio/`              | `studio`                       | Yes     | First-party Next.js application — the visual editor UI, templates, registry, and dev server runner |
+| `packages/framekit/`        | `@mauriciodmo/framekit`        | No      | Public package — runtime, editor components, Studio components, CLI, dev server, and codegen       |
+| `packages/create-framekit/` | `@mauriciodmo/create-framekit` | No      | Public project scaffolding CLI                                                                     |
+| `examples/basic/`           | `framekit-example-basic`       | Yes     | Minimal consumer harness for distribution testing                                                  |
+
+The root workspace itself carries no runtime dependencies. All application code lives in the child workspaces.
+
+## Root scripts
+
+The root `package.json` defines scripts that recurse into all child workspaces:
+
+```json
+{
+  "scripts": {
+    "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm --filter studio dev",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "build": "pnpm -r --if-present build"
+  }
+}
+```
+
+- `pnpm dev` — builds the public `@mauriciodmo/framekit` package first, then starts Studio. Do not run `pnpm dev` from inside a package directory; always run it from the repository root.
+- `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` — all recurse into every workspace that defines the corresponding script.
+
+## Package-first build reason
+
+`@mauriciodmo/framekit` must be built **before** Studio or the example can run. Both `studio` and `framekit-example-basic` declare `@mauriciodmo/framekit` with a `workspace:*` link:
+
+```json
+"@mauriciodmo/framekit": "workspace:*"
+```
+
+This means they resolve to the source on disk. However, the package's `dist/` output (JavaScript, type declarations, CSS) does not exist until a build runs. The root `pnpm dev` enforces the correct order by building the package first and then starting Studio.
+
+Running `pnpm dev` from inside a package directory bypasses this ordering and will fail because the `dist/` it tries to import does not yet exist.
+
+## Focused package commands
+
+To target a specific workspace without recursing into all of them, use `pnpm --filter`:
+
+```bash
+pnpm --filter @mauriciodmo/framekit build
+pnpm --filter @mauriciodmo/create-framekit build
+pnpm --filter studio dev
+pnpm --filter framekit-example-basic build
+```
+
+These are equivalent to running the script inside that package's directory.
+
+## Generated and build artifacts
+
+The following paths are produced during development:
+
+| Path                               | What it contains                                                                              | Git status                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `.framekit/generated/templates.ts` | Auto-generated type augmented template registry                                               | **Committed** — required for type checking in packages that import `@mauriciodmo/framekit` |
+| `.framekit/next/`                  | Next.js build output including standalone server (Studio or example)                          | Ignored                                                                                    |
+| `packages/framekit/dist/`          | Built JavaScript (ESM), type declarations (`.d.ts`), and `styles.css` from the public package | Ignored                                                                                    |
+
+All three directories are gitignored via `**/.framekit/`, `**/dist/`, and Next.js-specific patterns in `.next/`. The exception is `templates.ts`, which is committed because CI and type checking depend on it existing without requiring a prior build step.
+
+## What belongs where
+
+Use this guide to determine where a given piece of code or file should live:
+
+**`packages/framekit/src/`** — All reusable code intended for external consumers:
+- Runtime core (`defineTemplate`, `validateTemplateData`, field definitions, rendering helpers)
+- Editor React components
+- Studio React components (root shell, panels, routes)
+- Codegen scanner and generator
+- CLI entry points
+- Dev server
+
+**`packages/create-framekit/src/`** — Logic for the `create-framekit` project scaffolding CLI only. The CLI binary entry point lives here; templates themselves live in `template/`.
+
+**`apps/studio/src/`** — Code specific to the first-party Next.js application:
+- Next.js routes, pages, and API handlers
+- Application-level i18n (user-facing locale strings)
+- Studio assets and public resources
+- `next.config.ts`, local ESLint and TypeScript configuration
+- Integration tests that exercise the full Studio generation flow
+
+**`examples/basic/`** — A standalone Next.js project that imports `@mauriciodmo/framekit` as a consumer would. It has no shared source with Studio and serves as a distribution test harness.
+
+**Files shipped in npm tarballs** — `README.md` and `LICENSE` inside `packages/framekit/` and `packages/create-framekit/` are included in published packages via the `files` field in each `package.json`.
+
+**Historical engineering records** — Documents in `Docs/Plans/framekit-alpha/` capture design decisions and migration history. They are not user-facing documentation and are not synced with current implementation details.
+
+## Development workflow
+
+### First-time setup
+
+```bash
+git clone <repository-url>
+cd FrameKit
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+This installs all workspace dependencies, builds `@mauriciodmo/framekit`, and starts Studio.
+
+### After adding dependencies
+
+If you add a new dependency to any `package.json`, run the root build to propagate the lockfile and rebuild the package:
+
+```bash
+pnpm build
+```
+
+This runs `pnpm -r --if-present build`, which rebuilds every workspace that defines a build script.
+
+### Running tests
+
+Tests use [Vitest](https://vitest.dev). Editor component tests use `jsdom` for DOM simulation.
+
+```bash
+# Run all tests across all workspaces
+pnpm test
+
+# Run tests for a specific package
+pnpm --filter @mauriciodmo/framekit test
+```
+
+### Type checking
+
+Type checking runs `tsc --noEmit` in each package. Additionally, `@mauriciodmo/framekit` runs a second type check against a dedicated type fixture in `packages/framekit/tests/types/` via `tsc --noEmit -p tests/types/tsconfig.json`. This catches type export issues that a single-package check might miss.
+
+```bash
+pnpm typecheck
+```
+
+---
+
+[English](./repository.md) · [Español](../es/development/repository.md)

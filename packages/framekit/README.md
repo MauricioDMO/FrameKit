@@ -110,3 +110,11 @@ and structured validation errors.
 `FrameKitStudioRoot` and `FrameKitStudio` provide the complete editor interface,
 including navigation, locale and theme controls. Pass the generated `templates`
 array to `FrameKitStudio` from a client page under `/editor`.
+
+## Full documentation
+
+- [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
+- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
+- [Template Authoring Guide](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md)
+- [CLI Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/cli.md)
+- [Public API Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
