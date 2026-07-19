@@ -17,6 +17,7 @@
 | 08   | CLI                         | 2026-07-18    |
 | 09   | Creador de proyectos        | 2026-07-18    |
 | 09.5 | Studio empaquetado          | 2026-07-18    |
+| 10   | Distribución                | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 

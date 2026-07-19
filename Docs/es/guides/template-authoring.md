@@ -135,7 +135,7 @@ Cada definición de plantilla requiere cinco propiedades:
 
 ## Contenido y locales
 
-Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma — puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `lunar`, `fjord` o `variante-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible por humanos, y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos no presentes en un locale usan su `defaultValue` si está declarado, de lo contrario permanecen vacíos.
+Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma — puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `lunar`, `fjord` o `variante-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible por humanos, y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos no presentes en un locale comienzan con su `defaultValue` si está declarado, de lo contrario permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#orden-de-resolución-de-datos): defaults -> contenido del locale -> ediciones del usuario.
 
 La clave `language` dentro de cada entrada de locale está reservada. Se usa solo como etiqueta de visualización en la interfaz de Studio y nunca se incluye en el objeto `data` que se pasa a `render`.
 
@@ -152,7 +152,7 @@ En este ejemplo, el tipo `locale` es `'fjord' | 'moon'`, no una unión global de
 
 La función `render` recibe un único objeto con cuatro propiedades:
 
-- `data` — un objeto que contiene todas las claves de campos como cadenas. Cada valor de campo es el valor de contenido para el locale actual o el `defaultValue` del campo.
+- `data` — un objeto que contiene todas las claves de campos como cadenas después de resolver los datos. En Studio, los valores se aplican en este orden: defaults de campos, contenido del locale y después ediciones del usuario.
 - `locale` — la clave del locale actualmente seleccionado, tipado como una unión de todas las claves de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
 - `height` — la altura de la plantilla como tipo literal.
@@ -167,4 +167,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](/en/guides/template-authoring.md) · [Español](/es/guides/template-authoring.md)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md)

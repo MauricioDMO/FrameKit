@@ -28,6 +28,8 @@ pnpm --filter @mauriciodmo/create-framekit pack
 - [ ] Ejecutar las pruebas de tarball de la fase 10 con los artefactos recién creados. **(Requiere ejecutar manualmente los tarballs en un entorno aislado)**
 - [ ] Revisar manualmente cada `npm pack --dry-run` para confirmar que no publica secretos, fuente no compilada ni archivos de Studio.
 
+La fase 10 tiene una verificación histórica registrada para sus tarballs. Las dos comprobaciones manuales anteriores siguen pendientes para los artefactos recién creados y no se consideran realizadas por esa verificación histórica.
+
 ## Publicación manual
 
 - [ ] Publicar primero `@mauriciodmo/framekit` con `npm publish --access public --tag alpha` desde su directorio de paquete.

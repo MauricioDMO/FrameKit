@@ -13,12 +13,12 @@ The root entry point provides the core runtime API for defining, validating, and
 | `defineTemplate`             | Defines a template with fields, locale-aware rendering, and data resolution                                               |
 | `defineTemplateBase`         | Defines the base structure for a template without full template configuration                                             |
 | `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`) |
-| `Markdown`                   | Renders markdown content with customizable components                                                                     |
+| `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                               |
 | `validateTemplateData`       | Validates template data against a template definition                                                                     |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                               |
-| `resolveTemplateData`        | Resolves template data, applying default values and resolving locale variants                                             |
-| `getLocales`                 | Extracts all locales defined in a template from its field structure                                                       |
-| `getDefaultValues`           | Extracts default values for all fields from a template definition                                                         |
+| `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; applies defaults -> locale content -> user edits |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the keys of `definition.content`                         |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults             |
 
 **Type exports**
 
@@ -69,6 +69,8 @@ Provides the `FrameKitEditor` component and supporting navigation utilities for 
 
 Provides the `FrameKitStudio` component, which combines editor and navigation into a complete studio interface, along with localization utilities.
 
+Its main component accepts `{ templates: readonly FrameKitStudioTemplate[] }`.
+
 **Runtime exports**
 
 | Export              | Description                                              |
@@ -94,6 +96,8 @@ Provides the `FrameKitStudio` component, which combines editor and navigation in
 | Export               | Description                                                                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `FrameKitStudioRoot` | Server component that bootstraps the studio; must be used in server components or layouts only. Do not import in client-side code. |
+
+Signature: `FrameKitStudioRoot({ children }: { children: React.ReactNode })`. It emits the complete `<html>`, `<head>`, and `<body>` shell, so a root layout using it must not nest another document shell.
 
 ---
 
@@ -155,7 +159,7 @@ These are peer requirements. The package will emit a warning during installation
 | Export                                                   | Side    | Reason                                                                                             |
 | -------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
 | `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Client  | Interactive React components that manage state and respond to user input                           |
-| `Markdown`                                               | Client  | React component that renders UI                                                                    |
+| `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                 |
 | `FrameKitStudioRoot`                                     | Server  | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
 | `@mauriciodmo/framekit/dev` entry points                 | Server  | Dev server, template discovery, code generation, and file watching are all server-side operations  |
 | PNG export utilities                                     | Browser | Rely on the DOM, `document.fonts`, and the `modern-screenshot` library which requires browser APIs |
@@ -168,4 +172,4 @@ These are peer requirements. The package will emit a warning during installation
 - **Published files**: `bin/`, `dist/`, `README.md`, `LICENSE`
 - **CLI**: `bin/framekit.js` is the entry point for the `framekit` command-line executable
 
-[Español](./es/reference/public-api.md)
+[Español](../../es/reference/public-api.md)

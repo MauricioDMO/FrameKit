@@ -48,7 +48,6 @@ El proyecto generado no incluye scripts de `test`, `lint` ni `typecheck`.
 
 ## Advertencias
 
-- `create-framekit` solo funciona con pnpm. npm, yarn y bun no son compatibles.
 - `pnpm dlx` solo funciona después de que `@mauriciodmo/create-framekit` y `@mauriciodmo/framekit` estén publicados en npm.
 
 ---

@@ -45,7 +45,7 @@ template/
 ```
 
 - [x] La página raíz enlaza o redirige a `/editor`.
-- [x] La ruta de editor usa `templateManifest` y `templateRegistry` generados por FrameKit.
+- [x] La ruta de editor es un Client Component mínimo que entrega `templates` desde `.framekit/generated/templates.ts` a `FrameKitStudio`.
 - [x] `globals.css` importa `@mauriciodmo/framekit/styles.css`.
 - [x] La plantilla ejemplo importa `defineTemplate`, `fields` y `Markdown` solo desde `@mauriciodmo/framekit`.
 - [x] La plantilla ejemplo contiene al menos un campo de texto y un idioma, para que el proyecto sea utilizable inmediatamente.

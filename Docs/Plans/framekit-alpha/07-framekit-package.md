@@ -64,7 +64,7 @@ La fase 06 entrega directamente en este paquete el código reutilizable, sus pru
 
 - [x] Usar `name: "@mauriciodmo/framekit"`, `version: "0.1.0-alpha.1"`, `type: "module"` y `license: "Apache-2.0"`.
 - [x] Declarar `files: ["dist", "README.md", "LICENSE"]`.
-- [x] Declarar exports explícitos para `.`, `./editor` y `./styles.css`, cada JavaScript con `types` e `import`.
+- [x] Declarar exports explícitos para `.`, `./editor`, `./studio`, `./studio/root`, `./dev` y `./styles.css`, cada JavaScript con `types`, `import` y `default` cuando corresponde.
 - [x] No declarar todavía `bin.framekit`; el binario pertenece a la fase 08 junto con `src/cli.ts`.
 - [x] Declarar `next: >=16 <17`, `react: >=19 <20` y `react-dom: >=19 <20` como peer dependencies.
 - [x] Declarar `publishConfig.access: public`.

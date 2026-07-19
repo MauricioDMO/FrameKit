@@ -4,7 +4,7 @@
 
 FrameKit es un monorepo de pnpm con un espacio de trabajo raíz privado que nunca se publica en npm.
 
-El `package.json` raíz tiene `"private": true` y no tiene campo `name`, por lo que no puede publicarse accidentalmente. El `pnpm-workspace.yaml` raíz define la pertenencia con estos patrones:
+El `package.json` raíz tiene `"private": true` y el nombre `framekit-workspace`, por lo que no puede publicarse accidentalmente. El `pnpm-workspace.yaml` raíz define la pertenencia con estos patrones:
 
 ```yaml
 packages:
@@ -17,7 +17,7 @@ El espacio de trabajo contiene cuatro espacios de trabajo secundarios:
 
 | Espacio de trabajo          | Nombre                         | Privado | Propósito                                                                                                                    |
 | --------------------------- | ------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `apps/studio/`              | `studio`                       | Sí      | Aplicación Next.js propia — interfaz del editor visual, plantillas, registro y ejecutor del servidor de desarrollo           |
+| `apps/studio/`              | `studio`                       | Sí      | Aplicación Next.js propia — interfaz del editor visual, plantillas, registro y rutas de la aplicación                       |
 | `packages/framekit/`        | `@mauriciodmo/framekit`        | No      | Paquete público — runtime, componentes del editor, componentes de Studio, CLI, servidor de desarrollo y generación de código |
 | `packages/create-framekit/` | `@mauriciodmo/create-framekit` | No      | CLI pública para la creación de proyectos                                                                                    |
 | `examples/basic/`           | `framekit-example-basic`       | Sí      | Arnés mínimo de consumidor para pruebas de distribución                                                                      |
@@ -26,7 +26,7 @@ El espacio de trabajo raíz en sí no tiene dependencias de ejecución. Todo el 
 
 ## Scripts raíz
 
-El `package.json` raíz define scripts que se ejecutan recursivamente en todos los espacios de trabajo secundarios:
+El `package.json` raíz define scripts para todo el repositorio y un script de desarrollo enfocado:
 
 ```json
 {
@@ -51,9 +51,11 @@ El `package.json` raíz define scripts que se ejecutan recursivamente en todos l
 "@mauriciodmo/framekit": "workspace:*"
 ```
 
-Esto significa que se resuelven al código fuente en disco. Sin embargo, la salida en `dist/` del paquete (JavaScript, declaraciones de tipos, CSS) no existe hasta que se ejecuta una compilación. El `pnpm dev` raíz aplica el orden correcto compilando primero el paquete y luego iniciando Studio.
+Esto enlaza el directorio del paquete en disco, mientras sus `exports` apuntan a los archivos compilados de `dist/`. La salida en `dist/` del paquete (JavaScript, declaraciones de tipos, CSS) no existe hasta que se ejecuta una compilación. El `pnpm dev` raíz aplica el orden correcto compilando primero el paquete y luego iniciando Studio.
 
 Ejecutar `pnpm dev` desde dentro de un directorio de paquete evita este ordenamiento y fallará porque el `dist/` que intenta importar aún no existe.
+
+El paquete público solo exporta `.`, `./editor`, `./studio`, `./studio/root`, `./dev` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. El proyecto generado usa la versión publicada del paquete, no `workspace:*`.
 
 ## Comandos enfocados en paquetes específicos
 
@@ -74,11 +76,11 @@ Las siguientes rutas se producen durante el desarrollo:
 
 | Ruta                               | Contenido                                                                                       | Estado en git                                                                                             |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `.framekit/generated/templates.ts` | Registro de plantillas tipado auto-generado                                                     | **Confirmado** — requerido para la verificación de tipos en paquetes que importan `@mauriciodmo/framekit` |
+| `.framekit/generated/templates.ts` | Registro de plantillas tipado auto-generado                                                     | **Ignorado** — se regenera con `framekit generate` cuando es necesario |
 | `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone (Studio o ejemplo)          | Ignorado                                                                                                  |
 | `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                                                                  |
 
-Los tres directorios están en `.gitignore` mediante `**/.framekit/`, `**/dist/` y patrones específicos de Next.js en `.next/`. La excepción es `templates.ts`, que está confirmado porque CI y la verificación de tipos dependen de que exista sin requerir un paso de compilación previo.
+Los tres directorios están en `.gitignore` mediante `**/.framekit/`, `**/dist/` y patrones específicos de Next.js en `.next/`. El registro generado es desechable y debe regenerarse antes de ejecutar comandos que lo importen.
 
 ## Qué pertenece a cada lugar
 
@@ -152,4 +154,4 @@ pnpm typecheck
 
 ---
 
-[English](../en/development/repository.md) · [Español](./repository.md)
+[English](../../en/development/repository.md) · [Español](./repository.md)

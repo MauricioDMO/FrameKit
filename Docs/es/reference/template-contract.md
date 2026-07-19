@@ -202,7 +202,7 @@ Estas son las claves en el objeto `content` de la plantilla. Son strings arbitra
 
 La interfaz de Studio (etiquetas, botones, mensajes) usa uno de dos idiomas: Español (`es`) o Inglés (`en`). Esto se resuelve en el siguiente orden:
 
-1. La cookie `lang`
+1. La cookie `locale`
 2. El encabezado `Accept-Language` del navegador
 3. Fallback a Español (`es`)
 
@@ -210,4 +210,4 @@ Esta separación significa que los locales de contenido de la plantilla y el idi
 
 ---
 
-[English](/en/reference/template-contract.md) | [Español](/es/reference/template-contract.md)
+[English](../../en/reference/template-contract.md) | [Español](./template-contract.md)

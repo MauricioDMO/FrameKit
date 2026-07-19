@@ -202,7 +202,7 @@ These are the keys in the template's `content` object. They are arbitrary string
 
 The Studio interface (labels, buttons, messages) uses one of two languages: Spanish (`es`) or English (`en`). This is resolved in the following order:
 
-1. The `lang` cookie
+1. The `locale` cookie
 2. The browser's `Accept-Language` header
 3. Fallback to Spanish (`es`)
 
@@ -210,4 +210,4 @@ This separation means template content locales and Studio UI language are indepe
 
 ---
 
-[English](/en/reference/template-contract.md) | [Español](/es/reference/template-contract.md)
+[English](./template-contract.md) | [Español](../../es/reference/template-contract.md)

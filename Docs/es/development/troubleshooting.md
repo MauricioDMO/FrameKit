@@ -14,7 +14,7 @@ Si el directorio no existe o no contiene subdirectorios, `framekit generate` no 
 
 **Causa: los directorios de plantillas no siguen kebab-case**
 
-Cada directorio dentro de `src/templates` debe seguir el patrón `^[a-z0-9]+(?:-[a-z0-9]+)*$` — letras minúsculas, números y guiones simples entre segmentos. Un directorio llamado `MyTemplate`, `my_template` o `template.v1` se omitirá silenciosamente.
+Cada directorio dentro de `src/templates` debe seguir el patrón `^[a-z0-9]+(?:-[a-z0-9]+)*$` — letras minúsculas, números y guiones simples entre segmentos. Un directorio llamado `MyTemplate`, `my_template` o `template.v1` hará que `framekit generate` falle con un error de segmento inválido.
 
 **Causa: los directorios que comienzan con `_` o `.` se ignoran**
 
@@ -30,6 +30,12 @@ Esto regenera `.framekit/generated/templates.ts` a partir del estado actual de `
 
 ```
 framekit generate
+```
+
+Cuando no existen plantillas, el comando termina con código `1` e imprime la ruta actual, por ejemplo:
+
+```text
+No se encontraron plantillas en: /ruta/al/proyecto/src/templates
 ```
 
 ---
@@ -110,13 +116,7 @@ Algunas dependencias de FrameKit (`sharp`, `esbuild`, `@parcel/watcher`) incluye
 
 **Solución: asegúrate de que las herramientas de compilación estén disponibles y reintenta**
 
-Instala `python`, `make` y una cadena de herramientas de C++ (como `build-essential` en Debian/Ubuntu o las Visual Studio Build Tools en Windows), y luego reintenta la instalación. Si el problema persiste, prueba a instalar sin ejecutar scripts de compilación:
-
-```
-pnpm install --ignore-scripts
-```
-
-Luego puedes recompilar los paquetes afectados manualmente después de la instalación.
+Instala `python`, `make` y una cadena de herramientas de C++ (como `build-essential` en Debian/Ubuntu o las Visual Studio Build Tools en Windows), y luego reintenta la instalación. No uses `pnpm install --ignore-scripts` como solución general: puede dejar las dependencias nativas sin sus artefactos de postinstall. Es preferible corregir la cadena de herramientas y usar las entradas `allowBuilds` del `pnpm-workspace.yaml` del repositorio o del proyecto generado. Usa la supresión de scripts solo para un diagnóstico deliberado; después recompila las dependencias afectadas y verifica el proyecto con `pnpm check` y `pnpm build`.
 
 **Nota:** `create-framekit` conserva el directorio del proyecto parcialmente creado para diagnóstico incluso cuando la instalación falla.
 
@@ -192,6 +192,8 @@ En estructuras de monorepo anidadas, `framekit start` puede encontrar más de un
 
 **Nota:** FrameKit identifica el servidor correcto buscando un archivo `BUILD_ID` en la ubicación esperada junto a cada candidato `server.js`.
 
+El otro fallo de inicio en producción se reporta con código `1` y el mensaje literal `No existe una build de producción. Ejecuta framekit build primero.` cuando falta `.framekit/next/standalone`.
+
 ---
 
 ## La exportación PNG falla o exporta una imagen en blanco o incorrecta
@@ -256,8 +258,8 @@ $env:VAR="value"; pnpm dev
 
 Como alternativa, establece la variable de forma permanente mediante `setx` o a través de la UI de Variables de Entorno de Windows.
 
-**Nota:** `create-framekit` usa `pnpm.cmd` internamente, que funciona correctamente en Windows sin ninguna sintaxis extra.
+**Nota:** `create-framekit` selecciona `pnpm.cmd` en Windows, pero el flujo completo en Windows no está cubierto por CI ni por la suite automatizada actual.
 
 ---
 
-[English](/en/development/troubleshooting.md) | [Español](/es/development/troubleshooting.md)
+[English](../../en/development/troubleshooting.md) | [Español](../../es/development/troubleshooting.md)

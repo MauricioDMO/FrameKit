@@ -74,4 +74,4 @@ Studio displays different states depending on what is happening:
 
 ---
 
-[Español](./studio.md)
+[Español](../../es/guides/studio.md)

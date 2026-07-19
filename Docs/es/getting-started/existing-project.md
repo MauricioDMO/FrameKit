@@ -8,9 +8,8 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 
 - Next.js 16 o posterior (pero no Next.js 17).
 - React 19 o posterior (pero no React 20).
-- pnpm 11 o posterior.
 
-FrameKit solo funciona con pnpm. No es compatible con npm, yarn ni bun.
+Los comandos siguientes usan pnpm. El runtime y la CLI de FrameKit no requieren pnpm por sí mismos; usa los comandos equivalentes del gestor de paquetes de tu proyecto.
 
 ## Instalar el paquete
 
@@ -78,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-`FrameKitStudioRoot` es un componente de servidor asíncrono. Lee la configuración de idioma del header `accept-language` y de la cookie del usuario, aplica la clase de tema claro u oscuro al elemento `<html>`, y renderiza un `FrameKitLocaleProvider` alrededor de tus hijos.
+`FrameKitStudioRoot` es un componente de servidor asíncrono que emite el shell completo del documento: genera o reemplaza `<html>`, `<head>` y `<body>`, y luego renderiza un `FrameKitLocaleProvider` alrededor de tus hijos. Úsalo directamente desde el layout raíz del App Router, que debe seguir siendo un componente de servidor y no debe renderizar otro `<html>`, `<head>` ni `<body>`. Lee el idioma del header `accept-language` y de la cookie del usuario, y aplica la clase de tema claro u oscuro a `<html>`.
 
 ## Crear la ruta catch-all del editor
 
@@ -117,7 +116,7 @@ Ejecuta `framekit generate` para descubrir cada plantilla en tu proyecto y escri
 pnpm framekit generate
 ```
 
-Este comando escribe `src/@framekit/generated/templates.ts` (resuelto mediante el alias `@framekit/*`). El archivo generado exporta un arreglo de solo lectura llamado `templates`. No edites este archivo; se sobrescribe cada vez que ejecutas `framekit generate` o `pnpm framekit dev`.
+Este comando escribe `.framekit/generated/templates.ts` (resuelto mediante el alias `@framekit/*`). El archivo generado exporta un arreglo de solo lectura llamado `templates`. No edites este archivo; se sobrescribe cada vez que ejecutas `framekit generate` o `pnpm framekit dev`.
 
 ## El directorio .framekit
 
@@ -155,12 +154,7 @@ pnpm framekit start
 
 ## Variables de entorno
 
-El servidor de desarrollo (`pnpm framekit dev`) respeta las siguientes variables de entorno:
-
-- `PORT` — el número de puerto. Por defecto es `3000`.
-- `HOST` o `FRAMEKIT_HOST` — el nombre de host. Por defecto es `localhost`. `FRAMEKIT_HOST` tiene precedencia sobre `HOST`.
-
-El servidor de producción (`pnpm framekit start`) no lee estas variables; sirve en el puerto incrustado en la compilación standalone.
+Consulta la [referencia de la CLI](../reference/cli.md#framekit-dev) para la distinción normativa: `framekit dev` procesa `FRAMEKIT_HOST`, `HOST` y `PORT`, mientras [`framekit start`](../reference/cli.md#framekit-start) pasa el entorno heredado al servidor standalone de Next, que gestiona sus propias variables de producción.
 
 ## Limitación crítica
 

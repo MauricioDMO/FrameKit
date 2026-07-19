@@ -1,7 +1,7 @@
 # Plan B: FrameKit alpha (historical engineering record)
 
 > **Note:** This directory contains the engineering record of the alpha development plan.
-> User documentation is now in [Docs/en](../en/README.md) and [Docs/es](../es/README.md).
+> User documentation is now in [Docs/en](../../en/README.md) and [Docs/es](../../es/README.md).
 
 Este directorio reemplaza el plan y la documentación del contrato anterior. Las fases se ejecutan estrictamente en orden: una fase no empieza hasta que la anterior tenga todos sus checkboxes marcados y sus verificaciones ejecutadas con éxito.
 

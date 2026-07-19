@@ -14,7 +14,7 @@ If the directory does not exist or contains no subdirectories, `framekit generat
 
 **Cause: template directories not matching kebab-case**
 
-Every directory inside `src/templates` must follow the pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$` — lowercase letters, numbers, and single hyphens between segments. A directory named `MyTemplate`, `my_template`, or `template.v1` will be silently skipped.
+Every directory inside `src/templates` must follow the pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$` — lowercase letters, numbers, and single hyphens between segments. A directory named `MyTemplate`, `my_template`, or `template.v1` causes `framekit generate` to fail with an invalid-segment error.
 
 **Cause: directories starting with `_` or `.` are ignored**
 
@@ -30,6 +30,12 @@ This regenerates `.framekit/generated/templates.ts` from the current state of `s
 
 ```
 framekit generate
+```
+
+When no templates exist, the command exits with code `1` and prints the current path, for example:
+
+```text
+No se encontraron plantillas en: /path/to/project/src/templates
 ```
 
 ---
@@ -110,13 +116,7 @@ Some FrameKit dependencies (`sharp`, `esbuild`, `@parcel/watcher`) include nativ
 
 **Fix: ensure build tools are available and retry**
 
-Install `python`, `make`, and a C++ toolchain (like `build-essential` on Debian/Ubuntu or the Visual Studio Build Tools on Windows), then retry the installation. If the problem persists, try installing without running build scripts:
-
-```
-pnpm install --ignore-scripts
-```
-
-You can then rebuild the affected packages manually after installation.
+Install `python`, `make`, and a C++ toolchain (like `build-essential` on Debian/Ubuntu or the Visual Studio Build Tools on Windows), then retry the installation. Do not use `pnpm install --ignore-scripts` as a general fix: it can leave native dependencies without their required postinstall artifacts. Prefer fixing the toolchain and using the `allowBuilds` entries in the repository or generated project's `pnpm-workspace.yaml`. Only use script suppression for a deliberate diagnosis, then rebuild the affected packages and verify the project with `pnpm check` and `pnpm build`.
 
 **Note:** `create-framekit` preserves the partially-created project directory for diagnosis even when installation fails.
 
@@ -192,6 +192,8 @@ In nested monorepo structures, `framekit start` may find more than one `server.j
 
 **Note:** FrameKit identifies the correct server by searching for a `BUILD_ID` file at the expected location next to each `server.js` candidate.
 
+The other production-start failure is reported with exit code `1` and the literal message `No existe una build de producción. Ejecuta framekit build primero.` when `.framekit/next/standalone` is missing.
+
 ---
 
 ## PNG export fails or exports blank/wrong image
@@ -256,8 +258,8 @@ $env:VAR="value"; pnpm dev
 
 Alternatively, set the variable permanently via `setx` or through the Windows Environment Variables UI.
 
-**Note:** `create-framekit` uses `pnpm.cmd` internally, which works correctly on Windows without any extra syntax.
+**Note:** `create-framekit` selects `pnpm.cmd` on Windows, but the full Windows flow is not covered by CI or the current automated test suite.
 
 ---
 
-[English](/en/development/troubleshooting.md) | [Español](/es/development/troubleshooting.md)
+[English](../../en/development/troubleshooting.md) | [Español](../../es/development/troubleshooting.md)

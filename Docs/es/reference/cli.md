@@ -40,9 +40,12 @@ El directorio temporal de comprobación se elimina siempre al terminar, tanto si
 Los errores estructurados se reportan por plantilla, por regional y por campo:
 
 ```
-/ruta/a/src/templates/example/template.tsx: content.en.title: required (min: 3)
-/ruta/a/src/templates/example/template.tsx: content.es.url: url
+/ruta/a/src/templates/example/template.tsx: content.en.title: required
+/ruta/a/src/templates/example/template.tsx: content.en.count: number_too_small (min: 3)
+/ruta/a/src/templates/example/template.tsx: content.es.url: invalid_url
 ```
+
+El proceso de comprobación termina con código `1` cuando reporta errores de validación. Los errores de definición usan el mismo formato `archivo: mensaje`, por ejemplo `.../template.tsx: render must be a function`.
 
 `framekit check` no es una verificación de tipos TypeScript ni llama a `render` ni prueba la exportación a PNG. Usa `next build` para la verificación de tipos.
 
@@ -60,7 +63,7 @@ Antes de iniciar el servidor, el comando ejecuta `generate` para producir el reg
 
 El observador de plantillas monitorea `src/templates` solo para cambios estructurales: un nuevo archivo `template.tsx`, un archivo `template.tsx` eliminado, o un directorio nuevo o eliminado bajo `src/templates`. Las ediciones al contenido de un `template.tsx` existente no activan regeneración; Next HMR gestiona ese contenido automáticamente. Cuando se detecta un cambio estructural, la regeneración se aplaza 150ms (debounce). Solo una generación se ejecuta a la vez; si llega un cambio estructural mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
 
-El servidor escucha en un hostname y puerto determinados por las siguientes variables de entorno (en orden de prioridad):
+FrameKit resuelve directamente el hostname y el puerto del servidor de desarrollo usando las siguientes variables de entorno (en orden de prioridad):
 
 | Variable        | Valor por defecto | Notas                                                      |
 | --------------- | ----------------- | ---------------------------------------------------------- |
@@ -101,7 +104,7 @@ framekit build
 
 Inicia el servidor standalone de producción.
 
-El comando busca exactamente un archivo `server.js` dentro de `.framekit/next/standalone/` cuya salida trazeada adjunta contenga un archivo `BUILD_ID`. Si se encuentran cero o más de un candidato, el comando falla con un error. A diferencia de `framekit dev`, la variable de entorno `FRAMEKIT_HOST` no se usa.
+El comando busca exactamente un archivo `server.js` dentro de `.framekit/next/standalone/` cuya salida trazada adyacente contenga un archivo `BUILD_ID`. Si se encuentran cero o más de un candidato, el comando falla con un error. FrameKit no resuelve aquí opciones de host o puerto de producción: inicia `server.js` con el entorno heredado del proceso padre. El servidor standalone generado por Next lee `PORT`, `HOSTNAME` y `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` y `HOST` no se asignan a `HOSTNAME`.
 
 El servidor standalone se lanza como proceso hijo con el entorno heredado. Los códigos de salida y las señales se propagan al proceso padre.
 
@@ -119,4 +122,4 @@ framekit start
 - Los procesos hijos heredan el entorno y stdio del padre.
 - Los archivos temporales se limpian incluso en caso de fallo.
 
-[English](/Docs/en/reference/cli.md) | [Español](/Docs/es/reference/cli.md)
+[English](../../en/reference/cli.md) | [Español](./cli.md)

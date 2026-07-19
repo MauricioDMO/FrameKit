@@ -39,7 +39,7 @@ El conjunto de pruebas no cubre:
 - **Flujo completo de Studio** — navegar a una página, editar un campo, cambiar de locale, hacer reset y exportar el resultado no está cubierto como un flujo automatizado único.
 - **Build y inicio en producción** — la ejecución exitosa de `next build` seguida de `next start` no se verifica dentro de pruebas unitarias o de integración; el paso de build en CI confirma que el build termina sin error, pero no inicia el servidor.
 - **Copia de assets** — la copia del directorio public y archivos estáticos no tiene pruebas unitarias directas.
-- **CI en sistemas no Ubuntu** — el pipeline de CI solo se ejecuta en Ubuntu; Windows y macOS no se prueban.
+- **Otros sistemas operativos** — CI solo se ejecuta en Ubuntu. Windows y macOS no están verificados, por lo que esta documentación no afirma compatibilidad completa entre plataformas.
 - **Comportamiento del watcher** — la propagación de señales, vigilancia de archivos bajo carga y casos extremos del watcher están fuera del alcance actual de las pruebas.
 
 ## Distribución y empaquetado
@@ -56,7 +56,7 @@ El `.tgz` resultante contiene: `bin/`, `dist/`, `README.md`, `LICENSE`.
 
 tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `lucide-react`, `modern-screenshot`, `chokidar`, `tsx`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
 
-Una verificación posterior al build (`check-dist.ts`) escanea los archivos de nivel superior en `dist/*.js` en busca de violaciones de frontera de imports — específicamente, verifica que todos los imports relativos se resuelvan dentro de `dist/`. No inspecciona recursivamente todos los módulos emitidos.
+Una verificación posterior al build (`check-dist.ts`) escanea recursivamente todos los archivos `.js` emitidos bajo `dist/` en busca de violaciones de frontera de imports, verificando que los imports relativos se resuelvan en archivos dentro del paquete. También comprueba que los targets string de `exports` y `bin` sean rutas `./...` hacia archivos existentes dentro del paquete.
 
 ### @mauriciodmo/create-framekit
 
@@ -85,4 +85,4 @@ Ambos tarballs deben instalarse y generar sin errores antes de cualquier intento
 
 ---
 
-[English](./testing-and-distribution.md) · [Español](./testing-and-distribution.md)
+[English](../../en/development/testing-and-distribution.md) · [Español](./testing-and-distribution.md)

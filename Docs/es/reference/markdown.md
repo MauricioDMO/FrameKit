@@ -1,8 +1,19 @@
 # Componente Markdown
 
-[Volver al índice](../index.md)
+[Volver al índice](../README.md)
 
 `import { Markdown } from '@mauriciodmo/framekit'`
+
+```tsx
+Markdown(props: {
+  value: string
+  lists?: boolean
+  className?: string
+  style?: React.CSSProperties
+}): React.ReactElement
+```
+
+La implementación no usa APIs exclusivas del navegador ni tiene la directiva `use client`, por lo que puede renderizarse en un componente de servidor o en código React del cliente cuando el límite del framework lo permita.
 
 ## Propósito
 
@@ -68,4 +79,4 @@ El componente no parsea HTML arbitrario. El contenido pasado a `value` se escapa
 
 ---
 
-[English](./markdown.md) · [Español](./es/reference/markdown.md)
+[English](../../en/reference/markdown.md) · [Español](./markdown.md)

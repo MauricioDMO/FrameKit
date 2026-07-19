@@ -39,7 +39,7 @@ The test suite does not cover:
 - **Full Studio flow** — navigating to a page, editing a field, switching locale, resetting, and exporting the result is not covered as a single automated flow.
 - **Production build and start** — successful execution of `next build` followed by `next start` is not verified inside unit or integration tests; the CI build step confirms the build completes without error, but does not start the server.
 - **Asset copying** — public directory and static file copying are not directly unit-tested.
-- **Non-Ubuntu CI** — the CI pipeline runs on Ubuntu only; Windows and macOS are not tested.
+- **Other operating systems** — CI runs on Ubuntu only. Windows and macOS are not verified, so this documentation does not claim a complete cross-platform support guarantee.
 - **Watcher behavior** — signal propagation, file watching under load, and watcher edge cases are outside the current test scope.
 
 ## Distribution and Packaging
@@ -56,7 +56,7 @@ The resulting `.tgz` contains: `bin/`, `dist/`, `README.md`, `LICENSE`.
 
 tsdown produces an unbundled ESM output. The following packages remain external (not bundled): `react`, `react-dom`, `next`, `lucide-react`, `modern-screenshot`, `chokidar`, `tsx`. CSS is compiled separately via the Tailwind CLI and placed in `dist/styles.css`.
 
-A post-build check (`check-dist.ts`) scans the top-level files in `dist/*.js` for import-boundary violations — specifically, it verifies that all relative imports resolve inside `dist/`. It does not recursively inspect all emitted modules.
+A post-build check (`check-dist.ts`) recursively scans all emitted `.js` files under `dist/` for import-boundary violations, verifying that relative imports resolve to files inside the package. It also checks that string targets in `exports` and `bin` are `./...` paths to existing files inside the package.
 
 ### @mauriciodmo/create-framekit
 
@@ -85,4 +85,4 @@ Both tarballs must install and generate without errors before any publish attemp
 
 ---
 
-[English](./testing-and-distribution.md) · [Español](./testing-and-distribution.md)
+[English](./testing-and-distribution.md) · [Español](../../es/development/testing-and-distribution.md)

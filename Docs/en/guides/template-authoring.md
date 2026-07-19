@@ -135,7 +135,7 @@ Every template definition requires five properties:
 
 ## Content and Locales
 
-Locale keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each locale entry must include a `language` property with a human-readable label, and may include values for any of the fields defined in the template. Fields not present in a locale use their `defaultValue` if declared, otherwise remain empty.
+Locale keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each locale entry must include a `language` property with a human-readable label, and may include values for any of the fields defined in the template. Fields not present in a locale start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> locale content -> user edits.
 
 The `language` key inside each locale entry is reserved. It is used only as a display label in the Studio UI and is never included in the `data` object passed to `render`.
 
@@ -152,7 +152,7 @@ In this example, the `locale` type is `'fjord' | 'moon'`, not a global language 
 
 The `render` function receives a single object with four properties:
 
-- `data` — an object containing all field keys as strings. Each field value is either the content value for the current locale or the field's `defaultValue`.
+- `data` — an object containing all field keys as strings after resolution. In Studio, values are applied in this order: field defaults, locale content, then user edits.
 - `locale` — the key of the currently selected locale, typed as a union of all content keys.
 - `width` — the template width as a literal type.
 - `height` — the template height as a literal type.
@@ -167,4 +167,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](/en/guides/template-authoring.md) · [Español](/es/guides/template-authoring.md)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md)
