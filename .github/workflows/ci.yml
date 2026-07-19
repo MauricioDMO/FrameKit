@@ -7,6 +7,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20.9.0, 22, 24]
     env:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
@@ -16,7 +19,7 @@ jobs:
           version: 11.14.0
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: ${{ matrix.node }}
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build FrameKit
@@ -31,5 +34,26 @@ jobs:
         run: pnpm typecheck
       - name: Build workspace
         run: pnpm build
-      - name: Verify package contents
+      - name: Verify FrameKit package contents
         run: pnpm --filter @mauriciodmo/framekit pack --dry-run
+      - name: Verify creator package contents
+        run: pnpm --filter @mauriciodmo/create-framekit pack --dry-run
+
+  windows-smoke-test:
+    runs-on: windows-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.14.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build creator
+        run: pnpm --filter @mauriciodmo/create-framekit build
+      - name: Verify creator package on Windows
+        run: pnpm --filter @mauriciodmo/create-framekit pack --dry-run
