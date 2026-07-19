@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-const cliFile = fileURLToPath(new URL('./cli.ts', import.meta.url))
+const cliFile = fileURLToPath(new URL('./cli/index.ts', import.meta.url))
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))
 const temporaryRoots: string[] = []
 

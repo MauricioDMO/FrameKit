@@ -5,7 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     editor: 'src/editor.ts',
     dev: 'src/dev.ts',
-    cli: 'src/cli.ts',
+    cli: 'src/cli/index.ts',
   },
   format: ['esm'],
   dts: true,
