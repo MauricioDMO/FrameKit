@@ -31,6 +31,7 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     '.framekit/**',
+    'src/generated/framekit/**',
     'out/**',
     'build/**',
     'next-env.d.ts',
