@@ -50,12 +50,12 @@ La fase 06 entrega directamente en este paquete el código reutilizable, sus pru
 
 ## Compilación y estilos
 
-- [x] Usar `tsdown` como único compilador de TypeScript del paquete, con entradas `src/index.ts` y `src/editor.ts`, formato ESM y generación de `.d.ts`. La entrada `src/cli.ts` pertenece a la fase 08.
+- [x] Usar `tsdown` como único compilador de TypeScript del paquete, con entradas `src/index.ts`, `src/editor.ts` y `src/dev.ts`, formato ESM y generación de `.d.ts`. La entrada CLI pública pertenece a la fase 08.
 - [x] Usar `@tailwindcss/cli` para compilar la fuente CSS del paquete y emitir `dist/styles.css`.
 - [x] Definir `build:js`, `build:css` y `build` en el package para que `build` ejecute ambos pasos de forma determinista.
-- [x] Hacer que el build emita `dist/index.js`, `dist/editor.js` y sus `.d.ts` equivalentes. `dist/cli.js` pertenece a la fase 08.
+- [x] Hacer que el build emita `dist/index.js`, `dist/editor.js`, `dist/dev.js` y sus `.d.ts` equivalentes. `dist/cli.js` pertenece a la fase 08.
 - [x] Externalizar `next`, `react` y `react-dom` al compilar; el consumidor provee una sola copia de esos paquetes.
-- [x] Declarar `lucide-react` y `modern-screenshot` como dependencias de runtime del paquete; `chokidar` y `tsx` pertenecen al CLI de la fase 08.
+- [x] Declarar `lucide-react`, `modern-screenshot` y `chokidar` como dependencias de runtime del paquete; `tsx` se usa para ejecutar el custom server de Studio hasta la fase 08.
 - [x] Generar `dist/styles.css` durante el build; debe contener las utilidades Tailwind usadas por los componentes del editor.
 - [x] Añadir una fuente CSS del paquete que declare explícitamente qué archivos de `src/editor` deben analizarse; no depender del escaneo Tailwind de la app consumidora.
 - [x] Verificar que importar `@mauriciodmo/framekit/styles.css` desde `globals.css` aplica estilos del editor en un proyecto sin configuración Tailwind extra.

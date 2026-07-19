@@ -8,6 +8,7 @@ FrameKit está en migración hacia paquetes publicables y un creador de proyecto
 
 ## Como trabajar ahora
 
+- [Inicio rápido](quickstart.md): cómo instalar, levantar Studio, crear plantillas y ejecutar una build.
 - [Workspace y ejecucion](workspace.md): estructura, comandos, plantillas, imports, estilos y solucion de problemas.
 
 ## Referencia vigente

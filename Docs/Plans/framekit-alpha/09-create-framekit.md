@@ -49,8 +49,8 @@ template/
 - [ ] La plantilla ejemplo contiene al menos un campo de texto y un idioma, para que el proyecto sea utilizable inmediatamente.
 - [ ] Mantener la plantilla inicial en el patrón inline para reducir archivos, pero enlazar desde su README al patrón documentado con `defineTemplateBase` para diseños complejos.
 - [ ] `package.json` declara Next 16, React 19 y `@mauriciodmo/framekit` con la misma versión alpha publicada por el creador.
-- [ ] `.gitignore` incluye `node_modules`, `.next` y `/src/.framekit/`.
-- [ ] No copiar `src/.framekit`; debe crearlo el CLI después de instalar dependencias.
+- [ ] `.gitignore` incluye `node_modules`, `.next` y `.framekit/`.
+- [ ] No copiar `.framekit`; debe crearlo el CLI después de instalar dependencias.
 
 ## Ejecución
 

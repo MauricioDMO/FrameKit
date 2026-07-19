@@ -1,5 +1,9 @@
 # 04. Navegación y migración
 
+> Este documento conserva el estado histórico de la migración inicial. La
+> salida separada de manifest y registry fue reemplazada por
+> `.framekit/generated/templates.ts` en la fase 07.5.
+
 Este plan refleja el estado actual del repositorio. La migración no implica
 eliminar el i18n de la interfaz ni fijar el idioma de la aplicación en
 español.

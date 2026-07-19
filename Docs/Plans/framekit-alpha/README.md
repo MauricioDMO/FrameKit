@@ -14,6 +14,7 @@ La estructura actual y los comandos de trabajo están documentados en
 - [x] 05. [Pruebas de la aplicación](05-application-tests.md)
 - [x] 06. [Workspace](06-workspace.md)
 - [x] 07. [Paquete framekit](07-framekit-package.md)
+- [x] 07.5. [Runtime de desarrollo](07.5-dev-runtime.md)
 - [ ] 08. [CLI](08-cli.md)
 - [ ] 09. [Creador de proyectos](09-create-framekit.md)
 - [ ] 10. [Distribución](10-distribution.md)
@@ -43,7 +44,8 @@ La estructura actual y los comandos de trabajo están documentados en
 | 05   | 04.5     | Cobertura de la aplicación estable.     |
 | 06   | 05       | Workspace funcional.                    |
 | 07   | 06       | Paquete principal consumido por Studio. |
-| 08   | 07       | CLI publicable.                         |
+| 07.5 | 07       | Runtime de desarrollo unificado.        |
+| 08   | 07.5     | CLI publicable.                         |
 | 09   | 08       | Creador de proyectos.                   |
 | 10   | 09       | Pruebas con tarballs.                   |
 | 11   | 10       | Alpha publicada.                        |

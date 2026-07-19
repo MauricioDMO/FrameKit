@@ -17,7 +17,7 @@
 - [ ] Instalar su tarball en un harness temporal y ejecutar `pnpm exec create-framekit <directorio-nuevo>`.
 - [ ] Para la prueba previa a publicar, sustituir en el `package.json` generado la dependencia de FrameKit por el tarball local antes de `pnpm install`; este cambio pertenece solo al harness, no a la plantilla publicada.
 - [ ] Ejecutar `pnpm check` y `pnpm build` dentro del proyecto creado.
-- [ ] Verificar que `src/.framekit/manifest.ts` y `registry.ts` fueron generados, están ignorados por Git y no fueron copiados desde el creador.
+- [ ] Verificar que `.framekit/generated/templates.ts` fue generado, está ignorado por Git y no fue copiado desde el creador.
 
 ## Cierre
 

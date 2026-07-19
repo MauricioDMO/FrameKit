@@ -23,25 +23,25 @@ Convertir la estructura de `src/templates` en datos e imports estáticos antes d
 
 ## Archivos generados
 
-- [x] Crear `src/.framekit/manifest.ts` con un encabezado que indique que es generado y no debe editarse.
-- [x] Exportar `templateManifest` como un arreglo serializable de `{ slug, title, segments }`.
+- [x] Crear `.framekit/generated/templates.ts` con un encabezado que indique que es generado y no debe editarse.
+- [x] Exportar `templates` con metadatos y loaders estáticos; derivar `templateManifest` como arreglo serializable.
 - [x] Calcular `title` humanizando el último segmento: separar por guiones y capitalizar cada palabra.
-- [x] Crear `src/.framekit/registry.ts` con `'use client'` y `templateRegistry`.
+- [x] Derivar `templateRegistry` del arreglo generado sin duplicar un archivo separado.
 - [x] Tipar cada loader como `() => Promise<{ default: TemplateDefinition }>`.
-- [x] Generar imports dinámicos con rutas relativas de `.framekit` hacia `../templates/<ruta>/template`; no usar `@/`.
-- [x] Escribir ambos archivos solo cuando su contenido cambie, para evitar reinicios de desarrollo innecesarios.
-- [x] Añadir `/src/.framekit/` a `.gitignore`.
+- [x] Generar imports dinámicos con rutas relativas de `.framekit/generated` hacia `../../src/templates/<ruta>/template`; no usar `@/`.
+- [x] Escribir el módulo solo cuando su contenido cambie, para evitar reinicios de desarrollo innecesarios.
+- [x] Añadir `**/.framekit/` a `.gitignore`.
 
 ## Sustituciones en la aplicación
 
-- [x] Cambiar el script `templates:generate` para ejecutar el nuevo generador.
-- [x] Conservar temporalmente `templates:watch`, pero observar altas, bajas y cambios de directorio bajo `src/templates`.
+- [x] Reutilizar el generador TypeScript desde Studio mientras la CLI no existe.
+- [x] Conservar el watcher, observando altas, bajas y cambios de directorio bajo `src/templates`.
 - [x] Eliminar `src/generated/` y ambos registros antiguos después de migrar sus importadores.
 - [x] Eliminar `src/lib/templates/read-template-catalog.ts` y `get-template-config.ts` cuando la navegación use el manifiesto.
 - [x] Eliminar `outputFileTracingIncludes` de `next.config.ts`; `output: 'standalone'` se conserva si sigue siendo necesario para Studio.
 
 ## Cierre
 
-- [x] `pnpm templates:generate` crea manifiesto y registro para la plantilla piloto.
+- [x] El módulo generado contiene manifiesto y loaders para la plantilla piloto.
 - [x] Modificar el contenido de una plantilla no requiere regenerar; crear, borrar o mover su `template.tsx` sí.
 - [x] `pnpm build` no ejecuta `node:fs` desde código de aplicación ni requiere incluir configuraciones en el tracing de Next.

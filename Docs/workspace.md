@@ -12,15 +12,16 @@ apps/
     src/components/       Interfaz propia de Studio
     src/i18n/             Idioma de la interfaz
     src/templates/        Plantillas del catalogo de Studio
-    src/.framekit/        Manifest y registry generados
-    scripts/              Caller y watcher del codegen
+    .framekit/            Codegen y salida de Next ignorados
     public/               Assets de Studio
 packages/
   framekit/               Codigo reutilizable de FrameKit
     src/core/             Contrato, campos, resolucion y validacion
     src/editor/           Editor, controles y navegacion
     src/markdown/         Parser y componente Markdown
-    src/codegen/          Scanner y generador interno
+    src/discovery/        Scanner de plantillas
+    src/codegen/          Generador de módulo TypeScript
+    src/dev/              Watcher y custom server
     tests/types/          Fixtures de inferencia TypeScript
   create-framekit/        Workspace reservado para el creador
 examples/
@@ -42,13 +43,17 @@ pnpm install
 
 ## Iniciar Studio
 
+La guía corta para empezar está en [`quickstart.md`](quickstart.md). El
+comando vigente es `pnpm --filter studio dev`; la CLI `framekit dev` todavía no
+existe porque pertenece a la fase 08.
+
 ```bash
 pnpm --filter studio dev
 ```
 
-Abre `http://localhost:3000`. El comando hace dos cosas en paralelo:
+Abre `http://localhost:3000`. El comando ejecuta un único proceso que:
 
-1. Genera el catalogo de plantillas.
+1. Genera el módulo de plantillas.
 2. Inicia Next y observa cambios estructurales en `src/templates`.
 
 Para detenerlo usa `Ctrl+C`.
@@ -57,8 +62,6 @@ Los comandos equivalentes desde `apps/studio` son:
 
 ```bash
 pnpm dev
-pnpm templates:generate
-pnpm templates:watch
 pnpm build
 pnpm start
 ```
@@ -103,19 +106,19 @@ El scanner solo descubre carpetas que contienen `template.tsx`. Los segmentos
 deben usar minusculas, numeros y guiones. Los directorios que empiezan por `.`
 o `_` se ignoran.
 
-El registry y el manifest se escriben en:
+El módulo generado se escribe en:
 
 ```text
-apps/studio/src/.framekit/manifest.ts
-apps/studio/src/.framekit/registry.ts
+apps/studio/.framekit/generated/templates.ts
 ```
 
-Son archivos generados e ignorados por Git. No los edites manualmente. El
-generador se ejecuta automaticamente durante `dev`, `test`, `typecheck` y
-`build` de Studio.
+Es un archivo generado e ignorado por Git. No lo edites manualmente. Contiene
+los metadatos de navegación y los loaders con imports literales que Next
+necesita incluir en sus bundles. El generador se ejecuta automáticamente
+durante `dev`, `test`, `typecheck` y `build` de Studio.
 
-El codegen vive en el paquete, pero Studio lo invoca mediante el script privado
-del workspace. No importes `packages/framekit/src` desde Studio.
+El codegen y el watcher viven en el paquete. Studio los consume mediante
+`@mauriciodmo/framekit/dev`; no importes `packages/framekit/src` desde Studio.
 
 ## Imports permitidos
 
@@ -157,10 +160,10 @@ escanea `packages/framekit/src` directamente.
 
 ## Cuando algo falla
 
-Si el catalogo no cambia:
+Si el catálogo no cambia, regenera el módulo temporalmente:
 
 ```bash
-pnpm --filter studio templates:generate
+pnpm --filter studio exec tsx server.ts --generate
 ```
 
 Si faltan estilos, verifica que `apps/studio/src/app/globals.css` conserve:

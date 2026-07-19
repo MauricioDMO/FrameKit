@@ -4,10 +4,14 @@
 
 Todos los comandos usan `process.cwd()` como raíz del proyecto consumidor. La única estructura asumida es `src/templates`; no habrá archivo de configuración de FrameKit. Los procesos hijos se ejecutan sin shell y heredan `stdio` para que los errores de Next no pierdan formato.
 
+La fase 07.5 ya entrega discovery, codegen, watcher y custom server en
+`@mauriciodmo/framekit/dev`. Esta fase no debe duplicar esas implementaciones.
+El único archivo generado es `<cwd>/.framekit/generated/templates.ts`.
+
 ## `framekit generate`
 
-- [ ] Resolver `<cwd>/src/templates`, `<cwd>/src/.framekit/manifest.ts` y `<cwd>/src/.framekit/registry.ts`.
-- [ ] Ejecutar el scanner de la fase 2 y escribir ambos archivos solo si cambiaron.
+- [ ] Resolver `<cwd>/src/templates` y `<cwd>/.framekit/generated/templates.ts`.
+- [ ] Ejecutar `writeTemplateModule` y escribir el módulo solo si cambió.
 - [ ] Fallar con código distinto de cero si no existe `src/templates`, no existe ninguna plantilla o un segmento recorrido es inválido.
 - [ ] Al encontrar `template.tsx`, registrar esa carpeta y no recorrer sus subdirectorios; componentes, definiciones y assets internos no son categorías ni plantillas hijas.
 - [ ] Mostrar el número de plantillas encontradas y las rutas de los errores, sin stack trace salvo modo de depuración futuro.
@@ -26,8 +30,8 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto consumidor. La �
 - [ ] Ejecutar `generate` antes de iniciar Next.
 - [ ] Observar únicamente cambios que afecten la estructura: `template.tsx` añadido, borrado, movido, y directorios añadidos o borrados bajo `src/templates`.
 - [ ] Aplicar debounce a los eventos y no iniciar dos generaciones simultáneas.
-- [ ] Iniciar `next dev` en paralelo con el watcher.
-- [ ] Reenviar `SIGINT` y `SIGTERM` a ambos procesos y terminar cuando cualquiera falle de forma inesperada.
+- [ ] Reutilizar `createDevServer`; no iniciar `next dev` y el watcher como procesos separados.
+- [ ] Reenviar `SIGINT` y `SIGTERM` al servidor integrado y terminar cuando falle de forma inesperada.
 - [ ] No regenerar por cambios dentro de un `template.tsx`; Next HMR ya gestiona su contenido.
 
 ## `framekit build`
@@ -43,7 +47,7 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto consumidor. La �
   "scripts": {
     "dev": "framekit dev",
     "build": "framekit build",
-    "start": "next start",
+    "start": "node .framekit/next/standalone/apps/studio/server.js",
     "check": "framekit check"
   }
 }

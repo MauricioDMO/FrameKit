@@ -51,7 +51,7 @@ Las pruebas se ubican según el código que deben acompañar después de la migr
 - [x] Comparar el manifiesto y registry generados con el contenido esperado, incluidos imports relativos.
 - [x] Cargar la plantilla piloto mediante su loader y comprobar que el default export es una definición válida.
 - [x] Cargar una fixture con `defineTemplateBase` y un componente extraído conservando los tipos inferidos.
-- [x] Ejecutar `pnpm templates:generate` desde una copia limpia sin archivos `.framekit` previos.
+- [x] Ejecutar la generación temporal de Studio desde una copia limpia sin archivos `.framekit` previos.
 - [x] Ejecutar `pnpm build` después de la generación.
 
 ## Comandos de cierre
