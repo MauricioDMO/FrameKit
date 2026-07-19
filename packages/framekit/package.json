@@ -1,6 +1,6 @@
 {
   "name": "@mauriciodmo/framekit",
-  "version": "0.1.0-alpha.1",
+  "version": "0.5.0",
   "type": "module",
   "engines": {
     "node": ">=20.9.0"
@@ -45,8 +45,7 @@
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "alpha"
+    "access": "public"
   },
   "description": "Template-based image editor with visual Studio, CLI, and code generation for React and Next.js",
   "keywords": [

@@ -1,6 +1,6 @@
 {
   "name": "@mauriciodmo/create-framekit",
-  "version": "0.1.0-alpha.1",
+  "version": "0.5.0",
   "type": "module",
   "engines": {
     "node": ">=20.9.0",
@@ -18,8 +18,7 @@
     "create-framekit": "./dist/cli.js"
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "alpha"
+    "access": "public"
   },
   "description": "Scaffold a new FrameKit project with one command",
   "keywords": [
