@@ -18,7 +18,7 @@ The scan registers each non-hidden, non-underscore-prefixed directory containing
 
 If no templates are found, the command exits with code 1 and prints an error message identifying the empty directory. The output file is written only when its content has changed.
 
-Output is written to `.framekit/generated/templates.ts` with lazy literal imports. On success, the command prints the number of templates found.
+Output is written to `src/generated/framekit/templates.ts` with lazy literal imports. On success, the command prints the number of templates found.
 
 ```sh
 framekit generate

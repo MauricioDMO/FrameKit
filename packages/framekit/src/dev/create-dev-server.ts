@@ -21,7 +21,6 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   let closing = false
   let generationPending = false
   let generationRunning: Promise<void> | undefined
-  let generationTimer: NodeJS.Timeout | undefined
 
   function reportError(error: unknown): void {
     const normalizedError = error instanceof Error ? error : new Error(String(error))
@@ -60,12 +59,9 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   function scheduleGeneration(): void {
     if (closing) return
 
-    clearTimeout(generationTimer)
-    generationTimer = setTimeout(() => {
-      void generate().catch((error: unknown) => {
-        reportError(error)
-      })
-    }, 150)
+    void generate().catch((error: unknown) => {
+      reportError(error)
+    })
   }
 
   await generate()
@@ -84,7 +80,6 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
 
   async function closeResources(): Promise<void> {
     closing = true
-    clearTimeout(generationTimer)
 
     let closeError: unknown
     try {
@@ -93,7 +88,6 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
       closeError = error
     }
 
-    clearTimeout(generationTimer)
     generationPending = false
     await generationRunning?.catch(() => undefined)
 

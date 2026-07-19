@@ -18,7 +18,7 @@ El escaneo registra cada directorio no oculto y cuyo nombre no comienza por guio
 
 Si no se encuentra ninguna plantilla, el comando termina con código 1 e imprime un mensaje de error identificando el directorio vacío. El archivo de salida se escribe únicamente cuando su contenido ha cambiado.
 
-La salida se escribe en `.framekit/generated/templates.ts` con imports literales diferidos (lazy). En caso de éxito, el comando imprime la cantidad de plantillas encontradas.
+La salida se escribe en `src/generated/framekit/templates.ts` con imports literales diferidos (lazy). En caso de éxito, el comando imprime la cantidad de plantillas encontradas.
 
 ```sh
 framekit generate
