@@ -11,11 +11,12 @@ jobs:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.14.0
       - uses: actions/setup-node@v5
         with:
           node-version: 24
-      - name: Enable Corepack
-        run: corepack enable
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build FrameKit
