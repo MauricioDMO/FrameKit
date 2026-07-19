@@ -16,10 +16,17 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @mauriciodmo/framekit build
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm typecheck
-      - run: pnpm build
-      - run: pnpm --filter @mauriciodmo/framekit pack --dry-run
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build FrameKit and link its CLI
+        run: pnpm --filter @mauriciodmo/framekit build && pnpm install --frozen-lockfile
+      - name: Lint workspace
+        run: pnpm lint
+      - name: Run tests
+        run: pnpm test
+      - name: Type-check workspace
+        run: pnpm typecheck
+      - name: Build workspace
+        run: pnpm build
+      - name: Verify package contents
+        run: pnpm --filter @mauriciodmo/framekit pack --dry-run
