@@ -6,9 +6,13 @@
     "node": ">=20.9.0"
   },
   "license": "Apache-2.0",
-  "repository": "github:MauricioDMO/FrameKit",
   "bugs": "https://github.com/MauricioDMO/FrameKit/issues",
-  "files": ["bin", "dist", "README.md", "LICENSE"],
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "framekit": "./bin/framekit.js"
   },
@@ -41,7 +45,24 @@
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "alpha"
+  },
+  "description": "Template-based image editor with visual Studio, CLI, and code generation for React and Next.js",
+  "keywords": [
+    "image-editor",
+    "template",
+    "react",
+    "nextjs",
+    "framekit",
+    "visual-editor"
+  ],
+  "homepage": "https://github.com/MauricioDMO/FrameKit#readme",
+  "author": "MauricioDMO <mauriciodmo@proton.me>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MauricioDMO/FrameKit.git",
+    "directory": "packages/framekit"
   },
   "scripts": {
     "lint": "eslint src scripts tsdown.config.ts",
@@ -50,7 +71,9 @@
     "build:js": "tsdown",
     "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
     "check:dist": "tsx scripts/check-dist.ts",
-    "build": "pnpm build:js && pnpm build:css && pnpm check:dist"
+    "build": "pnpm build:js && pnpm build:css && pnpm check:dist",
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm lint && pnpm test && pnpm typecheck"
   },
   "dependencies": {
     "chokidar": "^5.0.0",

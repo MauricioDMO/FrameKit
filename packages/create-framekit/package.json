@@ -7,21 +7,43 @@
     "pnpm": ">=11.14.0"
   },
   "license": "Apache-2.0",
-  "repository": "github:MauricioDMO/FrameKit",
   "bugs": "https://github.com/MauricioDMO/FrameKit/issues",
-  "files": ["dist", "template", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "template",
+    "README.md",
+    "LICENSE"
+  ],
   "bin": {
     "create-framekit": "./dist/cli.js"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "alpha"
+  },
+  "description": "Scaffold a new FrameKit project with one command",
+  "keywords": [
+    "framekit",
+    "scaffold",
+    "template",
+    "nextjs",
+    "react"
+  ],
+  "homepage": "https://github.com/MauricioDMO/FrameKit#readme",
+  "author": "MauricioDMO <mauriciodmo@proton.me>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MauricioDMO/FrameKit.git",
+    "directory": "packages/create-framekit"
   },
   "scripts": {
     "build": "tsdown && pnpm check:dist",
     "check:dist": "tsx ../framekit/scripts/check-dist.ts .",
     "lint": "eslint src tsdown.config.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm lint && pnpm test && pnpm typecheck"
   },
   "devDependencies": {
     "@types/node": "^20",
