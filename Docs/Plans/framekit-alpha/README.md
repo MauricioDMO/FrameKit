@@ -15,7 +15,7 @@ La estructura actual y los comandos de trabajo están documentados en
 - [x] 06. [Workspace](06-workspace.md)
 - [x] 07. [Paquete framekit](07-framekit-package.md)
 - [x] 07.5. [Runtime de desarrollo](07.5-dev-runtime.md)
-- [ ] 08. [CLI](08-cli.md)
+- [x] 08. [CLI](08-cli.md)
 - [ ] 09. [Creador de proyectos](09-create-framekit.md)
 - [ ] 10. [Distribución](10-distribution.md)
 - [ ] 11. [Publicación alpha](11-release.md)

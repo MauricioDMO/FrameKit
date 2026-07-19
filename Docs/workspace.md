@@ -43,8 +43,8 @@ pnpm install
 
 ## Iniciar Studio
 
-La guía corta para empezar está en [`quickstart.md`](quickstart.md). La CLI
-`framekit dev` todavía no existe porque pertenece a la fase 08.
+La guía corta para empezar está en [`quickstart.md`](quickstart.md). Studio usa
+la CLI pública de FrameKit.
 
 ```bash
 pnpm dev
@@ -86,8 +86,7 @@ pnpm --filter @mauriciodmo/framekit typecheck
 ```
 
 El paquete se compila a ESM en `dist` antes de que Studio lo consuma. Sus
-exports publicos apuntan a los artefactos compilados; el CLI de consumidor
-continua reservado para la fase 08.
+exports públicos y el binario `framekit` apuntan a los artefactos compilados.
 
 ## Plantillas
 
@@ -159,10 +158,10 @@ escanea `packages/framekit/src` directamente.
 
 ## Cuando algo falla
 
-Si el catálogo no cambia, regenera el módulo temporalmente:
+Si el catálogo no cambia, regenera el módulo:
 
 ```bash
-pnpm --filter studio exec tsx server.ts --generate
+pnpm --filter studio exec framekit generate
 ```
 
 Si faltan estilos, verifica que `apps/studio/src/app/globals.css` conserve:
@@ -183,8 +182,8 @@ pnpm install
 pnpm --filter studio typecheck
 ```
 
-## Siguiente fase
+## CLI
 
-La fase 07 convierte `packages/framekit` en un paquete compilado y publicable.
-La fase 08 reemplazara el caller privado por el binario `framekit` para que un
-proyecto consumidor pueda ejecutar `generate`, `check`, `dev` y `build`.
+Desde una aplicación consumidora están disponibles `framekit generate`,
+`framekit check`, `framekit dev`, `framekit build` y `framekit start`. Todos
+usan el directorio actual como raíz del proyecto.

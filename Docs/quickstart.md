@@ -71,7 +71,8 @@ Para arrancar esa build:
 pnpm --filter studio start
 ```
 
-El servidor standalone queda en:
+La CLI localiza el servidor standalone aunque Next lo anide por el tracing root
+del monorepo. En Studio queda en:
 
 ```text
 apps/studio/.framekit/next/standalone/apps/studio/server.js
@@ -94,16 +95,18 @@ pnpm build
 PORT=3001 pnpm dev
 ```
 
-## Importante sobre la CLI
+## CLI
 
-Estos comandos todavía no están disponibles:
+Los scripts de Studio delegan en estos comandos públicos:
 
 ```bash
 framekit dev
 framekit generate
 framekit check
 framekit build
+framekit start
 ```
 
-Son el objetivo de la fase 08. Hasta que esa fase termine, usa los scripts de
-pnpm documentados arriba.
+Todos usan el directorio actual como raíz. `check` regenera primero el catálogo
+y valida cada definición y locale; `build` solo inicia Next cuando esa
+validación pasa.

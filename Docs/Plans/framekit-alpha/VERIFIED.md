@@ -14,6 +14,7 @@
 | 06   | Workspace                   | 2026-07-18    |
 | 07   | Paquete framekit            | 2026-07-18    |
 | 07.5 | Runtime de desarrollo       | 2026-07-18    |
+| 08   | CLI                         | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -118,11 +119,19 @@ La tabla conserva el historial de lo verificado.
 - Los antiguos `.mjs`, `src/.framekit/manifest.ts` y `src/.framekit/registry.ts` fueron eliminados.
 - Verificado con build, test y typecheck del paquete y Studio, build standalone y cierre por señales.
 
+### Detalle 08-cli.md
+- `framekit generate`, `check`, `dev`, `build` y `start` usan el cwd del consumidor.
+- `check` carga estáticamente las plantillas con `tsx`, valida definición y datos resueltos por locale y siempre elimina su archivo temporal.
+- `dev` reutiliza el custom server, propaga señales y termina también ante errores inesperados.
+- `build` valida antes de Next y copia `public` y los assets estáticos al standalone.
+- `start` localiza el servidor mediante su `BUILD_ID`, sin asumir la posición del proyecto dentro de un monorepo.
+- Studio consume el binario público; se eliminaron `server.ts` y sus helpers temporales.
+- Verificado con instalación congelada, lint, 54 pruebas, typecheck, build, pack y ejecución/cierre de los servidores dev y standalone.
+
 ## Pendientes 🔲
 
 | Plan | Descripción     |
 | ---- | --------------- |
-| 08   | CLI             |
 | 09   | Create framekit |
 | 10   | Distribution    |
 | 11   | Release         |
