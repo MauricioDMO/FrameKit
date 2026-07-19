@@ -49,10 +49,12 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     setView(getFittedView(container, width, height))
     setViewReady(true)
 
-    // Resize only changes an automatic fit; manual positioning must remain intact.
-    const observer = new ResizeObserver(() => {
-      if (viewMode === 'fit') setView(getFittedView(container, width, height))
-    })
+  }, [width, height])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container || viewMode !== 'fit') return
+    const observer = new ResizeObserver(() => setView(getFittedView(container, width, height)))
     observer.observe(container)
     return () => observer.disconnect()
   }, [width, height, viewMode])
@@ -82,13 +84,14 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     if (event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, view }
-    setViewMode('custom')
     setDragging(true)
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
+    if (event.clientX === drag.x && event.clientY === drag.y) return
+    setViewMode('custom')
     setView({ ...drag.view, x: drag.view.x + event.clientX - drag.x, y: drag.view.y + event.clientY - drag.y })
   }
 
