@@ -9,22 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [20.9.0, 22, 24]
-        include:
-          - node: 20.9.0
-            pnpm: 10
-          - node: 22
-            pnpm: 11.14.0
-          - node: 24
-            pnpm: 11.14.0
+        node: [22, 24]
     env:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6
         with:
-          version: ${{ matrix.pnpm }}
-          ignore-version: true
+          version: 11.14.0
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}

@@ -13,7 +13,7 @@
 - [x] `publishConfig.tag: "alpha"` añadido a ambos paquetes.
 - [x] `prepack: "pnpm build"` y `prepublishOnly: "pnpm lint && pnpm test && pnpm typecheck"` en ambos paquetes.
 - [x] Metadatos npm completos: `description`, `keywords`, `homepage`, `author`, `repository` como objeto con `directory`.
-- [x] CI ampliada: matrix Node `20.9.0 / 22 / 24` en Ubuntu; job separado de Windows para smoke test de `create-framekit`; `pack --dry-run` para ambos paquetes. *(Nota: pnpm@11.14.0 requiere Node ≥22.13, por lo que Node 20.9.0 usa pnpm@10 en la matrix.)*
+- [x] CI ampliada: matrix Node `22 / 24` en Ubuntu; job separado de Windows para smoke test de `create-framekit`; `pack --dry-run` para ambos paquetes. *(Nota: Node 20.9.0 excluido porque pnpm@11 requiere Node ≥22.13, incompatible con el `engines.node: ">=20.9.0"` del proyecto.)*
 
 ## Verificación previa
 
