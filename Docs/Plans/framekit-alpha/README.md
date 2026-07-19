@@ -18,7 +18,7 @@ La estructura actual y los comandos de trabajo están documentados en
 - [x] 08. [CLI](08-cli.md)
 - [x] 09. [Creador de proyectos](09-create-framekit.md)
 - [x] 09.5. [Studio empaquetado](09.5-studio-package.md)
-- [ ] 10. [Distribución](10-distribution.md)
+- [x] 10. [Distribución](10-distribution.md)
 - [ ] 11. [Publicación alpha](11-release.md)
 
 ## Cómo marcar el plan

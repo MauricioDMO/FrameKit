@@ -123,7 +123,7 @@ La tabla conserva el historial de lo verificado.
 
 ### Detalle 08-cli.md
 - `framekit generate`, `check`, `dev`, `build` y `start` usan el cwd del consumidor.
-- `check` carga estáticamente las plantillas con `tsx`, valida definición y datos resueltos por locale y siempre elimina su archivo temporal.
+- `check` carga dinámicamente las plantillas con `tsx`, valida definición y datos resueltos por locale y siempre elimina su archivo temporal.
 - `dev` reutiliza el custom server, propaga señales y termina también ante errores inesperados.
 - `build` valida antes de Next y copia `public` y los assets estáticos al standalone.
 - `start` localiza el servidor mediante su `BUILD_ID`, sin asumir la posición del proyecto dentro de un monorepo.
@@ -155,9 +155,13 @@ La tabla conserva el historial de lo verificado.
 - Verificado con build y 53 pruebas de FrameKit; typecheck, lint y build de
   Studio; y build, test y typecheck de `create-framekit`.
 
+### Detalle 10-distribution.md
+- `examples/basic` es un consumidor Next mínimo que puede instalar FrameKit desde un tarball y ejecutar `check` y `build`.
+- Los exports JavaScript públicos tienen condición `default`, necesaria para la resolución de `tsx` fuera del workspace.
+- Verificado con los dos tarballs, instalación aislada, generación, `check` y build de Next; el creador generó `.framekit/generated/templates.ts` y su `.gitignore` lo excluye.
+
 ## Pendientes 🔲
 
 | Plan | Descripción     |
 | ---- | --------------- |
-| 10   | Distribution    |
 | 11   | Release         |
