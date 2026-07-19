@@ -56,9 +56,6 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.2
-      tsx:
-        specifier: ^4
-        version: 4.23.1
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -94,6 +91,9 @@ importers:
       react-dom:
         specifier: '>=19 <20'
         version: 19.2.4(react@19.2.4)
+      tsx:
+        specifier: ^4
+        version: 4.23.1
     devDependencies:
       '@tailwindcss/cli':
         specifier: ^4
@@ -125,9 +125,6 @@ importers:
       tsdown:
         specifier: ^0.20
         version: 0.20.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(synckit@0.11.13)(typescript@5.9.3)
-      tsx:
-        specifier: ^4
-        version: 4.23.1
       typescript:
         specifier: ^5
         version: 5.9.3

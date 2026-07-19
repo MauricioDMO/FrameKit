@@ -4,6 +4,9 @@
   "type": "module",
   "license": "Apache-2.0",
   "files": ["dist", "README.md", "LICENSE"],
+  "bin": {
+    "framekit": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -35,7 +38,8 @@
   "dependencies": {
     "chokidar": "^5.0.0",
     "lucide-react": "^1.24.0",
-    "modern-screenshot": "^4.7.0"
+    "modern-screenshot": "^4.7.0",
+    "tsx": "^4"
   },
   "peerDependencies": {
     "next": ">=16 <17",
@@ -53,7 +57,6 @@
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "tsdown": "^0.20",
-    "tsx": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

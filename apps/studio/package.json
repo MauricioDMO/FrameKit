@@ -2,14 +2,16 @@
   "name": "studio",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts",
-    "build": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && next build",
-    "start": "node .framekit/next/standalone/apps/studio/server.js",
+    "dev": "framekit dev",
+    "build": "framekit build",
+    "start": "framekit start",
+    "check": "framekit check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && vitest run",
-    "typecheck": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && tsc --noEmit"
+    "test": "framekit generate && vitest run",
+    "typecheck": "framekit generate && tsc --noEmit"
   },
   "dependencies": {
     "@mauriciodmo/framekit": "workspace:*",
@@ -29,7 +31,6 @@
     "eslint-plugin-tailwindcss": "^4.2.0",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
-    "tsx": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

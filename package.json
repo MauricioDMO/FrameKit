@@ -2,7 +2,7 @@
   "name": "framekit-workspace",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm --dir apps/studio exec tsx server.ts",
+    "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm --filter studio dev",
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
