@@ -1,6 +1,11 @@
 {
   "name": "framekit-workspace",
   "private": true,
+  "packageManager": "pnpm@11.14.0",
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": ">=11.14.0"
+  },
   "scripts": {
     "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm --filter studio dev",
     "lint": "pnpm -r --if-present lint",

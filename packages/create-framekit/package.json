@@ -2,6 +2,10 @@
   "name": "@mauriciodmo/create-framekit",
   "version": "0.1.0-alpha.1",
   "type": "module",
+  "engines": {
+    "node": ">=20.9.0",
+    "pnpm": ">=11.14.0"
+  },
   "license": "Apache-2.0",
   "repository": "github:MauricioDMO/FrameKit",
   "bugs": "https://github.com/MauricioDMO/FrameKit/issues",
@@ -13,7 +17,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && pnpm check:dist",
+    "check:dist": "tsx ../framekit/scripts/check-dist.ts .",
     "lint": "eslint src tsdown.config.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

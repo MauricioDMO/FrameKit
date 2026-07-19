@@ -8,8 +8,8 @@ Templates live in `src/templates`. A directory containing `template.tsx`
 appears automatically in the Studio editor.
 
 The included example template uses the inline pattern with `defineTemplate`.
-For complex layouts, see the extracted artwork pattern with
-[`defineTemplateBase`](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md#extracted-artwork).
+For complex layouts, see the extracted definition pattern with
+[`defineTemplateBase`](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md#extracted-definition).
 
 ## Available commands
 
