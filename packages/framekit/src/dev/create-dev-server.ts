@@ -16,32 +16,36 @@ export interface DevServer {
 }
 
 export async function createDevServer(options: DevServerOptions): Promise<DevServer> {
-  let generationRunning = false
+  let closing = false
   let generationPending = false
+  let generationRunning: Promise<void> | undefined
   let generationTimer: NodeJS.Timeout | undefined
 
-  async function generate(): Promise<void> {
+  function generate(): Promise<void> {
     if (generationRunning) {
       generationPending = true
-      return
+      return generationRunning
     }
 
-    generationRunning = true
-
-    try {
-      const templates = await writeTemplateModule({ projectRoot: options.projectRoot })
-      console.log(`FrameKit: ${templates.length} plantilla(s)`)
-    } finally {
-      generationRunning = false
-
-      if (generationPending) {
+    generationRunning = (async () => {
+      try {
+        do {
+          generationPending = false
+          const templates = await writeTemplateModule({ projectRoot: options.projectRoot })
+          console.log(`FrameKit: ${templates.length} plantilla(s)`)
+        } while (generationPending)
+      } finally {
         generationPending = false
-        await generate()
+        generationRunning = undefined
       }
-    }
+    })()
+
+    return generationRunning
   }
 
   function scheduleGeneration(): void {
+    if (closing) return
+
     clearTimeout(generationTimer)
     generationTimer = setTimeout(() => {
       void generate().catch((error: unknown) => {
@@ -64,13 +68,28 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   await app.prepare()
 
   const handler = app.getRequestHandler()
+  const upgradeHandler = app.getUpgradeHandler()
   const httpServer: Server = createServer((request, response) => {
     void handler(request, response)
+  })
+  const upgradedSockets = new Set<Parameters<typeof upgradeHandler>[1]>()
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    upgradedSockets.add(socket)
+    socket.once('close', () => upgradedSockets.delete(socket))
+    void upgradeHandler(request, socket, head).catch((error: unknown) => {
+      socket.destroy()
+      console.error(error)
+    })
   })
 
   const templateWatcher: TemplateWatcher = watchTemplates({
     projectRoot: options.projectRoot,
     onStructureChange: scheduleGeneration,
+    onError(error) {
+      console.error(error)
+      process.exitCode = 1
+    },
   })
 
   await new Promise<void>((resolve, reject) => {
@@ -95,8 +114,12 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
 
   return {
     async close() {
+      closing = true
       clearTimeout(generationTimer)
       await templateWatcher.close()
+      clearTimeout(generationTimer)
+      generationPending = false
+      await generationRunning?.catch(() => undefined)
 
       await new Promise<void>((resolve, reject) => {
         if (!httpServer.listening) {
@@ -104,6 +127,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
           return
         }
 
+        for (const socket of upgradedSockets) socket.destroy()
         httpServer.closeAllConnections()
         httpServer.close((error) => (error ? reject(error) : resolve()))
       })

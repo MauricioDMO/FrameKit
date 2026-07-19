@@ -8,7 +8,8 @@ export interface TemplateWatcher {
 
 export function watchTemplates(options: {
   projectRoot: string
-  onStructureChange: () => void | Promise<void>
+  onStructureChange: () => void
+  onError: (error: Error) => void
 }): TemplateWatcher {
   const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')
   const watcher: FSWatcher = chokidar.watch(templatesDirectory, { ignoreInitial: true })
@@ -23,8 +24,11 @@ export function watchTemplates(options: {
       void options.onStructureChange()
     }
   })
-  watcher.on('addDir', () => void options.onStructureChange())
-  watcher.on('unlinkDir', () => void options.onStructureChange())
+  watcher.on('addDir', options.onStructureChange)
+  watcher.on('unlinkDir', options.onStructureChange)
+  watcher.on('error', (error) => {
+    options.onError(error instanceof Error ? error : new Error(String(error)))
+  })
 
   return {
     close: () => watcher.close(),
