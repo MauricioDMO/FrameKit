@@ -12,7 +12,7 @@ carpeta que contiene `pnpm-workspace.yaml`:
 
 ```bash
 pnpm install
-pnpm --filter studio dev
+pnpm dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000).
@@ -91,7 +91,7 @@ pnpm build
 ## Cambiar el puerto
 
 ```bash
-PORT=3001 pnpm --filter studio dev
+PORT=3001 pnpm dev
 ```
 
 ## Importante sobre la CLI
@@ -105,5 +105,5 @@ framekit check
 framekit build
 ```
 
-Son el objetivo de la fase 08. Hasta que esa fase termine, usa los comandos
-`pnpm --filter studio ...` documentados arriba.
+Son el objetivo de la fase 08. Hasta que esa fase termine, usa los scripts de
+pnpm documentados arriba.

@@ -43,12 +43,11 @@ pnpm install
 
 ## Iniciar Studio
 
-La guía corta para empezar está en [`quickstart.md`](quickstart.md). El
-comando vigente es `pnpm --filter studio dev`; la CLI `framekit dev` todavía no
-existe porque pertenece a la fase 08.
+La guía corta para empezar está en [`quickstart.md`](quickstart.md). La CLI
+`framekit dev` todavía no existe porque pertenece a la fase 08.
 
 ```bash
-pnpm --filter studio dev
+pnpm dev
 ```
 
 Abre `http://localhost:3000`. El comando ejecuta un único proceso que:
