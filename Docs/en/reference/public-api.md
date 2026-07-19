@@ -8,17 +8,17 @@ The root entry point provides the core runtime API for defining, validating, and
 
 **Runtime exports**
 
-| Export                       | Description                                                                                                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `defineTemplate`             | Defines a template with fields, locale-aware rendering, and data resolution                                               |
-| `defineTemplateBase`         | Defines the base structure for a template without full template configuration                                             |
-| `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`) |
-| `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                               |
-| `validateTemplateData`       | Validates template data against a template definition                                                                     |
-| `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                               |
+| Export                       | Description                                                                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `defineTemplate`             | Defines a template with fields, locale-aware rendering, and data resolution                                                                                                    |
+| `defineTemplateBase`         | Defines the base structure for a template without full template configuration                                                                                                  |
+| `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                      |
+| `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
+| `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
+| `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
 | `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; applies defaults -> locale content -> user edits |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the keys of `definition.content`                         |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults             |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the keys of `definition.content`                                                                               |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults                                                                   |
 
 **Type exports**
 
@@ -156,13 +156,13 @@ These are peer requirements. The package will emit a warning during installation
 
 ## Browser vs. Server Suitability
 
-| Export                                                   | Side    | Reason                                                                                             |
-| -------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Client  | Interactive React components that manage state and respond to user input                           |
-| `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                 |
-| `FrameKitStudioRoot`                                     | Server  | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
-| `@mauriciodmo/framekit/dev` entry points                 | Server  | Dev server, template discovery, code generation, and file watching are all server-side operations  |
-| PNG export utilities                                     | Browser | Rely on the DOM, `document.fonts`, and the `modern-screenshot` library which requires browser APIs |
+| Export                                                   | Side             | Reason                                                                                             |
+| -------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
+| `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Client           | Interactive React components that manage state and respond to user input                           |
+| `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                       |
+| `FrameKitStudioRoot`                                     | Server           | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
+| `@mauriciodmo/framekit/dev` entry points                 | Server           | Dev server, template discovery, code generation, and file watching are all server-side operations  |
+| PNG export utilities                                     | Browser          | Rely on the DOM, `document.fonts`, and the `modern-screenshot` library which requires browser APIs |
 
 ---
 

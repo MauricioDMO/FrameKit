@@ -17,7 +17,7 @@ El espacio de trabajo contiene cuatro espacios de trabajo secundarios:
 
 | Espacio de trabajo          | Nombre                         | Privado | Propósito                                                                                                                    |
 | --------------------------- | ------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `apps/studio/`              | `studio`                       | Sí      | Aplicación Next.js propia — interfaz del editor visual, plantillas, registro y rutas de la aplicación                       |
+| `apps/studio/`              | `studio`                       | Sí      | Aplicación Next.js propia — interfaz del editor visual, plantillas, registro y rutas de la aplicación                        |
 | `packages/framekit/`        | `@mauriciodmo/framekit`        | No      | Paquete público — runtime, componentes del editor, componentes de Studio, CLI, servidor de desarrollo y generación de código |
 | `packages/create-framekit/` | `@mauriciodmo/create-framekit` | No      | CLI pública para la creación de proyectos                                                                                    |
 | `examples/basic/`           | `framekit-example-basic`       | Sí      | Arnés mínimo de consumidor para pruebas de distribución                                                                      |
@@ -74,11 +74,11 @@ Estos son equivalentes a ejecutar el script dentro del directorio de ese paquete
 
 Las siguientes rutas se producen durante el desarrollo:
 
-| Ruta                               | Contenido                                                                                       | Estado en git                                                                                             |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Ruta                               | Contenido                                                                                       | Estado en git                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `.framekit/generated/templates.ts` | Registro de plantillas tipado auto-generado                                                     | **Ignorado** — se regenera con `framekit generate` cuando es necesario |
-| `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone (Studio o ejemplo)          | Ignorado                                                                                                  |
-| `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                                                                  |
+| `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone (Studio o ejemplo)          | Ignorado                                                               |
+| `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                               |
 
 Los tres directorios están en `.gitignore` mediante `**/.framekit/`, `**/dist/` y patrones específicos de Next.js en `.next/`. El registro generado es desechable y debe regenerarse antes de ejecutar comandos que lo importen.
 

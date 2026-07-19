@@ -8,17 +8,17 @@ El punto de entrada raíz proporciona la API del entorno de ejecución central p
 
 **Exportaciones del entorno de ejecución**
 
-| Exportación                  | Descripción                                                                                                                           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `defineTemplate`             | Define una plantilla con campos, renderizado aware de locale y resolución de datos                                                    |
-| `defineTemplateBase`         | Define la estructura base de una plantilla sin la configuración completa de la misma                                                  |
-| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`) |
-| `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                   |
-| `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                |
-| `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                       |
+| Exportación                  | Descripción                                                                                                                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `defineTemplate`             | Define una plantilla con campos, renderizado aware de locale y resolución de datos                                                                                                             |
+| `defineTemplateBase`         | Define la estructura base de una plantilla sin la configuración completa de la misma                                                                                                           |
+| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                          |
+| `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                               |
+| `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                         |
+| `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                |
 | `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; aplica defaults -> contenido del locale -> ediciones del usuario |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                         |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los defaults de los campos    |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                                                                                            |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los defaults de los campos                                                                         |
 
 **Exportaciones de tipos**
 
@@ -156,13 +156,13 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 
 ## Idoneidad en Navegador vs. Servidor
 
-| Exportación                                              | Lado      | Razón                                                                                                                                          |
-| -------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Cliente   | Componentes React interactivos que gestionan estado y responden a la entrada del usuario                                                       |
-| `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                 |
-| `FrameKitStudioRoot`                                     | Servidor  | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                            |
-| Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor  | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |
-| Utilidades de exportación PNG                            | Navegador | Dependen del DOM, `document.fonts` y la biblioteca `modern-screenshot`, que requiere APIs del navegador                                        |
+| Exportación                                              | Lado               | Razón                                                                                                                                                 |
+| -------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Cliente            | Componentes React interactivos que gestionan estado y responden a la entrada del usuario                                                              |
+| `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                                                                         |
+| `FrameKitStudioRoot`                                     | Servidor           | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                                   |
+| Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor           | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |
+| Utilidades de exportación PNG                            | Navegador          | Dependen del DOM, `document.fonts` y la biblioteca `modern-screenshot`, que requiere APIs del navegador                                               |
 
 ---
 
