@@ -1,4 +1,5 @@
 import { createServer, type Server } from 'node:http'
+import type { Duplex } from 'node:stream'
 
 import next from 'next'
 
@@ -77,72 +78,94 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     turbopack: true,
   })
 
-  await app.prepare()
+  let httpServer: Server | undefined
+  let templateWatcher: TemplateWatcher | undefined
+  const upgradedSockets = new Set<Duplex>()
 
-  const handler = app.getRequestHandler()
-  const upgradeHandler = app.getUpgradeHandler()
-  const httpServer: Server = createServer((request, response) => {
-    void handler(request, response)
-  })
-  const upgradedSockets = new Set<Parameters<typeof upgradeHandler>[1]>()
+  async function closeResources(): Promise<void> {
+    closing = true
+    clearTimeout(generationTimer)
 
-  httpServer.on('upgrade', (request, socket, head) => {
-    upgradedSockets.add(socket)
-    socket.once('close', () => upgradedSockets.delete(socket))
-    void upgradeHandler(request, socket, head).catch((error: unknown) => {
-      socket.destroy()
-      console.error(error)
-    })
-  })
-
-  const templateWatcher: TemplateWatcher = watchTemplates({
-    projectRoot: options.projectRoot,
-    onStructureChange: scheduleGeneration,
-    onError(error) {
-      reportError(error)
-    },
-  })
-
-  await new Promise<void>((resolve, reject) => {
-    const onError = (error: Error) => {
-      httpServer.off('error', onError)
-      reject(error)
+    let closeError: unknown
+    try {
+      await templateWatcher?.close()
+    } catch (error) {
+      closeError = error
     }
 
-    httpServer.once('error', onError)
-    httpServer.listen(options.port, options.hostname, () => {
-      httpServer.off('error', onError)
-      resolve()
-    })
-  })
+    clearTimeout(generationTimer)
+    generationPending = false
+    await generationRunning?.catch(() => undefined)
 
-  httpServer.on('error', (error) => {
-    reportError(error)
-  })
-
-  console.log(`FrameKit Studio: http://${options.hostname}:${options.port}`)
-
-  return {
-    async close() {
-      closing = true
-      clearTimeout(generationTimer)
-      await templateWatcher.close()
-      clearTimeout(generationTimer)
-      generationPending = false
-      await generationRunning?.catch(() => undefined)
-
-      await new Promise<void>((resolve, reject) => {
-        if (!httpServer.listening) {
-          resolve()
-          return
-        }
-
+    try {
+      if (httpServer?.listening) {
         for (const socket of upgradedSockets) socket.destroy()
         httpServer.closeAllConnections()
-        httpServer.close((error) => (error ? reject(error) : resolve()))
-      })
+        await new Promise<void>((resolve, reject) => {
+          httpServer!.close((error) => (error ? reject(error) : resolve()))
+        })
+      }
+    } catch (error) {
+      closeError ??= error
+    }
 
+    try {
       await app.close()
-    },
+    } catch (error) {
+      closeError ??= error
+    }
+
+    if (closeError) throw closeError
+  }
+
+  try {
+    await app.prepare()
+
+    const handler = app.getRequestHandler()
+    const upgradeHandler = app.getUpgradeHandler()
+    httpServer = createServer((request, response) => {
+      void handler(request, response)
+    })
+
+    httpServer.on('upgrade', (request, socket, head) => {
+      upgradedSockets.add(socket)
+      socket.once('close', () => upgradedSockets.delete(socket))
+      void upgradeHandler(request, socket, head).catch((error: unknown) => {
+        socket.destroy()
+        console.error(error)
+      })
+    })
+
+    templateWatcher = watchTemplates({
+      projectRoot: options.projectRoot,
+      onStructureChange: scheduleGeneration,
+      onError(error) {
+        reportError(error)
+      },
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      const onError = (error: Error) => {
+        httpServer!.off('error', onError)
+        reject(error)
+      }
+
+      httpServer!.once('error', onError)
+      httpServer!.listen(options.port, options.hostname, () => {
+        httpServer!.off('error', onError)
+        resolve()
+      })
+    })
+
+    httpServer.on('error', (error) => {
+      reportError(error)
+    })
+
+    console.log(`FrameKit Studio: http://${options.hostname}:${options.port}`)
+
+    return { close: closeResources }
+  } catch (error) {
+    await closeResources().catch(() => undefined)
+    throw error
   }
 }
