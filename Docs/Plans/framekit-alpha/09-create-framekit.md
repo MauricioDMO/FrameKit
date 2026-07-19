@@ -16,7 +16,7 @@ pnpm dlx @mauriciodmo/create-framekit mi-proyecto
 
 ## Paquete del creador
 
-- [ ] Crear `packages/create-framekit/src/cli.ts` y compilarlo a ESM con `tsup`.
+- [ ] Crear `packages/create-framekit/src/cli.ts` y compilarlo a ESM con `tsdown`.
 - [ ] Declarar `name: "@mauriciodmo/create-framekit"`, `type: "module"`, `bin.create-framekit: "./dist/cli.js"` y `publishConfig.access: public`.
 - [ ] Incluir en `files` únicamente `dist`, `template`, README y LICENSE para que el tarball pueda crear proyectos.
 - [ ] Copiar `template/` desde la ubicación del paquete instalado, no desde `process.cwd()`, para que funcione con `pnpm dlx`.

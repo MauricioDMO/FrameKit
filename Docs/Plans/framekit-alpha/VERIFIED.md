@@ -13,6 +13,7 @@
 | 05   | Pruebas de la aplicación    | 2026-07-18    |
 | 06   | Workspace                   | 2026-07-18    |
 | 07   | Paquete framekit            | 2026-07-18    |
+| 07.5 | Runtime de desarrollo       | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -44,8 +45,9 @@ La tabla conserva el historial de lo verificado.
 - `config.ts` eliminado de la plantilla piloto
 
 ### Detalle 02-codegen.md
-- Scanner en `packages/framekit/src/codegen/generate-template-registry.mjs`
-- `apps/studio/src/.framekit/manifest.ts` y `registry.ts` generados
+- Estado histórico, reemplazado por el runtime descrito en 07.5.
+- El scanner vivía en `packages/framekit/src/codegen/generate-template-registry.mjs`.
+- Generaba `apps/studio/src/.framekit/manifest.ts` y `registry.ts`.
 - `writeIfChanged` para evitar reinicios
 - `src/generated/`, `read-template-catalog.ts`, `get-template-config.ts` eliminados
 - `outputFileTracingIncludes` eliminado de next.config
@@ -61,8 +63,9 @@ La tabla conserva el historial de lo verificado.
 - Zoom, arrastre, escala, tema conservados
 
 ### Detalle 04-migration.md
-- `generate-template-registry.mjs` busca `template.tsx` a cualquier profundidad
-- Genera `apps/studio/src/.framekit/manifest.ts` y `registry.ts`
+- Estado histórico, reemplazado por el runtime descrito en 07.5.
+- `generate-template-registry.mjs` buscaba `template.tsx` a cualquier profundidad.
+- Generaba `apps/studio/src/.framekit/manifest.ts` y `registry.ts`.
 - `manifestToNavigation()` deriva categorías de segmentos, reutiliza prefijos, humaniza nombres
 - Enlaces con formato `/editor/<slug>` ordenados por título
 - Tipos de navegación en `packages/framekit/src/editor/navigation.ts` (no en `types.ts`)
@@ -93,7 +96,7 @@ La tabla conserva el historial de lo verificado.
 - `packages/create-framekit` y `examples/basic` existen como workspaces privados independientes.
 - Studio consume `@mauriciodmo/framekit` y `@mauriciodmo/framekit/editor` mediante `workspace:*`.
 - La API existente del paquete, incluidos validadores, resolvers, descriptores y errores estructurados, queda pública.
-- `apps/studio/src/.framekit/manifest.ts` y `registry.ts` son generados e ignorados por Git.
+- El codegen histórico de Studio fue reemplazado posteriormente por el runtime de 07.5.
 - `apps/studio/src/app/globals.css` conserva solo los estilos de Studio e importa el CSS compilado público del paquete.
 - La guía operativa está en [`Docs/workspace.md`](../../workspace.md).
 - Verificado con `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` y `pnpm --filter studio dev`.
@@ -106,6 +109,14 @@ La tabla conserva el historial de lo verificado.
 - La API raíz y `/editor` se conserva, incluidos validadores, resolvers, descriptores, errores y helpers de navegación.
 - La allowlist de pnpm permite el build nativo de `@parcel/watcher`, requerido por la cadena CSS.
 - Verificado con `pnpm install`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm --filter @mauriciodmo/framekit pack --dry-run` y Studio en `pnpm --filter studio dev`.
+
+### Detalle 07.5-dev-runtime.md
+- Discovery, codegen, watcher y servidor de desarrollo viven en `@mauriciodmo/framekit/dev`.
+- `.framekit/generated/templates.ts` unifica metadatos y loaders con imports literales.
+- `.framekit/next` contiene la salida de Next y el servidor standalone de producción.
+- Studio usa un único proceso con generación inicial, Turbopack y watcher estructural.
+- Los antiguos `.mjs`, `src/.framekit/manifest.ts` y `src/.framekit/registry.ts` fueron eliminados.
+- Verificado con build, test y typecheck del paquete y Studio, build standalone y cierre por señales.
 
 ## Pendientes 🔲
 

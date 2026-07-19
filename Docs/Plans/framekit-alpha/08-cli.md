@@ -40,6 +40,12 @@ El único archivo generado es `<cwd>/.framekit/generated/templates.ts`.
 - [ ] Si check pasa, ejecutar `next build` desde el cwd del consumidor.
 - [ ] Devolver el código de salida de Next y no continuar tras un check fallido.
 
+## `framekit start`
+
+- [ ] Iniciar el servidor standalone generado para el proyecto consumidor sin asumir la estructura interna del monorepo de FrameKit.
+- [ ] Fallar con un mensaje claro si todavía no existe una build de producción.
+- [ ] Reenviar el código de salida y las señales al proceso de Next.
+
 ## Scripts del consumidor
 
 ```json
@@ -47,7 +53,7 @@ El único archivo generado es `<cwd>/.framekit/generated/templates.ts`.
   "scripts": {
     "dev": "framekit dev",
     "build": "framekit build",
-    "start": "node .framekit/next/standalone/apps/studio/server.js",
+    "start": "framekit start",
     "check": "framekit check"
   }
 }
@@ -58,3 +64,4 @@ El único archivo generado es `<cwd>/.framekit/generated/templates.ts`.
 - [ ] Añadir, mover o eliminar un `template.tsx` regenera manifiesto y registro durante desarrollo.
 - [ ] `framekit check` muestra el archivo y la regla incumplida.
 - [ ] `framekit build` no ejecuta `next build` si existe un error de plantilla.
+- [ ] `framekit start` funciona en una aplicación raíz creada fuera del monorepo.
