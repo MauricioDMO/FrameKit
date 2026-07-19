@@ -88,7 +88,7 @@ describe('writeTemplateModule', () => {
   it('generates sorted exact module output', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-registry-'))
     const templatesRoot = path.join(root, 'src', 'templates')
-    const outputDirectory = path.join(root, '.framekit', 'generated')
+    const outputDirectory = path.join(root, 'src', 'generated', 'framekit')
 
     try {
       const firstTemplate = path.join(templatesRoot, 'social', 'campaign')
@@ -128,13 +128,13 @@ export const templates = [
     slug: "marketing/email/launch",
     title: "Launch",
     segments: ["marketing","email","launch"],
-    load: () => import("../../src/templates/marketing/email/launch/template"),
+    load: () => import("../../templates/marketing/email/launch/template"),
   },
   {
     slug: "social/campaign",
     title: "Campaign",
     segments: ["social","campaign"],
-    load: () => import("../../src/templates/social/campaign/template"),
+    load: () => import("../../templates/social/campaign/template"),
   }
 ] satisfies Array<{
   slug: string

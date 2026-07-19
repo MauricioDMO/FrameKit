@@ -7,28 +7,30 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 ## Requisitos previos
 
 - Node.js 20.9.0 o posterior.
-- pnpm 11.14.0 o posterior.
-
-`create-framekit` solo funciona con pnpm. No es compatible con npm, yarn ni bun.
+- pnpm 11.14.0 o posterior, **o** npm 10.x o posterior.
 
 ## Crear el proyecto
 
 Una vez que `@mauriciodmo/create-framekit` esté publicado en npm, ejecuta:
 
 ```bash
-pnpm dlx @mauriciodmo/create-framekit my-project
+pnpm dlx @mauriciodmo/create-framekit mi-proyecto
 ```
 
-El creador requiere exactamente un argumento: la ruta a un directorio que aún no exista. Si el directorio ya existe, el comando falla con un error y no se crea nada.
+El creador es interactivo. Si no proporcionas el nombre del proyecto como argumento, te lo pide. Detecta qué gestor de paquetes estás usando (`pnpm` o `npm`) desde tu entorno; si no puede detectarlo, te pregunta cuál elegir. Luego pregunta:
 
-Después de copiar la plantilla, el creador ejecuta `pnpm install` y `pnpm framekit generate` de forma automática. Si alguno de estos pasos falla, el directorio del proyecto parcialmente creado se conserva para que puedas diagnosticar el problema.
+- Si instalar las dependencias (por defecto: sí).
+- Si estás usando **pnpm** y elegiste instalar dependencias: si deseas ejecutar `pnpm approve-builds` para aprobar scripts de compilación de forma interactiva (por defecto: sí).
+- Si inicializar un repositorio Git con un commit inicial (por defecto: sí).
+
+Después de copiar la plantilla, si elegiste instalar dependencias el creador ejecuta `pnpm install` (o `npm install`) y luego `pnpm framekit generate` (o `npm exec -- framekit generate`). Si alguno de estos pasos falla, el directorio del proyecto parcialmente creado se conserva para que puedas diagnosticar el problema.
 
 ## Iniciar el desarrollo
 
 Navega al directorio del proyecto e inicia el servidor de desarrollo:
 
 ```bash
-cd my-project
+cd mi-proyecto
 pnpm dev
 ```
 

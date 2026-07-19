@@ -26,7 +26,7 @@ Cada directorio de plantilla debe contener un archivo `template.tsx`. Los direct
 
 **Solución: ejecuta `framekit generate`**
 
-Esto regenera `.framekit/generated/templates.ts` a partir del estado actual de `src/templates`. Ejecútalo después de corregir cualquiera de los problemas anteriores:
+Esto regenera `src/generated/framekit/templates.ts` a partir del estado actual de `src/templates`. Ejecútalo después de corregir cualquiera de los problemas anteriores:
 
 ```
 framekit generate
@@ -54,9 +54,9 @@ Renombra el directorio ofensivo para que cada segmento esté en minúsculas y se
 
 ## TypeScript no puede encontrar `@framekit/generated/templates`
 
-**Causa: tsconfig.json no tiene el alias de ruta `@framekit/*`**
+**Causa: tsconfig.json no tiene el alias de ruta `@framekit/generated/*`**
 
-El `templates.ts` generado vive en `.framekit/generated/templates.ts`, pero TypeScript no sabe resolver `@framekit/generated/templates` a esa ruta sin un alias de ruta configurado.
+El `templates.ts` generado vive en `src/generated/framekit/templates.ts`, pero TypeScript no sabe resolver `@framekit/generated/templates` a esa ruta sin un alias de ruta configurado.
 
 **Solución: añade el alias de ruta en tsconfig.json**
 
@@ -66,7 +66,7 @@ Añade lo siguiente al campo `paths` en tu `tsconfig.json`:
 {
   "compilerOptions": {
     "paths": {
-      "@framekit/*": [".framekit/*"]
+      "@framekit/generated/*": ["src/generated/framekit/*"]
     }
   }
 }

@@ -36,7 +36,7 @@ describe('template generation integration', () => {
       const templatesRoot = path.join(projectRoot, 'src', 'templates')
       const firstTemplate = path.join(templatesRoot, 'branding', 'social', 'square')
       const secondTemplate = path.join(templatesRoot, 'product', 'launch')
-      const outputDirectory = path.join(projectRoot, '.framekit', 'generated')
+      const outputDirectory = path.join(projectRoot, 'src', 'generated', 'framekit')
       await mkdir(firstTemplate, { recursive: true })
       await mkdir(secondTemplate, { recursive: true })
       await writeFile(path.join(firstTemplate, 'template.tsx'), templateSource)
@@ -59,13 +59,13 @@ export const templates = [
     slug: "branding/social/square",
     title: "Square",
     segments: ["branding","social","square"],
-    load: () => import("../../src/templates/branding/social/square/template"),
+    load: () => import("../../templates/branding/social/square/template"),
   },
   {
     slug: "product/launch",
     title: "Launch",
     segments: ["product","launch"],
-    load: () => import("../../src/templates/product/launch/template"),
+    load: () => import("../../templates/product/launch/template"),
   }
 ] satisfies Array<{
   slug: string

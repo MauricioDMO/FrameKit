@@ -7,9 +7,7 @@ FrameKit is currently in alpha/prerelease status. The packages are not yet publi
 ## Prerequisites
 
 - Node.js 20.9.0 or later.
-- pnpm 11.14.0 or later.
-
-`create-framekit` only works with pnpm. It does not support npm, yarn, or bun.
+- pnpm 11.14.0 or later, **or** npm 10.x or later.
 
 ## Create the project
 
@@ -19,9 +17,13 @@ Once `@mauriciodmo/create-framekit` is published to npm, run:
 pnpm dlx @mauriciodmo/create-framekit my-project
 ```
 
-The creator requires exactly one argument: the path to a directory that does not already exist. If the directory exists, the command fails with an error and nothing is created.
+The creator is interactive. If you do not provide a project name as an argument, it asks for one. It detects which package manager you are using (`pnpm` or `npm`) from your environment; if it cannot detect it, it asks you to choose. It then asks:
 
-After copying the template, the creator runs `pnpm install` and `pnpm framekit generate` automatically. If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
+- Whether to install dependencies (default: yes).
+- If you are using **pnpm** and chose to install dependencies: whether to run `pnpm approve-builds` to approve build scripts interactively (default: yes).
+- Whether to initialize a Git repository with an initial commit (default: yes).
+
+After copying the template, if you chose to install dependencies the creator runs `pnpm install` (or `npm install`) and then `pnpm framekit generate` (or `npm exec -- framekit generate`). If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
 
 ## Start development
 

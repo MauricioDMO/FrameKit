@@ -26,7 +26,7 @@ Each template directory must contain a `template.tsx` file. Directories without 
 
 **Fix: run `framekit generate`**
 
-This regenerates `.framekit/generated/templates.ts` from the current state of `src/templates`. Run it after fixing any of the issues above:
+This regenerates `src/generated/framekit/templates.ts` from the current state of `src/templates`. Run it after fixing any of the issues above:
 
 ```
 framekit generate
@@ -54,9 +54,9 @@ Rename the offending directory so every segment is lowercase and hyphenated. For
 
 ## TypeScript cannot find `@framekit/generated/templates`
 
-**Cause: tsconfig.json missing the `@framekit/*` path alias**
+**Cause: tsconfig.json missing the `@framekit/generated/*` path alias**
 
-The generated `templates.ts` lives at `.framekit/generated/templates.ts`, but TypeScript does not know to resolve `@framekit/generated/templates` to that path without a path alias configured.
+The generated `templates.ts` lives at `src/generated/framekit/templates.ts`, but TypeScript does not know to resolve `@framekit/generated/templates` to that path without a path alias configured.
 
 **Fix: add path alias to tsconfig.json**
 
@@ -66,7 +66,7 @@ Add the following to the `paths` field in your `tsconfig.json`:
 {
   "compilerOptions": {
     "paths": {
-      "@framekit/*": [".framekit/*"]
+      "@framekit/generated/*": ["src/generated/framekit/*"]
     }
   }
 }

@@ -39,20 +39,20 @@ El modo de salida `standalone` produce una compilación de producción autoconte
 
 ## Configurar TypeScript
 
-Abre `tsconfig.json` y agrega el alias de ruta `@framekit/*` dentro de `compilerOptions.paths`:
+Abre `tsconfig.json` y agrega el alias de ruta `@framekit/generated/*` dentro de `compilerOptions.paths`:
 
 ```json
 {
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@framekit/*": ["./.framekit/*"]
+      "@framekit/generated/*": ["./src/generated/framekit/*"]
     }
   }
 }
 ```
 
-Este alias resuelve las importaciones desde `@framekit/generated/templates` hacia `.framekit/generated/templates`, que es donde el comando `framekit generate` escribe el archivo de registro de plantillas generado.
+Este alias resuelve las importaciones desde `@framekit/generated/templates` hacia `src/generated/framekit/templates`, que es donde el comando `framekit generate` escribe el archivo de registro de plantillas generado.
 
 ## Agregar estilos
 
@@ -117,11 +117,11 @@ Ejecuta `framekit generate` para descubrir cada plantilla en tu proyecto y escri
 pnpm framekit generate
 ```
 
-Este comando escribe `.framekit/generated/templates.ts` (resuelto mediante el alias `@framekit/*`). El archivo generado exporta un arreglo de solo lectura llamado `templates`. No edites este archivo; se sobrescribe cada vez que ejecutas `framekit generate` o `pnpm framekit dev`.
+Este comando escribe `src/generated/framekit/templates.ts` (resuelto mediante el alias `@framekit/generated/*`). El archivo generado exporta un arreglo de solo lectura llamado `templates`. No edites este archivo; se sobrescribe cada vez que ejecutas `framekit generate` o `pnpm framekit dev`.
 
 ## El directorio .framekit
 
-El directorio `.framekit` es completamente desechable. Es creado o regenerado por `framekit generate` y por `pnpm framekit dev`. Puedes eliminarlo sin problema y se reconstruirá automáticamente.
+El directorio `src/generated/framekit` es completamente desechable. Es creado o regenerado por `framekit generate` y por `pnpm framekit dev`. Puedes eliminarlo sin problema y se reconstruirá automáticamente.
 
 ## Diferencias con la configuración de Studio en monorepo
 

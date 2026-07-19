@@ -49,3 +49,4 @@ next-env.d.ts
 
 # framekit generated files and Next output
 **/.framekit/
+**/src/generated/framekit/

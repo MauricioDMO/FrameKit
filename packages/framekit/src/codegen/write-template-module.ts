@@ -23,7 +23,7 @@ export async function writeTemplateModule(options: {
   projectRoot: string
 }): Promise<DiscoveredTemplate[]> {
   const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')
-  const outputDirectory = path.join(options.projectRoot, '.framekit', 'generated')
+  const outputDirectory = path.join(options.projectRoot, 'src', 'generated', 'framekit')
   const outputFile = path.join(outputDirectory, 'templates.ts')
   const templates = await findTemplates(templatesDirectory)
 

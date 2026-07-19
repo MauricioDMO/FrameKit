@@ -19,7 +19,7 @@ FrameKit uses the current directory as the application root:
 ```
 
 `generate` discovers `src/templates/**/template.tsx` and writes
-`.framekit/generated/templates.ts`. `check` validates every template before
+`src/generated/framekit/templates.ts`. `check` validates every template before
 `build` runs Next.js. Production uses Next.js standalone output under
 `.framekit/next`.
 
