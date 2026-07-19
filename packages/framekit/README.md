@@ -3,6 +3,26 @@
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
 
+## CLI
+
+FrameKit uses the current directory as the application root:
+
+```json
+{
+  "scripts": {
+    "dev": "framekit dev",
+    "build": "framekit build",
+    "start": "framekit start",
+    "check": "framekit check"
+  }
+}
+```
+
+`generate` discovers `src/templates/**/template.tsx` and writes
+`.framekit/generated/templates.ts`. `check` validates every template before
+`build` runs Next.js. Production uses Next.js standalone output under
+`.framekit/next`.
+
 ## Inline templates
 
 Use `defineTemplate` when the definition and renderer belong in one file. The
