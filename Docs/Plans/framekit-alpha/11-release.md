@@ -2,11 +2,19 @@
 
 ## Precondiciones
 
-- [ ] Confirmar que los paquetes tienen los nombres disponibles en npm: `@mauriciodmo/framekit` y `@mauriciodmo/create-framekit`. **(Requiere verificación manual en npmjs.com)**
+- [x] Confirmar que los paquetes tienen los nombres disponibles en npm: `@mauriciodmo/framekit` y `@mauriciodmo/create-framekit`. **(Verificado: ambos devuelven `Not found` — libres)**
 - [x] Confirmar que la raíz conserva `private: true` y que solo los dos paquetes tienen `publishConfig.access: public`.
 - [x] Actualizar ambos paquetes a `0.1.0-alpha.1`.
 - [x] Actualizar la dependencia de FrameKit dentro de la plantilla del creador a `0.1.0-alpha.1`.
 - [x] Confirmar que README, licencia, repositorio y bugs metadata apuntan al repositorio público correcto. *(Añadido `repository` y `bugs` a ambos package.json)*
+
+## Mejoras aplicadas antes de publicar
+
+- [x] `publishConfig.tag: "alpha"` añadido a ambos paquetes.
+- [x] `prepack: "pnpm build"` y `prepublishOnly: "pnpm lint && pnpm test && pnpm typecheck"` en ambos paquetes.
+- [x] Metadatos npm completos: `description`, `keywords`, `homepage`, `author`, `repository` como objeto con `directory`.
+- [x] CI ampliada: matrix Node `20.9.0 / 22 / 24` en Ubuntu; job separado de Windows para smoke test de `create-framekit`; `pack --dry-run` para ambos paquetes.
+- [x] Sourcemaps no activados — se evaluará para `alpha.2` si los consumidores reportan necesidad.
 
 ## Verificación previa
 
@@ -25,10 +33,10 @@ pnpm --filter @mauriciodmo/create-framekit pack
 - [x] `pnpm build` — Passed (framekit + Tailwind CSS, studio, examples/basic)
 - [x] `pnpm --filter @mauriciodmo/framekit pack --dry-run` — Contents verified (bin, dist, README, LICENSE)
 - [x] `pnpm --filter @mauriciodmo/create-framekit pack --dry-run` — Contents verified (dist, template, README, LICENSE)
-- [ ] Ejecutar las pruebas de tarball de la fase 10 con los artefactos recién creados. **(Requiere ejecutar manualmente los tarballs en un entorno aislado)**
-- [ ] Revisar manualmente cada `npm pack --dry-run` para confirmar que no publica secretos, fuente no compilada ni archivos de Studio.
+- [x] Ejecutar las pruebas de tarball de la fase 10 con los artefactos recién creados. **(Harness aislado: check 0, build 0 para ambos. `.framekit/generated/templates.ts` creado correctamente.)**
+- [x] Revisar manualmente cada `npm pack --dry-run` para confirmar que no publica secretos, fuente no compilada ni archivos de Studio. **(Sin `src/`, sin `tests/`, sin `.next/`, sin `.framekit/` fuera de dist.)**
 
-La fase 10 tiene una verificación histórica registrada para sus tarballs. Las dos comprobaciones manuales anteriores siguen pendientes para los artefactos recién creados y no se consideran realizadas por esa verificación histórica.
+La fase 10 tiene una verificación histórica registrada para sus tarballs. Las dos comprobaciones manuales ahora están completas para los artefactos recién creados.
 
 ## Publicación manual
 
