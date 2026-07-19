@@ -13,7 +13,7 @@ Create visual templates under `src/templates/`. A directory containing a default
 2. Choose the output dimensions for the destination, then create a lowercase kebab-case directory such as `social-card`.
 3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields.
 4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
-5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component.
+5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate.
 6. When the layout is substantial, extract the definition and artwork using the supported three-file pattern below.
 7. Run `framekit check`. For visual work, run `framekit dev`, inspect the template in Studio, and export a PNG when the final appearance matters.
 
@@ -32,7 +32,11 @@ export default defineTemplate({
   },
   render({ data, locale, width, height }) {
     return (
-      <article lang={locale} style={{ width, height, color: data.accentColor }}>
+      <article
+        lang={locale}
+        className="size-full"
+        style={{ width, height, color: data.accentColor }}
+      >
         <Markdown value={data.title} />
       </article>
     )
@@ -55,6 +59,10 @@ Every field needs a human-readable `label`. Shared options are `placeholder`, `r
 Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Values resolve in this order: field default, selected locale content, then Studio edits.
 
 Read [references/fields-and-markdown.md](references/fields-and-markdown.md) for field constraints and supported Markdown.
+
+## Styling
+
+Use Tailwind utility classes for layout, typography, spacing, borders, shadows, and static colors. Do not use `style={}` for values Tailwind can express. Inline styles are appropriate only for runtime values from `data` or computed render dimensions.
 
 ## Large Templates
 
@@ -96,7 +104,15 @@ import type { templateBase } from './definition'
 type ArtworkProps = TemplateRenderProps<typeof templateBase>
 
 export function Artwork({ data, locale, width, height }: ArtworkProps) {
-  return <article lang={locale} style={{ width, height, color: data.accentColor }}>{data.title}</article>
+  return (
+    <article
+      lang={locale}
+      className="flex size-full items-center p-12 text-5xl font-bold"
+      style={{ width, height, color: data.accentColor }}
+    >
+      {data.title}
+    </article>
+  )
 }
 ```
 
