@@ -17,6 +17,7 @@ export interface EditorMessages {
   errorNumberTooSmall: string
   errorNumberTooLarge: string
   errorInvalidUrl: string
+  errorInvalidColor: string
 }
 
 export interface TemplateField {

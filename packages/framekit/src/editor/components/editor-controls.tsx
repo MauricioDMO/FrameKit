@@ -28,7 +28,7 @@ export function EditorControls({ definition, messages, selectedLocale, data, err
         </label>
         {Object.entries(definition.fields).map(([key, field]) => (
           <div key={key} data-field-key={key}>
-            <EditorField field={{ key, type: field.kind, required: field.required ?? true, min: field.kind === 'number' ? field.min : undefined, max: field.kind === 'number' ? field.max : undefined, label: field.label, placeholder: field.placeholder }} value={data[key] ?? ''} onChange={(value) => onFieldChange(key, value)} error={errors[key]} />
+            <EditorField field={{ key, type: field.kind, required: field.required !== false, min: field.kind === 'number' ? field.min : undefined, max: field.kind === 'number' ? field.max : undefined, label: field.label, placeholder: field.placeholder }} value={data[key] ?? ''} onChange={(value) => onFieldChange(key, value)} error={errors[key]} />
           </div>
         ))}
       </div>

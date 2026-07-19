@@ -1,6 +1,6 @@
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../../types'
 
-export function NumberField({ field, value, onChange }: EditorFieldProps) {
-  return <input name={field.key} type="number" required={field.required} placeholder={field.placeholder} min={field.min} max={field.max} value={value} onChange={(event) => onChange(event.target.value)} className={controlClass} />
+export function NumberField({ field, value, onChange, error }: EditorFieldProps) {
+  return <input name={field.key} type="number" required={field.required} aria-required={field.required} aria-invalid={error !== undefined} placeholder={field.placeholder} min={field.min} max={field.max} value={value} onChange={(event) => onChange(event.target.value)} className={controlClass} />
 }

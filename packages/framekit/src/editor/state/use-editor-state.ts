@@ -5,7 +5,15 @@ import { getInitialState, loadPersistedState, resetLocale, selectLocale, storage
 
 export function useEditorState(slug: string, definition: TemplateDefinition) {
   const hydratedRef = useRef(false)
-  const [state, setState] = useState(() => typeof window === 'undefined' ? getInitialState(definition) : loadPersistedState(slug, definition, window.localStorage) ?? getInitialState(definition))
+  const [state, setState] = useState(() => {
+    if (typeof window === 'undefined') return getInitialState(definition)
+
+    try {
+      return loadPersistedState(slug, definition, window.localStorage) ?? getInitialState(definition)
+    } catch {
+      return getInitialState(definition)
+    }
+  })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -13,7 +21,13 @@ export function useEditorState(slug: string, definition: TemplateDefinition) {
   }, [])
 
   useEffect(() => {
-    if (hydratedRef.current) window.localStorage.setItem(storageKey(slug), JSON.stringify(state))
+    if (hydratedRef.current) {
+      try {
+        window.localStorage.setItem(storageKey(slug), JSON.stringify(state))
+      } catch {
+        // Storage can be unavailable or full; editing should continue in memory.
+      }
+    }
   }, [slug, state])
 
   function changeLocale(locale: string) {

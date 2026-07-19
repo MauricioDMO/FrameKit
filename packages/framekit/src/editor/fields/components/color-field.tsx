@@ -1,10 +1,12 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 
+import { isValidColor } from '../../../core/validation'
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../../types'
 
-export function ColorField({ field, value, onChange }: EditorFieldProps) {
-  const externalPickerValue = /^#[\da-f]{6}$/i.test(value) ? value : '#000000'
+export function ColorField({ field, value, onChange, error }: EditorFieldProps) {
+  const normalizedValue = value.trim()
+  const externalPickerValue = isValidColor(normalizedValue) ? normalizedValue : '#000000'
   const [pickerState, setPickerState] = useState(() => ({ externalValue: externalPickerValue, pickerValue: externalPickerValue }))
   const pendingValueRef = useRef<string | null>(null)
   const timeoutRef = useRef<number | null>(null)
@@ -42,7 +44,7 @@ export function ColorField({ field, value, onChange }: EditorFieldProps) {
 
   return (
     <div className="flex max-w-full items-center gap-2">
-      <input id={pickerId} name={field.key} type="color" required={field.required} value={pickerState.pickerValue} onChange={(event) => {
+      <input id={pickerId} name={field.key} type="color" required={field.required} aria-required={field.required} aria-invalid={error !== undefined} value={pickerState.pickerValue} onChange={(event) => {
         const nextValue = event.target.value
         setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })
         schedulePickerUpdate(nextValue)
@@ -52,7 +54,7 @@ export function ColorField({ field, value, onChange }: EditorFieldProps) {
       </label>
       <div className={`${controlClass} flex h-10 items-center gap-1 px-3 py-0`}>
         <span aria-hidden="true" className="text-base text-[#59665f] dark:text-[#b8c8be]">#</span>
-        <input name={`${field.key}-value`} type="text" required={field.required} value={hexValue} onChange={(event) => {
+        <input name={`${field.key}-value`} type="text" required={field.required} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} maxLength={6} pattern="[\da-fA-F]{6}" value={hexValue} onChange={(event) => {
           cancelPendingPickerUpdate()
           onChange(`#${event.target.value.replace(/^#+/, '')}`)
         }} className="w-full min-w-0 flex-1 bg-transparent text-base outline-none" />

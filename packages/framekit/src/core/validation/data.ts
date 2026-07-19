@@ -6,6 +6,11 @@ export type TemplateDataValidationError =
   | { code: 'number_too_small'; min: number }
   | { code: 'number_too_large'; max: number }
   | { code: 'invalid_url' }
+  | { code: 'invalid_color' }
+
+export function isValidColor(value: string): boolean {
+  return /^#[\da-f]{6}$/i.test(value)
+}
 
 function isValidUrl(value: string): boolean {
   if (value.startsWith('/')) return true
@@ -64,6 +69,17 @@ export function validateTemplateData(
       if (!isValidUrl(trimmed)) {
         errors[key] = { code: 'invalid_url' }
         continue
+      }
+      continue
+    }
+
+    if (field.kind === 'color') {
+      if (isRequired && trimmed === '') {
+        errors[key] = { code: 'required' }
+        continue
+      }
+      if (trimmed !== '' && !isValidColor(trimmed)) {
+        errors[key] = { code: 'invalid_color' }
       }
       continue
     }

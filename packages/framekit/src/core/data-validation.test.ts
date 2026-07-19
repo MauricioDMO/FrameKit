@@ -16,6 +16,8 @@ function createDefinition() {
       invalidNumber: fields.number({ label: 'Invalid number' }),
       requiredUrl: fields.url({ label: 'Required URL' }),
       optionalUrl: fields.url({ label: 'Optional URL', required: false }),
+      requiredColor: fields.color({ label: 'Required color' }),
+      optionalColor: fields.color({ label: 'Optional color', required: false }),
     },
     content: {
       en: { language: 'English' },
@@ -38,10 +40,13 @@ describe('validateTemplateData', () => {
       invalidNumber: '13',
       requiredUrl: '  ',
       optionalUrl: '  ',
+      requiredColor: '  ',
+      optionalColor: '  ',
     })).toEqual({
       requiredText: { code: 'required' },
       validNumber: { code: 'required' },
       requiredUrl: { code: 'required' },
+      requiredColor: { code: 'required' },
     })
   })
 
@@ -55,6 +60,8 @@ describe('validateTemplateData', () => {
       tooLarge: '21',
       invalidNumber: 'nope',
       requiredUrl: 'https://example.test',
+      requiredColor: '#AABBCC',
+      optionalColor: '',
     })).toEqual({
       tooSmall: { code: 'number_too_small', min: 10 },
       tooLarge: { code: 'number_too_large', max: 20 },
@@ -73,6 +80,8 @@ describe('validateTemplateData', () => {
       invalidNumber: '13',
       requiredUrl: 'HTTPS://example.test/image.svg',
       optionalUrl: '/images/image.svg',
+      requiredColor: '#AABBCC',
+      optionalColor: '#112233',
     })).toEqual({})
 
     expect(validateTemplateData(definition, {
@@ -83,9 +92,12 @@ describe('validateTemplateData', () => {
       invalidNumber: '13',
       requiredUrl: 'ftp://example.test/image.svg',
       optionalUrl: 'javascript:alert(1)',
+      requiredColor: '#AABBCC',
+      optionalColor: 'red',
     })).toEqual({
       requiredUrl: { code: 'invalid_url' },
       optionalUrl: { code: 'invalid_url' },
+      optionalColor: { code: 'invalid_color' },
     })
   })
 })

@@ -8,5 +8,6 @@ export function translateValidationError(error: TemplateDataValidationError, mes
     case 'number_too_small': return messages.errorNumberTooSmall.replace('{min}', String(error.min ?? ''))
     case 'number_too_large': return messages.errorNumberTooLarge.replace('{max}', String(error.max ?? ''))
     case 'invalid_url': return messages.errorInvalidUrl
+    case 'invalid_color': return messages.errorInvalidColor
   }
 }
