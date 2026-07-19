@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { templateManifest } from '@/.framekit/manifest'
+import { templateManifest } from '@framekit/generated/templates'
 import { EditorEmptyState } from '@/components/editor/editor-empty-state'
 import { TemplateRoute } from '@/components/editor/template-route'
 

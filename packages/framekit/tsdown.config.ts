@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     editor: 'src/editor.ts',
+    dev: 'src/dev.ts',
   },
   format: ['esm'],
   dts: true,
@@ -11,6 +12,7 @@ export default defineConfig({
   unbundle: true,
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   sourcemap: false,
-  external: ['next', 'react', 'react-dom', 'lucide-react', 'modern-screenshot'],
+  logLevel: 'error',
+  external: ['next', 'react', 'react-dom', 'lucide-react', 'modern-screenshot', 'chokidar'],
   outDir: 'dist',
 })

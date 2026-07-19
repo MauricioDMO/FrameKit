@@ -6,7 +6,8 @@ import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { findTemplates, generateRegistry } from './generate-template-registry.mjs'
+import { findTemplates } from '../discovery/find-templates'
+import { writeTemplateModule } from './write-template-module'
 
 describe('findTemplates', () => {
   it('stops at a template and ignores its private auxiliary directories', async () => {
@@ -25,7 +26,9 @@ describe('findTemplates', () => {
       await expect(findTemplates(templatesRoot)).resolves.toEqual([
         {
           slug: 'social/campaign',
+          title: 'Campaign',
           segments: ['social', 'campaign'],
+          absolutePath: templateRoot,
         },
       ])
     } finally {
@@ -66,11 +69,11 @@ describe('findTemplates', () => {
     })
 })
 
-describe('generateRegistry', () => {
-  it('generates sorted exact manifest and registry output', async () => {
+describe('writeTemplateModule', () => {
+  it('generates sorted exact module output', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-registry-'))
-    const templatesRoot = path.join(root, 'templates')
-    const framekitDir = path.join(root, '.framekit')
+    const templatesRoot = path.join(root, 'src', 'templates')
+    const outputDirectory = path.join(root, '.framekit', 'generated')
 
     try {
       const firstTemplate = path.join(templatesRoot, 'social', 'campaign')
@@ -82,45 +85,55 @@ describe('generateRegistry', () => {
       await writeFile(path.join(firstTemplate, 'helpers', 'template.tsx'), '')
       await writeFile(path.join(secondTemplate, 'template.tsx'), '')
 
-      await expect(generateRegistry({ templatesRoot, framekitDir })).resolves.toEqual([
+      await expect(writeTemplateModule({ projectRoot: root })).resolves.toEqual([
         {
           slug: 'marketing/email/launch',
+          title: 'Launch',
           segments: ['marketing', 'email', 'launch'],
+          absolutePath: secondTemplate,
         },
         {
           slug: 'social/campaign',
+          title: 'Campaign',
           segments: ['social', 'campaign'],
+          absolutePath: firstTemplate,
         },
       ])
 
-      await expect(readFile(path.join(framekitDir, 'manifest.ts'), 'utf8')).resolves.toBe(`/* Archivo generado automáticamente. No modificar. */
+      await expect(readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).resolves.toBe(`/* Archivo generado automáticamente. No modificar. */
 
-export const templateManifest: Array<{
-  slug: string
-  title: string
-  segments: string[]
-}> = [
+import type { TemplateDefinition } from '@mauriciodmo/framekit'
+
+type TemplateLoader = () => Promise<{
+  default: TemplateDefinition
+}>
+
+export const templates = [
   {
     slug: "marketing/email/launch",
     title: "Launch",
     segments: ["marketing","email","launch"],
+    load: () => import("../../src/templates/marketing/email/launch/template"),
   },
   {
     slug: "social/campaign",
     title: "Campaign",
     segments: ["social","campaign"],
+    load: () => import("../../src/templates/social/campaign/template"),
   }
-]
-`)
-      await expect(readFile(path.join(framekitDir, 'registry.ts'), 'utf8')).resolves.toBe(`/* Archivo generado automáticamente. No modificar. */
-'use client'
+] satisfies Array<{
+  slug: string
+  title: string
+  segments: string[]
+  load: TemplateLoader
+}>
 
-import type { TemplateDefinition } from '@mauriciodmo/framekit'
+export const templateManifest = templates.map(
+  ({ load: _, ...metadata }) => metadata,
+)
 
-export const templateRegistry: Record<string, () => Promise<{ default: TemplateDefinition }>> = {
-  "marketing/email/launch": () => import("../templates/marketing/email/launch/template"),
-  "social/campaign": () => import("../templates/social/campaign/template"),
-}
+export const templateRegistry: Record<string, TemplateLoader> =
+  Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
     } finally {
       await rm(root, { recursive: true, force: true })

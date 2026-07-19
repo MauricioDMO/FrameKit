@@ -6,6 +6,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@framekit': fileURLToPath(new URL('./.framekit', import.meta.url)),
     },
   },
   test: {

@@ -1,18 +1,15 @@
 // @vitest-environment node
 
-import { execFile } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { promisify } from 'node:util'
 
 import { describe, expect, it } from 'vitest'
 
-import { templateRegistry } from '@/.framekit/registry'
+import { templateRegistry } from '@framekit/generated/templates'
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
-
-const execFileAsync = promisify(execFile)
+import { writeTemplateModule } from '@mauriciodmo/framekit/dev'
 
 const templateSource = `export default {
   width: 120,
@@ -39,52 +36,52 @@ describe('template generation integration', () => {
       const templatesRoot = path.join(projectRoot, 'src', 'templates')
       const firstTemplate = path.join(templatesRoot, 'branding', 'social', 'square')
       const secondTemplate = path.join(templatesRoot, 'product', 'launch')
-      const framekitDir = path.join(projectRoot, 'src', '.framekit')
+      const outputDirectory = path.join(projectRoot, '.framekit', 'generated')
       await mkdir(firstTemplate, { recursive: true })
       await mkdir(secondTemplate, { recursive: true })
       await writeFile(path.join(firstTemplate, 'template.tsx'), templateSource)
       await writeFile(path.join(secondTemplate, 'template.tsx'), templateSource)
 
-      await execFileAsync(
-        'pnpm',
-        ['--filter', '@mauriciodmo/framekit', 'codegen', '--', projectRoot],
-        { cwd: path.resolve(process.cwd(), '../..') },
-      )
+      await writeTemplateModule({ projectRoot })
 
-      const manifest = await readFile(path.join(framekitDir, 'manifest.ts'), 'utf8')
-      const registry = await readFile(path.join(framekitDir, 'registry.ts'), 'utf8')
+      const generated = await import(pathToFileURL(path.join(outputDirectory, 'templates.ts')).href)
 
-      expect(manifest).toBe(`/* Archivo generado automáticamente. No modificar. */
+      expect(await readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).toBe(`/* Archivo generado automáticamente. No modificar. */
 
-export const templateManifest: Array<{
-  slug: string
-  title: string
-  segments: string[]
-}> = [
+import type { TemplateDefinition } from '@mauriciodmo/framekit'
+
+type TemplateLoader = () => Promise<{
+  default: TemplateDefinition
+}>
+
+export const templates = [
   {
     slug: "branding/social/square",
     title: "Square",
     segments: ["branding","social","square"],
+    load: () => import("../../src/templates/branding/social/square/template"),
   },
   {
     slug: "product/launch",
     title: "Launch",
     segments: ["product","launch"],
+    load: () => import("../../src/templates/product/launch/template"),
   }
-]
+] satisfies Array<{
+  slug: string
+  title: string
+  segments: string[]
+  load: TemplateLoader
+}>
+
+export const templateManifest = templates.map(
+  ({ load: _, ...metadata }) => metadata,
+)
+
+export const templateRegistry: Record<string, TemplateLoader> =
+  Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
-      expect(registry).toBe(`/* Archivo generado automáticamente. No modificar. */
-'use client'
 
-import type { TemplateDefinition } from '@mauriciodmo/framekit'
-
-export const templateRegistry: Record<string, () => Promise<{ default: TemplateDefinition }>> = {
-  "branding/social/square": () => import("../templates/branding/social/square/template"),
-  "product/launch": () => import("../templates/product/launch/template"),
-}
-`)
-
-      const generated = await import(pathToFileURL(path.join(framekitDir, 'registry.ts')).href)
       for (const slug of ['branding/social/square', 'product/launch']) {
         const loaded = await generated.templateRegistry[slug]()
         const validation = validateTemplateDefinition(loaded.default)

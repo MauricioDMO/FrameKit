@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useLocale } from '@/i18n/locale-provider'
 import type { TemplateDefinition } from '@mauriciodmo/framekit'
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
-import { templateRegistry } from '@/.framekit/registry'
+import { templateRegistry } from '@framekit/generated/templates'
 
 import { FrameKitEditor } from '@mauriciodmo/framekit/editor'
 

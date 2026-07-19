@@ -3,15 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && concurrently -k -n next,templates \"next dev\" \"pnpm templates:watch\"",
-    "build": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && next build",
-    "start": "next start",
+    "dev": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts",
+    "build": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && next build",
+    "start": "node .framekit/next/standalone/apps/studio/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && vitest run",
-    "typecheck": "pnpm --filter @mauriciodmo/framekit build && pnpm templates:generate && tsc --noEmit",
-    "templates:generate": "node scripts/generate-template-registry.mjs",
-    "templates:watch": "node scripts/watch-template-registry.mjs"
+    "test": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && vitest run",
+    "typecheck": "pnpm --filter @mauriciodmo/framekit build && tsx server.ts --generate && tsc --noEmit"
   },
   "dependencies": {
     "@mauriciodmo/framekit": "workspace:*",
@@ -26,13 +24,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "chokidar": "^5.0.0",
-    "concurrently": "^10.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "eslint-plugin-tailwindcss": "^4.2.0",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

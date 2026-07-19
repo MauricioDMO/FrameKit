@@ -13,6 +13,11 @@
       "types": "./dist/editor.d.ts",
       "import": "./dist/editor.js"
     },
+    "./dev": {
+      "types": "./dist/dev.d.ts",
+      "import": "./dist/dev.js",
+      "default": "./dist/dev.js"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {
@@ -22,13 +27,13 @@
     "lint": "eslint src scripts tsdown.config.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tests/types/tsconfig.json",
-    "codegen": "node src/codegen/generate-template-registry.mjs",
     "build:js": "tsdown",
     "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
-    "check:dist": "node scripts/check-dist.mjs",
+    "check:dist": "tsx scripts/check-dist.ts",
     "build": "pnpm build:js && pnpm build:css && pnpm check:dist"
   },
   "dependencies": {
+    "chokidar": "^5.0.0",
     "lucide-react": "^1.24.0",
     "modern-screenshot": "^4.7.0"
   },
@@ -48,6 +53,7 @@
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "tsdown": "^0.20",
+    "tsx": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

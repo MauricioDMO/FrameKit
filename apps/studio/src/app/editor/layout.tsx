@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { TemplateSidebar } from '@/components/navigation/template-sidebar'
-import { templateManifest } from '@/.framekit/manifest'
+import { templateManifest } from '@framekit/generated/templates'
 import { manifestToNavigation } from '@mauriciodmo/framekit/editor'
 
 export const runtime = 'nodejs'

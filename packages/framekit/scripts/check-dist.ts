@@ -9,10 +9,11 @@ const files = await readdir(distRoot)
 for (const file of files.filter((entry) => entry.endsWith('.js'))) {
   const filePath = path.join(distRoot, file)
   const source = await readFile(filePath, 'utf8')
-  const imports = [...source.matchAll(/(?:from\s*|import\s*\()(['"])(\.[^'"]+)\1/g)]
 
-  for (const [, , specifier] of imports) {
+  for (const match of source.matchAll(/(?:from\s*|import\s*\()(['"])(\.[^'"]+)\1/g)) {
+    const specifier = match[2]
     const resolved = path.resolve(path.dirname(filePath), specifier)
+
     if (!resolved.startsWith(`${distRoot}${path.sep}`)) {
       throw new Error(`Import fuera de dist en ${file}: ${specifier}`)
     }
