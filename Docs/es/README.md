@@ -23,4 +23,5 @@
 
 - [Repositorio](development/repository.md): Estructura y arquitectura del repositorio.
 - [Pruebas y Distribución](development/testing-and-distribution.md): Estrategia de pruebas y distribución de paquetes.
+- [Publicar una Versión](development/release.md): Validar, publicar y etiquetar ambos paquetes.
 - [Solución de Problemas](development/troubleshooting.md): Problemas comunes y soluciones.

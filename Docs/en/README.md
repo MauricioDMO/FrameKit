@@ -23,4 +23,5 @@ English | [Español](../es/README.md)
 
 - [Repository](development/repository.md): Repository structure and architecture.
 - [Testing & Distribution](development/testing-and-distribution.md): Testing strategy and package distribution.
+- [Publishing a Release](development/release.md): Validate, publish, and tag both packages.
 - [Troubleshooting](development/troubleshooting.md): Common issues and solutions.
