@@ -1,0 +1,2 @@
+pnpm sync:skills
+git add -A -- .agents/skills packages/create-framekit/template/.agents/skills
