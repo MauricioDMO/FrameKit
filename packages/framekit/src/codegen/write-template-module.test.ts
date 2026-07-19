@@ -70,6 +70,21 @@ describe('findTemplates', () => {
 })
 
 describe('writeTemplateModule', () => {
+  it('rejects a catalog without templates', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-empty-'))
+    const templatesRoot = path.join(root, 'src', 'templates')
+
+    try {
+      await mkdir(templatesRoot, { recursive: true })
+
+      await expect(writeTemplateModule({ projectRoot: root })).rejects.toThrow(
+        `No se encontraron plantillas en: ${templatesRoot}`,
+      )
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('generates sorted exact module output', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-registry-'))
     const templatesRoot = path.join(root, 'src', 'templates')

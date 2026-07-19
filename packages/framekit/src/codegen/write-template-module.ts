@@ -26,6 +26,11 @@ export async function writeTemplateModule(options: {
   const outputDirectory = path.join(options.projectRoot, '.framekit', 'generated')
   const outputFile = path.join(outputDirectory, 'templates.ts')
   const templates = await findTemplates(templatesDirectory)
+
+  if (templates.length === 0) {
+    throw new Error(`No se encontraron plantillas en: ${templatesDirectory}`)
+  }
+
   const source = createTemplateModule(templates, { outputDirectory })
 
   await mkdir(outputDirectory, { recursive: true })
