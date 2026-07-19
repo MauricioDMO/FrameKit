@@ -9,6 +9,7 @@ export interface DevServerOptions {
   projectRoot: string
   hostname: string
   port: number
+  onError?: (error: Error) => void
 }
 
 export interface DevServer {
@@ -20,6 +21,18 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   let generationPending = false
   let generationRunning: Promise<void> | undefined
   let generationTimer: NodeJS.Timeout | undefined
+
+  function reportError(error: unknown): void {
+    const normalizedError = error instanceof Error ? error : new Error(String(error))
+
+    if (options.onError) {
+      options.onError(normalizedError)
+      return
+    }
+
+    console.error(normalizedError)
+    process.exitCode = 1
+  }
 
   function generate(): Promise<void> {
     if (generationRunning) {
@@ -49,8 +62,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     clearTimeout(generationTimer)
     generationTimer = setTimeout(() => {
       void generate().catch((error: unknown) => {
-        console.error(error)
-        process.exitCode = 1
+        reportError(error)
       })
     }, 150)
   }
@@ -87,8 +99,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     projectRoot: options.projectRoot,
     onStructureChange: scheduleGeneration,
     onError(error) {
-      console.error(error)
-      process.exitCode = 1
+      reportError(error)
     },
   })
 
@@ -106,8 +117,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   })
 
   httpServer.on('error', (error) => {
-    console.error(error)
-    process.exitCode = 1
+    reportError(error)
   })
 
   console.log(`FrameKit Studio: http://${options.hostname}:${options.port}`)
