@@ -10,19 +10,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./editor": {
       "types": "./dist/editor.d.ts",
-      "import": "./dist/editor.js"
+      "import": "./dist/editor.js",
+      "default": "./dist/editor.js"
     },
     "./studio": {
       "types": "./dist/studio.d.ts",
-      "import": "./dist/studio.js"
+      "import": "./dist/studio.js",
+      "default": "./dist/studio.js"
     },
     "./studio/root": {
       "types": "./dist/studio-root.d.ts",
-      "import": "./dist/studio-root.js"
+      "import": "./dist/studio-root.js",
+      "default": "./dist/studio-root.js"
     },
     "./dev": {
       "types": "./dist/dev.d.ts",

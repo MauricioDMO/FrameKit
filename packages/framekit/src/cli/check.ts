@@ -13,7 +13,7 @@ function createCheckSource(templates: readonly DiscoveredTemplate[], checkFile: 
     const templateFile = path.join(template.absolutePath, 'template.tsx')
     let specifier = path.relative(path.dirname(checkFile), templateFile).replaceAll(path.sep, '/')
     if (!specifier.startsWith('.')) specifier = `./${specifier}`
-    return `import template${index} from ${JSON.stringify(specifier)}`
+    return `const template${index} = (await import(${JSON.stringify(specifier)})).default`
   })
   const entries = templates.map((template, index) =>
     `  [${JSON.stringify(path.join(template.absolutePath, 'template.tsx'))}, template${index}],`
