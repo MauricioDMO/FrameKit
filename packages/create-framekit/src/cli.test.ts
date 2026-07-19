@@ -310,7 +310,7 @@ describe('create-framekit', () => {
     })
 
     it('prompts for project name when no args and uses it', async () => {
-      mockState.answers = ['my-project', 'y', 'y', 'y']
+      mockState.answers = ['my-project', 'y', 'y', 'n']
       mockState.index = 0
 
       const root = await createTemporaryDirectory('create-framekit-interactive-')
@@ -332,7 +332,7 @@ describe('create-framekit', () => {
     })
 
     it('uses provided project name from args', async () => {
-      mockState.answers = ['y', 'y', 'y']
+      mockState.answers = ['y', 'y', 'n']
       mockState.index = 0
 
       const root = await createTemporaryDirectory('create-framekit-arg-')
