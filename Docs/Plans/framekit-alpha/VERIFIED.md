@@ -15,6 +15,8 @@
 | 07   | Paquete framekit            | 2026-07-18    |
 | 07.5 | Runtime de desarrollo       | 2026-07-18    |
 | 08   | CLI                         | 2026-07-18    |
+| 09   | Creador de proyectos        | 2026-07-18    |
+| 09.5 | Studio empaquetado          | 2026-07-18    |
 
 La tabla conserva el historial de lo verificado.
 
@@ -128,10 +130,34 @@ La tabla conserva el historial de lo verificado.
 - Studio consume el binario público; se eliminaron `server.ts` y sus helpers temporales.
 - Verificado con instalación congelada, lint, 54 pruebas, typecheck, build, pack y ejecución/cierre de los servidores dev y standalone.
 
+### Detalle 09-create-framekit.md
+- `@mauriciodmo/create-framekit` compila un binario ESM publicable y copia su plantilla relativa al paquete instalado.
+- El CLI exige un único destino nuevo, normaliza rutas, ejecuta `pnpm install` y `pnpm framekit generate`, y conserva el proyecto si cualquiera falla.
+- La plantilla incluye Next 16, React 19, TypeScript, el editor generado y una plantilla inline bilingüe.
+- `_gitignore` se renombra a `.gitignore` al copiar porque npm excluye o normaliza archivos `.gitignore` durante el empaquetado.
+- `pnpm-workspace.yaml` permite los scripts nativos de esbuild, sharp y resolvers en instalaciones pnpm 11 no interactivas.
+- Verificado con lint, test, typecheck, build, pack, instalación desde tarballs locales, `pnpm check` y `pnpm build` en un proyecto generado.
+
+### Detalle 09.5-studio-package.md
+- `@mauriciodmo/framekit/studio` entrega `FrameKitStudio`, mensajes y tipos que
+  puede consumir una página cliente; `@mauriciodmo/framekit/studio/root` entrega
+  `FrameKitStudioRoot` para el layout servidor con cookies y headers.
+- La separación de entradas evita incluir `next/headers` en el bundle cliente de
+  Turbopack.
+- La interfaz empaquetada cubre navegación, idioma, tema, carga y validación de
+  plantillas, estados vacío/loading/error/404 e integración con
+  `FrameKitEditor`.
+- Studio y la plantilla de `create-framekit` quedaron reducidos al wiring del
+  arreglo `templates` generado; los componentes locales duplicados fueron
+  eliminados.
+- El template incorpora Tailwind CSS 4 mediante PostCSS e importa el CSS
+  compilado de FrameKit.
+- Verificado con build y 53 pruebas de FrameKit; typecheck, lint y build de
+  Studio; y build, test y typecheck de `create-framekit`.
+
 ## Pendientes 🔲
 
 | Plan | Descripción     |
 | ---- | --------------- |
-| 09   | Create framekit |
 | 10   | Distribution    |
 | 11   | Release         |

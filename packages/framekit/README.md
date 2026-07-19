@@ -99,8 +99,14 @@ components, and assets remain private to that template directory.
 ```tsx
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { FrameKitEditor, FrameKitNavigation } from '@mauriciodmo/framekit/editor'
+import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
 The root entry also exports the public validators, resolvers, field descriptors,
 and structured validation errors.
+
+`FrameKitStudioRoot` and `FrameKitStudio` provide the complete editor interface,
+including navigation, locale and theme controls. Pass the generated `templates`
+array to `FrameKitStudio` from a client page under `/editor`.

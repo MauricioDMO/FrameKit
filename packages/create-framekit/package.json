@@ -1,7 +1,27 @@
 {
   "name": "@mauriciodmo/create-framekit",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.0-alpha.1",
   "type": "module",
-  "scripts": {}
+  "license": "Apache-2.0",
+  "files": ["dist", "template", "README.md", "LICENSE"],
+  "bin": {
+    "create-framekit": "./dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "eslint src tsdown.config.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tsdown": "^0.20",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
 }

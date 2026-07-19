@@ -16,6 +16,14 @@
       "types": "./dist/editor.d.ts",
       "import": "./dist/editor.js"
     },
+    "./studio": {
+      "types": "./dist/studio.d.ts",
+      "import": "./dist/studio.js"
+    },
+    "./studio/root": {
+      "types": "./dist/studio-root.d.ts",
+      "import": "./dist/studio-root.js"
+    },
     "./dev": {
       "types": "./dist/dev.d.ts",
       "import": "./dist/dev.js",

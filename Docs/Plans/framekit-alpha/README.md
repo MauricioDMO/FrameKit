@@ -16,7 +16,8 @@ La estructura actual y los comandos de trabajo están documentados en
 - [x] 07. [Paquete framekit](07-framekit-package.md)
 - [x] 07.5. [Runtime de desarrollo](07.5-dev-runtime.md)
 - [x] 08. [CLI](08-cli.md)
-- [ ] 09. [Creador de proyectos](09-create-framekit.md)
+- [x] 09. [Creador de proyectos](09-create-framekit.md)
+- [x] 09.5. [Studio empaquetado](09.5-studio-package.md)
 - [ ] 10. [Distribución](10-distribution.md)
 - [ ] 11. [Publicación alpha](11-release.md)
 
@@ -47,7 +48,8 @@ La estructura actual y los comandos de trabajo están documentados en
 | 07.5 | 07       | Runtime de desarrollo unificado.        |
 | 08   | 07.5     | CLI publicable.                         |
 | 09   | 08       | Creador de proyectos.                   |
-| 10   | 09       | Pruebas con tarballs.                   |
+| 09.5 | 09       | Studio reusable y template mínimo.      |
+| 10   | 09.5     | Pruebas con tarballs.                   |
 | 11   | 10       | Alpha publicada.                        |
 
 ## Resultado

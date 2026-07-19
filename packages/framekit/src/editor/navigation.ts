@@ -33,7 +33,7 @@ export function humanizeSegment(name: string): string {
     .join(' ')
 }
 
-export function manifestToNavigation(manifest: TemplateManifestEntry[]): TemplateNavigationNode[] {
+export function manifestToNavigation(manifest: readonly TemplateManifestEntry[]): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
   const root: TemplateNavigationNode[] = []
 
