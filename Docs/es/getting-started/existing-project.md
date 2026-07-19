@@ -6,8 +6,9 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 
 ## Requisitos previos
 
-- Next.js 16 o posterior (pero no Next.js 17).
-- React 19 o posterior (pero no React 20).
+- Node.js 20.9 o posterior.
+- Next.js 16 o posterior.
+- React 19 o posterior.
 
 Los comandos siguientes usan pnpm. El runtime y la CLI de FrameKit no requieren pnpm por sí mismos; usa los comandos equivalentes del gestor de paquetes de tu proyecto.
 
@@ -77,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-`FrameKitStudioRoot` es un componente de servidor asíncrono que emite el shell completo del documento: genera o reemplaza `<html>`, `<head>` y `<body>`, y luego renderiza un `FrameKitLocaleProvider` alrededor de tus hijos. Úsalo directamente desde el layout raíz del App Router, que debe seguir siendo un componente de servidor y no debe renderizar otro `<html>`, `<head>` ni `<body>`. Lee el idioma del header `accept-language` y de la cookie del usuario, y aplica la clase de tema claro u oscuro a `<html>`.
+`FrameKitStudioRoot` es un componente de servidor asíncrono que genera la estructura completa del documento: `<html>`, `<head>` y `<body>`; luego renderiza un `FrameKitLocaleProvider` alrededor de tus hijos. Úsalo directamente desde el layout raíz del App Router, que debe seguir siendo un componente de servidor y no debe renderizar otro `<html>`, `<head>` ni `<body>`. Lee la configuración regional de la cabecera `accept-language` y del almacén de cookies del usuario, y aplica la clase de tema `dark` a `<html>` cuando corresponde.
 
 ## Crear la ruta catch-all del editor
 
@@ -142,7 +143,7 @@ Para crear una compilación de producción, usa el comando `framekit build`:
 pnpm framekit build
 ```
 
-Este comando primero ejecuta `framekit check` para regenerar el catálogo de plantillas y validar cada definición y locale de plantilla. Si la validación pasa, ejecuta `next build`. Los artefactos standalone y los activos estáticos se copian luego en el directorio de salida.
+Este comando primero ejecuta `framekit check` para regenerar el catálogo de plantillas y validar cada definición de plantilla y configuración regional. Si la validación pasa, ejecuta `next build`. A continuación, el directorio `public`, cuando está presente, y los activos estáticos se copian junto al servidor standalone.
 
 ## Iniciar el servidor de producción
 

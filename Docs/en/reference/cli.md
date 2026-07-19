@@ -14,7 +14,7 @@ All commands use `process.cwd()` as the project root. There is no `--help`, `--v
 
 Scans `src/templates` for template directories and generates a registry file.
 
-The scan registers every directory containing a `template.tsx` file. Subdirectories within a template directory are not traversed; internal components, definitions, and assets are not treated as child templates.
+The scan registers each non-hidden, non-underscore-prefixed directory containing a `template.tsx` file. Subdirectories within a template directory are not traversed; internal components, definitions, and assets are not treated as child templates.
 
 If no templates are found, the command exits with code 1 and prints an error message identifying the empty directory. The output file is written only when its content has changed.
 
@@ -33,7 +33,7 @@ Validates every template definition and its resolved content across all declared
 
 The command first runs `generate` to ensure the registry is current. It then creates a temporary checker directory inside `.framekit/` and writes a temporary TypeScript file that imports every template via bundled `tsx`. This uses the consumer's own `tsconfig`, so TypeScript imports, TSX syntax, and path aliases resolve the same way they do during development.
 
-For each template, `validateTemplateDefinition` checks the structure of the definition: dimensions (width and height must be positive finite integers), fields, content, and the render function. For each locale declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and URL fields are valid URLs.
+For each template, `validateTemplateDefinition` checks the structure of the definition: dimensions (width and height must be positive finite integers), fields, content, and the render function. For each locale declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and URL fields are `http`/`https` URLs or app-relative paths.
 
 The temporary checker directory is always deleted after the check completes, whether it passes or fails.
 

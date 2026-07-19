@@ -14,7 +14,7 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto. No hay flags `-
 
 Escanea `src/templates` en busca de directorios de plantillas y genera un archivo de registro.
 
-El escaneo registra cada directorio que contiene un archivo `template.tsx`. Los subdirectorios dentro de un directorio de plantilla no se recorren; los componentes internos, definiciones ni activos no se tratan como plantillas hijas.
+El escaneo registra cada directorio no oculto y cuyo nombre no comienza por guion bajo que contiene un archivo `template.tsx`. Los subdirectorios dentro de un directorio de plantilla no se recorren; los componentes internos, las definiciones y los recursos no se tratan como plantillas hijas.
 
 Si no se encuentra ninguna plantilla, el comando termina con código 1 e imprime un mensaje de error identificando el directorio vacío. El archivo de salida se escribe únicamente cuando su contenido ha cambiado.
 
@@ -29,11 +29,11 @@ framekit generate
 
 ## `framekit check`
 
-Valida la definición de cada plantilla y su contenido resuelto en todas las regionales declaradas.
+Valida la definición de cada plantilla y su contenido resuelto en todas las configuraciones regionales declaradas.
 
-El comando primero ejecuta `generate` para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante `tsx` bundler. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
+El comando primero ejecuta `generate` para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante el `tsx` incluido. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
 
-Para cada plantilla, `validateTemplateDefinition` verifica la estructura de la definición: dimensiones (ancho y alto deben ser enteros positivos finitos), campos, contenido y la función render. Para cada regional declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: campos requeridos presentes, campos numéricos respetan las restricciones min/max, y campos URL son URLs válidas.
+Para cada plantilla, `validateTemplateDefinition` verifica la estructura de la definición: dimensiones (el ancho y el alto deben ser enteros positivos finitos), campos, contenido y la función de renderizado. Para cada configuración regional declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los campos obligatorios están presentes, los campos numéricos respetan las restricciones de mínimo y máximo, y los campos URL son URL `http`/`https` o rutas relativas a la aplicación.
 
 El directorio temporal de comprobación se elimina siempre al terminar, tanto si la comprobación pasa como si falla.
 
@@ -59,7 +59,7 @@ framekit check
 
 Inicia un servidor de desarrollo con actualizaciones en vivo del registro de plantillas.
 
-Antes de iniciar el servidor, el comando ejecuta `generate` para producir el registro inicial. Luego inicia un servidor de desarrollo Next.js con Turbopack y un servidor HTTP personalizado que maneja solicitudes HTTP y actualizaciones WebSocket para Hot Module Replacement.
+Antes de iniciar el servidor, el comando ejecuta `generate` para producir el registro inicial. Luego inicia un servidor de desarrollo de Next.js con Turbopack y manejo personalizado del servidor HTTP, incluidos los cambios de protocolo de WebSocket para la sustitución de módulos en caliente.
 
 El observador de plantillas monitorea `src/templates` solo para cambios estructurales: un nuevo archivo `template.tsx`, un archivo `template.tsx` eliminado, o un directorio nuevo o eliminado bajo `src/templates`. Las ediciones al contenido de un `template.tsx` existente no activan regeneración; Next HMR gestiona ese contenido automáticamente. Cuando se detecta un cambio estructural, la regeneración se aplaza 150ms (debounce). Solo una generación se ejecuta a la vez; si llega un cambio estructural mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
 

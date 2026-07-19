@@ -124,13 +124,13 @@ Esto instala todas las dependencias del espacio de trabajo, compila `@mauriciodm
 
 ### Después de agregar dependencias
 
-Si agregas una nueva dependencia a cualquier `package.json`, ejecuta la compilación raíz para propagar el archivo de bloqueo y recompilar el paquete:
+Si agregas una nueva dependencia a cualquier `package.json`, ejecuta `pnpm install` desde la raíz del repositorio para actualizar el archivo de bloqueo:
 
 ```bash
-pnpm build
+pnpm install
 ```
 
-Esto ejecuta `pnpm -r --if-present build`, que recompila cada espacio de trabajo que define un script de compilación.
+Luego ejecuta `pnpm build` para recompilar cada espacio de trabajo que defina un script de compilación.
 
 ### Ejecutar pruebas
 

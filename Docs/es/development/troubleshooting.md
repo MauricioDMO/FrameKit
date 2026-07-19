@@ -8,9 +8,9 @@ Problemas comunes y sus soluciones al desarrollar con FrameKit.
 
 FrameKit descubre las plantillas escaneando el directorio `src/templates`. Si el catálogo aparece vacío, puede haber varias causas.
 
-**Causa: `src/templates` no existe o está vacío**
+**Causa: `src/templates` está vacío**
 
-Si el directorio no existe o no contiene subdirectorios, `framekit generate` no encuentra nada que registrar. Crea `src/templates` y añade al menos un directorio de plantilla con un archivo `template.tsx` dentro.
+Si el directorio no contiene directorios de plantillas, `framekit generate` no encuentra nada que registrar. Añade al menos un directorio de plantilla con un archivo `template.tsx` dentro. Si `src/templates` no existe, la generación falla con un error del sistema de archivos `ENOENT`; primero crea el directorio.
 
 **Causa: los directorios de plantillas no siguen kebab-case**
 
@@ -35,7 +35,7 @@ framekit generate
 Cuando no existen plantillas, el comando termina con código `1` e imprime la ruta actual, por ejemplo:
 
 ```text
-No se encontraron plantillas en: /ruta/al/proyecto/src/templates
+No se encontraron plantillas en: /path/to/project/src/templates
 ```
 
 ---
@@ -112,7 +112,7 @@ Elige un nombre de directorio que no exista ya en la ubicación actual. `create-
 
 **Causa: fallo de compilación de dependencia nativa**
 
-Algunas dependencias de FrameKit (`sharp`, `esbuild`, `@parcel/watcher`) incluyen binarios nativos que deben compilarse en el momento de la instalación. Si tu sistema carece de la cadena de herramientas de compilación necesaria (Python, make, un compilador de C++), el paso de instalación falla.
+Algunas dependencias (`sharp`, `esbuild`, `@parcel/watcher`) usan binarios nativos. Los gestores de paquetes normalmente instalan un binario precompilado, pero pueden recurrir a la compilación cuando no hay un binario compatible disponible. Si tu sistema carece de la cadena de herramientas de compilación necesaria (Python, make, un compilador de C++), el paso de instalación falla.
 
 **Solución: asegúrate de que las herramientas de compilación estén disponibles y reintenta**
 
@@ -136,7 +136,7 @@ Usa la variable de entorno `PORT` para elegir un puerto disponible:
 PORT=3001 framekit dev
 ```
 
-Cualquier puerto del 1 al 65535 funciona. También puedes controlar la dirección de enlace con `FRAMEKIT_HOST` o `HOST`:
+`PORT` debe ser un entero entre 1 y 65535, pero el puerto seleccionado también debe estar disponible y permitido por el sistema operativo. También puedes controlar la dirección de enlace con `FRAMEKIT_HOST` o `HOST`:
 
 ```
 FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev

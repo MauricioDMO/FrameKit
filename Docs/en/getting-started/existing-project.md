@@ -6,8 +6,9 @@ FrameKit is currently in alpha/prerelease status. The packages are not yet publi
 
 ## Prerequisites
 
-- Next.js 16 or later (but not Next.js 17).
-- React 19 or later (but not React 20).
+- Node.js 20.9 or later.
+- Next.js 16 or later.
+- React 19 or later.
 
 The commands below use pnpm. FrameKit's runtime and CLI do not themselves require pnpm; use the equivalent commands from the package manager used by your project.
 
@@ -77,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-`FrameKitStudioRoot` is an async server component that emits the complete document shell: it generates or replaces `<html>`, `<head>`, and `<body>`, then renders a `FrameKitLocaleProvider` around your children. Use it directly from the App Router root layout, which must remain a server component and must not already render another `<html>`, `<head>`, or `<body>`. It reads the locale from the `accept-language` header and the user's cookie store and applies the dark or light theme class to `<html>`.
+`FrameKitStudioRoot` is an async server component that emits the complete document shell: `<html>`, `<head>`, and `<body>`, then renders a `FrameKitLocaleProvider` around your children. Use it directly from the App Router root layout, which must remain a server component and must not already render another `<html>`, `<head>`, or `<body>`. It reads the locale from the `accept-language` header and the user's cookie store and applies the `dark` theme class to `<html>` when appropriate.
 
 ## Create the editor catch-all route
 
@@ -142,7 +143,7 @@ To create a production build, use the `framekit build` command:
 pnpm framekit build
 ```
 
-This command first runs `framekit check` to regenerate the template catalog and validate every template definition and locale. If validation passes, it runs `next build`. The standalone artifacts and static assets are then copied into the output directory.
+This command first runs `framekit check` to regenerate the template catalog and validate every template definition and locale. If validation passes, it runs `next build`. The `public` directory, when present, and static assets are then copied beside the standalone server.
 
 ## Start the production server
 

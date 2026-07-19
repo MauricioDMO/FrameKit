@@ -42,7 +42,7 @@ function render() {
 
 ## With `lists={true}`
 
-Renders as a `<div>` with `<br>` between lines. Supports all inline syntax above plus consecutive list lines:
+Renders as a `<div>`. Non-list lines render with a trailing `<br>` unless they are the final block. Supports all inline syntax above plus consecutive list lines:
 
 | Result         | Syntax                                     |
 | -------------- | ------------------------------------------ |

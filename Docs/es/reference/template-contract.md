@@ -1,4 +1,4 @@
-# Contrato de Plantilla
+# Contrato de plantilla
 
 Este documento describe el contrato de plantilla: el sistema de campos, el manejo de datos y las reglas de validación que definen cómo funcionan las plantillas de FrameKit.
 
@@ -12,7 +12,7 @@ Todos los tipos de campos comparten un conjunto común de opciones:
 
 - `label` (string, obligatorio): Un nombre legible para el campo.
 - `placeholder` (string, opcional): Texto provisional mostrado en campos vacíos.
-- `required` (boolean, valor por defecto: `true`): Si el campo debe tener un valor no vacío. Ver Requerimiento abajo.
+- `required` (boolean, valor predeterminado: `true`): Indica si el campo debe tener un valor no vacío. Consulta la sección Requisito más abajo.
 - `defaultValue` (string, opcional): Un valor por defecto usado cuando no hay otro valor disponible.
 
 ### `text`
@@ -20,7 +20,7 @@ Todos los tipos de campos comparten un conjunto común de opciones:
 Un campo de texto de una sola línea. Acepta solo las opciones base.
 
 ```typescript
-fields.text({ label: 'Título', placeholder: 'Ingresa un título' })
+fields.text({ label: 'Title', placeholder: 'Enter a title' })
 ```
 
 ### `textarea`
@@ -28,7 +28,7 @@ fields.text({ label: 'Título', placeholder: 'Ingresa un título' })
 Un campo de texto multilínea. Acepta las mismas opciones que `text`.
 
 ```typescript
-fields.textarea({ label: 'Descripción', placeholder: 'Escribe algo...' })
+fields.textarea({ label: 'Description', placeholder: 'Write something...' })
 ```
 
 ### `number`
@@ -41,15 +41,15 @@ Un campo numérico. Acepta las opciones base más:
 **Importante:** A pesar de ser un campo `number`, el valor almacenado en los datos de la plantilla es siempre un **string**. Las restricciones `min` y `max` validan la interpretación numérica de ese string.
 
 ```typescript
-fields.number({ label: 'Cantidad', min: 0, max: 100 })
+fields.number({ label: 'Count', min: 0, max: 100 })
 ```
 
 ### `color`
 
-Un campo selector de color. Acepta solo las opciones base. No se realiza validación de formato CSS en tiempo de ejecución más allá de verificar el requerimiento.
+Un campo selector de color. Acepta solo las opciones base. Los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`.
 
 ```typescript
-fields.color({ label: 'Color de Fondo' })
+fields.color({ label: 'Background Color' })
 ```
 
 ### `url`
@@ -62,17 +62,17 @@ Un campo de entrada de URL. Acepta las opciones base. El valor se valida como:
 Las rutas relativas y otros esquemas de URL (por ejemplo, `ftp://`, `javascript:`) son rechazados.
 
 ```typescript
-fields.url({ label: 'URL del Enlace', placeholder: 'https://ejemplo.com' })
+fields.url({ label: 'Link URL', placeholder: 'https://example.com' })
 ```
 
-## Requerimiento
+## Requisito
 
 Los campos son **requeridos por defecto**. Configurar `required: false` hace que un campo sea opcional.
 
 - **Campos opcionales** (`required: false`): Una cadena vacía pasa la validación.
 - **Campos requeridos** (por defecto): Una cadena vacía después de eliminar espacios en blanco falla la validación.
 
-El valor por defecto es `true`, no `false`. Esta es una decisión deliberada porque los datos requeridos faltantes son un error más común que la sobre-requerimiento accidental.
+El valor predeterminado es `true`, no `false`. Es una decisión deliberada porque la falta de datos obligatorios es un error más frecuente que exigir datos accidentalmente.
 
 ## Orden de Resolución de Datos
 
@@ -84,7 +84,7 @@ Cuando una plantilla se renderiza, los valores de los campos se resuelven a trav
 
 Esto significa que las ediciones del usuario tienen precedencia sobre el contenido del locale, que tiene precedencia sobre los valores por defecto de los campos.
 
-### Resolver Datos Programáticamente
+### Resolución programática de datos
 
 Usa `resolveTemplateData` para aplicar este orden de resolución:
 
@@ -96,11 +96,11 @@ const data = resolveTemplateData(definition, locale, edits)
 
 - `definition`: La definición de la plantilla.
 - `locale`: La clave del locale de contenido a usar.
-- `edits`: Un objeto de valores de campos editados por el usuario (objeto vacío `{}` para sin ediciones).
+- `edits`: Un objeto de valores de campos editados por el usuario (el objeto vacío `{}` si no hay ediciones).
 
 ### Valores por Defecto
 
-`getDefaultValues` retorna solo los valores por defecto de los campos (paso 1), sin aplicar contenido del locale ni ediciones:
+`getDefaultValues` devuelve solo los valores predeterminados de los campos (paso 1), sin aplicar contenido del locale ni ediciones:
 
 ```typescript
 import { getDefaultValues } from '@mauriciodmo/framekit'
@@ -111,7 +111,7 @@ const defaults = getDefaultValues(definition.fields)
 
 ### Locales Disponibles
 
-`getLocales` retorna las claves de locale definidas en el objeto `content` de la plantilla:
+`getLocales` devuelve las claves de locale definidas en el objeto `content` de la plantilla:
 
 ```typescript
 import { getLocales } from '@mauriciodmo/framekit'
@@ -149,9 +149,10 @@ if (!result.success) {
 
 `validateTemplateData` verifica los valores de los campos contra sus restricciones:
 
-- Campos requeridos: cadena vacía (después de trim) falla
+- Campos requeridos: una cadena vacía (tras eliminar los espacios en blanco) no supera la validación
 - Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
 - Campos `url`: deben ser una URL absoluta HTTP(S) o una ruta relativa desde la raíz
+- Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 
 Los errores se retornan como objetos estructurados con códigos legibles por máquina, no strings localizados:
 
@@ -160,9 +161,9 @@ import { validateTemplateData } from '@mauriciodmo/framekit'
 
 const errors = validateTemplateData(definition, data)
 // {
-//   titulo: { code: 'required' },
-//   cantidad: { code: 'number_too_small', min: 10 },
-//   enlace: { code: 'invalid_url' },
+//   title: { code: 'required' },
+//   count: { code: 'number_too_small', min: 10 },
+//   link: { code: 'invalid_url' },
 // }
 ```
 
@@ -173,6 +174,7 @@ Códigos de error posibles:
 - `number_too_small`: El valor es menor que la restricción `min`
 - `number_too_large`: El valor es mayor que la restricción `max`
 - `invalid_url`: El valor no es una URL HTTP(S) válida ni una ruta relativa desde la raíz
+- `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
 
 ### El Comando CLI `check`
 
@@ -200,11 +202,11 @@ Estas son las claves en el objeto `content` de la plantilla. Son strings arbitra
 
 ### Idioma de la Interfaz de Studio
 
-La interfaz de Studio (etiquetas, botones, mensajes) usa uno de dos idiomas: Español (`es`) o Inglés (`en`). Esto se resuelve en el siguiente orden:
+La interfaz de Studio (etiquetas, botones y mensajes) usa uno de dos idiomas: español (`es`) o inglés (`en`). Esto se resuelve en el siguiente orden:
 
 1. La cookie `locale`
 2. El encabezado `Accept-Language` del navegador
-3. Fallback a Español (`es`)
+3. Se usa español (`es`) como alternativa
 
 Esta separación significa que los locales de contenido de la plantilla y el idioma de la interfaz de Studio son preocupaciones independientes.
 

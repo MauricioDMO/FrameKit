@@ -22,7 +22,7 @@ The slug is the path from `src/templates/` to the template directory, with segme
 
 Titles shown in the Studio UI are derived from directory names by splitting on hyphens and capitalizing each word. For example, `social-cards` becomes "Social Cards" and `instagram-post` becomes "Instagram Post".
 
-When multiple templates exist at the same level, they are sorted alphabetically by their humanized title.
+The generated template registry is sorted alphabetically by slug. In the Studio UI, templates and folders are sorted alphabetically by their humanized titles.
 
 ## Authoring Forms
 

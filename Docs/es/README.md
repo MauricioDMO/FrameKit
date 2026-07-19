@@ -9,14 +9,14 @@
 
 ## Guías
 
-- [Creación de Plantillas](guides/template-authoring.md): Define campos, locales y funciones de renderizado.
-- [Guía de Usuario de Studio](guides/studio.md): Usa el editor visual para crear y editar plantillas.
+- [Creación de Plantillas](guides/template-authoring.md): Define campos, configuraciones regionales y funciones de renderizado para las plantillas.
+- [Guía de Usuario de Studio](guides/studio.md): Usa el editor visual para editar plantillas.
 
 ## Referencia
 
 - [Contrato de Plantilla](reference/template-contract.md): Especificación completa de defineTemplate.
 - [Markdown](reference/markdown.md): Sintaxis markdown soportada en campos de texto.
-- [CLI](reference/cli.md): Comandos y opciones del CLI de FrameKit.
+- [CLI](reference/cli.md): Comandos y comportamiento de la CLI de FrameKit.
 - [API Pública](reference/public-api.md): Superficie de API pública para integración.
 
 ## Desarrollo

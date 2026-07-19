@@ -6,7 +6,7 @@ Studio es el editor visual de plantillas de FrameKit. Permite navegar por un cat
 
 Las plantillas se organizan en la barra lateral a partir de la ruta de su slug. Cada segmento de la ruta se convierte en un nivel de carpeta, de modo que un slug como `social/instagram/post` crea una carpeta `Social` que contiene una subcarpeta `Instagram` con una plantilla `Post` en su interior. Los prefijos de ruta compartidos producen jerarquías de carpetas compartidas automáticamente.
 
-Dentro de cada carpeta, los elementos se ordenan alfabéticamente por su título humanizado (por ejemplo, "Instagram Post" en lugar de "instagram-post").
+Dentro de cada carpeta, los elementos se ordenan alfabéticamente por título. Los nombres de las carpetas se humanizan a partir de los segmentos de sus slugs (por ejemplo, `instagram-post` se convierte en "Instagram Post").
 
 Al seleccionar una plantilla se navega a `/editor/<slug>`. Las carpetas en la barra lateral se pueden expandir y colapsar, y comienzan expandidas. La plantilla actualmente abierta se marca con `aria-current="page"` para accesibilidad.
 
@@ -32,7 +32,7 @@ Los campos numéricos respetan las restricciones `min` y `max` definidas en la p
 
 Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave `framekit:<slug>:v1`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por idioma dentro de esa entrada.
 
-Si un valor almacenado está mal formado o hace referencia a un idioma que ya no existe en la plantilla, se descarta de forma segura y el editor comienza desde cero. No hay sincronización con el servidor, ni cuenta, ni colaboración: todo permanece en el navegador del usuario.
+El estado almacenado con formato incorrecto se descarta de forma segura y el editor comienza desde cero. Las ediciones almacenadas para idiomas o campos que ya no existen se ignoran. No hay sincronización con el servidor, ni cuenta, ni colaboración: todo permanece en el navegador del usuario.
 
 ## Restablecer
 
@@ -66,7 +66,7 @@ El tema se puede cambiar a través del panel de Ajustes. La preferencia se almac
 
 Studio muestra diferentes estados según lo que esté ocurriendo:
 
-- **Vacío** — no hay plantillas registradas. Este es el estado inicial cuando la lista de plantillas está vacía.
+- **Vacío** — no hay ninguna plantilla seleccionada. Este es el estado inicial en `/editor`.
 - **Cargando** — se está cargando una plantilla. Se muestra mientras la importación dinámica está en curso.
 - **Inválido** — la definición de la plantilla no pasó la validación en tiempo de ejecución. La plantilla no se puede editar.
 - **Error de carga** — no se pudo cargar la plantilla, por ejemplo una importación dinámica fallida.

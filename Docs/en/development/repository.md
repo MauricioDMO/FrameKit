@@ -124,13 +124,13 @@ This installs all workspace dependencies, builds `@mauriciodmo/framekit`, and st
 
 ### After adding dependencies
 
-If you add a new dependency to any `package.json`, run the root build to propagate the lockfile and rebuild the package:
+If you add a new dependency to any `package.json`, run `pnpm install` from the repository root to update the lockfile:
 
 ```bash
-pnpm build
+pnpm install
 ```
 
-This runs `pnpm -r --if-present build`, which rebuilds every workspace that defines a build script.
+Then run `pnpm build` to rebuild every workspace that defines a build script.
 
 ### Running tests
 

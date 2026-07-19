@@ -37,9 +37,9 @@ El conjunto de pruebas no cubre:
 - **Pruebas de extremo a extremo en navegador** — no existen pruebas de Playwright ni Cypress; las pruebas de integración de Studio cubren la generación y el build, pero no automatizan un navegador.
 - **Regresión visual** — no existen pruebas de comparación de píxeles PNG ni de dimensiones.
 - **Flujo completo de Studio** — navegar a una página, editar un campo, cambiar de locale, hacer reset y exportar el resultado no está cubierto como un flujo automatizado único.
-- **Build y inicio en producción** — la ejecución exitosa de `next build` seguida de `next start` no se verifica dentro de pruebas unitarias o de integración; el paso de build en CI confirma que el build termina sin error, pero no inicia el servidor.
+- **Build y arranque en producción** — la ejecución correcta de `next build` seguida de `next start` no se verifica en las pruebas unitarias ni de integración.
 - **Copia de assets** — la copia del directorio public y archivos estáticos no tiene pruebas unitarias directas.
-- **Otros sistemas operativos** — CI solo se ejecuta en Ubuntu. Windows y macOS no están verificados, por lo que esta documentación no afirma compatibilidad completa entre plataformas.
+- **Otros sistemas operativos** — Windows y macOS no se verifican, por lo que esta documentación no garantiza una compatibilidad completa entre plataformas.
 - **Comportamiento del watcher** — la propagación de señales, vigilancia de archivos bajo carga y casos extremos del watcher están fuera del alcance actual de las pruebas.
 
 ## Distribución y empaquetado
@@ -52,7 +52,7 @@ Construir el tarball con:
 pnpm --filter @mauriciodmo/framekit pack
 ```
 
-El `.tgz` resultante contiene: `bin/`, `dist/`, `README.md`, `LICENSE`.
+La lista `files` del paquete incluye `bin/`, `dist/`, `README.md` y `LICENSE`.
 
 tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `lucide-react`, `modern-screenshot`, `chokidar`, `tsx`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
 
@@ -66,9 +66,9 @@ Construir el tarball con:
 pnpm --filter @mauriciodmo/create-framekit pack
 ```
 
-El `.tgz` resultante contiene: `dist/`, `template/`, `README.md`, `LICENSE`.
+La lista `files` del paquete incluye `dist/`, `template/`, `README.md` y `LICENSE`.
 
-El directorio `template/` se copia en el momento de la instalación relativo a la ubicación del paquete instalado. Cuando un usuario ejecuta `create-framekit`, la plantilla se coloca en su proyecto como una copia independiente, sin referencia desde el directorio del paquete.
+Cuando un usuario ejecuta `create-framekit`, el directorio `template/` se copia desde el paquete instalado a su proyecto como una copia independiente, sin referencias al directorio del paquete.
 
 ## Prueba de humo del tarball (manual)
 

@@ -4,21 +4,21 @@
 
 ### `@mauriciodmo/framekit` (raíz)
 
-El punto de entrada raíz proporciona la API del entorno de ejecución central para definir, validar y renderizar plantillas, junto con todos los tipos asociados.
+El punto de entrada raíz proporciona la API central de tiempo de ejecución para definir, validar y renderizar plantillas, junto con todos los tipos asociados.
 
 **Exportaciones del entorno de ejecución**
 
-| Exportación                  | Descripción                                                                                                                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `defineTemplate`             | Define una plantilla con campos, renderizado aware de locale y resolución de datos                                                                                                             |
-| `defineTemplateBase`         | Define la estructura base de una plantilla sin la configuración completa de la misma                                                                                                           |
-| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                          |
-| `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                               |
-| `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                         |
-| `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                |
-| `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; aplica defaults -> contenido del locale -> ediciones del usuario |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                                                                                            |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los defaults de los campos                                                                         |
+| Exportación                  | Descripción                                                                                                                                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `defineTemplate`             | Define y valida una plantilla con campos, contenido adaptado a la configuración regional y una función de renderizado                                                                                                           |
+| `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
+| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                                                           |
+| `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
+| `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
+| `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
+| `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; aplica valores predeterminados -> contenido de la configuración regional -> ediciones del usuario |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                                                                                                                             |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los valores predeterminados de los campos                                                                                           |
 
 **Exportaciones de tipos**
 
@@ -73,11 +73,11 @@ Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[] }
 
 **Exportaciones del entorno de ejecución**
 
-| Exportación         | Descripción                                                            |
-| ------------------- | ---------------------------------------------------------------------- |
-| `FrameKitStudio`    | Componente React que compone la experiencia completa del estudio       |
-| `frameKitMessages`  | Catálogo de mensajes predefinidos para cadenas de interfaz del estudio |
-| `getFrameKitLocale` | Recupera el locale actual desde el contexto del estudio                |
+| Exportación         | Descripción                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `FrameKitStudio`    | Componente React que compone la experiencia completa del estudio                                       |
+| `frameKitMessages`  | Catálogo de mensajes predefinidos para cadenas de interfaz del estudio                                 |
+| `getFrameKitLocale` | Resuelve una configuración regional compatible a partir de un valor de configuración regional opcional |
 
 **Exportaciones de tipos**
 
@@ -162,7 +162,6 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 | `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                                                                         |
 | `FrameKitStudioRoot`                                     | Servidor           | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                                   |
 | Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor           | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |
-| Utilidades de exportación PNG                            | Navegador          | Dependen del DOM, `document.fonts` y la biblioteca `modern-screenshot`, que requiere APIs del navegador                                               |
 
 ---
 

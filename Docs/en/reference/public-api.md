@@ -10,8 +10,8 @@ The root entry point provides the core runtime API for defining, validating, and
 
 | Export                       | Description                                                                                                                                                                    |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `defineTemplate`             | Defines a template with fields, locale-aware rendering, and data resolution                                                                                                    |
-| `defineTemplateBase`         | Defines the base structure for a template without full template configuration                                                                                                  |
+| `defineTemplate`             | Defines and validates a template with fields, locale-aware content, and a render function                                                                                      |
+| `defineTemplateBase`         | Defines and validates a template base without a render function                                                                                                                |
 | `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                      |
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
@@ -77,7 +77,7 @@ Its main component accepts `{ templates: readonly FrameKitStudioTemplate[] }`.
 | ------------------- | -------------------------------------------------------- |
 | `FrameKitStudio`    | React component that composes the full studio experience |
 | `frameKitMessages`  | Pre-defined message catalog for studio UI strings        |
-| `getFrameKitLocale` | Retrieves the current locale from the studio context     |
+| `getFrameKitLocale` | Resolves a supported locale from an optional locale value |
 
 **Type exports**
 
@@ -162,7 +162,6 @@ These are peer requirements. The package will emit a warning during installation
 | `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                       |
 | `FrameKitStudioRoot`                                     | Server           | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
 | `@mauriciodmo/framekit/dev` entry points                 | Server           | Dev server, template discovery, code generation, and file watching are all server-side operations  |
-| PNG export utilities                                     | Browser          | Rely on the DOM, `document.fonts`, and the `modern-screenshot` library which requires browser APIs |
 
 ---
 

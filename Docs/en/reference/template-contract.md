@@ -46,7 +46,7 @@ fields.number({ label: 'Count', min: 0, max: 100 })
 
 ### `color`
 
-A color picker field. Accepts only the base options. No runtime CSS-format validation is performed beyond checking requiredness.
+A color picker field. Accepts only the base options. Non-empty values must be a six-digit hexadecimal color in the form `#RRGGBB`.
 
 ```typescript
 fields.color({ label: 'Background Color' })
@@ -152,6 +152,7 @@ if (!result.success) {
 - Required fields: empty string (after trim) fails
 - `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
 - `url` fields: must be an HTTP(S) absolute URL or root-relative path
+- `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
 
 Errors are returned as structured objects with machine-readable codes, not localized strings:
 
@@ -173,6 +174,7 @@ Possible error codes:
 - `number_too_small`: Value is less than the `min` constraint
 - `number_too_large`: Value is greater than the `max` constraint
 - `invalid_url`: Value is not a valid HTTP(S) URL or root-relative path
+- `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
 
 ### The `check` CLI Command
 

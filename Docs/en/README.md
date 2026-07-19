@@ -10,13 +10,13 @@ English | [Español](../es/README.md)
 ## Guides
 
 - [Template Authoring](guides/template-authoring.md): Define fields, locales, and render functions for templates.
-- [Studio User Guide](guides/studio.md): Use the visual editor to create and edit templates.
+- [Studio User Guide](guides/studio.md): Use the visual editor to edit templates.
 
 ## Reference
 
 - [Template Contract](reference/template-contract.md): Full specification for defineTemplate.
 - [Markdown](reference/markdown.md): Supported markdown syntax in text fields.
-- [CLI](reference/cli.md): FrameKit CLI commands and options.
+- [CLI](reference/cli.md): FrameKit CLI commands and behavior.
 - [Public API](reference/public-api.md): Public API surface for integration.
 
 ## Development

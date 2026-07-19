@@ -8,9 +8,9 @@ Common problems and their solutions when developing with FrameKit.
 
 FrameKit discovers templates by scanning the `src/templates` directory. If the catalog appears empty, several things may be at fault.
 
-**Cause: `src/templates` missing or empty**
+**Cause: `src/templates` is empty**
 
-If the directory does not exist or contains no subdirectories, `framekit generate` finds nothing to register. Create `src/templates` and add at least one template directory with a `template.tsx` file inside.
+If the directory contains no template directories, `framekit generate` finds nothing to register. Add at least one template directory with a `template.tsx` file inside. If `src/templates` does not exist, generation instead fails with a filesystem `ENOENT` error; create the directory first.
 
 **Cause: template directories not matching kebab-case**
 
@@ -110,9 +110,9 @@ Choose a directory name that does not already exist in the current location. `cr
 
 ## Installation fails in generated project
 
-**Cause: native dependency build failure**
+**Cause: native dependency installation failure**
 
-Some FrameKit dependencies (`sharp`, `esbuild`, `@parcel/watcher`) include native binaries that must be compiled at install time. If your system lacks the required build toolchain (Python, make, a C++ compiler), the install step fails.
+Some dependencies (`sharp`, `esbuild`, `@parcel/watcher`) use native binaries. Package managers normally install a prebuilt binary, but may fall back to compilation when no compatible binary is available. If your system then lacks the required build toolchain (Python, make, a C++ compiler), the install step fails.
 
 **Fix: ensure build tools are available and retry**
 
@@ -136,7 +136,7 @@ Use the `PORT` environment variable to pick an available port:
 PORT=3001 framekit dev
 ```
 
-Any port from 1 to 65535 works. You can also control the binding address with `FRAMEKIT_HOST` or `HOST`:
+`PORT` must be an integer from 1 to 65535, but the selected port must also be available and permitted by the operating system. You can also control the binding address with `FRAMEKIT_HOST` or `HOST`:
 
 ```
 FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev

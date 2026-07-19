@@ -6,8 +6,8 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 
 ## Requisitos previos
 
-- Node.js 20 o posterior.
-- pnpm 11 o posterior.
+- Node.js 20.9.0 o posterior.
+- pnpm 11.14.0 o posterior.
 
 `create-framekit` solo funciona con pnpm. No es compatible con npm, yarn ni bun.
 

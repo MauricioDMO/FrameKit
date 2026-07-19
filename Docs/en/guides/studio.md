@@ -6,7 +6,7 @@ Studio is the visual editor for FrameKit templates. It lets you navigate a templ
 
 Templates are organized in a sidebar derived from their slug path. Each path segment becomes a folder level, so a slug like `social/instagram/post` creates a `Social` folder containing an `Instagram` subfolder with a `Post` template inside. Shared path prefixes produce shared folder hierarchies automatically.
 
-Within each folder, items are sorted alphabetically by their humanized title (e.g., "Instagram Post" instead of "instagram-post").
+Within each folder, items are sorted alphabetically by title. Folder names are humanized from their slug segments (e.g., `instagram-post` becomes "Instagram Post").
 
 Selecting a template navigates to `/editor/<slug>`. Folders in the sidebar are collapsible and start expanded. The currently open template is marked with `aria-current="page"` for accessibility.
 
@@ -32,7 +32,7 @@ Number fields respect `min` and `max` constraints defined in the template. URL f
 
 All edits are stored in the browser's `localStorage` under the key `framekit:<slug>:v1`. Each template slug has its own isolated storage entry, and data is also isolated per locale within that entry.
 
-If a stored value is malformed or references a locale that no longer exists in the template, it is discarded safely and the editor starts fresh. No server sync, no account, and no collaboration — everything stays in your browser.
+Malformed stored state is discarded safely and the editor starts fresh. Stored edits for locales or fields that no longer exist are ignored. No server sync, no account, and no collaboration — everything stays in your browser.
 
 ## Reset
 
@@ -66,7 +66,7 @@ The theme can be toggled through the Settings panel. The preference is stored in
 
 Studio displays different states depending on what is happening:
 
-- **Empty** — no templates are registered. This is the initial state when the template list is empty.
+- **Empty** — no template is selected. This is the initial state at `/editor`.
 - **Loading** — a template is being loaded. Shown while the dynamic import is in flight.
 - **Invalid** — the template definition failed runtime validation. The template cannot be edited.
 - **Load error** — the template could not be loaded, such as a failed dynamic import.

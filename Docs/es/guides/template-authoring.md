@@ -10,7 +10,7 @@ Las plantillas viven en directorios dentro de `src/templates/`. Cada nombre de d
 ^[a-z0-9]+(?:-[a-z0-9]+)*$
 ```
 
-Esto significa solo letras minúsculas, números y guiones — sin mayúsculas, sin guiones bajos, sin caracteres especiales. Por ejemplo: `blog-banner`, `tarjeta-social`, `encabezado-email`.
+Esto significa solo letras minúsculas, números y guiones: sin mayúsculas, guiones bajos ni caracteres especiales. Por ejemplo: `blog-banner`, `social-card`, `email-header`.
 
 **Directorios ignorados:** Los directorios que comienzan con `.` o `_` se omiten durante el descubrimiento. Usa estos prefijos para directorios privados o auxiliares que no deben tratarse como plantillas.
 
@@ -18,11 +18,11 @@ Esto significa solo letras minúsculas, números y guiones — sin mayúsculas, 
 
 ## Generación de slugs
 
-El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con segmentos unidos por barras. Ejemplo: `src/templates/redes-sociales/instagram/publicacion` se convierte en `redes-sociales/instagram/publicacion`.
+El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con los segmentos unidos por barras. Por ejemplo, `src/templates/social-cards/instagram/post` se convierte en `social-cards/instagram/post`.
 
-Los títulos que se muestran en la interfaz de Studio se derivan de los nombres de los directorios dividiendo por guiones y capitalizando cada palabra. Por ejemplo, `tarjeta-social` se convierte en "Tarjeta Social" y `instagram-publicacion` se convierte en "Instagram Publicacion".
+Los títulos mostrados en la interfaz de Studio se derivan de los nombres de directorio separando por guiones y poniendo en mayúscula la inicial de cada palabra. Por ejemplo, `social-cards` se convierte en "Social Cards" e `instagram-post` se convierte en "Instagram Post".
 
-Cuando existen múltiples plantillas en el mismo nivel, se ordenan alfabéticamente por su título humanizado.
+El registro de plantillas generado se ordena alfabéticamente por slug. En la interfaz de Studio, las plantillas y carpetas se ordenan alfabéticamente por sus títulos humanizados.
 
 ## Formas de creación
 
@@ -39,17 +39,17 @@ export default defineTemplate({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Título', required: true }),
-    accentColor: fields.color({ label: 'Color de acento', defaultValue: '#b9f8d2' }),
+    title: fields.text({ label: 'Title', required: true }),
+    accentColor: fields.color({ label: 'Accent Color', defaultValue: '#b9f8d2' }),
   },
   content: {
-    es: {
-      language: 'Español',
-      title: 'Tu próxima historia empieza aquí',
-    },
     en: {
       language: 'English',
       title: 'Your next story starts here',
+    },
+    es: {
+      language: 'Español',
+      title: 'Tu próxima historia empieza aquí',
     },
   },
   render({ data, locale, width, height }) {
@@ -86,12 +86,12 @@ export const templateBase = defineTemplateBase({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Título' }),
-    accentColor: fields.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
+    title: fields.text({ label: 'Title' }),
+    accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
-    aurora: { language: 'Aurora', title: 'Luz del norte' },
-    desert: { language: 'Desierto', title: ' Horizonte abierto' },
+    aurora: { language: 'Aurora', title: 'Northern light' },
+    desert: { language: 'Desert', title: 'Open horizon' },
   },
 })
 
@@ -129,13 +129,13 @@ Cada definición de plantilla requiere cinco propiedades:
 
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro donde cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o url)
-- `content` — un registro con al menos una entrada de locale, donde cada entrada contiene una cadena `language` y valores parciales de campos
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o url)
+- `content` — un registro con al menos una entrada de locale, donde cada una contiene una cadena `language` y valores de campo parciales
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
 
 ## Contenido y locales
 
-Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma — puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `lunar`, `fjord` o `variante-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible por humanos, y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos no presentes en un locale comienzan con su `defaultValue` si está declarado, de lo contrario permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#orden-de-resolución-de-datos): defaults -> contenido del locale -> ediciones del usuario.
+Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible para las personas y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos que no estén presentes en un locale comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido del locale -> ediciones del usuario.
 
 La clave `language` dentro de cada entrada de locale está reservada. Se usa solo como etiqueta de visualización en la interfaz de Studio y nunca se incluye en el objeto `data` que se pasa a `render`.
 
@@ -152,18 +152,18 @@ En este ejemplo, el tipo `locale` es `'fjord' | 'moon'`, no una unión global de
 
 La función `render` recibe un único objeto con cuatro propiedades:
 
-- `data` — un objeto que contiene todas las claves de campos como cadenas después de resolver los datos. En Studio, los valores se aplican en este orden: defaults de campos, contenido del locale y después ediciones del usuario.
+- `data` — un objeto que contiene todas las claves de campo como cadenas tras la resolución. En Studio, los valores se aplican en este orden: valores predeterminados de los campos, contenido del locale y, por último, ediciones del usuario.
 - `locale` — la clave del locale actualmente seleccionado, tipado como una unión de todas las claves de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
 - `height` — la altura de la plantilla como tipo literal.
 
 ## Regeneración automática
 
-Cuando se ejecuta `framekit dev`, FrameKit observa el directorio `src/templates/` en busca de cambios estructurales. Agregar o eliminar un directorio o archivo `template.tsx` desencadena el registro de plantillas. Editar el contenido de un archivo `template.tsx` existente depende de Hot Module Replacement (HMR) de Next.js para actualizar la instancia en ejecución.
+Al ejecutar `framekit dev`, FrameKit observa el directorio `src/templates/` en busca de cambios estructurales. Agregar o eliminar un directorio o archivo `template.tsx` activa el nuevo registro de las plantillas. La edición del contenido de un archivo `template.tsx` existente depende de Hot Module Replacement (HMR) de Next.js para actualizar la instancia en ejecución.
 
 ## Claves reservadas
 
-La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de campo. FrameKit rechaza esto tanto en tiempo de compilación como en ejecución. Cada entrada en `content` debe contener una propiedad `language` de tipo string.
+La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de campo. FrameKit lo rechaza tanto en tiempo de compilación como en tiempo de ejecución. Cada entrada de `content` debe contener una propiedad `language` de tipo cadena.
 
 ---
 

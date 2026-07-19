@@ -37,9 +37,9 @@ The test suite does not cover:
 - **Browser end-to-end tests** — there are no Playwright or Cypress tests; the Studio integration tests cover generation and build but do not drive a browser.
 - **Visual regression** — no PNG pixel or dimension comparison tests exist.
 - **Full Studio flow** — navigating to a page, editing a field, switching locale, resetting, and exporting the result is not covered as a single automated flow.
-- **Production build and start** — successful execution of `next build` followed by `next start` is not verified inside unit or integration tests; the CI build step confirms the build completes without error, but does not start the server.
+- **Production build and start** — successful execution of `next build` followed by `next start` is not verified inside unit or integration tests.
 - **Asset copying** — public directory and static file copying are not directly unit-tested.
-- **Other operating systems** — CI runs on Ubuntu only. Windows and macOS are not verified, so this documentation does not claim a complete cross-platform support guarantee.
+- **Other operating systems** — Windows and macOS are not verified, so this documentation does not claim a complete cross-platform support guarantee.
 - **Watcher behavior** — signal propagation, file watching under load, and watcher edge cases are outside the current test scope.
 
 ## Distribution and Packaging
@@ -52,7 +52,7 @@ Build the tarball with:
 pnpm --filter @mauriciodmo/framekit pack
 ```
 
-The resulting `.tgz` contains: `bin/`, `dist/`, `README.md`, `LICENSE`.
+The package's `files` list includes `bin/`, `dist/`, `README.md`, and `LICENSE`.
 
 tsdown produces an unbundled ESM output. The following packages remain external (not bundled): `react`, `react-dom`, `next`, `lucide-react`, `modern-screenshot`, `chokidar`, `tsx`. CSS is compiled separately via the Tailwind CLI and placed in `dist/styles.css`.
 
@@ -66,9 +66,9 @@ Build the tarball with:
 pnpm --filter @mauriciodmo/create-framekit pack
 ```
 
-The resulting `.tgz` contains: `dist/`, `template/`, `README.md`, `LICENSE`.
+The package's `files` list includes `dist/`, `template/`, `README.md`, and `LICENSE`.
 
-The `template/` directory is copied at install time relative to the installed package location. When a user runs `create-framekit`, the template is placed into their project as a standalone copy, not referenced from the package directory.
+When a user runs `create-framekit`, the `template/` directory is copied from the installed package into their project as a standalone copy, not referenced from the package directory.
 
 ## Tarball Smoke Test (Manual)
 

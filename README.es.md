@@ -4,7 +4,7 @@ Editor de imágenes basado en plantillas con React/Next.js, Studio visual, CLI y
 
 [English](README.md)
 
-Este es un alfa prerelease. La instalación del paquete via `pnpm dlx` requiere confirmación de publicación en npm.
+Esta es una versión alfa preliminar. La instalación del paquete mediante `pnpm dlx` requiere confirmar su publicación en npm.
 
 ## Inicio Rápido
 
@@ -24,7 +24,7 @@ export default defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: "Título", required: true }),
+    title: fields.text({ label: "Title", required: true }),
   },
   content: {
     en: { language: "English", title: "Hello" },
@@ -38,7 +38,7 @@ export default defineTemplate({
 
 ## Enlaces
 
-- [Documentation](Docs/en/README.md)
+- [Documentación en inglés](Docs/en/README.md)
 - [Documentación](Docs/es/README.md)
 - [README del paquete @mauriciodmo/framekit](packages/framekit/README.md)
 - [Licencia](LICENSE)
