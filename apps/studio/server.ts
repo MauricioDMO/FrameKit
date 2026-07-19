@@ -5,9 +5,10 @@ import {
   writeTemplateModule,
 } from '@mauriciodmo/framekit/dev'
 
+import { getServerOptions } from './server-options'
+
 const projectRoot = process.cwd()
-const hostname = process.env.HOSTNAME ?? 'localhost'
-const port = Number.parseInt(process.env.PORT ?? '3000', 10)
+const { hostname, port } = getServerOptions(process.env)
 
 async function main(): Promise<void> {
   if (process.argv.includes('--generate')) {
