@@ -41,7 +41,6 @@ export default defineTemplate({
 - [Documentation](Docs/en/README.md)
 - [Documentación](Docs/es/README.md)
 - [@mauriciodmo/framekit package README](packages/framekit/README.md)
-- [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
 
 For repository development: `pnpm install --frozen-lockfile && pnpm dev`

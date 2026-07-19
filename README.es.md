@@ -17,20 +17,22 @@ pnpm dev
 
 ## Ejemplo
 
-```js
-import { defineTemplate } from "@mauriciodmo/framekit";
+```tsx
+import { defineTemplate, fields } from "@mauriciodmo/framekit";
 
-const template = defineTemplate({
+export default defineTemplate({
+  width: 1080,
+  height: 1080,
   fields: {
-    title: { type: "text", default: "Hello" }
+    title: fields.text({ label: "Título", required: true }),
   },
-  locales: {
-    en: { title: "Hello" },
-    es: { title: "Hola" }
+  content: {
+    en: { language: "English", title: "Hello" },
+    es: { language: "Español", title: "Hola" },
   },
-  render: ({ fields, locale }) => (
-    <div>{fields.title}</div>
-  )
+  render({ data, locale, width, height }) {
+    return <div style={{ width, height }}>{data.title} ({locale})</div>;
+  },
 });
 ```
 
@@ -39,7 +41,6 @@ const template = defineTemplate({
 - [Documentation](Docs/en/README.md)
 - [Documentación](Docs/es/README.md)
 - [README del paquete @mauriciodmo/framekit](packages/framekit/README.md)
-- [Contribuir](CONTRIBUTING.md)
 - [Licencia](LICENSE)
 
 Para desarrollo del repositorio: `pnpm install --frozen-lockfile && pnpm dev`
