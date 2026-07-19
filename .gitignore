@@ -47,5 +47,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# framekit generated files
-**/src/.framekit/
+# framekit generated files and Next output
+**/.framekit/
