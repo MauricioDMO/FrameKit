@@ -7,10 +7,20 @@ description: Create, design, organize, validate, or troubleshoot visual template
 
 Create visual templates under `src/templates/`. A directory containing a default-exporting `template.tsx` is discovered automatically and becomes a Studio template.
 
+## Design System First
+
+Before creating any visual artwork, check the project root for `DESIGN.md`.
+
+- If `DESIGN.md` is missing, recommend that the user configure one before creating the images. It should capture the visual language that templates must share, including colors, typography, spacing, shapes, borders, shadows, imagery, and composition.
+- If it exists, read it before choosing styles or building artwork. Treat it as the source of truth for every visual decision.
+- Base the template's colors, type scale, spacing, component treatment, imagery, and overall composition on `DESIGN.md`. Do not invent a separate visual language when the file already defines one.
+- Follow the user's explicit brief when it intentionally overrides the design system, but keep all non-overridden decisions consistent with `DESIGN.md`.
+
 ## Creation Workflow
 
-1. Inspect existing templates, local assets, and project styling before creating new artwork. Reuse their conventions when applicable.
+1. Check and read `DESIGN.md` as described above, then inspect existing templates, local assets, and project styling. Reuse the design system and existing conventions before creating new artwork.
 2. Choose the output dimensions for the destination, then create a lowercase kebab-case directory such as `social-card`.
+   For social content, use [references/social-media-sizes.md](references/social-media-sizes.md) to choose a master format and export preset.
 3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields.
 4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
 5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate.
