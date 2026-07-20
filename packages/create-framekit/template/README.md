@@ -21,3 +21,4 @@ For complex layouts, see the extracted definition pattern with
 ## Documentation
 
 - [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
+- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
