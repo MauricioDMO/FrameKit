@@ -25,6 +25,27 @@ El creador es interactivo. Si no proporcionas el nombre del proyecto como argume
 
 Después de copiar la plantilla, si elegiste instalar dependencias el creador ejecuta `pnpm install` (o `npm install`) y luego `pnpm framekit generate` (o `npm exec -- framekit generate`). Si alguno de estos pasos falla, el directorio del proyecto parcialmente creado se conserva para que puedas diagnosticar el problema.
 
+La CLI muestra un encabezado y un mensaje de finalización con colores cuando se ejecuta en una terminal. Usa `NO_COLOR=1` para desactivar los colores.
+
+### Opciones interactivas
+
+- El nombre del proyecto puede pasarse como el argumento opcional `[directorio-del-proyecto]`. Si se omite, la CLI lo solicita.
+- El gestor de paquetes se detecta desde el entorno. Si no puede detectarse, elige interactivamente entre `pnpm` y `npm`.
+- La instalación de dependencias está activada por defecto.
+- `pnpm approve-builds` solo se ofrece cuando se selecciona pnpm y se instalan dependencias. Está activado por defecto.
+- La inicialización de un repositorio Git con un commit inicial está activada por defecto.
+- El directorio destino no debe existir, ni siquiera si está vacío.
+
+### Probar localmente sin publicar
+
+Desde la raíz del repositorio de FrameKit, compila y ejecuta directamente la CLI local:
+
+```bash
+pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
+```
+
+El comando usa la compilación local de `create-framekit` y no requiere publicar el paquete. El proyecto generado seguirá instalando la versión de FrameKit declarada por su plantilla.
+
 ## Iniciar el desarrollo
 
 Navega al directorio del proyecto e inicia el servidor de desarrollo:

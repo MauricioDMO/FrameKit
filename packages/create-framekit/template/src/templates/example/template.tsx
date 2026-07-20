@@ -4,12 +4,12 @@ export default defineTemplate({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Título', required: true }),
+    title: fields.text({ label: 'Title', required: true }),
   },
   content: {
     es: {
-      language: 'Español',
-      title: 'Tu próxima historia empieza aquí',
+      language: 'Spanish',
+      title: 'Your next story starts here',
     },
     en: {
       language: 'English',
@@ -38,7 +38,7 @@ export default defineTemplate({
           style={{ marginTop: 28, maxWidth: 800, fontSize: 72, lineHeight: 1.05 }}
         />
         <p style={{ marginTop: 40, fontSize: 20, opacity: 0.75 }}>
-          Edita este archivo para crear tu primera plantilla.
+          Edit this file to create your first template.
         </p>
       </article>
     )

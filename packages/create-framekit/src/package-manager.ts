@@ -27,15 +27,15 @@ export async function runCommand(
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, shell: false, stdio: 'inherit' })
     child.once('error', (error) => {
-      reject(new Error(`Falló el comando: ${command} ${args.join(' ')} (${error.message})`))
+      reject(new Error(`Command failed: ${command} ${args.join(' ')} (${error.message})`))
     })
     child.once('exit', (code, signal) => {
       if (code === 0) {
         resolve()
         return
       }
-      const result = signal ? `terminó por ${signal}` : `salió con código ${code ?? 1}`
-      reject(new Error(`Falló el comando: ${command} ${args.join(' ')} (${result})`))
+      const result = signal ? `was terminated by ${signal}` : `exited with code ${code ?? 1}`
+      reject(new Error(`Command failed: ${command} ${args.join(' ')} (${result})`))
     })
   })
 }

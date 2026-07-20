@@ -33,7 +33,7 @@ export async function createProject(
   const target = path.resolve(process.cwd(), projectName)
 
   if (await pathExists(target)) {
-    throw new Error(`El directorio ya existe: ${target}`)
+    throw new Error(`The directory already exists: ${target}`)
   }
 
   await cp(templateDirectory, target, { recursive: true })

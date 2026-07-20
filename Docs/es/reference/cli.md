@@ -10,6 +10,32 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto. No hay flags `-
 
 ---
 
+## `create-framekit`
+
+`create-framekit` es la CLI para crear proyectos, distribuida como `@mauriciodmo/create-framekit`. Acepta un directorio de proyecto opcional:
+
+```sh
+create-framekit [directorio-del-proyecto]
+```
+
+La CLI copia la plantilla inicial a un directorio nuevo, instala dependencias opcionalmente, genera el catálogo de plantillas y puede inicializar Git. No sobrescribe un directorio existente, aunque esté vacío.
+
+Si no proporcionas el directorio, lo solicita. Detecta `pnpm` o `npm` desde el entorno y te pide elegir cuando no puede detectarlos. Las preguntas restantes son:
+
+- ¿Instalar dependencias? Por defecto: sí.
+- ¿Ejecutar `pnpm approve-builds` al usar pnpm e instalar dependencias? Por defecto: sí.
+- ¿Inicializar un repositorio Git y crear un commit inicial? Por defecto: sí.
+
+Para desarrollar el repositorio localmente, compila y ejecuta la CLI sin publicarla:
+
+```sh
+pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
+```
+
+Los colores se activan en la salida de terminal y pueden desactivarse con `NO_COLOR=1`.
+
+---
+
 ## `framekit generate`
 
 Escanea `src/templates` en busca de directorios de plantillas y genera un archivo de registro.

@@ -94,7 +94,7 @@ describe('create-framekit', () => {
           runApproveBuilds: false,
           initGit: false,
         }),
-      ).rejects.toThrow('El directorio ya existe')
+      ).rejects.toThrow('The directory already exists')
       await expect(readFile(path.join(destination, 'keep.txt'), 'utf8')).resolves.toBe('keep')
     })
 
@@ -144,7 +144,7 @@ describe('create-framekit', () => {
             runApproveBuilds: false,
             initGit: false,
           }),
-        ).rejects.toThrow('Falló el comando: pnpm install')
+        ).rejects.toThrow('Command failed: pnpm install')
         await expect(readFile(path.join(destination, 'package.json'), 'utf8')).resolves.toContain('framekit')
       } finally {
         process.env.PATH = previousPath
@@ -169,7 +169,7 @@ describe('create-framekit', () => {
             runApproveBuilds: false,
             initGit: false,
           }),
-        ).rejects.toThrow('Falló el comando: pnpm framekit generate')
+        ).rejects.toThrow('Command failed: pnpm framekit generate')
         await expect(readFile(path.join(destination, 'package.json'), 'utf8')).resolves.toContain('framekit')
       } finally {
         process.env.PATH = previousPath
@@ -306,7 +306,7 @@ describe('create-framekit', () => {
 
   describe('main', () => {
     it('throws usage error when more than one arg', async () => {
-      await expect(main(['one', 'two'])).rejects.toThrow('Uso: create-framekit [directorio]')
+      await expect(main(['one', 'two'])).rejects.toThrow('Usage: create-framekit [project-directory]')
     })
 
     it('prompts for project name when no args and uses it', async () => {

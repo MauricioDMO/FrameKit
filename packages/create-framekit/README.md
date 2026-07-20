@@ -17,3 +17,11 @@ For template authoring patterns, see the [Template Authoring Guide](https://gith
 For full documentation:
 - [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
 - [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
+
+## Test locally
+
+From the repository root, build and run the local CLI without publishing it:
+
+```bash
+pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
+```

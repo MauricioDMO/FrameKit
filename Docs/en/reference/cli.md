@@ -10,6 +10,32 @@ All commands use `process.cwd()` as the project root. There is no `--help`, `--v
 
 ---
 
+## `create-framekit`
+
+`create-framekit` is the project scaffolding CLI distributed as `@mauriciodmo/create-framekit`. It accepts an optional project directory:
+
+```sh
+create-framekit [project-directory]
+```
+
+The CLI copies the starter template into a new directory, optionally installs dependencies, generates the template catalog, and optionally initializes Git. It refuses to overwrite an existing directory, including an empty one.
+
+When no project directory is provided, it asks for one. It detects `pnpm` or `npm` from the environment and asks you to choose when detection is unavailable. The remaining prompts are:
+
+- Install dependencies? Default: yes.
+- Run `pnpm approve-builds` when using pnpm and installing dependencies? Default: yes.
+- Initialize a Git repository and create an initial commit? Default: yes.
+
+For local repository development, build and run the CLI without publishing it:
+
+```sh
+pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
+```
+
+Colors are enabled for terminal output and can be disabled with `NO_COLOR=1`.
+
+---
+
 ## `framekit generate`
 
 Scans `src/templates` for template directories and generates a registry file.

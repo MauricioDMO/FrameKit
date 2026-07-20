@@ -25,6 +25,27 @@ The creator is interactive. If you do not provide a project name as an argument,
 
 After copying the template, if you chose to install dependencies the creator runs `pnpm install` (or `npm install`) and then `pnpm framekit generate` (or `npm exec -- framekit generate`). If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
 
+The CLI prints a colored header and completion message when it runs in a terminal. Set `NO_COLOR=1` to disable colors.
+
+### Interactive options
+
+- The project name can be passed as the optional `[project-directory]` argument. If it is omitted, the CLI asks for it.
+- The package manager is detected from the environment. If it cannot be detected, choose `pnpm` or `npm` interactively.
+- Dependency installation defaults to yes.
+- `pnpm approve-builds` is offered only when pnpm is selected and dependencies are installed. It defaults to yes.
+- Git repository initialization with an initial commit defaults to yes.
+- The destination must not exist, including an empty directory.
+
+### Test locally without publishing
+
+From the FrameKit repository root, build and run the local CLI directly:
+
+```bash
+pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
+```
+
+The command uses the local `create-framekit` build and does not require publishing the package. The generated project still installs the FrameKit version declared by its template.
+
 ## Start development
 
 Navigate to the project directory and start the development server:

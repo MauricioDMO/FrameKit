@@ -13,8 +13,9 @@ import {
 } from './prompts.js'
 import { detectPackageManager } from './package-manager.js'
 import { createProject } from './project.js'
+import { bold, cyan, dim, green, red } from './terminal.js'
 
-const USAGE = 'Uso: create-framekit [directorio]'
+const USAGE = 'Usage: create-framekit [project-directory]'
 
 function devCommand(pm: PackageManager): string {
   return pm === 'npm' ? 'npm run dev' : 'pnpm dev'
@@ -22,6 +23,11 @@ function devCommand(pm: PackageManager): string {
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
   if (args.length > 1) throw new Error(USAGE)
+
+  console.log()
+  console.log(`${bold(cyan('FrameKit'))} ${dim('project creator')}`)
+  console.log(dim('Create a new project from the official starter template.'))
+  console.log()
 
   const projectName =
     args[0]?.trim() || (await promptProjectName())
@@ -39,6 +45,9 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 
   const initGit = await promptInitGit()
 
+  console.log()
+  console.log(dim('Creating project...'))
+
   const target = await createProject(projectName, packageManager, {
     installDependencies,
     runApproveBuilds,
@@ -49,15 +58,18 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     ? target
     : path.relative(process.cwd(), target) || '.'
 
-  console.log('\nProyecto FrameKit creado.')
-  console.log(`  cd ${JSON.stringify(displayPath)}`)
-  console.log(`  ${devCommand(packageManager)}`)
+  console.log()
+  console.log(`${green('Done!')} ${bold('Your FrameKit project is ready.')}`)
+  console.log()
+  console.log(dim('Next steps:'))
+  console.log(`  ${cyan('$')} cd ${JSON.stringify(displayPath)}`)
+  console.log(`  ${cyan('$')} ${devCommand(packageManager)}`)
 }
 
 const invokedFile = process.argv[1]
 if (invokedFile && import.meta.url === pathToFileURL(invokedFile).href) {
   void main().catch((error: unknown) => {
-    console.error(error instanceof Error ? error.message : String(error))
+    console.error(red(error instanceof Error ? error.message : String(error)))
     process.exitCode = 1
   })
 }
