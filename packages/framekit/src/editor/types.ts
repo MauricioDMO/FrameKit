@@ -1,4 +1,4 @@
-import type { TemplateFieldKind } from '../types'
+import type { ImageFieldScope, TemplateFieldKind } from '../types'
 
 export interface EditorMessages {
   templateEditor: string
@@ -18,6 +18,10 @@ export interface EditorMessages {
   errorNumberTooLarge: string
   errorInvalidUrl: string
   errorInvalidColor: string
+  imageSelect: string
+  imageUploading: string
+  imageLoadError: string
+  imageUploadError: string
 }
 
 export interface TemplateField {
@@ -26,8 +30,16 @@ export interface TemplateField {
   required: boolean
   min?: number
   max?: number
+  scope?: ImageFieldScope
   label: string
   placeholder?: string
+}
+
+export interface ImageFieldLabels {
+  select: string
+  uploading: string
+  loadError: string
+  uploadError: string
 }
 
 export interface EditorFieldProps {
@@ -35,4 +47,6 @@ export interface EditorFieldProps {
   value: string
   onChange: (value: string) => void
   error?: string
+  imageLabels?: ImageFieldLabels
+  onImageUpload?: (file: File) => Promise<void>
 }

@@ -16,6 +16,8 @@ Esto significa solo letras minúsculas, números y guiones: sin mayúsculas, gui
 
 **Límites de plantilla:** Cuando FrameKit encuentra un `template.tsx` dentro de un directorio, trata ese directorio como un límite de plantilla. Cualquier subdirectorio dentro de él forma parte de la estructura privada de la plantilla y no se explora en busca de plantillas adicionales. Esto permite organizar archivos auxiliares, componentes y recursos junto a la plantilla sin crear plantillas anidadas.
 
+Las imágenes de una plantilla viven en un directorio `assets` junto a `template.tsx`. Coloca las imágenes compartidas en `assets/common`; las imágenes por variante van en un directorio con la misma key del contenido y usan como nombre la key del field. Los archivos compartidos por todo el proyecto viven en `public/assets/<categoría>` y usan URLs explícitas `/assets/...`.
+
 ## Generación de slugs
 
 El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con los segmentos unidos por barras. Por ejemplo, `src/templates/social-cards/instagram/post` se convierte en `social-cards/instagram/post`.
@@ -129,7 +131,7 @@ Cada definición de plantilla requiere cinco propiedades:
 
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o url)
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color, url o image)
 - `content` — un registro con al menos una entrada de locale, donde cada una contiene una cadena `language` y valores de campo parciales
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
 
@@ -150,16 +152,32 @@ En este ejemplo, el tipo `locale` es `'fjord' | 'moon'`, no una unión global de
 
 ## Props de renderizado
 
-La función `render` recibe un único objeto con cuatro propiedades:
+La función `render` recibe un único objeto con cinco propiedades:
 
 - `data` — un objeto que contiene todas las claves de campo como cadenas tras la resolución. En Studio, los valores se aplican en este orden: valores predeterminados de los campos, contenido del locale y, por último, ediciones del usuario.
 - `locale` — la clave del locale actualmente seleccionado, tipado como una unión de todas las claves de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
 - `height` — la altura de la plantilla como tipo literal.
+- `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
+
+Un campo de imagen resuelve una cadena URL. Los campos por variante usan `assets/<locale>/<field-key>.*`; los campos comunes usan `assets/common/<field-key>.*`.
+
+```tsx
+fields: {
+  hero: fields.image({ label: 'Hero image' }),
+  background: fields.image({ label: 'Background', scope: 'common' }),
+},
+```
+
+```text
+src/templates/social-card/assets/
+├── common/background.webp
+└── en/hero.webp
+```
 
 ## Regeneración automática
 
-Al ejecutar `framekit dev`, FrameKit observa el directorio `src/templates/` en busca de cambios estructurales. Agregar o eliminar un directorio o archivo `template.tsx` activa el nuevo registro de las plantillas. La edición del contenido de un archivo `template.tsx` existente depende de Hot Module Replacement (HMR) de Next.js para actualizar la instancia en ejecución.
+Al ejecutar `framekit dev`, FrameKit observa `src/templates/` en busca de cambios estructurales y cambios en assets. Agregar, eliminar o reemplazar un asset regenera el manifiesto de assets. La edición del contenido de un archivo `template.tsx` existente depende de Hot Module Replacement (HMR) de Next.js para actualizar la instancia en ejecución.
 
 ## Claves reservadas
 

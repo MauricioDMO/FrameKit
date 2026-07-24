@@ -11,6 +11,7 @@ Every field requires `label`. Optional shared options are `placeholder`, `requir
 | `fields.number` | Numeric input | `min` and `max` are finite numbers; resolved data remains a string |
 | `fields.color` | Color picker | Non-empty value must be `#RRGGBB` |
 | `fields.url` | URL input | HTTP(S) absolute URL or root-relative `/path` only |
+| `fields.image` | Project image preview/upload | Variant files use the field key; common files use `assets/common`; uploads are dev-only |
 
 Use `fields.number({ label: 'Count', min: 0, max: 100 })` for bounded numeric input. Parse the string in `data` when rendering needs numeric arithmetic.
 

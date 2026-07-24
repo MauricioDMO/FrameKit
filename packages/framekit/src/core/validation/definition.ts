@@ -1,6 +1,6 @@
 import type { TemplateBase, TemplateDefinition } from '../../types'
 
-const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'url'])
+const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'url', 'image'])
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -72,6 +72,20 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
     }
     if (field.defaultValue !== undefined && typeof field.defaultValue !== 'string') {
       return { success: false, error: `fields.${key}.defaultValue must be a string` }
+    }
+
+    if (field.kind === 'image') {
+      if (field.scope !== undefined && field.scope !== 'common' && field.scope !== 'variant') {
+        return { success: false, error: `fields.${key}.scope is invalid` }
+      }
+      if ('min' in field || 'max' in field) {
+        return { success: false, error: `fields.${key} cannot define min or max` }
+      }
+      continue
+    }
+
+    if ('scope' in field) {
+      return { success: false, error: `fields.${key}.scope is only valid for image fields` }
     }
 
     if (field.kind !== 'number') {

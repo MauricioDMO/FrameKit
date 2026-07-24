@@ -8,9 +8,9 @@ export default defineTemplate({
     title: fields.textarea({ label: 'Título', placeholder: 'Diseñamos tu sitio web' }),
     description: fields.textarea({ label: 'Descripción' }),
     website: fields.text({ label: 'Sitio web' }),
-    backgroundImage: fields.url({
+    backgroundImage: fields.image({
       label: 'Imagen de fondo',
-      defaultValue: '/images/backgrounds/forest.svg',
+      scope: 'common',
     }),
     accentColor: fields.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
@@ -61,12 +61,9 @@ export default defineTemplate({
         <div className="relative z-10 flex size-full flex-col px-19 py-[70px]">
           <header className="flex items-center justify-between pr-9">
             <div className="flex items-center gap-4">
-              <span
-                className="flex size-12 items-center justify-center rounded-full text-[18px] font-black text-[#092118]"
-                style={{ backgroundColor: accentColor }}
-              >
-                SW
-              </span>
+              {/* Shared project asset from public/assets. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/logos/framekit.svg" alt="" className="size-12 rounded-full" />
               <div>
                 <p className="text-[18px] font-black tracking-[0.14em] uppercase">
                   Silver Wolf

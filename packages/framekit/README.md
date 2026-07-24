@@ -18,10 +18,10 @@ FrameKit uses the current directory as the application root:
 }
 ```
 
-`generate` discovers `src/templates/**/template.tsx` and writes
-`src/generated/framekit/templates.ts`. `check` validates every template before
-`build` runs Next.js. Production uses Next.js standalone output under
-`.framekit/next`.
+`generate` discovers `src/templates/**/template.tsx`, scans each template's
+`assets` directory, and writes `src/generated/framekit/templates.ts`.
+`check` validates every template before `build` runs Next.js. Production uses
+Next.js standalone output under `.framekit/next`.
 
 ## Inline templates
 
@@ -93,6 +93,11 @@ export default defineTemplate({ ...templateBase, render: Artwork })
 
 Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
+
+Use `fields.image()` for repository-backed images. Variant files use the field
+key as their filename under `assets/<locale>`; shared files live under
+`assets/common`. Files under `public/assets` remain explicit URLs shared by all
+templates. Studio can replace template images through `framekit dev`.
 
 ## Public entry points
 

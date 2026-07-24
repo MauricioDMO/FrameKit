@@ -4,6 +4,7 @@ import type { Duplex } from 'node:stream'
 import next from 'next'
 
 import { writeTemplateModule } from '../codegen/write-template-module'
+import { handleAssetUpload } from './asset-upload'
 import { watchTemplates, type TemplateWatcher } from './watch-templates'
 
 export interface DevServerOptions {
@@ -118,6 +119,14 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     const handler = app.getRequestHandler()
     const upgradeHandler = app.getUpgradeHandler()
     httpServer = createServer((request, response) => {
+      const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
+      if (pathname === '/__framekit/assets') {
+        void handleAssetUpload(request, response, {
+          projectRoot: options.projectRoot,
+          regenerate: generate,
+        })
+        return
+      }
       void handler(request, response)
     })
 

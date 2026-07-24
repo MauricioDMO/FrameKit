@@ -5,6 +5,7 @@ export default defineTemplate({
   height: 800,
   fields: {
     title: fields.text({ label: 'Title', required: true }),
+    hero: fields.image({ label: 'Hero image', scope: 'common' }),
   },
   content: {
     es: {
@@ -37,6 +38,7 @@ export default defineTemplate({
           value={data.title}
           style={{ marginTop: 28, maxWidth: 800, fontSize: 72, lineHeight: 1.05 }}
         />
+        {data.hero && <img src={data.hero} alt="" style={{ marginTop: 36, width: 180, height: 120, objectFit: 'cover', borderRadius: 18 }} />}
         <p style={{ marginTop: 40, fontSize: 20, opacity: 0.75 }}>
           Edit this file to create your first template.
         </p>

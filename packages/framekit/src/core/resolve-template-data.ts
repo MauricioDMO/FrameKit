@@ -1,10 +1,13 @@
-import type { TemplateDefinition } from '../types'
+import type { TemplateAssetManifest, TemplateBase } from '../types'
 import { getDefaultValues } from './get-default-values'
 
+const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
+
 export function resolveTemplateData(
-  definition: TemplateDefinition,
+  definition: TemplateBase,
   locale: string,
   edits: Record<string, string>,
+  assets: TemplateAssetManifest = emptyAssets,
 ): Record<string, string> {
   const result = getDefaultValues(definition.fields)
 
@@ -21,6 +24,16 @@ export function resolveTemplateData(
     if (key !== 'language' && typeof edits[key] === 'string') {
       result[key] = edits[key]
     }
+  }
+
+  for (const [key, field] of Object.entries(definition.fields)) {
+    if (field.kind !== 'image') continue
+
+    const source = field.scope === 'common'
+      ? assets.common[key]
+      : assets.variants[locale]?.[key] ?? assets.common[key]
+
+    if (source) result[key] = source
   }
 
   return result

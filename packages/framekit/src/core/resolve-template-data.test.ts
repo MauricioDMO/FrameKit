@@ -62,4 +62,27 @@ describe('resolveTemplateData', () => {
       accentColor: '',
     })
   })
+
+  it('resolves image fields from variant assets before common assets', () => {
+    const definition = defineTemplate({
+      width: 100,
+      height: 100,
+      fields: {
+        hero: fields.image({ label: 'Hero' }),
+        background: fields.image({ label: 'Background', scope: 'common' }),
+      },
+      content: { en: { language: 'English' }, es: { language: 'Spanish' } },
+      render: () => null,
+    })
+
+    expect(resolveTemplateData(definition, 'en', {}, {
+      common: { hero: '/common/hero.svg', background: '/common/background.svg' },
+      variants: { en: { hero: '/en/hero.webp' } },
+    })).toEqual({ hero: '/en/hero.webp', background: '/common/background.svg' })
+
+    expect(resolveTemplateData(definition, 'es', {}, {
+      common: { hero: '/common/hero.svg', background: '/common/background.svg' },
+      variants: {},
+    })).toEqual({ hero: '/common/hero.svg', background: '/common/background.svg' })
+  })
 })

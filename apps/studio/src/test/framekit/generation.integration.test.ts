@@ -48,7 +48,7 @@ describe('template generation integration', () => {
 
       expect(await readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).toBe(`/* Archivo generado automáticamente. No modificar. */
 
-import type { TemplateDefinition } from '@mauriciodmo/framekit'
+import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
 
 type TemplateLoader = () => Promise<{
   default: TemplateDefinition
@@ -59,23 +59,26 @@ export const templates = [
     slug: "branding/social/square",
     title: "Square",
     segments: ["branding","social","square"],
+    assets: {"common":{},"variants":{}},
     load: () => import("../../templates/branding/social/square/template"),
   },
   {
     slug: "product/launch",
     title: "Launch",
     segments: ["product","launch"],
+    assets: {"common":{},"variants":{}},
     load: () => import("../../templates/product/launch/template"),
   }
 ] satisfies Array<{
   slug: string
   title: string
   segments: string[]
+  assets: TemplateAssetManifest
   load: TemplateLoader
 }>
 
 export const templateManifest = templates.map(
-  ({ load: _, ...metadata }) => metadata,
+  ({ load: _, assets: __, ...metadata }) => metadata,
 )
 
 export const templateRegistry: Record<string, TemplateLoader> =

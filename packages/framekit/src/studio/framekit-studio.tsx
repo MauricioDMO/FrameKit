@@ -9,13 +9,16 @@ import { validateTemplateDefinition } from '../core/validation'
 import { FrameKitEditor } from '../editor/framekit-editor'
 import { FrameKitNavigation } from '../editor/framekit-navigation'
 import { manifestToNavigation } from '../editor/navigation'
-import type { TemplateDefinition } from '../types'
+import type { TemplateAssetManifest, TemplateDefinition } from '../types'
 import { useFrameKitLocale } from './locale-provider'
+
+const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
 export interface FrameKitStudioTemplate {
   slug: string
   title: string
   segments: string[]
+  assets?: TemplateAssetManifest
   load: () => Promise<{ default: TemplateDefinition }>
 }
 
@@ -23,7 +26,7 @@ type LoadState =
   | { status: 'loading' }
   | { status: 'error', message?: string }
   | { status: 'invalid' }
-  | { status: 'ready', definition: TemplateDefinition }
+  | { status: 'ready', definition: TemplateDefinition, assets: TemplateAssetManifest }
 
 export function FrameKitStudio({ templates }: { templates: readonly FrameKitStudioTemplate[] }) {
   const { slug: segments } = useParams<{ slug?: string[] }>()
@@ -47,7 +50,7 @@ export function FrameKitStudio({ templates }: { templates: readonly FrameKitStud
     template.load().then((module) => {
       if (cancelled) return
       const result = validateTemplateDefinition(module.default)
-      setLoadState(result.success ? { status: 'ready', definition: result.definition } : { status: 'invalid' })
+      setLoadState(result.success ? { status: 'ready', definition: result.definition, assets: template.assets ?? emptyAssets } : { status: 'invalid' })
     }).catch((error: unknown) => {
       if (!cancelled) setLoadState({ status: 'error', message: String(error) })
     })
@@ -64,7 +67,7 @@ export function FrameKitStudio({ templates }: { templates: readonly FrameKitStud
   let content: React.ReactNode
   if (!slug) content = <EmptyState />
   else if (loadState.status === 'loading') content = <LoadingState label={messages.editor.loadingLabel} />
-  else if (loadState.status === 'ready') content = <FrameKitEditor key={slug} slug={slug} definition={loadState.definition} messages={messages.editor} />
+  else if (loadState.status === 'ready') content = <FrameKitEditor key={slug} slug={slug} definition={loadState.definition} assets={loadState.assets} messages={messages.editor} />
   else if (loadState.status === 'invalid') content = <MessageState>{messages.editor.invalidDefinition}</MessageState>
   else if (loadState.message) content = <MessageState>{loadState.message}</MessageState>
   else content = <NotFoundState />

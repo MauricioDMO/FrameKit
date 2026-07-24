@@ -65,6 +65,7 @@ Every field needs a human-readable `label`. Shared options are `placeholder`, `r
 | `fields.number` | Counts, prices, percentages, or bounded numeric values | Add `min` and `max` when applicable. `data` still receives a string; parse it before arithmetic. |
 | `fields.color` | Editable solid colors | A non-empty value must be `#RRGGBB`. |
 | `fields.url` | Image sources, links, or other URLs | Accepts HTTP(S) absolute URLs and root-relative `/path` values only. |
+| `fields.image` | Project-backed template images | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. |
 
 Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Values resolve in this order: field default, selected locale content, then Studio edits.
 
@@ -86,6 +87,10 @@ src/templates/social-card/
   components/
   assets/
 ```
+
+Use `assets/common` for images shared by every variant and `assets/<variant>` for
+images whose basename matches an image field key. Project-wide assets belong in
+`public/assets/<category>` and use explicit `/assets/...` URLs.
 
 `definition.ts` owns dimensions, fields, and locales. `artwork.tsx` receives the inferred render props. `template.tsx` combines both and remains the only default-exporting `template.tsx` in this template.
 

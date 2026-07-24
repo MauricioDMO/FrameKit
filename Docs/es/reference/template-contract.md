@@ -65,6 +65,24 @@ Las rutas relativas y otros esquemas de URL (por ejemplo, `ftp://`, `javascript:
 fields.url({ label: 'Link URL', placeholder: 'https://example.com' })
 ```
 
+### `image`
+
+Un campo de imagen resuelve un asset del proyecto como una cadena URL para el
+navegador. El alcance predeterminado es `variant`; usa `scope: 'common'` para
+una imagen compartida por todas las variantes de contenido.
+
+```typescript
+fields.image({ label: 'Hero image' })
+fields.image({ label: 'Background', scope: 'common' })
+```
+
+Los archivos por variante usan la key del field como nombre base:
+
+```text
+src/templates/social-card/assets/en/hero.webp
+src/templates/social-card/assets/common/background.webp
+```
+
 ## Requisito
 
 Los campos son **requeridos por defecto**. Configurar `required: false` hace que un campo sea opcional.
@@ -81,6 +99,10 @@ Cuando una plantilla se renderiza, los valores de los campos se resuelven a trav
 1. **`defaultValue` del campo**: La opción `defaultValue` del campo, o `''` si no está configurada.
 2. **Valores de locale de contenido**: Valores del objeto `content` de la plantilla para el locale seleccionado.
 3. **Ediciones del usuario**: Valores que el usuario ha editado en el editor de Studio, que sobrescriben todo lo demás.
+
+Para campos de imagen, un asset de la variante tiene prioridad, seguido por un
+asset común. Si no existe un asset del proyecto, se usa la resolución normal de
+valor predeterminado, contenido y edición del usuario.
 
 Esto significa que las ediciones del usuario tienen precedencia sobre el contenido del locale, que tiene precedencia sobre los valores por defecto de los campos.
 

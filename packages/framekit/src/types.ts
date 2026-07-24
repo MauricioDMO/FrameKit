@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 
-export type TemplateFieldKind = 'text' | 'textarea' | 'number' | 'color' | 'url'
+export type TemplateFieldKind = 'text' | 'textarea' | 'number' | 'color' | 'url' | 'image'
+
+export type ImageFieldScope = 'common' | 'variant'
 
 export interface BaseFieldDescriptor {
   label: string
@@ -31,12 +33,23 @@ export interface NumberFieldDescriptor extends BaseFieldDescriptor {
   max?: number
 }
 
+export interface ImageFieldDescriptor extends BaseFieldDescriptor {
+  kind: 'image'
+  scope?: ImageFieldScope
+}
+
 export type FieldDescriptor =
   | TextFieldDescriptor
   | TextareaFieldDescriptor
   | ColorFieldDescriptor
   | UrlFieldDescriptor
   | NumberFieldDescriptor
+  | ImageFieldDescriptor
+
+export interface TemplateAssetManifest {
+  common: Record<string, string>
+  variants: Record<string, Record<string, string>>
+}
 
 export type TemplateFields = Record<string, FieldDescriptor>
 
@@ -87,6 +100,7 @@ export interface TemplateRenderProps<
   Definition extends TemplateBase = TemplateDefinition,
 > {
   data: { -readonly [K in keyof Definition['fields']]: string }
+  assets: TemplateAssetManifest
   locale: keyof Definition['content'] & string
   width: Definition['width']
   height: Definition['height']

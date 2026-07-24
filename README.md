@@ -65,7 +65,8 @@ Studio renders this React node in the preview and exports a PNG named after the 
 ## Current capabilities
 
 - Typed templates with `defineTemplate` or reusable `defineTemplateBase` definitions.
-- Editable `text`, `textarea`, `number`, `color`, and `url` fields with defaults and validation.
+- Editable `text`, `textarea`, `number`, `color`, `url`, and project-backed `image` fields with defaults and validation.
+- Template-local assets under `src/templates/**/assets`, common and variant asset resolution, and shared `public/assets` files.
 - Arbitrary content variants such as `en`, `es`, or product-specific variants.
 - Markdown rendering for inline text formatting and basic lists.
 - Template discovery under `src/templates/**/template.tsx` and generated registries.
@@ -77,7 +78,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 
 - Beta software: APIs and generated project details may change between releases.
 - Export currently supports PNG only. There is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
-- Studio stores edits in the browser's `localStorage`; there is no account, server sync, or collaboration layer.
+- Studio stores text and field references in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.
 - The Studio interface is localized to English and Spanish. Template content can define its own locale keys.
 - The package is ESM-only and does not provide CommonJS exports.

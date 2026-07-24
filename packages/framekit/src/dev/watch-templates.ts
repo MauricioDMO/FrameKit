@@ -13,16 +13,20 @@ export function watchTemplates(options: {
 }): TemplateWatcher {
   const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')
   const watcher: FSWatcher = chokidar.watch(templatesDirectory, { ignoreInitial: true })
+  const isAssetPath = (filePath: string) => path.relative(templatesDirectory, filePath).split(path.sep).includes('assets')
 
   watcher.on('add', (filePath) => {
-    if (path.basename(filePath) === 'template.tsx') {
+    if (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath)) {
       void options.onStructureChange()
     }
   })
   watcher.on('unlink', (filePath) => {
-    if (path.basename(filePath) === 'template.tsx') {
+    if (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath)) {
       void options.onStructureChange()
     }
+  })
+  watcher.on('change', (filePath) => {
+    if (isAssetPath(filePath)) void options.onStructureChange()
   })
   watcher.on('addDir', options.onStructureChange)
   watcher.on('unlinkDir', options.onStructureChange)

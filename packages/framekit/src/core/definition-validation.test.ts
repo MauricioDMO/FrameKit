@@ -36,6 +36,8 @@ describe('validateTemplateDefinition', () => {
     ['non-finite maximum', { kind: 'number', label: 'Count', max: NaN }, 'fields.title.max must be a finite number'],
     ['reversed limits', { kind: 'number', label: 'Count', min: 5, max: 4 }, 'fields.title.min must be less than or equal to max'],
     ['limits on non-number', { kind: 'text', label: 'Title', min: 1 }, 'fields.title cannot define min or max'],
+    ['invalid image scope', { kind: 'image', label: 'Image', scope: 'locale' }, 'fields.title.scope is invalid'],
+    ['scope on non-image', { kind: 'text', label: 'Title', scope: 'common' }, 'fields.title.scope is only valid for image fields'],
   ])('rejects %s descriptors', (_name, field, error) => {
     expect(validateTemplateDefinition({
       ...validDefinition(),

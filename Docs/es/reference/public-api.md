@@ -12,11 +12,11 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `defineTemplate`             | Define y valida una plantilla con campos, contenido adaptado a la configuración regional y una función de renderizado                                                                                                           |
 | `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
-| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`)                                                                                           |
+| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`, `fields.image`)                                                                            |
 | `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
-| `resolveTemplateData`        | `resolveTemplateData(definition: TemplateDefinition, locale: string, edits: Record<string, string>): Record<string, string>`; aplica valores predeterminados -> contenido de la configuración regional -> ediciones del usuario |
+| `resolveTemplateData`        | `resolveTemplateData(definition, locale, edits, assets?)`; aplica assets de imagen y luego valores predeterminados -> contenido -> ediciones del usuario               |
 | `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                                                                                                                             |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los valores predeterminados de los campos                                                                                           |
 
@@ -24,7 +24,7 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 
 | Tipo                          | Descripción                                                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"textarea"` \| `"color"` \| `"url"` \| `"number"` |
+| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"textarea"` \| `"color"` \| `"url"` \| `"number"` \| `"image"` |
 | `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
 | `TextFieldDescriptor`         | Descriptor para campos de texto                                                                                |
@@ -32,6 +32,8 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 | `ColorFieldDescriptor`        | Descriptor para campos de color                                                                                |
 | `UrlFieldDescriptor`          | Descriptor para campos de URL                                                                                  |
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
+| `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
+| `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
 | `TemplateBase`                | Tipo base para una plantilla que contiene definiciones de campos                                               |
 | `TemplateDefinition`          | Definición completa de plantilla que combina la estructura base con la configuración                           |
 | `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado de una plantilla                                               |

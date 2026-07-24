@@ -1,3 +1,5 @@
 node_modules
 .next
 .framekit
+public/__framekit
+src/generated/framekit

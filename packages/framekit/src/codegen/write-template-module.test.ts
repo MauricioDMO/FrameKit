@@ -94,10 +94,12 @@ describe('writeTemplateModule', () => {
       const firstTemplate = path.join(templatesRoot, 'social', 'campaign')
       const secondTemplate = path.join(templatesRoot, 'marketing', 'email', 'launch')
       await mkdir(path.join(firstTemplate, 'helpers'), { recursive: true })
+      await mkdir(path.join(firstTemplate, 'assets', 'common'), { recursive: true })
       await mkdir(path.join(templatesRoot, 'empty', 'category'), { recursive: true })
       await mkdir(secondTemplate, { recursive: true })
       await writeFile(path.join(firstTemplate, 'template.tsx'), '')
       await writeFile(path.join(firstTemplate, 'helpers', 'template.tsx'), '')
+      await writeFile(path.join(firstTemplate, 'assets', 'common', 'logo.svg'), '<svg />')
       await writeFile(path.join(secondTemplate, 'template.tsx'), '')
 
       await expect(writeTemplateModule({ projectRoot: root })).resolves.toEqual([
@@ -117,7 +119,7 @@ describe('writeTemplateModule', () => {
 
       await expect(readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).resolves.toBe(`/* Archivo generado automáticamente. No modificar. */
 
-import type { TemplateDefinition } from '@mauriciodmo/framekit'
+import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
 
 type TemplateLoader = () => Promise<{
   default: TemplateDefinition
@@ -128,28 +130,32 @@ export const templates = [
     slug: "marketing/email/launch",
     title: "Launch",
     segments: ["marketing","email","launch"],
+    assets: {"common":{},"variants":{}},
     load: () => import("../../templates/marketing/email/launch/template"),
   },
   {
     slug: "social/campaign",
     title: "Campaign",
     segments: ["social","campaign"],
+    assets: {"common":{"logo":"/__framekit/templates/social/campaign/common/logo.svg"},"variants":{}},
     load: () => import("../../templates/social/campaign/template"),
   }
 ] satisfies Array<{
   slug: string
   title: string
   segments: string[]
+  assets: TemplateAssetManifest
   load: TemplateLoader
 }>
 
 export const templateManifest = templates.map(
-  ({ load: _, ...metadata }) => metadata,
+  ({ load: _, assets: __, ...metadata }) => metadata,
 )
 
 export const templateRegistry: Record<string, TemplateLoader> =
   Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
+      await expect(readFile(path.join(root, 'public', '__framekit', 'templates', 'social', 'campaign', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg />')
     } finally {
       await rm(root, { recursive: true, force: true })
     }

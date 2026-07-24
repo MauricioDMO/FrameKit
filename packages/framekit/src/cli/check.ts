@@ -2,13 +2,19 @@ import { createRequire } from 'node:module'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
+import { findTemplateAssets } from '../discovery/find-assets'
 import type { DiscoveredTemplate } from '../discovery/types'
+import type { TemplateAssetManifest } from '../types'
 import { generate } from './generate'
 import { runChild } from './run-child'
 
 const require = createRequire(import.meta.url)
 
-function createCheckSource(templates: readonly DiscoveredTemplate[], checkFile: string): string {
+function createCheckSource(
+  templates: readonly DiscoveredTemplate[],
+  checkFile: string,
+  assetsBySlug: Readonly<Record<string, TemplateAssetManifest>>,
+): string {
   const imports = templates.map((template, index) => {
     const templateFile = path.join(template.absolutePath, 'template.tsx')
     let specifier = path.relative(path.dirname(checkFile), templateFile).replaceAll(path.sep, '/')
@@ -16,7 +22,7 @@ function createCheckSource(templates: readonly DiscoveredTemplate[], checkFile: 
     return `const template${index} = (await import(${JSON.stringify(specifier)})).default`
   })
   const entries = templates.map((template, index) =>
-    `  [${JSON.stringify(path.join(template.absolutePath, 'template.tsx'))}, template${index}],`
+    `  [${JSON.stringify(path.join(template.absolutePath, 'template.tsx'))}, template${index}, ${JSON.stringify(assetsBySlug[template.slug])}],`
   )
 
   return `${imports.join('\n')}
@@ -28,7 +34,7 @@ ${entries.join('\n')}
 
 let failed = false
 
-for (const [templatePath, definition] of templates) {
+for (const [templatePath, definition, assets] of templates) {
   const definitionResult = validateTemplateDefinition(definition)
 
   if (!definitionResult.success) {
@@ -38,7 +44,7 @@ for (const [templatePath, definition] of templates) {
   }
 
   for (const locale of Object.keys(definitionResult.definition.content)) {
-    const data = resolveTemplateData(definitionResult.definition, locale, {})
+    const data = resolveTemplateData(definitionResult.definition, locale, {}, assets)
     const errors = validateTemplateData(definitionResult.definition, data)
 
     for (const [field, error] of Object.entries(errors)) {
@@ -55,13 +61,19 @@ if (failed) process.exitCode = 1
 
 export async function check(projectRoot: string): Promise<number> {
   const templates = await generate(projectRoot)
+  const assetsBySlug = Object.fromEntries(
+    await Promise.all(templates.map(async (template) => [
+      template.slug,
+      (await findTemplateAssets(template.absolutePath, template.slug)).manifest,
+    ] as const)),
+  )
   const framekitDirectory = path.join(projectRoot, '.framekit')
   await mkdir(framekitDirectory, { recursive: true })
   const temporaryDirectory = await mkdtemp(path.join(framekitDirectory, 'check-'))
   const checkFile = path.join(temporaryDirectory, 'templates.mts')
 
   try {
-    await writeFile(checkFile, createCheckSource(templates, checkFile), 'utf8')
+    await writeFile(checkFile, createCheckSource(templates, checkFile, assetsBySlug), 'utf8')
     return await runChild(require.resolve('tsx/cli'), [checkFile], projectRoot)
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true })

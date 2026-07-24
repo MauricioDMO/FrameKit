@@ -65,6 +65,24 @@ Relative paths and other URL schemes (e.g., `ftp://`, `javascript:`) are rejecte
 fields.url({ label: 'Link URL', placeholder: 'https://example.com' })
 ```
 
+### `image`
+
+An image field resolves a project asset to a browser URL string. The default
+scope is `variant`; use `scope: 'common'` for an image shared by every content
+variant.
+
+```typescript
+fields.image({ label: 'Hero image' })
+fields.image({ label: 'Background', scope: 'common' })
+```
+
+Variant files use the field key as their basename:
+
+```text
+src/templates/social-card/assets/en/hero.webp
+src/templates/social-card/assets/common/background.webp
+```
+
 ## Requiredness
 
 Fields are **required by default**. Setting `required: false` makes a field optional.
@@ -81,6 +99,10 @@ When a template renders, field values are resolved through a specific order. Thi
 1. **Field `defaultValue`**: The field's `defaultValue` option, or `''` if not set.
 2. **Content locale values**: Values from the template's `content` object for the selected locale.
 3. **User edits**: Values the user has edited in the Studio editor, which override everything else.
+
+For image fields, a matching variant asset takes precedence, followed by a
+matching common asset. If no project asset exists, the normal default, locale,
+and user-edit resolution is used.
 
 This means user edits take precedence over locale content, which takes precedence over field defaults.
 

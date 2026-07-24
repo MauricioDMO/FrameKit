@@ -3,8 +3,9 @@ import { textarea } from './textarea'
 import { color } from './color'
 import { url } from './url'
 import { number } from './number'
+import { image } from './image'
 
-export const fields = { text, textarea, color, url, number }
+export const fields = { text, textarea, color, url, number, image }
 
 export type {
   TextFieldDescriptor,
@@ -12,4 +13,5 @@ export type {
   ColorFieldDescriptor,
   UrlFieldDescriptor,
   NumberFieldDescriptor,
+  ImageFieldDescriptor,
 } from '../../types'

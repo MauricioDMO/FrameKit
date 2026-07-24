@@ -26,6 +26,10 @@ const messages: EditorMessages = {
   errorNumberTooLarge: 'Debe ser como maximo {max}',
   errorInvalidUrl: 'URL invalida',
   errorInvalidColor: 'Color hexadecimal invalido',
+  imageSelect: 'Subir imagen',
+  imageUploading: 'Subiendo',
+  imageLoadError: 'No se pudo cargar el asset',
+  imageUploadError: 'No se pudo subir el asset',
 }
 
 function createDefinition() {

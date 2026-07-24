@@ -10,9 +10,10 @@ interface EditorControlsProps {
   errors: Record<string, string>
   onLocaleChange: (locale: string) => void
   onFieldChange: (key: string, value: string) => void
+  onImageUpload?: (key: string, file: File, scope: 'common' | 'variant') => Promise<void>
 }
 
-export function EditorControls({ definition, messages, selectedLocale, data, errors, onLocaleChange, onFieldChange }: EditorControlsProps) {
+export function EditorControls({ definition, messages, selectedLocale, data, errors, onLocaleChange, onFieldChange, onImageUpload }: EditorControlsProps) {
   return (
     <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
       <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
@@ -28,7 +29,14 @@ export function EditorControls({ definition, messages, selectedLocale, data, err
         </label>
         {Object.entries(definition.fields).map(([key, field]) => (
           <div key={key} data-field-key={key}>
-            <EditorField field={{ key, type: field.kind, required: field.required !== false, min: field.kind === 'number' ? field.min : undefined, max: field.kind === 'number' ? field.max : undefined, label: field.label, placeholder: field.placeholder }} value={data[key] ?? ''} onChange={(value) => onFieldChange(key, value)} error={errors[key]} />
+            <EditorField
+              field={{ key, type: field.kind, required: field.required !== false, min: field.kind === 'number' ? field.min : undefined, max: field.kind === 'number' ? field.max : undefined, scope: field.kind === 'image' ? field.scope : undefined, label: field.label, placeholder: field.placeholder }}
+              value={data[key] ?? ''}
+              onChange={(value) => onFieldChange(key, value)}
+              error={errors[key]}
+              imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError, uploadError: messages.imageUploadError }}
+              onImageUpload={field.kind === 'image' && onImageUpload ? (file) => onImageUpload(key, file, field.scope ?? 'variant') : undefined}
+            />
           </div>
         ))}
       </div>

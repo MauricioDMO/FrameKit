@@ -65,7 +65,8 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 ## Funciones actuales
 
 - Plantillas tipadas con `defineTemplate` o definiciones reutilizables mediante `defineTemplateBase`.
-- Campos editables `text`, `textarea`, `number`, `color` y `url`, con valores predeterminados y validación.
+- Campos editables `text`, `textarea`, `number`, `color`, `url` e `image`, con valores predeterminados y validación.
+- Assets locales por plantilla en `src/templates/**/assets` y assets globales compartidos en `public/assets`.
 - Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
 - Renderizado Markdown para formato de texto en línea y listas básicas.
 - Descubrimiento de plantillas en `src/templates/**/template.tsx` y registros generados.
@@ -77,7 +78,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 
 - Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
 - La exportación actual solo admite PNG. No hay renderizado del lado del servidor, exportación a GIF/video, otros formatos, control de escala ni DPI.
-- Studio guarda los cambios en el `localStorage` del navegador; no hay cuentas, sincronización con servidor ni colaboración.
+- Studio guarda los cambios de contenido en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
 - La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias claves de idioma.
 - El paquete solo publica módulos ESM; no ofrece exports CommonJS.

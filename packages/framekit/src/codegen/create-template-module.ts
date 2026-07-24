@@ -1,6 +1,9 @@
 import path from 'node:path'
 
 import type { DiscoveredTemplate } from '../discovery/types'
+import type { TemplateAssetManifest } from '../types'
+
+const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
 function importPathForTemplate(
   template: DiscoveredTemplate,
@@ -13,7 +16,10 @@ function importPathForTemplate(
 
 export function createTemplateModule(
   templates: readonly DiscoveredTemplate[],
-  options: { outputDirectory: string },
+  options: {
+    outputDirectory: string
+    assetsBySlug?: Readonly<Record<string, TemplateAssetManifest>>
+  },
 ): string {
   const entries = templates
     .map(
@@ -21,6 +27,7 @@ export function createTemplateModule(
     slug: ${JSON.stringify(template.slug)},
     title: ${JSON.stringify(template.title)},
     segments: ${JSON.stringify(template.segments)},
+    assets: ${JSON.stringify(options.assetsBySlug?.[template.slug] ?? emptyAssets)},
     load: () => import(${JSON.stringify(importPathForTemplate(template, options.outputDirectory))}),
   }`,
     )
@@ -28,7 +35,7 @@ export function createTemplateModule(
 
   return `/* Archivo generado automáticamente. No modificar. */
 
-import type { TemplateDefinition } from '@mauriciodmo/framekit'
+import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
 
 type TemplateLoader = () => Promise<{
   default: TemplateDefinition
@@ -40,11 +47,12 @@ ${entries}
   slug: string
   title: string
   segments: string[]
+  assets: TemplateAssetManifest
   load: TemplateLoader
 }>
 
 export const templateManifest = templates.map(
-  ({ load: _, ...metadata }) => metadata,
+  ({ load: _, assets: __, ...metadata }) => metadata,
 )
 
 export const templateRegistry: Record<string, TemplateLoader> =

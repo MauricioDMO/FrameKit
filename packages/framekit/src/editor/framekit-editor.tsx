@@ -5,7 +5,7 @@ import { useRef, useState } from 'react'
 
 import { resolveTemplateData } from '../core/resolve-template-data'
 import { validateTemplateData } from '../core/validation'
-import type { TemplateDefinition } from '../types'
+import type { ImageFieldScope, TemplateAssetManifest, TemplateDefinition } from '../types'
 import { EditorControls } from './components/editor-controls'
 import { TemplatePreview } from './components/template-preview'
 import { exportTemplate } from './export-template'
@@ -16,14 +16,53 @@ import { translateValidationError } from './validation'
 interface FrameKitEditorProps {
   slug: string
   definition: TemplateDefinition
+  assets?: TemplateAssetManifest
   messages: EditorMessages
 }
 
-export function FrameKitEditor({ slug, definition, messages }: FrameKitEditorProps) {
+const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = String(reader.result)
+      const separator = result.indexOf(',')
+      resolve(separator === -1 ? result : result.slice(separator + 1))
+    }
+    reader.onerror = () => reject(reader.error ?? new Error('Could not read image'))
+    reader.readAsDataURL(file)
+  })
+}
+
+export function FrameKitEditor({ slug, definition, assets = emptyAssets, messages }: FrameKitEditorProps) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const { selectedLocale, userEdits, errors, setErrors, changeLocale, clearLocale, changeField } = useEditorState(slug, definition)
-  const resolvedData = resolveTemplateData(definition, selectedLocale, userEdits)
+  const resolvedData = resolveTemplateData(definition, selectedLocale, userEdits, assets)
+
+  async function uploadImage(key: string, file: File, scope: ImageFieldScope): Promise<void> {
+    try {
+      const response = await fetch('/__framekit/assets', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          templateSlug: slug,
+          variant: scope === 'common' ? 'common' : selectedLocale,
+          fieldKey: key,
+          filename: file.name,
+          mimeType: file.type,
+          data: await readFileAsBase64(file),
+        }),
+      })
+
+      if (!response.ok) throw new Error(`Asset upload failed with ${response.status}`)
+      window.location.reload()
+    } catch (error) {
+      setErrors((current) => ({ ...current, [key]: messages.imageUploadError }))
+      throw error
+    }
+  }
 
   async function exportPng() {
     const element = exportRef.current
@@ -62,10 +101,10 @@ export function FrameKitEditor({ slug, definition, messages }: FrameKitEditorPro
         </div>
       </header>
       <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[300px_1fr] xl:overflow-hidden">
-        <EditorControls definition={definition} messages={messages} selectedLocale={selectedLocale} data={resolvedData} errors={errors} onLocaleChange={changeLocale} onFieldChange={changeField} />
+        <EditorControls definition={definition} messages={messages} selectedLocale={selectedLocale} data={resolvedData} errors={errors} onLocaleChange={changeLocale} onFieldChange={changeField} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
-            {definition.render({ data: resolvedData, locale: selectedLocale, width: definition.width, height: definition.height })}
+            {definition.render({ data: resolvedData, assets, locale: selectedLocale, width: definition.width, height: definition.height })}
           </div>
         </TemplatePreview>
       </div>

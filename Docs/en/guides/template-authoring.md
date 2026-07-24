@@ -16,6 +16,8 @@ This means lowercase letters, numbers, and hyphens only — no uppercase, no und
 
 **Template boundaries:** When FrameKit finds a `template.tsx` inside a directory, it treats that directory as a template boundary. Any subdirectories inside it are part of the template's private structure and are not scanned for additional templates. This lets you organize helper files, components, and assets alongside your template without creating nested templates.
 
+Template images belong in an `assets` directory beside `template.tsx`. Put shared images in `assets/common`; put variant images in a directory named after the content key and use the field key as the filename. Project-wide files belong in `public/assets/<category>` and use explicit `/assets/...` URLs.
+
 ## Slug Generation
 
 The slug is the path from `src/templates/` to the template directory, with segments joined by slashes. Example: `src/templates/social-cards/instagram/post` becomes `social-cards/instagram/post`.
@@ -129,7 +131,7 @@ Every template definition requires five properties:
 
 - `width` — a positive integer specifying the template output width in pixels
 - `height` — a positive integer specifying the template output height in pixels
-- `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, or url)
+- `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, url, or image)
 - `content` — a record with at least one locale entry, where each entry contains a `language` string and partial field values
 - `render` — a function that receives typed props and returns a React node
 
@@ -150,16 +152,32 @@ In this example, the `locale` type is `'fjord' | 'moon'`, not a global language 
 
 ## Render Props
 
-The `render` function receives a single object with four properties:
+The `render` function receives a single object with five properties:
 
 - `data` — an object containing all field keys as strings after resolution. In Studio, values are applied in this order: field defaults, locale content, then user edits.
 - `locale` — the key of the currently selected locale, typed as a union of all content keys.
 - `width` — the template width as a literal type.
 - `height` — the template height as a literal type.
+- `assets` — generated URLs for common and variant template assets.
+
+An image field resolves to a URL string. Variant fields use `assets/<locale>/<field-key>.*`; common fields use `assets/common/<field-key>.*`.
+
+```tsx
+fields: {
+  hero: fields.image({ label: 'Hero image' }),
+  background: fields.image({ label: 'Background', scope: 'common' }),
+},
+```
+
+```text
+src/templates/social-card/assets/
+├── common/background.webp
+└── en/hero.webp
+```
 
 ## Auto-Regeneration
 
-When running `framekit dev`, FrameKit watches the `src/templates/` directory for structural changes. Adding or removing a directory or `template.tsx` file triggers template re-registration. Editing the content of an existing `template.tsx` file relies on Next.js Hot Module Replacement (HMR) to update the running instance.
+When running `framekit dev`, FrameKit watches the `src/templates/` directory for structural changes and asset changes. Adding, removing, or replacing a template asset regenerates the asset manifest. Editing the content of an existing `template.tsx` file relies on Next.js Hot Module Replacement (HMR) to update the running instance.
 
 ## Reserved Keys
 
