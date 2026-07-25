@@ -29,6 +29,34 @@ Validate from the repository root unless testing an isolated consumer. The root 
 
 4. Report the commands run, tarball paths, results, and any generated artifacts. Do not claim browser end-to-end, visual regression, cross-platform, watcher, production start, or asset-copy coverage from the automated suite.
 
+## Release And Publish
+
+Follow `Docs/en/development/release.md` for the canonical release procedure. Every release must have an annotated git tag; do not publish an untagged version. Before publishing:
+
+1. Update the versions in `packages/framekit/package.json` and `packages/create-framekit/package.json`, plus the `@mauriciodmo/framekit` dependency in `packages/create-framekit/template/package.json`.
+2. Run the complete release gate above, including both tarball builds and the manual smoke test.
+3. Commit the version changes and create an annotated tag:
+
+   ```sh
+   git commit -am "chore(release): publish <version>"
+   git tag -a v<version> -m "Release v<version>"
+   ```
+
+4. Verify the npm session and publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
+
+   ```sh
+   npm whoami
+   pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
+   pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
+   ```
+
+   Use the appropriate dist-tag, such as `alpha`, for a prerelease.
+5. Push the commit and tag only after both publish commands succeed:
+
+   ```sh
+   git push origin main --follow-tags
+   ```
+
 ## Focused Validation
 
 Use focused package tests while iterating; run the full release gate before a publish attempt.

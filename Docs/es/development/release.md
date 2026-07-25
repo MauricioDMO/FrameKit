@@ -22,7 +22,7 @@ Publica los dos paquetes desde la raíz del repositorio con pnpm. No uses `npm p
    ```
 
 3. Realiza la [prueba de humo de los tarballs](testing-and-distribution.md#prueba-de-humo-del-tarball-manual).
-4. Confirma el cambio de versión y crea un tag anotado, por ejemplo:
+4. Confirma siempre el cambio de versión y crea un tag anotado de Git antes de publicar, por ejemplo:
 
    ```sh
    git commit -am "chore(release): publish 0.5.0"

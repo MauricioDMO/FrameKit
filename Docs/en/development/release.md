@@ -22,7 +22,7 @@ Publish both packages from the repository root with pnpm. Do not use `npm publis
    ```
 
 3. Perform the [tarball smoke test](testing-and-distribution.md#tarball-smoke-test-manual).
-4. Commit the version change and create an annotated tag, for example:
+4. Always commit the version change and create an annotated git tag before publishing, for example:
 
    ```sh
    git commit -am "chore(release): publish 0.5.0"
