@@ -12,19 +12,21 @@ All commands use `process.cwd()` as the project root. There is no `--help`, `--v
 
 ## `create-framekit`
 
-`create-framekit` is the project scaffolding CLI distributed as `@mauriciodmo/create-framekit`. It accepts an optional project directory:
+`create-framekit` is the project scaffolding CLI distributed as `@mauriciodmo/create-framekit`. It accepts an optional project directory and the `-y` and `-n` flags:
 
 ```sh
-create-framekit [project-directory]
+create-framekit [project-directory] [-y|-n]
 ```
 
 The CLI copies the starter template into a new directory, optionally installs dependencies, generates the template catalog, and optionally initializes Git. It refuses to overwrite an existing directory, including an empty one.
 
-When no project directory is provided, it asks for one. It detects `pnpm` or `npm` from the environment and asks you to choose when detection is unavailable. The remaining prompts are:
+Without `-y` or `-n`, when no project directory is provided, it asks for one. It detects `pnpm` or `npm` from the environment and asks you to choose when detection is unavailable. The remaining prompts are:
 
 - Install dependencies? Default: yes.
 - Run `pnpm approve-builds` when using pnpm and installing dependencies? Default: yes.
 - Initialize a Git repository and create an initial commit? Default: yes.
+
+`-y` accepts all prompts and `-n` rejects them all. When either flag is used without a directory, the project is created in `./framekit`. In this mode, an undetected package manager defaults to `pnpm` without prompting. The `--y` and `--n` forms are not valid.
 
 For local repository development, build and run the CLI without publishing it:
 

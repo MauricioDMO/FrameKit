@@ -15,14 +15,40 @@ import { detectPackageManager } from './package-manager.js'
 import { createProject } from './project.js'
 import { bold, cyan, dim, green, red } from './terminal.js'
 
-const USAGE = 'Usage: create-framekit [project-directory]'
+const USAGE = 'Usage: create-framekit [project-directory] [-y|-n]'
+
+type Answer = boolean | undefined
+
+interface ParsedArgs {
+  projectName?: string
+  answer: Answer
+}
+
+function parseArgs(args: string[]): ParsedArgs {
+  let projectName: string | undefined
+  let answer: Answer
+
+  for (const arg of args) {
+    if (arg === '-y' || arg === '-n') {
+      const nextAnswer = arg === '-y'
+      if (answer !== undefined && answer !== nextAnswer) throw new Error(USAGE)
+      answer = nextAnswer
+      continue
+    }
+
+    if (arg.startsWith('-') || projectName !== undefined) throw new Error(USAGE)
+    projectName = arg.trim()
+  }
+
+  return { projectName, answer }
+}
 
 function devCommand(pm: PackageManager): string {
   return pm === 'npm' ? 'npm run dev' : 'pnpm dev'
 }
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
-  if (args.length > 1) throw new Error(USAGE)
+  const parsed = parseArgs(args)
 
   console.log()
   console.log(`${bold(cyan('FrameKit'))} ${dim('project creator')}`)
@@ -30,20 +56,23 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   console.log()
 
   const projectName =
-    args[0]?.trim() || (await promptProjectName())
+    parsed.projectName ||
+    (parsed.answer === undefined ? await promptProjectName() : 'framekit')
 
   const detected = detectPackageManager()
   const packageManager: PackageManager =
-    detected ?? (await promptPackageManager())
+    detected ??
+    (parsed.answer === undefined ? await promptPackageManager() : 'pnpm')
 
-  const installDependencies = await promptInstallDependencies()
+  const installDependencies =
+    parsed.answer ?? (await promptInstallDependencies())
 
   let runApproveBuilds = false
   if (packageManager === 'pnpm' && installDependencies) {
-    runApproveBuilds = await promptApproveBuilds()
+    runApproveBuilds = parsed.answer ?? (await promptApproveBuilds())
   }
 
-  const initGit = await promptInitGit()
+  const initGit = parsed.answer ?? (await promptInitGit())
 
   console.log()
   console.log(dim('Creating project...'))
@@ -54,7 +83,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     initGit,
   })
 
-  const displayPath = path.isAbsolute(args[0] ?? '')
+  const displayPath = path.isAbsolute(projectName)
     ? target
     : path.relative(process.cwd(), target) || '.'
 

@@ -30,7 +30,7 @@ cd my-project
 pnpm dev
 ```
 
-El creador copia un proyecto Next.js funcional, pregunta si debe instalar las dependencias, genera el registro de plantillas y puede inicializar Git. El servidor de desarrollo abre FrameKit Studio con `pnpm dev`.
+El creador copia un proyecto Next.js funcional, pregunta si debe instalar las dependencias, genera el registro de plantillas y puede inicializar Git. Usa `-y` para aceptar todas las preguntas o `-n` para rechazarlas; sin nombre en estos modos, crea la carpeta `framekit`. El servidor de desarrollo abre FrameKit Studio con `pnpm dev`.
 
 ## Ejemplo de una plantilla renderizada
 

@@ -17,11 +17,20 @@ Once `@mauriciodmo/create-framekit` is published to npm, run:
 pnpm dlx @mauriciodmo/create-framekit my-project
 ```
 
-The creator is interactive. If you do not provide a project name as an argument, it asks for one. It detects which package manager you are using (`pnpm` or `npm`) from your environment; if it cannot detect it, it asks you to choose. It then asks:
+The creator is interactive. If you do not provide a project name as an argument and do not use `-n` or `-y`, it asks for one. It detects which package manager you are using (`pnpm` or `npm`) from your environment; if it cannot detect it, it asks you to choose. It then asks:
 
 - Whether to install dependencies (default: yes).
 - If you are using **pnpm** and chose to install dependencies: whether to run `pnpm approve-builds` to approve build scripts interactively (default: yes).
 - Whether to initialize a Git repository with an initial commit (default: yes).
+
+Use `-y` to accept all prompts or `-n` to reject them all:
+
+```bash
+pnpm dlx @mauriciodmo/create-framekit -y
+pnpm dlx @mauriciodmo/create-framekit my-project -n
+```
+
+When either flag is used without a project name, the CLI creates the `framekit` directory. In that mode, an undetected package manager defaults to `pnpm` without prompting.
 
 After copying the template, if you chose to install dependencies the creator runs `pnpm install` (or `npm install`) and then `pnpm framekit generate` (or `npm exec -- framekit generate`). If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
 
@@ -29,7 +38,8 @@ The CLI prints a colored header and completion message when it runs in a termina
 
 ### Interactive options
 
-- The project name can be passed as the optional `[project-directory]` argument. If it is omitted, the CLI asks for it.
+- The project name can be passed as the optional `[project-directory]` argument. If it is omitted without `-n` or `-y`, the CLI asks for it; with either flag, it uses `framekit`.
+- `-y` accepts all prompts and `-n` rejects them all. The `--y` and `--n` forms are invalid.
 - The package manager is detected from the environment. If it cannot be detected, choose `pnpm` or `npm` interactively.
 - Dependency installation defaults to yes.
 - `pnpm approve-builds` is offered only when pnpm is selected and dependencies are installed. It defaults to yes.

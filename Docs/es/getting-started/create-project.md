@@ -17,11 +17,20 @@ Una vez que `@mauriciodmo/create-framekit` esté publicado en npm, ejecuta:
 pnpm dlx @mauriciodmo/create-framekit mi-proyecto
 ```
 
-El creador es interactivo. Si no proporcionas el nombre del proyecto como argumento, te lo pide. Detecta qué gestor de paquetes estás usando (`pnpm` o `npm`) desde tu entorno; si no puede detectarlo, te pregunta cuál elegir. Luego pregunta:
+El creador es interactivo. Si no proporcionas el nombre del proyecto como argumento y no usas `-n` ni `-y`, te lo pide. Detecta qué gestor de paquetes estás usando (`pnpm` o `npm`) desde tu entorno; si no puede detectarlo, te pregunta cuál elegir. Luego pregunta:
 
 - Si instalar las dependencias (por defecto: sí).
 - Si estás usando **pnpm** y elegiste instalar dependencias: si deseas ejecutar `pnpm approve-builds` para aprobar scripts de compilación de forma interactiva (por defecto: sí).
 - Si inicializar un repositorio Git con un commit inicial (por defecto: sí).
+
+Para aceptar todas las preguntas, usa `-y`. Para rechazarlas todas, usa `-n`:
+
+```bash
+pnpm dlx @mauriciodmo/create-framekit -y
+pnpm dlx @mauriciodmo/create-framekit mi-proyecto -n
+```
+
+Si usas cualquiera de estas banderas sin proporcionar un nombre, se crea la carpeta `framekit`. En ese modo, un gestor de paquetes no detectado usa `pnpm` sin preguntar.
 
 Después de copiar la plantilla, si elegiste instalar dependencias el creador ejecuta `pnpm install` (o `npm install`) y luego `pnpm framekit generate` (o `npm exec -- framekit generate`). Si alguno de estos pasos falla, el directorio del proyecto parcialmente creado se conserva para que puedas diagnosticar el problema.
 
@@ -29,7 +38,8 @@ La CLI muestra un encabezado y un mensaje de finalización con colores cuando se
 
 ### Opciones interactivas
 
-- El nombre del proyecto puede pasarse como el argumento opcional `[directorio-del-proyecto]`. Si se omite, la CLI lo solicita.
+- El nombre del proyecto puede pasarse como el argumento opcional `[directorio-del-proyecto]`. Si se omite sin `-n` ni `-y`, la CLI lo solicita; con cualquiera de esas banderas, usa `framekit`.
+- `-y` acepta todas las preguntas y `-n` las rechaza todas. Las formas `--y` y `--n` no son válidas.
 - El gestor de paquetes se detecta desde el entorno. Si no puede detectarse, elige interactivamente entre `pnpm` y `npm`.
 - La instalación de dependencias está activada por defecto.
 - `pnpm approve-builds` solo se ofrece cuando se selecciona pnpm y se instalan dependencias. Está activado por defecto.

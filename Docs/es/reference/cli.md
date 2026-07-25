@@ -12,19 +12,21 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto. No hay flags `-
 
 ## `create-framekit`
 
-`create-framekit` es la CLI para crear proyectos, distribuida como `@mauriciodmo/create-framekit`. Acepta un directorio de proyecto opcional:
+`create-framekit` es la CLI para crear proyectos, distribuida como `@mauriciodmo/create-framekit`. Acepta un directorio de proyecto opcional y las banderas `-y` y `-n`:
 
 ```sh
-create-framekit [directorio-del-proyecto]
+create-framekit [directorio-del-proyecto] [-y|-n]
 ```
 
 La CLI copia la plantilla inicial a un directorio nuevo, instala dependencias opcionalmente, genera el catálogo de plantillas y puede inicializar Git. No sobrescribe un directorio existente, aunque esté vacío.
 
-Si no proporcionas el directorio, lo solicita. Detecta `pnpm` o `npm` desde el entorno y te pide elegir cuando no puede detectarlos. Las preguntas restantes son:
+Sin `-y` ni `-n`, si no proporcionas el directorio, lo solicita. Detecta `pnpm` o `npm` desde el entorno y te pide elegir cuando no puede detectarlos. Las preguntas restantes son:
 
 - ¿Instalar dependencias? Por defecto: sí.
 - ¿Ejecutar `pnpm approve-builds` al usar pnpm e instalar dependencias? Por defecto: sí.
 - ¿Inicializar un repositorio Git y crear un commit inicial? Por defecto: sí.
+
+`-y` acepta todas las preguntas y `-n` las rechaza todas. Si se usa cualquiera de las dos banderas sin un directorio, se crea `./framekit`. En este modo, si no se detecta el gestor de paquetes, se usa `pnpm` sin preguntar. Las banderas `--y` y `--n` no son válidas.
 
 Para desarrollar el repositorio localmente, compila y ejecuta la CLI sin publicarla:
 

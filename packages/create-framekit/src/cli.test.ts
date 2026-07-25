@@ -306,7 +306,9 @@ describe('create-framekit', () => {
 
   describe('main', () => {
     it('throws usage error when more than one arg', async () => {
-      await expect(main(['one', 'two'])).rejects.toThrow('Usage: create-framekit [project-directory]')
+      await expect(main(['one', 'two'])).rejects.toThrow(
+        'Usage: create-framekit [project-directory] [-y|-n]',
+      )
     })
 
     it('prompts for project name when no args and uses it', async () => {
@@ -348,6 +350,68 @@ describe('create-framekit', () => {
         process.env.PATH = previousPath
         delete process.env.npm_config_user_agent
       }
+    })
+
+    it('uses framekit and skips all prompts with -n', async () => {
+      const root = await createTemporaryDirectory('create-framekit-no-answers-')
+      const previousCwd = process.cwd()
+      const previousUserAgent = process.env.npm_config_user_agent
+      delete process.env.npm_config_user_agent
+      try {
+        process.chdir(root)
+        await main(['-n'])
+        await expect(
+          readFile(path.join(root, 'framekit', 'package.json'), 'utf8'),
+        ).resolves.toContain('framekit')
+      } finally {
+        process.chdir(previousCwd)
+        if (previousUserAgent === undefined) delete process.env.npm_config_user_agent
+        else process.env.npm_config_user_agent = previousUserAgent
+      }
+    })
+
+    it('uses framekit and accepts all prompts with -y', async () => {
+      const root = await createTemporaryDirectory('create-framekit-yes-')
+      const bin = path.join(root, 'bin')
+      const log = path.join(root, 'commands.jsonl')
+      await createFakePnpm(bin, log)
+      await createFakeGit(bin, log)
+
+      const previousPath = process.env.PATH
+      const previousCwd = process.cwd()
+      const previousUserAgent = process.env.npm_config_user_agent
+      delete process.env.npm_config_user_agent
+      process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ''}`
+      try {
+        process.chdir(root)
+        await main(['-y'])
+        const commands = (await readFile(log, 'utf8'))
+          .trim()
+          .split('\n')
+          .map((line) => JSON.parse(line))
+        expect(commands.map(({ args }: { args: string[] }) => args)).toEqual([
+          ['install'],
+          ['approve-builds'],
+          ['framekit', 'generate'],
+          ['init'],
+          ['add', '-A'],
+          ['commit', '-m', 'Initial FrameKit project'],
+        ])
+      } finally {
+        process.env.PATH = previousPath
+        process.chdir(previousCwd)
+        if (previousUserAgent === undefined) delete process.env.npm_config_user_agent
+        else process.env.npm_config_user_agent = previousUserAgent
+      }
+    })
+
+    it('rejects long flags and conflicting answer flags', async () => {
+      await expect(main(['--y'])).rejects.toThrow(
+        'Usage: create-framekit [project-directory] [-y|-n]',
+      )
+      await expect(main(['-y', '-n'])).rejects.toThrow(
+        'Usage: create-framekit [project-directory] [-y|-n]',
+      )
     })
   })
 })

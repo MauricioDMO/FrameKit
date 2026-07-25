@@ -30,7 +30,7 @@ cd my-project
 pnpm dev
 ```
 
-The creator copies a working Next.js project, asks whether to install dependencies, generates the template registry, and can initialize Git. The development server opens FrameKit Studio with `pnpm dev`.
+The creator copies a working Next.js project, asks whether to install dependencies, generates the template registry, and can initialize Git. Use `-y` to accept all prompts or `-n` to reject them; without a name in either mode, it creates the `framekit` directory. The development server opens FrameKit Studio with `pnpm dev`.
 
 ## A rendered template
 
