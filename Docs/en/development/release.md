@@ -1,14 +1,10 @@
 # Publishing a Release
 
-Publish both packages from the repository root with pnpm. Do not use `npm publish --workspace` or `npm publish --prefix`: this repository defines workspaces through pnpm and the npm command can fail while processing the manifest.
+Publish the changed package or packages from the repository root with pnpm. Do not use `npm publish --workspace` or `npm publish --prefix`: this repository defines workspaces through pnpm and the npm command can fail while processing the manifest.
 
 ## Before Publishing
 
-1. Update both package versions and the `create-framekit` template dependency:
-
-   - `packages/framekit/package.json`
-   - `packages/create-framekit/package.json`
-   - `packages/create-framekit/template/package.json`
+1. Version packages independently. Update only the package with release changes. A `create-framekit` release does not require a new `@mauriciodmo/framekit` version; keep the template dependency at the current published core version unless the template requires a new core API.
 
 2. Run the release gate:
 
@@ -31,10 +27,11 @@ Publish both packages from the repository root with pnpm. Do not use `npm publis
 
 ## Publish
 
-Check the npm session and publish FrameKit first because the CLI's generated project depends on it:
+Check the npm session and publish each changed package. If both packages are being released, publish FrameKit first because the CLI's generated project depends on it:
 
 ```sh
 npm whoami
+# Include only the packages changed in this release.
 pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
 pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 ```

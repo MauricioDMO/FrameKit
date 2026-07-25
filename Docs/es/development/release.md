@@ -1,14 +1,10 @@
 # Publicar una Versión
 
-Publica los dos paquetes desde la raíz del repositorio con pnpm. No uses `npm publish --workspace` ni `npm publish --prefix`: este repositorio declara sus workspaces con pnpm y el comando de npm puede fallar al procesar el manifiesto.
+Publica el paquete o paquetes modificados desde la raíz del repositorio con pnpm. No uses `npm publish --workspace` ni `npm publish --prefix`: este repositorio declara sus workspaces con pnpm y el comando de npm puede fallar al procesar el manifiesto.
 
 ## Antes de publicar
 
-1. Actualiza la versión de ambos paquetes y la dependencia de la plantilla de `create-framekit`:
-
-   - `packages/framekit/package.json`
-   - `packages/create-framekit/package.json`
-   - `packages/create-framekit/template/package.json`
+1. Versiona los paquetes de forma independiente. Actualiza solo el paquete que tenga cambios para la versión. Una versión nueva de `create-framekit` no requiere actualizar `@mauriciodmo/framekit`; conserva la dependencia de la plantilla en la versión principal publicada, salvo que la plantilla requiera una API nueva de FrameKit.
 
 2. Ejecuta la puerta de lanzamiento:
 
@@ -31,10 +27,11 @@ Publica los dos paquetes desde la raíz del repositorio con pnpm. No uses `npm p
 
 ## Publicar
 
-Verifica la sesión de npm y publica primero FrameKit, ya que el proyecto generado por el CLI depende de él:
+Verifica la sesión de npm y publica cada paquete modificado. Si se publican ambos paquetes, publica primero FrameKit, ya que el proyecto generado por el CLI depende de él:
 
 ```sh
 npm whoami
+# Incluye solo los paquetes modificados en esta versión.
 pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
 pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 ```
