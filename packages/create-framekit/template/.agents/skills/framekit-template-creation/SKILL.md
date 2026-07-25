@@ -21,7 +21,7 @@ Before creating any visual artwork, check the project root for `DESIGN.md`.
 1. Check and read `DESIGN.md` as described above, then inspect existing templates, local assets, and project styling. Reuse the design system and existing conventions before creating new artwork.
 2. Choose the output dimensions for the destination, then create a lowercase kebab-case directory such as `social-card`.
    For social content, use [references/social-media-sizes.md](references/social-media-sizes.md) to choose a master format and export preset.
-3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields.
+3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields. Read [Template Fields](./references/fields.md) and [Image Fields](./references/image-fields.md) before choosing field kinds.
 4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
 5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate.
 6. When the layout is substantial, extract the definition and artwork using the supported three-file pattern below.
@@ -65,11 +65,15 @@ Every field needs a human-readable `label`. Shared options are `placeholder`, `r
 | `fields.number` | Counts, prices, percentages, or bounded numeric values | Add `min` and `max` when applicable. `data` still receives a string; parse it before arithmetic. |
 | `fields.color` | Editable solid colors | A non-empty value must be `#RRGGBB`. |
 | `fields.url` | Image sources, links, or other URLs | Accepts HTTP(S) absolute URLs and root-relative `/path` values only. |
-| `fields.image` | Project-backed template images | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. |
+| `fields.image` | Project-backed template images | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. Read [Image Fields](./references/image-fields.md). |
 
-Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Values resolve in this order: field default, selected locale content, then Studio edits.
+Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Ordinary values resolve in this order: field default, selected locale content, then Studio edits. Discovered assets then override image-field values; variant assets take precedence over common assets according to the field scope.
 
-Read [references/fields-and-markdown.md](references/fields-and-markdown.md) for field constraints and supported Markdown.
+Read [Template Fields](./references/fields.md) for field behavior and validation. Read [FrameKit Markdown](./references/markdown.md) for the separate Markdown formatter.
+
+## Markdown
+
+Markdown is opt-in. A `text` or `textarea` value is plain text until the render function passes it to `<Markdown>`. It supports a deliberately small escaped syntax; read [FrameKit Markdown](./references/markdown.md) before relying on formatting.
 
 ## Styling
 
@@ -89,8 +93,9 @@ src/templates/social-card/
 ```
 
 Use `assets/common` for images shared by every variant and `assets/<variant>` for
-images whose basename matches an image field key. Project-wide assets belong in
-`public/assets/<category>` and use explicit `/assets/...` URLs.
+images whose basename matches an image field key. Read [Image Fields](./references/image-fields.md)
+for scope, fallback, manifest, upload, and replacement behavior. Project-wide assets
+belong in `public/assets/<category>` and use explicit `/assets/...` URLs.
 
 `definition.ts` owns dimensions, fields, and locales. `artwork.tsx` receives the inferred render props. `template.tsx` combines both and remains the only default-exporting `template.tsx` in this template.
 
