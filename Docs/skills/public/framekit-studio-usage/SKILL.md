@@ -10,6 +10,7 @@ Help users operate or diagnose the Studio included with a generated FrameKit pro
 ## Choose The Relevant Reference
 
 - For using the Studio interface, editing values, languages, saved edits, preview controls, themes, or PNG export, read [references/using-studio.md](references/using-studio.md).
+- For image previews, project assets, common/variant resolution, or development uploads, read [the image field reference](../../framekit-template-creation/references/image-fields.md).
 - For an empty catalog, invalid template paths, generated registry issues, CSS, ports, validation, build/start failures, or broken PNG output, read [references/troubleshooting.md](references/troubleshooting.md).
 - For integrating Studio into an application, use `FrameKitStudio` from `@mauriciodmo/framekit/studio`. It accepts `{ templates: readonly FrameKitStudioTemplate[] }`. Import `@mauriciodmo/framekit/styles.css` in the layout or global CSS. Use `FrameKitStudioRoot` only from a server component or layout; it supplies the full document shell and must not be nested in another one.
 
