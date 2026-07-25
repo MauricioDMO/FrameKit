@@ -35,14 +35,21 @@ Follow `Docs/en/development/release.md` for the canonical release procedure. Eve
 
 1. Version the packages independently. Update only the package that has release changes: `create-framekit` may ship a new version without changing `@mauriciodmo/framekit`. Keep the template's `@mauriciodmo/framekit` dependency at the current published core version unless the release includes a core package change. If the template requires a new core API, release the core package first and update that dependency.
 2. Run the complete release gate above, including both tarball builds and the manual smoke test.
-3. Commit the version changes and create an annotated tag:
+3. Create one release commit per version. A commit must not introduce two different package versions. Both packages may share one commit only when they are released at the exact same version:
 
    ```sh
-   git commit -am "chore(release): publish <version>"
+   git commit -am "chore(release): publish <package> <version>"
+   ```
+
+4. Create annotated package tags. Use `framekit-v<version>` for the core package and `create-framekit-v<version>` for the CLI. Create the generic `v<version>` tag only when both packages share the same version and release commit. A synchronized release therefore has at most three tags: one generic tag and one package tag per package:
+
+   ```sh
+   git tag -a create-framekit-v<version> -m "Release create-framekit v<version>"
+   git tag -a framekit-v<version> -m "Release FrameKit v<version>"
    git tag -a v<version> -m "Release v<version>"
    ```
 
-4. Verify the npm session and publish each changed package. If both packages are being released, publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
+5. Verify the npm session and publish each changed package. If both packages are being released, publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
 
    ```sh
    npm whoami
@@ -52,7 +59,7 @@ Follow `Docs/en/development/release.md` for the canonical release procedure. Eve
    ```
 
    Use the appropriate dist-tag, such as `alpha`, for a prerelease.
-5. Push the commit and tag only after both publish commands succeed:
+6. Push the commit and package-specific tags only after the publish commands succeed:
 
    ```sh
    git push origin main --follow-tags

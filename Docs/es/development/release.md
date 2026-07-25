@@ -18,11 +18,18 @@ Publica el paquete o paquetes modificados desde la raíz del repositorio con pnp
    ```
 
 3. Realiza la [prueba de humo de los tarballs](testing-and-distribution.md#prueba-de-humo-del-tarball-manual).
-4. Confirma siempre el cambio de versión y crea un tag anotado de Git antes de publicar, por ejemplo:
+4. Crea un commit de release por versión. Un commit no puede introducir dos versiones distintas de paquetes. Ambos paquetes pueden compartir un commit solo cuando se publican exactamente con la misma versión:
 
    ```sh
-   git commit -am "chore(release): publish 0.5.0"
-   git tag -a v0.5.0 -m "Release v0.5.0"
+   git commit -am "chore(release): publish <package> <version>"
+   ```
+
+5. Crea tags anotados específicos por paquete. Usa `framekit-v<version>` para el paquete principal y `create-framekit-v<version>` para el CLI. Crea el tag genérico `v<version>` solo cuando ambos paquetes compartan versión y commit de release. Un release sincronizado tiene como máximo tres tags: uno genérico y uno por cada paquete:
+
+   ```sh
+   git tag -a create-framekit-v<version> -m "Release create-framekit v<version>"
+   git tag -a framekit-v<version> -m "Release FrameKit v<version>"
+   git tag -a v<version> -m "Release v<version>"
    ```
 
 ## Publicar
@@ -38,7 +45,7 @@ pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 
 Para una versión previa, sustituye `latest` por el canal correspondiente, por ejemplo `alpha`.
 
-Cuando ambos comandos terminen correctamente, publica el commit y el tag:
+Cuando los comandos de publicación terminen correctamente, publica el commit y los tags específicos de paquete:
 
 ```sh
 git push origin main --follow-tags

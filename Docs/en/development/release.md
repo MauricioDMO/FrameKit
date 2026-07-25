@@ -18,11 +18,18 @@ Publish the changed package or packages from the repository root with pnpm. Do n
    ```
 
 3. Perform the [tarball smoke test](testing-and-distribution.md#tarball-smoke-test-manual).
-4. Always commit the version change and create an annotated git tag before publishing, for example:
+4. Create one release commit per version. A commit must not introduce two different package versions. Both packages may share one commit only when they are released at the exact same version:
 
    ```sh
-   git commit -am "chore(release): publish 0.5.0"
-   git tag -a v0.5.0 -m "Release v0.5.0"
+   git commit -am "chore(release): publish <package> <version>"
+   ```
+
+5. Create annotated package tags. Use `framekit-v<version>` for the core package and `create-framekit-v<version>` for the CLI. Create the generic `v<version>` tag only when both packages share the same version and release commit. A synchronized release therefore has at most three tags: one generic tag and one package tag per package.
+
+   ```sh
+   git tag -a create-framekit-v<version> -m "Release create-framekit v<version>"
+   git tag -a framekit-v<version> -m "Release FrameKit v<version>"
+   git tag -a v<version> -m "Release v<version>"
    ```
 
 ## Publish
@@ -38,7 +45,7 @@ pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 
 For a prerelease, replace `latest` with the appropriate channel, such as `alpha`.
 
-After both commands finish successfully, push the commit and tag:
+After the publish commands finish successfully, push the commit and package-specific tags:
 
 ```sh
 git push origin main --follow-tags
