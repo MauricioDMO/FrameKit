@@ -6,7 +6,7 @@
 framekit <generate|check|dev|build|start>
 ```
 
-- `generate`: scans `src/templates` and writes `.framekit/generated/templates.ts`. It exits with code 1 when no templates are found.
+- `generate`: scans `src/templates` and writes `src/generated/framekit/templates.ts`. It exits with code 1 when no templates are found.
 - `check`: runs generation, then validates every definition and resolved locale. It uses the project TypeScript configuration, but does not typecheck, call `render`, or test PNG export.
 - `dev`: generates first, then starts Next development with live registry updates. `FRAMEKIT_HOST`, then `HOST`, then `localhost` selects the host; `PORT` defaults to `3000` and must be an integer from 1 through 65535.
 - `build`: runs `check`, then `next build`, and prepares the standalone server with `public/` when present and static assets.

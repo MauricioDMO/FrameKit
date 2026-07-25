@@ -35,6 +35,6 @@ Before publishing, validate outside this repository:
 2. Run `pnpm check` and `pnpm build` there.
 3. Install the create-framekit tarball and run `create-framekit <new-directory>` outside the repository.
 4. In the generated project, replace its FrameKit workspace dependency with the local tarball; run `pnpm install`, `pnpm check`, and `pnpm build`.
-5. Confirm `.framekit/generated/templates.ts` was generated and ignored, and neither tarball refers to the original workspace.
+5. Confirm `src/generated/framekit/templates.ts` was generated and ignored, and neither tarball contains `workspace:` or a reference to the original workspace. Local `file:` references added to the temporary consumer are expected.
 
 Both tarballs must install and generate without errors before publishing.

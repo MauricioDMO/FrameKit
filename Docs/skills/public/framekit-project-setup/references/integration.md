@@ -79,4 +79,4 @@ Generate the registry:
 pnpm framekit generate
 ```
 
-The registry is `.framekit/generated/templates.ts`. Generation and `framekit dev` recreate it; do not edit it. The full `.framekit/` directory can be deleted and regenerated.
+The registry is `src/generated/framekit/templates.ts`. Generation and `framekit dev` recreate it; do not edit it. The `.framekit/` directory can be deleted and regenerated separately.
