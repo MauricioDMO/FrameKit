@@ -33,6 +33,8 @@ Validate from the repository root unless testing an isolated consumer. The root 
 
 Follow `Docs/en/development/release.md` for the canonical release procedure. Every release must have an annotated git tag; do not publish an untagged version. Before publishing:
 
+**Manual handoff:** Never run `publish` or `git push` automatically. Prepare and validate the release, then show the user the plain commands to run. Do not request, capture, or add an OTP to a command. If npm requires an OTP, the user enters it in their own interactive terminal.
+
 1. Version the packages independently. Update only the package that has release changes: `create-framekit` may ship a new version without changing `@mauriciodmo/framekit`. Keep the template's `@mauriciodmo/framekit` dependency at the current published core version unless the release includes a core package change. If the template requires a new core API, release the core package first and update that dependency.
 2. Run the complete release gate above, including both tarball builds and the manual smoke test.
 3. Create one release commit per version. A commit must not introduce two different package versions. Both packages may share one commit only when they are released at the exact same version:
@@ -49,17 +51,17 @@ Follow `Docs/en/development/release.md` for the canonical release procedure. Eve
    git tag -a v<version> -m "Release v<version>"
    ```
 
-5. Verify the npm session and publish each changed package. If both packages are being released, publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
+5. Verify the npm session and hand off the publish commands. Do not execute them. If both packages are being released, the user publishes `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
 
    ```sh
    npm whoami
-    # Include only the packages changed in this release.
-    pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
-    pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
+   # The user runs only the packages changed in this release.
+   pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
+   pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
    ```
 
-   Use the appropriate dist-tag, such as `alpha`, for a prerelease.
-6. Push the commit and package-specific tags only after the publish commands succeed:
+   Use the appropriate dist-tag, such as `alpha`, for a prerelease. Keep the command free of `--otp`; npm can prompt the user interactively.
+6. Show the user the push command only after the publish commands succeed. Do not run it automatically:
 
    ```sh
    git push origin main --follow-tags
@@ -86,7 +88,7 @@ isolated project creation API without automating the interactive command.
 
 Run FrameKit commands from the consumer project root. They always scan `src/templates`; they do not accept an alternate project or templates path.
 
-- Run `framekit generate` after changing template structure; it creates `.framekit/generated/templates.ts` only when content changes.
+- Run `framekit generate` after changing template structure; it creates `src/generated/framekit/templates.ts` only when content changes.
 - Run `framekit check` to validate definitions and locale data. It regenerates first and cleans temporary checker files even on failure.
 - Run `framekit build` for the consumer release check. It runs `check` first, then builds Next.js and copies static assets beside the standalone server.
 - Run `framekit start` only after a successful build. It requires exactly one valid standalone server.
@@ -97,5 +99,5 @@ Read `references/cli-and-failures.md` when a CLI or installation step fails.
 
 - `@mauriciodmo/framekit` contains `bin/`, `dist/`, `README.md`, and `LICENSE`; CSS is emitted as `dist/styles.css`.
 - `@mauriciodmo/create-framekit` contains `dist/`, `template/`, `README.md`, and `LICENSE`; its template is copied into the generated project.
-- Confirm the generated `.framekit/generated/templates.ts` is present and gitignored in the generated consumer project.
+- Confirm the generated `src/generated/framekit/templates.ts` is present and gitignored in the generated consumer project.
 - Confirm neither tarball retains a reference to the original workspace.

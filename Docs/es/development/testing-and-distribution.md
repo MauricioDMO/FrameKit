@@ -79,7 +79,7 @@ Para validar ambos tarballs antes de cualquier paso de publicación:
 3. Ejecutar `pnpm check` y `pnpm build` en el proyecto consumidor y confirmar que ambos finalizan correctamente.
 4. Instalar el tarball de `create-framekit` y ejecutar `create-framekit <nuevo-directorio>` desde una ruta fuera del repositorio.
 5. Dentro del proyecto generado, sustituir la dependencia de FrameKit del workspace por el tarball local, luego ejecutar `pnpm install`, `pnpm check` y `pnpm build`.
-6. Confirmar que `.framekit/generated/templates.ts` se genera y está en gitignore, y que ninguno de los dos tarballs dejó ninguna referencia al workspace original.
+6. Confirmar que `src/generated/framekit/templates.ts` se genera y está en gitignore, y que ninguno de los dos tarballs dejó ninguna referencia al workspace original.
 
 Ambos tarballs deben instalarse y generar sin errores antes de cualquier intento de publicación.
 

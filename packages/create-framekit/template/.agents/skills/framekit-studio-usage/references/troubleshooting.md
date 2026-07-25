@@ -22,7 +22,7 @@ Add this TypeScript alias, then generate the registry:
 }
 ```
 
-`@framekit/generated/templates` resolves to `.framekit/generated/templates.ts`.
+`@framekit/generated/templates` resolves to `src/generated/framekit/templates.ts`.
 
 ## Studio Is Unstyled
 

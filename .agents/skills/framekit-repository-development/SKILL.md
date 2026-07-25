@@ -41,7 +41,7 @@ pnpm --filter framekit-example-basic build
 
 ## Generated Outputs
 
-Treat `.framekit/generated/templates.ts`, `.framekit/next/`, and `packages/framekit/dist/` as disposable ignored build output. Regenerate the template registry with `framekit generate` before a command that imports it.
+Treat `src/generated/framekit/templates.ts`, `.framekit/next/`, and `packages/framekit/dist/` as disposable ignored build output. Regenerate the template registry with `framekit generate` before a command that imports it.
 
 The public package contract exposes only `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, and `./styles.css`; do not treat `packages/framekit/src/*` imports as supported consumer imports.
 

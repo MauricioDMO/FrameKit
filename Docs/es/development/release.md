@@ -34,7 +34,7 @@ Publica el paquete o paquetes modificados desde la raíz del repositorio con pnp
 
 ## Publicar
 
-Verifica la sesión de npm y publica cada paquete modificado. Si se publican ambos paquetes, publica primero FrameKit, ya que el proyecto generado por el CLI depende de él:
+La publicación se entrega manualmente. El asistente no debe ejecutar `publish` ni `git push`. Verifica la sesión de npm y entrega al usuario los comandos para cada paquete modificado. Si se publican ambos paquetes, publica primero FrameKit, ya que el proyecto generado por el CLI depende de él:
 
 ```sh
 npm whoami
@@ -43,9 +43,9 @@ pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
 pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 ```
 
-Para una versión previa, sustituye `latest` por el canal correspondiente, por ejemplo `alpha`.
+Para una versión previa, sustituye `latest` por el canal correspondiente, por ejemplo `alpha`. No añadas `--otp` al comando. Si npm solicita un OTP, introdúcelo directamente en tu terminal interactiva.
 
-Cuando los comandos de publicación terminen correctamente, publica el commit y los tags específicos de paquete:
+Cuando los comandos de publicación terminen correctamente, entrega al usuario este comando para publicar el commit y los tags; no lo ejecutes automáticamente:
 
 ```sh
 git push origin main --follow-tags

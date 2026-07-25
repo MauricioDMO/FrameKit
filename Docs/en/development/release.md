@@ -34,7 +34,7 @@ Publish the changed package or packages from the repository root with pnpm. Do n
 
 ## Publish
 
-Check the npm session and publish each changed package. If both packages are being released, publish FrameKit first because the CLI's generated project depends on it:
+Publishing is a manual handoff. The assistant must not run `publish` or `git push`. Check the npm session and give the user the commands for each changed package. If both packages are being released, publish FrameKit first because the CLI's generated project depends on it:
 
 ```sh
 npm whoami
@@ -43,9 +43,9 @@ pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
 pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
 ```
 
-For a prerelease, replace `latest` with the appropriate channel, such as `alpha`.
+For a prerelease, replace `latest` with the appropriate channel, such as `alpha`. Do not add `--otp` to the command. If npm requests an OTP, enter it directly in your interactive terminal.
 
-After the publish commands finish successfully, push the commit and package-specific tags:
+After the publish commands finish successfully, give the user this push command; do not run it automatically:
 
 ```sh
 git push origin main --follow-tags

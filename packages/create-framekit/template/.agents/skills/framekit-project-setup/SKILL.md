@@ -32,7 +32,7 @@ Read [references/integration.md](references/integration.md) before writing the c
 - Use `framekit check` before diagnosing validation failures. It regenerates and validates definitions and resolved locale data, but is not a typecheck or render/export test.
 - Use `framekit build` for production; it runs `check`, then the Next.js build, then prepares standalone static assets.
 - Run `framekit start` only after a successful build. It uses Next standalone-server environment variables, not `FRAMEKIT_HOST` or `HOST`.
-- Treat `.framekit/` and `.framekit/generated/templates.ts` as generated and disposable. Never manually edit the registry.
+- Treat `src/generated/framekit/templates.ts` and `.framekit/` as generated and disposable. Never manually edit the registry.
 
 Read [references/cli-and-troubleshooting.md](references/cli-and-troubleshooting.md) for environment variables, template discovery rules, command details, and symptom-based fixes.
 
