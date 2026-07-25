@@ -33,7 +33,7 @@ Validate from the repository root unless testing an isolated consumer. The root 
 
 Follow `Docs/en/development/release.md` for the canonical release procedure. Every release must have an annotated git tag; do not publish an untagged version. Before publishing:
 
-1. Update the versions in `packages/framekit/package.json` and `packages/create-framekit/package.json`, plus the `@mauriciodmo/framekit` dependency in `packages/create-framekit/template/package.json`.
+1. Version the packages independently. Update only the package that has release changes: `create-framekit` may ship a new version without changing `@mauriciodmo/framekit`. Keep the template's `@mauriciodmo/framekit` dependency at the current published core version unless the release includes a core package change. If the template requires a new core API, release the core package first and update that dependency.
 2. Run the complete release gate above, including both tarball builds and the manual smoke test.
 3. Commit the version changes and create an annotated tag:
 
@@ -42,12 +42,13 @@ Follow `Docs/en/development/release.md` for the canonical release procedure. Eve
    git tag -a v<version> -m "Release v<version>"
    ```
 
-4. Verify the npm session and publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
+4. Verify the npm session and publish each changed package. If both packages are being released, publish `@mauriciodmo/framekit` before `@mauriciodmo/create-framekit`:
 
    ```sh
    npm whoami
-   pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
-   pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
+    # Include only the packages changed in this release.
+    pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
+    pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
    ```
 
    Use the appropriate dist-tag, such as `alpha`, for a prerelease.
@@ -70,6 +71,11 @@ pnpm --filter @mauriciodmo/create-framekit test
 `pnpm typecheck` also validates positive and negative template type fixtures. Build the core package before running Studio or the basic example because workspace consumers resolve its built `dist/` exports.
 
 ## CLI Checks
+
+**Interactive CLI warning:** Never pipe `yes`, `yes n`, or an unbounded input
+stream into `create-framekit`; its readline prompts can consume the stream and
+loop indefinitely. Use a real TTY and answer prompts manually, or test the
+isolated project creation API without automating the interactive command.
 
 Run FrameKit commands from the consumer project root. They always scan `src/templates`; they do not accept an alternate project or templates path.
 
