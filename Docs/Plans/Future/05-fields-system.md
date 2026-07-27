@@ -50,7 +50,7 @@ fields.number({
 | `color` | Validated color value | `string` |
 | `image` | Image source and presentation data | `ImageValue` |
 
-Convenience factories such as `fields.textarea()` and `fields.url()` may remain public, but they should normalize internally to `text`.
+Convenience factories such as `fields.textarea()` should remain public, but they should normalize internally to `text`.
 
 ---
 
@@ -100,11 +100,8 @@ Initial formats:
 
 ```text
 plain
-url
 markdown
 ```
-
-`url` adds validation and an appropriate control while preserving a string runtime value.
 
 `markdown` may provide editing assistance, but the stored and resolved value remains a string.
 
@@ -120,19 +117,6 @@ Normalizes to:
 fields.text({
   ...options,
   multiline: true,
-})
-```
-
-```tsx
-fields.url(options)
-```
-
-Normalizes to:
-
-```tsx
-fields.text({
-  ...options,
-  format: 'url',
 })
 ```
 
@@ -574,7 +558,6 @@ For example:
 
 ```tsx
 fields.textarea(...)
-fields.url(...)
 ```
 
 may produce an internal text descriptor with `multiline` or `format`.
@@ -586,8 +569,8 @@ This keeps the public API friendly while reducing editor and validator duplicati
 During the 0.x line:
 
 - `fields.textarea` remains available.
-- `fields.url` remains available.
-- Their internal descriptors normalize to `text`.
+- URL-shaped values use `fields.text` when they are editable text, while images use `fields.image`.
+- Its internal descriptor normalizes to `text`.
 - Existing string-based number data receives a documented migration.
 - `framekit migrate` may update field definitions.
 - The 1.0 contract should not expose duplicate internal kinds.
@@ -598,7 +581,7 @@ Changing numbers from strings to numbers is a breaking contract change and must 
 
 - `kind` represents semantics.
 - `control` represents Studio presentation.
-- Textarea and URL behavior normalize to text.
+- Textarea behavior normalizes to text.
 - Slider behavior is implemented by number.
 - Select, radio, segmented controls, and swatches can use choice.
 - Font and alignment can use choice.

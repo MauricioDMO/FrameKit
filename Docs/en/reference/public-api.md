@@ -12,7 +12,7 @@ The root entry point provides the core runtime API for defining, validating, and
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `defineTemplate`             | Defines and validates a template with fields, locale-aware content, and a render function                                                                                      |
 | `defineTemplateBase`         | Defines and validates a template base without a render function                                                                                                                |
-| `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.url`, `fields.number`, `fields.image`)                                           |
+| `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.number`, `fields.image`)                                                       |
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
@@ -24,13 +24,12 @@ The root entry point provides the core runtime API for defining, validating, and
 
 | Type                          | Description                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"textarea"` \| `"color"` \| `"url"` \| `"number"` \| `"image"` |
+| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"textarea"` \| `"color"` \| `"number"` \| `"image"` |
 | `BaseFieldDescriptor`         | Base shape shared by all field descriptors                                                              |
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
 | `TextFieldDescriptor`         | Descriptor for text fields                                                                              |
 | `TextareaFieldDescriptor`     | Descriptor for textarea fields                                                                          |
 | `ColorFieldDescriptor`        | Descriptor for color fields                                                                             |
-| `UrlFieldDescriptor`          | Descriptor for URL fields                                                                               |
 | `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `TemplateAssetManifest`       | Generated common and variant asset URL maps                                                            |

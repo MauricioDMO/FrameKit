@@ -22,11 +22,11 @@ El idioma de la interfaz se resuelve en este orden: la cookie `locale` → la ca
 
 ## Edición de campos
 
-Cada campo de una plantilla se renderiza según su tipo: campo de texto, área de texto, campo numérico, selector de color o campo de URL. El tipo de entrada específico se determina a partir de la definición del campo.
+Cada campo de una plantilla se renderiza según su tipo: campo de texto, área de texto, campo numérico, selector de color o vista previa/upload de imagen. El tipo de entrada específico se determina a partir de la definición del campo.
 
 Los campos obligatorios se validan al intentar exportar. Los campos opcionales pasan la validación cuando se dejan vacíos.
 
-Los campos numéricos respetan las restricciones `min` y `max` definidas en la plantilla. Los campos URL aceptan URL absolutas que comienzan con `http://` o `https://`, así como rutas relativas a la raíz que comienzan con `/`.
+Los campos numéricos respetan las restricciones `min` y `max` definidas en la plantilla. Los campos de imagen pueden previsualizar assets de la plantilla o imágenes desde `public/assets` mediante rutas desde la raíz.
 
 ## Persistencia
 

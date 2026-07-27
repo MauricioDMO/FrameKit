@@ -22,7 +22,7 @@ The following areas are covered by the test suite:
 
 **Data resolution:** Application of default values, locale-content precedence, user-edit overrides, and the guarantee that `language` is never copied into `data`.
 
-**Definition and validation:** Runtime validation of template definitions (invalid descriptors, incoherent bounds, decimal dimensions, missing render) and field-level validators (required, number range, URL format, locale-switching behavior).
+**Definition and validation:** Runtime validation of template definitions (invalid descriptors, incoherent bounds, decimal dimensions, missing render) and field-level validators (required, number range, color format, locale-switching behavior).
 
 **Editor state:** localStorage persistence and session restore, reset of a single locale (only that locale's overrides are removed), locale switching (does not mutate other locales' overrides), and clearing of visible errors on reset or locale change.
 

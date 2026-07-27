@@ -53,7 +53,7 @@ Templates reference them explicitly:
 <img src="/assets/logos/brand.svg" alt="" />
 ```
 
-Global assets are not automatically matched to field keys and are not copied into template asset manifests.
+Global assets are not automatically matched to field keys and are not copied into template asset manifests. An image field may still reference one explicitly with a root-relative `defaultValue` such as `/assets/logos/brand.svg`.
 
 ## Image field
 

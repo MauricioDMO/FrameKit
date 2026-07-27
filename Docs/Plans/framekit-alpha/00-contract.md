@@ -37,7 +37,7 @@ Todos los valores de `data` son `string`. Un campo `number` controla y valida un
 
 ## Implementación
 
-- [x] Declarar `TemplateFieldKind` como la unión `text | textarea | number | color | url`.
+- [x] Declarar `TemplateFieldKind` como la unión `text | textarea | number | color | image`.
 - [x] Declarar una base de campo con `label`, `placeholder?`, `required?` y `defaultValue?`, todos los valores editables como `string`.
 - [x] Limitar `min` y `max` a `fields.number`; no aceptarlos en los otros cuatro helpers.
 - [x] Declarar `TemplateDefinition`, `TemplateRenderProps` e `InferTemplateData` como tipos públicos.

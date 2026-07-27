@@ -33,7 +33,7 @@ La tabla conserva el historial de lo verificado.
 - La solución acordada añade `defineTemplateBase` para separar definición y componente conservando autocompletado y tipos exactos.
 
 ### Detalle 00-contract.md
-- Tipos: `TemplateFieldKind` (`text | textarea | number | color | url`)
+- Tipos: `TemplateFieldKind` (`text | textarea | number | color | image`)
 - `TemplateDefinition`, `TemplateRenderProps`, `InferTemplateData` públicos
 - `min`/`max` solo en `fields.number`
 - Validación runtime: dimensiones, campos reservados, content, language
@@ -42,7 +42,7 @@ La tabla conserva el historial de lo verificado.
 
 ### Detalle 01-core.md
 - Código reutilizable extraído posteriormente a `packages/framekit/src/core/` y `packages/framekit/src/markdown/`
-- `fields.text`, `fields.textarea`, `fields.number` (c/min/max), `fields.color`, `fields.url`
+- `fields.text`, `fields.textarea`, `fields.number` (c/min/max), `fields.color`, `fields.image`
 - `defineTemplate`, `getDefaultValues`, `getLocales`, `resolveTemplateData`, `validateTemplateDefinition`
 - `Markdown` component
 - Plantilla piloto migrada: `apps/studio/src/templates/redes-sociales/instagram/promocion-cuadrada/template.tsx`
@@ -62,7 +62,7 @@ La tabla conserva el historial de lo verificado.
 - `selectedLocale` = primera clave de content
 - `resolveTemplateData` para preview y exportación
 - Persistencia en `localStorage` (`framekit:<slug>:v1`)
-- Validación runtime de datos (required, number min/max, url)
+- Validación runtime de datos (required, number min/max, color)
 - Exportación PNG con `document.fonts.ready`
 - Zoom, arrastre, escala, tema conservados
 

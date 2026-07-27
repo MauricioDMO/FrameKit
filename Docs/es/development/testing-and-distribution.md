@@ -22,7 +22,7 @@ Las siguientes áreas están cubiertas por el conjunto de pruebas:
 
 **Resolución de datos:** Aplicación de valores por defecto, precedencia de contenido por locale, overrides de edición del usuario, y la garantía de que `language` nunca se copia a `data`.
 
-**Definición y validación:** Validación en tiempo de ejecución de definiciones de plantillas (descriptores inválidos, límites incoherentes, dimensiones decimales, render ausente) y validadores a nivel de campo (requerido, rango numérico, formato de URL, comportamiento de cambio de locale).
+**Definición y validación:** Validación en tiempo de ejecución de definiciones de plantillas (descriptores inválidos, límites incoherentes, dimensiones decimales, render ausente) y validadores a nivel de campo (requerido, rango numérico, formato de color, comportamiento de cambio de locale).
 
 **Estado del editor:** Persistencia en localStorage y restauración de sesión, reseteo de un solo locale (solo se eliminan los overrides de ese locale), cambio de locale (no muta los overrides de otros locales) y limpieza de errores visibles al hacer reset o cambiar de locale.
 

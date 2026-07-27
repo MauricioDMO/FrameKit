@@ -52,24 +52,14 @@ Un campo selector de color. Acepta solo las opciones base. Los valores no vacío
 fields.color({ label: 'Background Color' })
 ```
 
-### `url`
-
-Un campo de entrada de URL. Acepta las opciones base. El valor se valida como:
-
-- Una URL absoluta usando el protocolo `http:` o `https:`
-- Una ruta relativa desde la raíz comenzando con `/`
-
-Las rutas relativas y otros esquemas de URL (por ejemplo, `ftp://`, `javascript:`) son rechazados.
-
-```typescript
-fields.url({ label: 'Link URL', placeholder: 'https://example.com' })
-```
-
 ### `image`
 
-Un campo de imagen resuelve un asset del proyecto como una cadena URL para el
-navegador. El alcance predeterminado es `variant`; usa `scope: 'common'` para
-una imagen compartida por todas las variantes de contenido.
+Un campo de imagen resuelve un asset de la plantilla o una imagen pública desde
+`public` como una cadena URL para el navegador. El alcance predeterminado es
+`variant`; usa `scope: 'common'` para una imagen compartida por todas las
+variantes de contenido. Una imagen pública puede proporcionarse como
+`defaultValue` o como valor del locale, por ejemplo
+`/assets/logos/brand.svg`.
 
 ```typescript
 fields.image({ label: 'Hero image' })
@@ -82,6 +72,11 @@ Los archivos por variante usan la key del field como nombre base:
 src/templates/social-card/assets/en/hero.webp
 src/templates/social-card/assets/common/background.webp
 ```
+
+Los archivos públicos son servidos directamente por la aplicación. No se
+descubren como assets comunes o por variante. Si Studio sube un reemplazo para
+el mismo field, FrameKit crea un asset local de la plantilla y ese asset tiene
+precedencia.
 
 ## Requisito
 
@@ -173,7 +168,6 @@ if (!result.success) {
 
 - Campos requeridos: una cadena vacía (tras eliminar los espacios en blanco) no supera la validación
 - Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
-- Campos `url`: deben ser una URL absoluta HTTP(S) o una ruta relativa desde la raíz
 - Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 
 Los errores se retornan como objetos estructurados con códigos legibles por máquina, no strings localizados:
@@ -185,7 +179,6 @@ const errors = validateTemplateData(definition, data)
 // {
 //   title: { code: 'required' },
 //   count: { code: 'number_too_small', min: 10 },
-//   link: { code: 'invalid_url' },
 // }
 ```
 
@@ -195,7 +188,6 @@ Códigos de error posibles:
 - `invalid_number`: El valor no es un número finito
 - `number_too_small`: El valor es menor que la restricción `min`
 - `number_too_large`: El valor es mayor que la restricción `max`
-- `invalid_url`: El valor no es una URL HTTP(S) válida ni una ruta relativa desde la raíz
 - `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
 
 ### El Comando CLI `check`

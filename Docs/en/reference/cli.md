@@ -61,7 +61,7 @@ Validates every template definition and its resolved content across all declared
 
 The command first runs `generate` to ensure the registry is current. It then creates a temporary checker directory inside `.framekit/` and writes a temporary TypeScript file that imports every template via bundled `tsx`. This uses the consumer's own `tsconfig`, so TypeScript imports, TSX syntax, and path aliases resolve the same way they do during development.
 
-For each template, `validateTemplateDefinition` checks the structure of the definition: dimensions (width and height must be positive finite integers), fields, content, and the render function. For each locale declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and URL fields are `http`/`https` URLs or app-relative paths.
+For each template, `validateTemplateDefinition` checks the structure of the definition: dimensions (width and height must be positive finite integers), fields, content, and the render function. For each locale declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and color fields use valid hexadecimal values.
 
 The temporary checker directory is always deleted after the check completes, whether it passes or fails.
 
@@ -70,7 +70,6 @@ Structured errors are reported per template, per locale, and per field:
 ```
 /path/to/src/templates/example/template.tsx: content.en.title: required
 /path/to/src/templates/example/template.tsx: content.en.count: number_too_small (min: 3)
-/path/to/src/templates/example/template.tsx: content.es.url: invalid_url
 ```
 
 The check process exits with code `1` when it reports validation errors. Definition errors use the same `file: message` format, for example `.../template.tsx: render must be a function`.

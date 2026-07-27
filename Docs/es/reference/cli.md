@@ -61,7 +61,7 @@ Valida la definición de cada plantilla y su contenido resuelto en todas las con
 
 El comando primero ejecuta `generate` para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante el `tsx` incluido. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
 
-Para cada plantilla, `validateTemplateDefinition` verifica la estructura de la definición: dimensiones (el ancho y el alto deben ser enteros positivos finitos), campos, contenido y la función de renderizado. Para cada configuración regional declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los campos obligatorios están presentes, los campos numéricos respetan las restricciones de mínimo y máximo, y los campos URL son URL `http`/`https` o rutas relativas a la aplicación.
+Para cada plantilla, `validateTemplateDefinition` verifica la estructura de la definición: dimensiones (el ancho y el alto deben ser enteros positivos finitos), campos, contenido y la función de renderizado. Para cada configuración regional declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los campos obligatorios están presentes, los campos numéricos respetan las restricciones de mínimo y máximo, y los campos de color usan valores hexadecimales válidos.
 
 El directorio temporal de comprobación se elimina siempre al terminar, tanto si la comprobación pasa como si falla.
 
@@ -70,7 +70,6 @@ Los errores estructurados se reportan por plantilla, por regional y por campo:
 ```
 /ruta/a/src/templates/example/template.tsx: content.en.title: required
 /ruta/a/src/templates/example/template.tsx: content.en.count: number_too_small (min: 3)
-/ruta/a/src/templates/example/template.tsx: content.es.url: invalid_url
 ```
 
 El proceso de comprobación termina con código `1` cuando reporta errores de validación. Los errores de definición usan el mismo formato `archivo: mensaje`, por ejemplo `.../template.tsx: render must be a function`.

@@ -131,7 +131,7 @@ Every template definition requires five properties:
 
 - `width` — a positive integer specifying the template output width in pixels
 - `height` — a positive integer specifying the template output height in pixels
-- `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, url, or image)
+- `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, or image)
 - `content` — a record with at least one locale entry, where each entry contains a `language` string and partial field values
 - `render` — a function that receives typed props and returns a React node
 
@@ -160,7 +160,7 @@ The `render` function receives a single object with five properties:
 - `height` — the template height as a literal type.
 - `assets` — generated URLs for common and variant template assets.
 
-An image field resolves to a URL string. Variant fields use `assets/<locale>/<field-key>.*`; common fields use `assets/common/<field-key>.*`.
+An image field resolves to a browser URL string. Variant fields use `assets/<locale>/<field-key>.*`; common fields use `assets/common/<field-key>.*`. A public image can be referenced with a root-relative value such as `/assets/logos/brand.svg` in `defaultValue` or locale content. Public files are not scanned into the template asset manifest.
 
 ```tsx
 fields: {
@@ -173,6 +173,13 @@ fields: {
 src/templates/social-card/assets/
 ├── common/background.webp
 └── en/hero.webp
+```
+
+```tsx
+logo: fields.image({
+  label: 'Brand logo',
+  defaultValue: '/assets/logos/brand.svg',
+})
 ```
 
 ## Auto-Regeneration

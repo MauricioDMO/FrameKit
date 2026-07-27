@@ -23,7 +23,7 @@ src/lib/framekit/
 │   ├── textarea.ts
 │   ├── number.ts
 │   ├── color.ts
-│   ├── url.ts
+│   ├── image.ts
 │   └── index.ts
 └── index.ts
 ```
@@ -32,7 +32,7 @@ No se crearán adaptadores entre `src/lib/templates` y `src/lib/framekit`. Las r
 
 ## Implementación
 
-- [x] Implementar `fields.text`, `fields.textarea`, `fields.color` y `fields.url` como factories que devuelven un descriptor inmutable con su `kind`.
+- [x] Implementar `fields.text`, `fields.textarea`, `fields.color` e `fields.image` como factories que devuelven un descriptor inmutable con su `kind`.
 - [x] Implementar `fields.number` con `min?` y `max?` numéricos, conservando el valor editado como `string`.
 - [x] Implementar `defineTemplate` como función de identidad tipada; no debe introducir registro global, I/O ni estado.
 - [x] Implementar `getDefaultValues(definition.fields)` para producir un registro completo: cada campo obtiene `defaultValue ?? ''`.

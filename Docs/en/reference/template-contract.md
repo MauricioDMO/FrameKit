@@ -52,24 +52,13 @@ A color picker field. Accepts only the base options. Non-empty values must be a 
 fields.color({ label: 'Background Color' })
 ```
 
-### `url`
-
-A URL input field. Accepts the base options. The value is validated as:
-
-- An absolute URL using the `http:` or `https:` protocol
-- A root-relative path starting with `/`
-
-Relative paths and other URL schemes (e.g., `ftp://`, `javascript:`) are rejected.
-
-```typescript
-fields.url({ label: 'Link URL', placeholder: 'https://example.com' })
-```
-
 ### `image`
 
-An image field resolves a project asset to a browser URL string. The default
-scope is `variant`; use `scope: 'common'` for an image shared by every content
-variant.
+An image field resolves a template asset or a root-relative image from `public`
+to a browser URL string. The default scope is `variant`; use `scope: 'common'`
+for an image shared by every content variant. A public image can be provided as
+the field `defaultValue` or as a locale value, for example
+`/assets/logos/brand.svg`.
 
 ```typescript
 fields.image({ label: 'Hero image' })
@@ -82,6 +71,10 @@ Variant files use the field key as their basename:
 src/templates/social-card/assets/en/hero.webp
 src/templates/social-card/assets/common/background.webp
 ```
+
+Public files are served directly by the application. They are not discovered as
+common or variant assets. If Studio uploads a replacement for the same field,
+FrameKit creates a template-local asset and that asset takes precedence.
 
 ## Requiredness
 
@@ -173,7 +166,6 @@ if (!result.success) {
 
 - Required fields: empty string (after trim) fails
 - `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
-- `url` fields: must be an HTTP(S) absolute URL or root-relative path
 - `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
 
 Errors are returned as structured objects with machine-readable codes, not localized strings:
@@ -185,7 +177,6 @@ const errors = validateTemplateData(definition, data)
 // {
 //   title: { code: 'required' },
 //   count: { code: 'number_too_small', min: 10 },
-//   link: { code: 'invalid_url' },
 // }
 ```
 
@@ -195,7 +186,6 @@ Possible error codes:
 - `invalid_number`: Value is not a finite number
 - `number_too_small`: Value is less than the `min` constraint
 - `number_too_large`: Value is greater than the `max` constraint
-- `invalid_url`: Value is not a valid HTTP(S) URL or root-relative path
 - `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
 
 ### The `check` CLI Command

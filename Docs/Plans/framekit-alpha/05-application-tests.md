@@ -41,7 +41,7 @@ Las pruebas se ubican según el código que deben acompañar después de la migr
 - [x] La restauración de sesión descarta locale, campo o valor malformado.
 - [x] Un requerido vacío falla; uno opcional vacío pasa.
 - [x] Un número válido, menor que `min`, mayor que `max` y no numérico producen el resultado esperado.
-- [x] Una URL absoluta HTTP(S) y una ruta que inicia con `/` pasan; una URL con protocolo no permitido falla.
+- [x] Un campo de imagen conserva una ruta pública desde la raíz como `/assets/images/hero.webp`.
 - [x] La validación del núcleo devuelve códigos estructurados y la interfaz los traduce al idioma activo.
 - [x] Una definición runtime rechaza descriptores inválidos, límites incoherentes, dimensiones decimales y `render` ausente.
 

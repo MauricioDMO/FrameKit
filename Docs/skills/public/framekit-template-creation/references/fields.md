@@ -20,8 +20,7 @@ The `language` property in each content entry is reserved and never appears in `
 | `fields.textarea` | Resizable multiline textarea | Paragraphs and long copy | Required fields cannot be blank after trimming. |
 | `fields.number` | Number input | Counts, prices, percentages, bounded values | The trimmed value must be finite and within `min` and `max` when declared. |
 | `fields.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
-| `fields.url` | URL text input | Links, external images, and explicit public paths | Only `http://`, `https://`, and root-relative paths beginning with `/` are accepted. |
-| `fields.image` | Resolved image preview and upload control | Template-owned images | See [Image Fields](./image-fields.md). |
+| `fields.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
 
 ### Text
 
@@ -62,13 +61,18 @@ count: fields.number({ label: 'Count', min: 0, max: 100, defaultValue: '10' })
 accent: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' })
 ```
 
-### URL
+### Image
 
-`fields.url` is for values that are intentionally URL-shaped. It accepts absolute HTTP(S) URLs and root-relative paths such as `/assets/logo.svg`; other protocols and relative paths are invalid.
+`fields.image` is for image values. Template assets are resolved from the `assets` directory; a public image can be referenced with a root-relative default or locale value:
 
 ```tsx
-link: fields.url({ label: 'Link', required: false })
+hero: fields.image({
+  label: 'Hero image',
+  defaultValue: '/assets/photos/hero.webp',
+})
 ```
+
+Files under `public/assets` are served directly by the application. They are not scanned into the template asset manifest and are not replaced by Studio uploads. A Studio upload creates a template-local asset that takes precedence over the public fallback.
 
 ## Resolution And Validation
 

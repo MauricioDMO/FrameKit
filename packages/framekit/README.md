@@ -94,10 +94,11 @@ export default defineTemplate({ ...templateBase, render: Artwork })
 Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
 
-Use `fields.image()` for repository-backed images. Variant files use the field
-key as their filename under `assets/<locale>`; shared files live under
-`assets/common`. Files under `public/assets` remain explicit URLs shared by all
-templates. Studio can replace template images through `framekit dev`.
+Use `fields.image()` for images. Variant files use the field key as their
+filename under `assets/<locale>`; shared files live under `assets/common`.
+Images under `public/assets` can be referenced with a root-relative
+`defaultValue` such as `/assets/logos/brand.svg`. Studio can replace template
+images through `framekit dev`; public files remain application assets.
 
 ## Public entry points
 

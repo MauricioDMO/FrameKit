@@ -17,10 +17,10 @@
 
 ## Fields And Preview
 
-- Field definitions determine whether Studio shows text, textarea, number, color, URL, or project-image controls.
+- Field definitions determine whether Studio shows text, textarea, number, color, or project-image controls.
 - Image controls preview the resolved template asset and can replace PNG, JPEG, WebP, or GIF files while `framekit dev` is running. Variant fields use the selected locale asset and fall back to `common`; common fields use only the shared asset. See [Image Fields](../../framekit-template-creation/references/image-fields.md) for filesystem, validation, replacement, and production details.
 - Required fields are checked on export. Empty optional fields are valid.
-- Numbers honor declared minimum and maximum values. URLs must be absolute `http://` or `https://` URLs, or root-relative paths beginning with `/`.
+- Numbers honor declared minimum and maximum values. Image controls can preview template assets or root-relative images served from `public/assets`.
 - The preview initially fits the available area without exceeding 100%; minimum zoom is 10%.
 - Hold Ctrl while scrolling to zoom from 10% to 400%, centered on the pointer. Drag the preview to pan when zoomed beyond its edges.
 - **Actual size** sets 100%. **Fit to view** refits the preview. Resize refitting happens only while fit-to-view is active.

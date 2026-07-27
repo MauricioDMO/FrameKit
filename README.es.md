@@ -12,7 +12,7 @@ FrameKit es un editor de imágenes basado en plantillas para React y Next.js. De
 
 Las publicaciones sociales, tarjetas de campaña y otros gráficos recurrentes suelen convertirse en una cadena de diseños duplicados, archivos copiados y correcciones manuales. FrameKit ofrece una única fuente de verdad tipada para el diseño y una superficie de edición enfocada en las variantes de contenido.
 
-El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores, URLs e idiomas en Studio; el navegador exporta el PNG final sin rehacer el diseño.
+El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores e idiomas en Studio; el navegador exporta el PNG final sin rehacer el diseño.
 
 ## Studio
 
@@ -65,7 +65,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 ## Funciones actuales
 
 - Plantillas tipadas con `defineTemplate` o definiciones reutilizables mediante `defineTemplateBase`.
-- Campos editables `text`, `textarea`, `number`, `color`, `url` e `image`, con valores predeterminados y validación.
+- Campos editables `text`, `textarea`, `number`, `color` e `image`, con valores predeterminados y validación. Los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
 - Assets locales por plantilla en `src/templates/**/assets` y assets globales compartidos en `public/assets`.
 - Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
 - Renderizado Markdown para formato de texto en línea y listas básicas.

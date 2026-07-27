@@ -131,7 +131,7 @@ Cada definición de plantilla requiere cinco propiedades:
 
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color, url o image)
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o image)
 - `content` — un registro con al menos una entrada de locale, donde cada una contiene una cadena `language` y valores de campo parciales
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
 
@@ -160,7 +160,7 @@ La función `render` recibe un único objeto con cinco propiedades:
 - `height` — la altura de la plantilla como tipo literal.
 - `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
 
-Un campo de imagen resuelve una cadena URL. Los campos por variante usan `assets/<locale>/<field-key>.*`; los campos comunes usan `assets/common/<field-key>.*`.
+Un campo de imagen resuelve una cadena URL para el navegador. Los campos por variante usan `assets/<locale>/<field-key>.*`; los campos comunes usan `assets/common/<field-key>.*`. Una imagen pública puede referenciarse con una ruta desde la raíz como `/assets/logos/brand.svg` en `defaultValue` o en el contenido del locale. Los archivos públicos no se escanean dentro del manifest de assets de la plantilla.
 
 ```tsx
 fields: {
@@ -173,6 +173,13 @@ fields: {
 src/templates/social-card/assets/
 ├── common/background.webp
 └── en/hero.webp
+```
+
+```tsx
+logo: fields.image({
+  label: 'Logo de marca',
+  defaultValue: '/assets/logos/brand.svg',
+})
 ```
 
 ## Regeneración automática

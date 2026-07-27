@@ -39,7 +39,7 @@ type EditorState = {
 - [x] Para `required: true` o ausencia de `required`, rechazar cadenas vacías tras `trim()`.
 - [x] Para `number`, permitir vacío solo si el campo no es requerido; en otro caso exigir un número finito.
 - [x] Para `number`, aplicar `min` y `max` solo cuando exista un valor numérico válido.
-- [x] Para `url`, permitir vacío solo si no es requerido; aceptar rutas que comiencen por `/` y URLs absolutas `http:` o `https:`; rechazar los demás valores.
+- [x] Para `image`, permitir vacío solo si no es requerido; aceptar referencias a assets de template y rutas públicas desde la raíz.
 - [x] No validar formato de color adicionalmente durante alpha: el control nativo y el valor string son suficientes.
 - [x] Regla histórica: devolver mensajes fijos en español. La fase 04.5 la sustituye por códigos estructurados traducidos por la interfaz.
 - [x] Ejecutar la validación al pulsar Descargar, enfocar el primer campo inválido y abortar la exportación si hay errores.
@@ -56,5 +56,5 @@ type EditorState = {
 
 - [x] Al editar español, cambiar a inglés y volver a español, se restaura exactamente el texto editado.
 - [x] Restablecer inglés no altera español.
-- [x] Requerido vacío, número fuera de rango y URL inválida bloquean la descarga.
+- [x] Requerido vacío, número fuera de rango y color inválido bloquean la descarga.
 - [x] Un PNG válido conserva las dimensiones declaradas aunque la vista previa tenga otra escala.
