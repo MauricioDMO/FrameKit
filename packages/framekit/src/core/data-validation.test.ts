@@ -14,8 +14,8 @@ function createDefinition() {
       tooSmall: fields.number({ label: 'Too small', min: 10 }),
       tooLarge: fields.number({ label: 'Too large', max: 20 }),
       invalidNumber: fields.number({ label: 'Invalid number' }),
-      requiredUrl: fields.url({ label: 'Required URL' }),
-      optionalUrl: fields.url({ label: 'Optional URL', required: false }),
+      requiredImage: fields.image({ label: 'Required image' }),
+      optionalImage: fields.image({ label: 'Optional image', required: false }),
       requiredColor: fields.color({ label: 'Required color' }),
       optionalColor: fields.color({ label: 'Optional color', required: false }),
     },
@@ -38,14 +38,14 @@ describe('validateTemplateData', () => {
       tooSmall: '10',
       tooLarge: '20',
       invalidNumber: '13',
-      requiredUrl: '  ',
-      optionalUrl: '  ',
+      requiredImage: '  ',
+      optionalImage: '  ',
       requiredColor: '  ',
       optionalColor: '  ',
     })).toEqual({
       requiredText: { code: 'required' },
       validNumber: { code: 'required' },
-      requiredUrl: { code: 'required' },
+      requiredImage: { code: 'required' },
       requiredColor: { code: 'required' },
     })
   })
@@ -59,7 +59,8 @@ describe('validateTemplateData', () => {
       tooSmall: '9',
       tooLarge: '21',
       invalidNumber: 'nope',
-      requiredUrl: 'https://example.test',
+      requiredImage: '/assets/images/hero.webp',
+      optionalImage: '',
       requiredColor: '#AABBCC',
       optionalColor: '',
     })).toEqual({
@@ -69,7 +70,7 @@ describe('validateTemplateData', () => {
     })
   })
 
-  it('accepts absolute HTTP(S) URLs and root-relative paths only', () => {
+  it('accepts public paths for image fields', () => {
     const definition = createDefinition()
 
     expect(validateTemplateData(definition, {
@@ -78,8 +79,8 @@ describe('validateTemplateData', () => {
       tooSmall: '10',
       tooLarge: '20',
       invalidNumber: '13',
-      requiredUrl: 'HTTPS://example.test/image.svg',
-      optionalUrl: '/images/image.svg',
+      requiredImage: '/assets/images/hero.webp',
+      optionalImage: '',
       requiredColor: '#AABBCC',
       optionalColor: '#112233',
     })).toEqual({})
@@ -90,13 +91,12 @@ describe('validateTemplateData', () => {
       tooSmall: '10',
       tooLarge: '20',
       invalidNumber: '13',
-      requiredUrl: 'ftp://example.test/image.svg',
-      optionalUrl: 'javascript:alert(1)',
+      requiredImage: '',
+      optionalImage: '',
       requiredColor: '#AABBCC',
       optionalColor: 'red',
     })).toEqual({
-      requiredUrl: { code: 'invalid_url' },
-      optionalUrl: { code: 'invalid_url' },
+      requiredImage: { code: 'required' },
       optionalColor: { code: 'invalid_color' },
     })
   })

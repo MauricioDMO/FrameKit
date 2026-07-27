@@ -1,7 +1,7 @@
 export { defineTemplate, defineTemplateBase } from './core/define-template'
 export { validateTemplateData, validateTemplateDefinition } from './core/validation'
 export type { TemplateFieldKind, ImageFieldScope, BaseFieldDescriptor, FieldDescriptor, TemplateAssetManifest } from './types'
-export type { TextFieldDescriptor, TextareaFieldDescriptor, ColorFieldDescriptor, UrlFieldDescriptor, NumberFieldDescriptor, ImageFieldDescriptor } from './core/fields'
+export type { TextFieldDescriptor, TextareaFieldDescriptor, ColorFieldDescriptor, NumberFieldDescriptor, ImageFieldDescriptor } from './core/fields'
 export type { TemplateBase, TemplateDefinition, TemplateRenderProps, InferTemplateData } from './types'
 export { fields } from './core/fields'
 export { resolveTemplateData } from './core/resolve-template-data'

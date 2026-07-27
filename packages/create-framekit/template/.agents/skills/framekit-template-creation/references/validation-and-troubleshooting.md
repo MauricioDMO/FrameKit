@@ -12,7 +12,7 @@ For every template and declared locale, `framekit check` validates the definitio
 - URLs must be HTTP(S) or root-relative.
 - Non-empty colors must be `#RRGGBB`.
 
-Common data error codes: `required`, `invalid_number`, `number_too_small`, `number_too_large`, `invalid_url`, and `invalid_color`.
+Common data error codes: `required`, `invalid_number`, `number_too_small`, `number_too_large`, and `invalid_color`.
 
 ## Discovery Problems
 

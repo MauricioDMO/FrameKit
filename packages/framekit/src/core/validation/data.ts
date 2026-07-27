@@ -5,22 +5,10 @@ export type TemplateDataValidationError =
   | { code: 'invalid_number' }
   | { code: 'number_too_small'; min: number }
   | { code: 'number_too_large'; max: number }
-  | { code: 'invalid_url' }
   | { code: 'invalid_color' }
 
 export function isValidColor(value: string): boolean {
   return /^#[\da-f]{6}$/i.test(value)
-}
-
-function isValidUrl(value: string): boolean {
-  if (value.startsWith('/')) return true
-
-  try {
-    const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:'
-  } catch {
-    return false
-  }
 }
 
 export function validateTemplateData(
@@ -53,21 +41,6 @@ export function validateTemplateData(
       }
       if (field.max !== undefined && num > field.max) {
         errors[key] = { code: 'number_too_large', max: field.max }
-        continue
-      }
-      continue
-    }
-
-    if (field.kind === 'url') {
-      if (isRequired && trimmed === '') {
-        errors[key] = { code: 'required' }
-        continue
-      }
-      if (trimmed === '') {
-        continue
-      }
-      if (!isValidUrl(trimmed)) {
-        errors[key] = { code: 'invalid_url' }
         continue
       }
       continue

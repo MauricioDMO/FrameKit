@@ -10,9 +10,9 @@ describe('resolveTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        backgroundImage: fields.url({
+        backgroundImage: fields.image({
           label: 'Background',
-          defaultValue: '/images/backgrounds/forest.svg',
+          defaultValue: '/assets/images/backgrounds/forest.svg',
         }),
         title: fields.text({ label: 'Title', defaultValue: 'Default title' }),
       },
@@ -26,7 +26,7 @@ describe('resolveTemplateData', () => {
       title: 'Edited title',
       language: 'must stay excluded',
     })).toEqual({
-      backgroundImage: '/images/backgrounds/forest.svg',
+      backgroundImage: '/assets/images/backgrounds/forest.svg',
       title: 'Edited title',
     })
   })
@@ -36,7 +36,7 @@ describe('resolveTemplateData', () => {
       width: 1440,
       height: 1440,
       fields: {
-        backgroundImage: fields.url({ defaultValue: '/images/backgrounds/forest.svg', label: 'Background' }),
+        backgroundImage: fields.image({ defaultValue: '/assets/images/backgrounds/forest.svg', label: 'Background' }),
         accentColor: fields.color({ defaultValue: '#b9f8d2', label: 'Accent' }),
         eyebrow: fields.text({ label: 'Eyebrow' }),
         title: fields.text({ label: 'Title' }),
@@ -48,7 +48,7 @@ describe('resolveTemplateData', () => {
     })
 
     expect(resolveTemplateData(definition, 'en', { title: 'Edited title' })).toMatchObject({
-      backgroundImage: '/images/backgrounds/forest.svg',
+      backgroundImage: '/assets/images/backgrounds/forest.svg',
       accentColor: '#b9f8d2',
       eyebrow: 'Digital studio / 2026',
       title: 'Edited title',

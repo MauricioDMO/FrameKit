@@ -1,11 +1,15 @@
 # Image Fields
 
-`fields.image` represents a project-owned template asset. It is different from `fields.url`: the image field is resolved from the template's `assets` directory and can be replaced from Studio during development.
+`fields.image` represents an image value. It can resolve a project-owned template asset or a root-relative image served from `public`.
 
 ```tsx
 fields: {
   hero: fields.image({ label: 'Hero image' }),
   background: fields.image({ label: 'Background', scope: 'common' }),
+  logo: fields.image({
+    label: 'Logo',
+    defaultValue: '/assets/logos/brand.svg',
+  }),
 }
 ```
 
@@ -32,7 +36,18 @@ Use `assets/common` for an image shared by all locales. Use `assets/<locale>` fo
 - `scope: 'variant'` checks `assets/<locale>/<fieldKey>.*`, then falls back to `assets/common/<fieldKey>.*`.
 - `scope: 'common'` checks only `assets/common/<fieldKey>.*`.
 
-Project-wide files are separate. Put them below `public/assets/<category>` and reference them explicitly, for example `/assets/logos/brand.svg`; they are not matched to image fields or included in the template asset manifest.
+Project-wide files are separate. Put them below `public/assets/<category>` and reference them explicitly, for example `/assets/logos/brand.svg`; they are not automatically matched to image fields or included in the template asset manifest.
+
+An image field may use that public path through `defaultValue` or a locale value:
+
+```tsx
+logo: fields.image({
+  label: 'Logo',
+  defaultValue: '/assets/logos/brand.svg',
+})
+```
+
+Public files are served directly by the application. They are not discovered as common or variant assets. If Studio uploads a replacement for the same field, FrameKit writes a template-local asset and that asset takes precedence over the public value.
 
 ## Render Data And Manifest
 
@@ -67,4 +82,4 @@ Uploads replace the canonical source file in the project; they are not stored in
 
 ## Missing And Invalid Assets
 
-An image with no resolved value renders the template's empty-value behavior. A required empty image fails normal data validation during `framekit check` or export. If a resolved URL cannot load in Studio, the image control shows its load error. Browser export can also fail for external images that do not allow canvas access through CORS.
+An image with no resolved value renders the template's empty-value behavior. A required empty image fails normal data validation during `framekit check` or export. If a resolved template or public image cannot load in Studio, the image control shows its load error, and browser export can fail when the image is unavailable.

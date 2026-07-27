@@ -24,7 +24,6 @@ const messages: EditorMessages = {
   errorInvalidNumber: 'Numero invalido',
   errorNumberTooSmall: 'Debe ser al menos {min}',
   errorNumberTooLarge: 'Debe ser como maximo {max}',
-  errorInvalidUrl: 'URL invalida',
   errorInvalidColor: 'Color hexadecimal invalido',
   imageSelect: 'Subir imagen',
   imageUploading: 'Subiendo',
@@ -42,7 +41,6 @@ function createDefinition() {
       invalidNumber: fields.number({ label: 'Invalid number' }),
       tooSmall: fields.number({ label: 'Too small', min: 10 }),
       tooLarge: fields.number({ label: 'Too large', max: 20 }),
-      website: fields.url({ label: 'Website' }),
       accentColor: fields.color({ label: 'Accent color', defaultValue: '#123456' }),
       optionalColor: fields.color({ label: 'Optional color', required: false }),
     },
@@ -105,13 +103,12 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('translates structured validation errors before displaying them', () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: 'Ready', invalidNumber: 'nope', tooSmall: '9', tooLarge: '21', website: 'ftp://example.test', accentColor: 'red' } } }))
+    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: 'Ready', invalidNumber: 'nope', tooSmall: '9', tooLarge: '21', accentColor: 'red' } } }))
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooSmall.replace('{min}', '10'))).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooLarge.replace('{max}', '20'))).toBeTruthy()
-    expect(screen.getByText(messages.errorInvalidUrl)).toBeTruthy()
     expect(screen.getByText(messages.errorInvalidColor)).toBeTruthy()
   })
 

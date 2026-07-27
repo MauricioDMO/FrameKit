@@ -16,7 +16,6 @@ export interface EditorMessages {
   errorInvalidNumber: string
   errorNumberTooSmall: string
   errorNumberTooLarge: string
-  errorInvalidUrl: string
   errorInvalidColor: string
   imageSelect: string
   imageUploading: string

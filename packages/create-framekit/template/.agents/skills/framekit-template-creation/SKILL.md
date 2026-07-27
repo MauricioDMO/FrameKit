@@ -64,8 +64,7 @@ Every field needs a human-readable `label`. Shared options are `placeholder`, `r
 | `fields.textarea` | Long copy, paragraphs, or Markdown content | Use `<Markdown>` when formatted copy should render. |
 | `fields.number` | Counts, prices, percentages, or bounded numeric values | Add `min` and `max` when applicable. `data` still receives a string; parse it before arithmetic. |
 | `fields.color` | Editable solid colors | A non-empty value must be `#RRGGBB`. |
-| `fields.url` | Image sources, links, or other URLs | Accepts HTTP(S) absolute URLs and root-relative `/path` values only. |
-| `fields.image` | Project-backed template images | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. Read [Image Fields](./references/image-fields.md). |
+| `fields.image` | Template images or images served from `public` | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; a public image can be referenced with a root-relative `/assets/...` value. Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. Read [Image Fields](./references/image-fields.md). |
 
 Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Ordinary values resolve in this order: field default, selected locale content, then Studio edits. Discovered assets then override image-field values; variant assets take precedence over common assets according to the field scope.
 
@@ -96,8 +95,9 @@ src/templates/social-card/
 
 Use `assets/common` for images shared by every variant and `assets/<variant>` for
 images whose basename matches an image field key. Read [Image Fields](./references/image-fields.md)
-for scope, fallback, manifest, upload, and replacement behavior. Project-wide assets
-belong in `public/assets/<category>` and use explicit `/assets/...` URLs.
+for scope, fallback, manifest, upload, and replacement behavior. Project-wide images
+belong in `public/assets/<category>` and can be referenced by `fields.image` with a
+`defaultValue` or locale value such as `/assets/logos/brand.svg`.
 
 `definition.ts` owns dimensions, fields, and locales. `artwork.tsx` receives the inferred render props. `template.tsx` combines both and remains the only default-exporting `template.tsx` in this template.
 
