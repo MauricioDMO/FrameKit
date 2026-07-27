@@ -9,5 +9,14 @@ export async function FrameKitStudioRoot({ children }: { children: ReactNode }) 
   const cookieStore = await cookies()
   const locale = getFrameKitLocale(cookieStore.get('locale')?.value ?? (await headers()).get('accept-language'))
   const theme = cookieStore.get('theme')?.value
-  return <html lang={locale} className={`${theme === 'dark' ? 'dark' : ''} min-h-full scheme-light dark:scheme-dark`} suppressHydrationWarning><head><script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript }} /></head><body className="m-0 min-h-full bg-[#f0eee7] font-[Arial,Helvetica,sans-serif] text-[#17221d] dark:bg-[#17221d] dark:text-[#e6eee9]"><FrameKitLocaleProvider initialLocale={locale}>{children}</FrameKitLocaleProvider></body></html>
+  return (
+    <html lang={locale} className={`${theme === 'dark' ? 'dark' : ''} min-h-full scheme-light dark:scheme-dark overflow-hidden`} suppressHydrationWarning>
+      <head>
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="m-0 min-h-full bg-[#f0eee7] font-[Arial,Helvetica,sans-serif] text-[#17221d] dark:bg-[#17221d] dark:text-[#e6eee9]">
+        <FrameKitLocaleProvider initialLocale={locale}>{children}</FrameKitLocaleProvider>
+      </body>
+    </html>
+  )
 }
