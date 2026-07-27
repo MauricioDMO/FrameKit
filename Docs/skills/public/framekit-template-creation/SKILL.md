@@ -16,12 +16,36 @@ Before creating any visual artwork, check the project root for `DESIGN.md`.
 - Base the template's colors, type scale, spacing, component treatment, imagery, and overall composition on `DESIGN.md`. Do not invent a separate visual language when the file already defines one.
 - Follow the user's explicit brief when it intentionally overrides the design system, but keep all non-overridden decisions consistent with `DESIGN.md`.
 
+## Company Profile
+
+Before creating artwork, check whether the project has `src/profile.ts`.
+This is an optional shared source for public company information such as names,
+phone numbers, WhatsApp numbers, email addresses, locations, websites, and
+social handles.
+
+- Read the file and its comments before using company information. Do not assume a fixed export name or object shape.
+- If the template may show company information, ask the user whether to use the profile and which exact values to include. When there are multiple phones, emails, addresses, or social accounts, show the available options and ask which ones to use.
+- If the profile is missing or lacks a needed value, ask whether the user wants to define it before continuing. Do not invent contact information, but do not block templates that do not need it.
+- Import profile values directly into artwork when they should stay synchronized with `src/profile.ts`. Do not duplicate them in template content or field defaults unless the user explicitly wants a per-template override.
+- In generated FrameKit projects, prefer the configured `@/profile` import alias. Adapt the import to the project's existing path aliases when working in another project.
+- Render contact information as visible text or visual elements. These outputs are images, so do not add anchors, `href`, `mailto:`, `tel:`, or clickable WhatsApp links. Use a QR code only when the user requests one.
+
+The following is only an example of one possible profile shape; inspect the
+project's actual exports before using it:
+
+```tsx
+import { profile } from '@/profile'
+
+// Use the selected public value as visible artwork content.
+<span>{profile.companyName}</span>
+```
+
 ## Creation Workflow
 
-1. Check and read `DESIGN.md` as described above, then inspect existing templates, local assets, and project styling. Reuse the design system and existing conventions before creating new artwork.
+1. Check and read `DESIGN.md` and `src/profile.ts` as described above, then inspect existing templates, local assets, and project styling. Reuse the design system and existing conventions before creating new artwork.
 2. Choose the output dimensions for the destination, then create a lowercase kebab-case directory such as `social-card`.
    For social content, use [references/social-media-sizes.md](references/social-media-sizes.md) to choose a master format and export preset.
-3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields. Read [Template Fields](./references/fields.md) and [Image Fields](./references/image-fields.md) before choosing field kinds.
+3. Decide which copy, colors, images, visible URLs or handles, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields. Read [Template Fields](./references/fields.md) and [Image Fields](./references/image-fields.md) before choosing field kinds.
 4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
 5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate. Read [Iconography](./references/icons.md) when adding UI or brand icons.
 6. When the layout is substantial, extract the definition and artwork using the supported three-file pattern below.
