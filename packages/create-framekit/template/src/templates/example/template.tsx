@@ -1,4 +1,6 @@
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { SiReact } from '@icons-pack/react-simple-icons'
+import { IconSparkles } from '@tabler/icons-react'
 
 export default defineTemplate({
   width: 1200,
@@ -9,8 +11,8 @@ export default defineTemplate({
   },
   content: {
     es: {
-      language: 'Spanish',
-      title: 'Your next story starts here',
+      language: 'Español',
+      title: 'Tu próxima historia comienza aquí',
     },
     en: {
       language: 'English',
@@ -20,27 +22,21 @@ export default defineTemplate({
   render({ data, locale, width, height }) {
     return (
       <article
-        style={{
-          width,
-          height,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          padding: 72,
-          background: 'linear-gradient(135deg, #10271f, #39775f)',
-          color: '#f5fff8',
-        }}
+        style={{ width, height }}
+        className="flex flex-col justify-center bg-gradient-to-br from-[#10271f] to-[#39775f] p-[72px] text-[#f5fff8]"
       >
-        <p style={{ margin: 0, color: '#b9f8d2', fontSize: 18, letterSpacing: 4 }}>
-          FRAMEKIT / {locale.toUpperCase()}
-        </p>
+        <div className="flex items-center gap-3 text-[#b9f8d2]">
+          <IconSparkles className="size-6" stroke={1.8} aria-hidden="true" />
+          <SiReact className="size-7" aria-hidden="true" />
+          <span className="text-lg tracking-[4px]">FRAMEKIT / {locale.toUpperCase()}</span>
+        </div>
         <Markdown
           value={data.title}
-          style={{ marginTop: 28, maxWidth: 800, fontSize: 72, lineHeight: 1.05 }}
+          className="mt-7 max-w-200 text-[72px] leading-[1.05]"
         />
-        {data.hero && <img src={data.hero} alt="" style={{ marginTop: 36, width: 180, height: 120, objectFit: 'cover', borderRadius: 18 }} />}
-        <p style={{ marginTop: 40, fontSize: 20, opacity: 0.75 }}>
-          Edit this file to create your first template.
+        {data.hero && <img src={data.hero} alt="" className="mt-9 h-[120px] w-[180px] rounded-[18px] object-cover" />}
+        <p className="mt-10 text-xl opacity-75">
+          {locale === 'es' ? 'Edita este archivo para crear tu primera plantilla.' : 'Edit this file to create your first template.'}
         </p>
       </article>
     )
