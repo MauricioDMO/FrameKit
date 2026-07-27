@@ -1,6 +1,7 @@
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { SiReact } from '@icons-pack/react-simple-icons'
 import { IconSparkles } from '@tabler/icons-react'
+import { profile } from '@/profile'
 
 export default defineTemplate({
   width: 1200,
@@ -28,7 +29,7 @@ export default defineTemplate({
         <div className="flex items-center gap-3 text-[#b9f8d2]">
           <IconSparkles className="size-6" stroke={1.8} aria-hidden="true" />
           <SiReact className="size-7" aria-hidden="true" />
-          <span className="text-lg tracking-[4px]">FRAMEKIT / {locale.toUpperCase()}</span>
+          <span className="text-lg tracking-[4px]">{profile.companyName.toUpperCase()} / {locale.toUpperCase()}</span>
         </div>
         <Markdown
           value={data.title}
