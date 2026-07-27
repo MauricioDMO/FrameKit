@@ -1,24 +1,21 @@
 ---
 name: framekit-studio-usage
-description: Use when helping users of a generated FrameKit project use, configure, integrate, or troubleshoot FrameKit Studio, including template catalog navigation, editing and locale behavior, PNG export, themes, generated template registries, CLI commands, and Studio setup errors. Apply this skill whenever a user mentions FrameKit Studio, its editor, an empty template catalog, or a Studio export problem.
+description: Help users operate or troubleshoot FrameKit Studio in a generated project, including catalog navigation, editing, locales, preview, themes, PNG export, and Studio-specific failures.
 ---
 
 # FrameKit Studio Usage
 
-Help users operate or diagnose the Studio included with a generated FrameKit project. Keep advice specific to observed behavior and use the existing project commands rather than proposing custom tooling.
+Keep advice tied to the observed behavior and use the project's existing commands.
 
-## Choose The Relevant Reference
+## References
 
-- For using the Studio interface, editing values, languages, saved edits, preview controls, themes, or PNG export, read [references/using-studio.md](references/using-studio.md).
-- For image previews, project assets, common/variant resolution, or development uploads, read [the image field reference](../../framekit-template-creation/references/image-fields.md).
-- For an empty catalog, invalid template paths, generated registry issues, CSS, ports, validation, build/start failures, or broken PNG output, read [references/troubleshooting.md](references/troubleshooting.md).
-- For integrating Studio into an application, use `FrameKitStudio` from `@mauriciodmo/framekit/studio`. It accepts `{ templates: readonly FrameKitStudioTemplate[] }`. Import `@mauriciodmo/framekit/styles.css` in the layout or global CSS. Use `FrameKitStudioRoot` only from a server component or layout; it supplies the full document shell and must not be nested in another one.
+- Read [Using Studio](references/using-studio.md) for navigation, editing, locales, preview, themes, persistence, and export.
+- Read [Image Fields](../framekit-template-creation/references/image-fields.md) for image previews, assets, variants, and uploads.
+- Read [Troubleshooting](references/troubleshooting.md) for catalog, CSS, registry, dev-server, and PNG failures.
+- Read [Project integration](../framekit-project-setup/references/integration.md) when embedding Studio in another App Router project.
 
-## Work Method
+## Method
 
-1. Identify whether the problem is Studio behavior, a template/catalog issue, project setup, or production deployment.
-2. For template and build problems, run `framekit check` first when a detailed validation error is needed. It validates definitions and resolved locale data, but not rendering or PNG capture.
-3. Use `framekit generate` after correcting template discovery issues. Run `framekit build` before `framekit start`.
-4. State the cause, the smallest corrective action, and any relevant limitation, such as browser-only PNG export or local-only edits.
-
-Do not imply server synchronization, account-based persistence, export formats besides PNG, DPI controls, or arbitrary Studio interface languages. Design locales can be any template locale key; the Studio interface supports English and Spanish.
+1. Classify the issue as Studio behavior, template/catalog, project setup, or production.
+2. Run `framekit check` for definition or resolved-data errors, then `framekit generate` after discovery changes. Run `framekit build` before `framekit start`.
+3. State the cause, smallest fix, and relevant limitation. Do not promise server sync, collaboration, non-PNG export, scale or DPI controls, or interface languages beyond English and Spanish.

@@ -1,112 +1,38 @@
 ---
 name: framekit-template-creation
-description: Create, design, organize, validate, or troubleshoot visual templates in a generated or compiled FrameKit project. Use whenever a user asks to create a template from a brief, copy, screenshot, reference, or design; changes files under src/templates; defines editable content, fields, locales, or render functions; splits a large template into files; uses FrameKit Markdown; or diagnoses discovery and framekit check/dev/build failures.
+description: Create, design, organize, validate, or troubleshoot visual templates in a FrameKit project. Use for template files, editable fields, locales, render functions, Markdown, assets, and discovery or validation failures.
 ---
 
 # FrameKit Template Creation
 
-Create visual templates under `src/templates/`. A directory containing a default-exporting `template.tsx` is discovered automatically and becomes a Studio template.
+Templates live under `src/templates/`. A directory containing a default-exporting `template.tsx` is discovered as a Studio template.
 
-## Design System First
+## Before creating artwork
 
-Before creating any visual artwork, check the project root for `DESIGN.md`.
+- Read `DESIGN.md` when present and use it as the source of truth for colors, typography, spacing, shapes, shadows, imagery, and composition. If it is missing, recommend creating one before visual work.
+- Read `src/profile.ts` when present. Inspect its actual exports and ask which public values to use; never invent contact information. Import values that should stay synchronized instead of copying them into defaults.
+- Follow the user's brief when it explicitly overrides the design system, but keep other choices consistent with it.
 
-- If `DESIGN.md` is missing, recommend that the user configure one before creating the images. It should capture the visual language that templates must share, including colors, typography, spacing, shapes, borders, shadows, imagery, and composition.
-- If it exists, read it before choosing styles or building artwork. Treat it as the source of truth for every visual decision.
-- Base the template's colors, type scale, spacing, component treatment, imagery, and overall composition on `DESIGN.md`. Do not invent a separate visual language when the file already defines one.
-- Follow the user's explicit brief when it intentionally overrides the design system, but keep all non-overridden decisions consistent with `DESIGN.md`.
+## Workflow
 
-## Company Profile
+1. Inspect existing templates, assets, aliases, styling, `DESIGN.md`, and `src/profile.ts`.
+2. Choose dimensions, then create a lowercase kebab-case directory. Use [social sizes](references/social-media-sizes.md) for social formats.
+3. Decide what users edit. Keep fixed branding and layout out of fields. Read [Template Fields](references/fields.md) and [Image Fields](references/image-fields.md).
+4. Start with one inline `template.tsx` using `defineTemplate`, dimensions, fields, at least one locale, and `render`.
+5. Build from the render props `data`, `assets`, `locale`, `width`, and `height`. Use Tailwind classes for static styling; reserve inline styles for runtime values and computed dimensions.
+6. Run `framekit check`. For visual work, run `framekit dev`, inspect Studio, and export PNG when appearance matters.
 
-Before creating artwork, check whether the project has `src/profile.ts`.
-This is an optional shared source for public company information such as names,
-phone numbers, WhatsApp numbers, email addresses, locations, websites, and
-social handles.
+## Template rules
 
-- Read the file and its comments before using company information. Do not assume a fixed export name or object shape.
-- If the template may show company information, ask the user whether to use the profile and which exact values to include. When there are multiple phones, emails, addresses, or social accounts, show the available options and ask which ones to use.
-- If the profile is missing or lacks a needed value, ask whether the user wants to define it before continuing. Do not invent contact information, but do not block templates that do not need it.
-- Import profile values directly into artwork when they should stay synchronized with `src/profile.ts`. Do not duplicate them in template content or field defaults unless the user explicitly wants a per-template override.
-- In generated FrameKit projects, prefer the configured `@/profile` import alias. Adapt the import to the project's existing path aliases when working in another project.
-- Render contact information as visible text or visual elements. These outputs are images, so do not add anchors, `href`, `mailto:`, `tel:`, or clickable WhatsApp links. Use a QR code only when the user requests one.
+- Every field needs a non-empty `label`; `required` defaults to `true`. Read [Template Fields](references/fields.md) instead of duplicating field rules here.
+- `Markdown` is opt-in. Pass a text or textarea value to `<Markdown>`; read [FrameKit Markdown](references/markdown.md) for supported syntax.
+- Use `@tabler/icons-react` for interface or decorative icons and `@icons-pack/react-simple-icons` for brands. Read [Iconography](references/icons.md).
+- Template paths must use lowercase kebab-case. Directories beginning with `.` or `_` are ignored; directories without `template.tsx` may contain deeper templates.
+- `framekit check` validates definitions and resolved locale data, not rendering or PNG export.
 
-The following is only an example of one possible profile shape; inspect the
-project's actual exports before using it:
+## Larger templates
 
-```tsx
-import { profile } from '@/profile'
-
-// Use the selected public value as visible artwork content.
-<span>{profile.companyName}</span>
-```
-
-## Creation Workflow
-
-1. Check and read `DESIGN.md` and `src/profile.ts` as described above, then inspect existing templates, local assets, and project styling. Reuse the design system and existing conventions before creating new artwork.
-2. Choose the output dimensions for the destination, then create a lowercase kebab-case directory such as `social-card`.
-   For social content, use [references/social-media-sizes.md](references/social-media-sizes.md) to choose a master format and export preset.
-3. Decide which copy, colors, images, visible URLs or handles, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields. Read [Template Fields](./references/fields.md) and [Image Fields](./references/image-fields.md) before choosing field kinds.
-4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
-5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate. Read [Iconography](./references/icons.md) when adding UI or brand icons.
-6. When the layout is substantial, extract the definition and artwork using the supported three-file pattern below.
-7. Run `framekit check`. For visual work, run `framekit dev`, inspect the template in Studio, and export a PNG when the final appearance matters.
-
-```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
-
-export default defineTemplate({
-  width: 1200,
-  height: 800,
-  fields: {
-    title: fields.text({ label: 'Title' }),
-    accentColor: fields.color({ label: 'Accent color', defaultValue: '#b9f8d2' }),
-  },
-  content: {
-    en: { language: 'English', title: 'Your next story starts here' },
-  },
-  render({ data, locale, width, height }) {
-    return (
-      <article
-        lang={locale}
-        className="size-full"
-        style={{ width, height, color: data.accentColor }}
-      >
-        <Markdown value={data.title} />
-      </article>
-    )
-  },
-})
-```
-
-## Editable Fields
-
-Every field needs a human-readable `label`. Shared options are `placeholder`, `required` (defaults to `true`), and `defaultValue`.
-
-| Field | Use for | Notes |
-| --- | --- | --- |
-| `fields.text` | Short, single-line copy such as a title, label, or CTA | No extra constraints. |
-| `fields.textarea` | Long copy, paragraphs, or Markdown content | Use `<Markdown>` when formatted copy should render. |
-| `fields.number` | Counts, prices, percentages, or bounded numeric values | Add `min` and `max` when applicable. `data` still receives a string; parse it before arithmetic. |
-| `fields.color` | Editable solid colors | A non-empty value must be `#RRGGBB`. |
-| `fields.image` | Template images or images served from `public` | Uses `assets/<variant>/<fieldKey>.*` or `assets/common/<fieldKey>.*`; a public image can be referenced with a root-relative `/assets/...` value. Studio can upload PNG, JPEG, WebP, or GIF during `framekit dev`. Read [Image Fields](./references/image-fields.md). |
-
-Each locale needs a human-readable `language` property. Locale keys may be any identifier. `language` is reserved, cannot be a field name, and is not included in `data`. Ordinary values resolve in this order: field default, selected locale content, then Studio edits. Discovered assets then override image-field values; variant assets take precedence over common assets according to the field scope.
-
-Read [Template Fields](./references/fields.md) for field behavior and validation. Read [FrameKit Markdown](./references/markdown.md) for the separate Markdown formatter.
-
-## Markdown
-
-Markdown is opt-in. A `text` or `textarea` value is plain text until the render function passes it to `<Markdown>`. It supports a deliberately small escaped syntax; read [FrameKit Markdown](./references/markdown.md) before relying on formatting.
-
-## Styling
-
-Use Tailwind utility classes for layout, typography, spacing, borders, shadows, and static colors. Do not use `style={}` for values Tailwind can express. Inline styles are appropriate only for runtime values from `data` or computed render dimensions.
-
-For common interface and decorative icons, use `@tabler/icons-react`. For brand marks such as WhatsApp or Instagram, use `@icons-pack/react-simple-icons`. Read [Iconography](./references/icons.md) for imports, props, and accessibility.
-
-## Large Templates
-
-Keep a simple template in one file. When its artwork or helpers make it difficult to read, keep `template.tsx` as the discovery entrypoint and use this structure:
+Keep `template.tsx` as the only discovery entrypoint and default export:
 
 ```text
 src/templates/social-card/
@@ -117,68 +43,6 @@ src/templates/social-card/
   assets/
 ```
 
-Use `assets/common` for images shared by every variant and `assets/<variant>` for
-images whose basename matches an image field key. Read [Image Fields](./references/image-fields.md)
-for scope, fallback, manifest, upload, and replacement behavior. Project-wide images
-belong in `public/assets/<category>` and can be referenced by `fields.image` with a
-`defaultValue` or locale value such as `/assets/logos/brand.svg`.
+`definition.ts` owns dimensions, fields, and locales. `artwork.tsx` receives typed render props. `template.tsx` combines them. Do not redeclare definition values or add a nested `template.tsx`.
 
-`definition.ts` owns dimensions, fields, and locales. `artwork.tsx` receives the inferred render props. `template.tsx` combines both and remains the only default-exporting `template.tsx` in this template.
-
-```tsx
-// definition.ts
-import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
-
-export const templateBase = defineTemplateBase({
-  width: 1080,
-  height: 1080,
-  fields: {
-    title: fields.text({ label: 'Title' }),
-    accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
-  },
-  content: {
-    en: { language: 'English', title: 'Your next story starts here' },
-  },
-})
-```
-
-```tsx
-// artwork.tsx
-import type { TemplateRenderProps } from '@mauriciodmo/framekit'
-import type { templateBase } from './definition'
-
-type ArtworkProps = TemplateRenderProps<typeof templateBase>
-
-export function Artwork({ data, locale, width, height }: ArtworkProps) {
-  return (
-    <article
-      lang={locale}
-      className="flex size-full items-center p-12 text-5xl font-bold"
-      style={{ width, height, color: data.accentColor }}
-    >
-      {data.title}
-    </article>
-  )
-}
-```
-
-```tsx
-// template.tsx
-import { defineTemplate } from '@mauriciodmo/framekit'
-import { Artwork } from './artwork'
-import { templateBase } from './definition'
-
-export default defineTemplate({ ...templateBase, render: Artwork })
-```
-
-Do not redeclare fields, locales, or dimensions in `artwork.tsx`. Do not add a nested `template.tsx`: a directory with that filename is a discovery boundary, and its descendants are private helpers, components, and assets.
-
-## Discovery And Verification
-
-- Every directory below `src/templates/` must use lowercase letters, digits, and single hyphens: `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
-- Directories beginning with `.` or `_` are ignored. Category directories without `template.tsx` may contain deeper templates.
-- The template slug is its path below `src/templates/`, joined with `/`.
-- `framekit check` validates definitions and resolved data for every locale. It does not typecheck rendering or verify PNG export.
-- `framekit dev` regenerates the registry after structural changes. Existing `template.tsx` edits use HMR; restart development if added or removed files are not reflected.
-
-Read [references/validation-and-troubleshooting.md](references/validation-and-troubleshooting.md) when validation or discovery fails.
+Use `assets/common` for shared images and `assets/<locale>` for locale-specific images. Put project-wide fallbacks in `public/assets` and reference them with root-relative paths. Read [Image Fields](references/image-fields.md) for precedence and uploads.

@@ -29,7 +29,7 @@ src/templates/social-card/
         └── hero.webp
 ```
 
-The asset basename must match the image field key. Variant directories use the exact locale keys declared in `content`. Existing project assets may use `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`; only one supported image should exist for a field key in a directory.
+For an asset to resolve to a field, its basename must match the image field key. Use the locale keys declared in `content` for variant directories; FrameKit validates the directory-name pattern, not locale membership. Existing project assets may use `.avif`, `.gif`, `.jpeg`, `.jpg`, `.png`, `.svg`, or `.webp`; only one supported image should exist for a field key in a directory.
 
 Use `assets/common` for an image shared by all locales. Use `assets/<locale>` for locale-specific images. `scope` defaults to `variant`:
 

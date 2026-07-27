@@ -26,7 +26,7 @@ Add the generated-file alias to `tsconfig.json` without replacing existing alias
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@framekit/*": ["./.framekit/*"]
+      "@framekit/generated/*": ["./src/generated/framekit/*"]
     }
   }
 }
@@ -38,9 +38,7 @@ Import the stylesheet in global CSS:
 @import "@mauriciodmo/framekit/styles.css";
 ```
 
-If using Tailwind, keep its import as well. Alternatively, import the stylesheet directly in the layout.
-
-Use the Studio document shell in `src/app/layout.tsx`:
+Keep the root layout a server component and use the Studio document shell:
 
 ```tsx
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
@@ -73,10 +71,4 @@ export default function HomePage() {
 }
 ```
 
-Generate the registry:
-
-```bash
-pnpm framekit generate
-```
-
-The registry is `src/generated/framekit/templates.ts`. Generation and `framekit dev` recreate it; do not edit it. The `.framekit/` directory can be deleted and regenerated separately.
+Run `pnpm framekit generate`. It writes `src/generated/framekit/templates.ts`; generation and `framekit dev` recreate it. The `.framekit/` directory is also disposable.

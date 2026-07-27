@@ -1,30 +1,25 @@
 # Validation And Troubleshooting
 
-## What `framekit check` Validates
+## What `framekit check` validates
 
-For every template and declared locale, `framekit check` validates the definition, resolves defaults and locale content without edits, then validates the resolved data.
+For every template and locale, `framekit check` generates the registry, validates the definition, resolves defaults and locale content without Studio edits, and validates the resulting data.
 
-- Dimensions must be positive finite integers.
-- `content` needs at least one entry, and every entry needs `language`.
+- Width and height must be positive finite integers.
+- `content` needs at least one entry; every entry needs a string `language`.
 - `render` must be a function.
-- Required values cannot be empty after trimming whitespace.
-- Numbers must be finite and within `min`/`max`.
-- URLs must be HTTP(S) or root-relative.
-- Non-empty colors must be `#RRGGBB`.
+- Required values cannot be blank after trimming.
+- Numbers must be finite and within declared `min` and `max`.
+- Non-empty colors must match `#RRGGBB`.
 
-Common data error codes: `required`, `invalid_number`, `number_too_small`, `number_too_large`, and `invalid_color`.
+Common data errors are `required`, `invalid_number`, `number_too_small`, `number_too_large`, and `invalid_color`.
 
-## Discovery Problems
+## Discovery
 
 | Symptom | Fix |
 | --- | --- |
-| No templates found | Create `src/templates` and add at least one valid template directory containing `template.tsx`; run `framekit generate`. |
-| Invalid path segment | Rename every segment under `src/templates` to lowercase kebab-case. |
-| Directory is absent from Studio | Remove a leading `.` or `_`; ensure the directory or a descendant contains `template.tsx`. |
-| Structural changes do not appear in dev | Restart `framekit dev`. |
+| No templates found | Create `src/templates` and add a directory containing `template.tsx`; run `framekit generate`. |
+| Invalid path segment | Rename every segment to lowercase kebab-case. |
+| Directory is absent | Remove a leading `.` or `_`, or add `template.tsx` to it or a descendant. |
+| Structural or asset changes are missing in dev | Restart `framekit dev`. |
 
-## Development And Build
-
-- `framekit dev` uses port `3000` by default. Set `PORT=3001` for an available port; `FRAMEKIT_HOST` takes priority over `HOST` for the bind address.
-- `framekit build` stops at template validation errors. Run `framekit check` directly for the detailed per-file, per-locale, and per-field errors.
-- `framekit check` does not test rendering or PNG export. Export can fail when data is invalid, fonts fail to load, external images lack CORS permission, or the browser lacks DOM/canvas support.
+For ports, builds, starts, aliases, and installation failures, read [CLI and troubleshooting](../../framekit-project-setup/references/cli-and-troubleshooting.md).
