@@ -3,7 +3,7 @@
   "version": "0.6.2",
   "type": "module",
   "engines": {
-    "node": ">=20.9.0",
+    "node": ">=22.13.0",
     "pnpm": ">=11.14.0"
   },
   "license": "Apache-2.0",

@@ -6,7 +6,7 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 
 ## Requisitos previos
 
-- Node.js 20.9.0 o posterior.
+- Node.js 22.13.0 o posterior.
 - pnpm 11.14.0 o posterior, **o** npm 10.x o posterior.
 
 ## Crear el proyecto

@@ -23,7 +23,7 @@ Before creating any visual artwork, check the project root for `DESIGN.md`.
    For social content, use [references/social-media-sizes.md](references/social-media-sizes.md) to choose a master format and export preset.
 3. Decide which copy, colors, images, links, or numeric values the Studio user must edit. Keep fixed branding and decorative layout out of fields. Read [Template Fields](./references/fields.md) and [Image Fields](./references/image-fields.md) before choosing field kinds.
 4. Start with an inline `template.tsx`. Define dimensions, fields, at least one content locale, and `render`.
-5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate.
+5. Build the artwork from `data`, `locale`, `width`, and `height` received by `render`; do not duplicate definition values in the component. Use Tailwind utility classes for styling instead of `style={}`. Reserve inline styles for runtime values such as editable colors or computed dimensions that Tailwind cannot statically generate. Read [Iconography](./references/icons.md) when adding UI or brand icons.
 6. When the layout is substantial, extract the definition and artwork using the supported three-file pattern below.
 7. Run `framekit check`. For visual work, run `framekit dev`, inspect the template in Studio, and export a PNG when the final appearance matters.
 
@@ -78,6 +78,8 @@ Markdown is opt-in. A `text` or `textarea` value is plain text until the render 
 ## Styling
 
 Use Tailwind utility classes for layout, typography, spacing, borders, shadows, and static colors. Do not use `style={}` for values Tailwind can express. Inline styles are appropriate only for runtime values from `data` or computed render dimensions.
+
+For common interface and decorative icons, use `@tabler/icons-react`. For brand marks such as WhatsApp or Instagram, use `@icons-pack/react-simple-icons`. Read [Iconography](./references/icons.md) for imports, props, and accessibility.
 
 ## Large Templates
 

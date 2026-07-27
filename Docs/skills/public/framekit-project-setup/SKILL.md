@@ -9,8 +9,8 @@ Set up the project from its root directory. FrameKit commands always use the cur
 
 ## Choose the path
 
-- For a new project, use `pnpm dlx @mauriciodmo/create-framekit <new-directory>`. Require Node.js 20.9.0+, pnpm 11.14.0+, and a target directory that does not exist. The creator runs installation and generation; retain its partial directory if either fails for diagnosis.
-- For an existing project, use the integration sequence below. Require Node.js 20.9+, Next.js 16+, and React 19+. Use the project's package-manager equivalent for commands shown with pnpm.
+- For a new project, use `pnpm dlx @mauriciodmo/create-framekit <new-directory>`. Require Node.js 22.13.0+, pnpm 11.14.0+, and a target directory that does not exist. The creator runs installation and generation; retain its partial directory if either fails for diagnosis.
+- For an existing project, use the integration sequence below. Require Node.js 22.13.0+, Next.js 16+, and React 19+. Use the project's package-manager equivalent for commands shown with pnpm.
 - The packages are currently prerelease and are not yet published to npm. State this plainly if the installation command cannot resolve them.
 
 ## Integrate an existing project

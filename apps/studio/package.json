@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "framekit dev",
     "build": "framekit build",
@@ -14,7 +17,9 @@
     "typecheck": "framekit generate && tsc --noEmit"
   },
   "dependencies": {
+    "@icons-pack/react-simple-icons": "13.8.0",
     "@mauriciodmo/framekit": "workspace:*",
+    "@tabler/icons-react": "^3.45.0",
     "lucide-react": "^1.24.0",
     "next": "16.2.10",
     "react": "19.2.4",
