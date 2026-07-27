@@ -41,15 +41,15 @@ type TemplateLoader = () => Promise<{
   default: TemplateDefinition
 }>
 
-export const templates = [
-${entries}
-] satisfies Array<{
+export const templates: Array<{
   slug: string
   title: string
   segments: string[]
   assets: TemplateAssetManifest
   load: TemplateLoader
-}>
+}> = [
+${entries}
+]
 
 export const templateManifest = templates.map(
   ({ load: _, assets: __, ...metadata }) => metadata,

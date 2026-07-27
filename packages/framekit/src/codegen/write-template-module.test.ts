@@ -1,13 +1,26 @@
 // @vitest-environment node
 
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { execFile } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
+import { promisify } from 'node:util'
+import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
 import { findTemplates } from '../discovery/find-templates'
 import { writeTemplateModule } from './write-template-module'
+
+const execFileAsync = promisify(execFile)
+const tscCli = fileURLToPath(import.meta.resolve('typescript/bin/tsc'))
+const validTemplateSource = `export default {
+  width: 1080,
+  height: 1080,
+  fields: {},
+  content: { en: { language: 'English' } },
+  render: () => null,
+}`
 
 describe('findTemplates', () => {
   it('stops at a template and ignores its private auxiliary directories', async () => {
@@ -97,10 +110,10 @@ describe('writeTemplateModule', () => {
       await mkdir(path.join(firstTemplate, 'assets', 'common'), { recursive: true })
       await mkdir(path.join(templatesRoot, 'empty', 'category'), { recursive: true })
       await mkdir(secondTemplate, { recursive: true })
-      await writeFile(path.join(firstTemplate, 'template.tsx'), '')
+      await writeFile(path.join(firstTemplate, 'template.tsx'), validTemplateSource)
       await writeFile(path.join(firstTemplate, 'helpers', 'template.tsx'), '')
       await writeFile(path.join(firstTemplate, 'assets', 'common', 'logo.svg'), '<svg />')
-      await writeFile(path.join(secondTemplate, 'template.tsx'), '')
+      await writeFile(path.join(secondTemplate, 'template.tsx'), validTemplateSource)
 
       await expect(writeTemplateModule({ projectRoot: root })).resolves.toEqual([
         {
@@ -125,7 +138,13 @@ type TemplateLoader = () => Promise<{
   default: TemplateDefinition
 }>
 
-export const templates = [
+export const templates: Array<{
+  slug: string
+  title: string
+  segments: string[]
+  assets: TemplateAssetManifest
+  load: TemplateLoader
+}> = [
   {
     slug: "marketing/email/launch",
     title: "Launch",
@@ -140,13 +159,7 @@ export const templates = [
     assets: {"common":{"logo":"/__framekit/templates/social/campaign/common/logo.svg"},"variants":{}},
     load: () => import("../../templates/social/campaign/template"),
   }
-] satisfies Array<{
-  slug: string
-  title: string
-  segments: string[]
-  assets: TemplateAssetManifest
-  load: TemplateLoader
-}>
+]
 
 export const templateManifest = templates.map(
   ({ load: _, assets: __, ...metadata }) => metadata,
@@ -156,6 +169,66 @@ export const templateRegistry: Record<string, TemplateLoader> =
   Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
       await expect(readFile(path.join(root, 'public', '__framekit', 'templates', 'social', 'campaign', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg />')
+
+      const framekitPackage = path.join(root, 'node_modules', '@mauriciodmo', 'framekit')
+      await mkdir(framekitPackage, { recursive: true })
+      await writeFile(path.join(framekitPackage, 'package.json'), JSON.stringify({
+        name: '@mauriciodmo/framekit',
+        type: 'module',
+        exports: {
+          '.': { types: './index.d.ts' },
+          './studio': { types: './studio.d.ts' },
+        },
+      }))
+      await writeFile(path.join(framekitPackage, 'index.d.ts'), `
+export interface TemplateAssetManifest {
+  common: Record<string, string>
+  variants: Record<string, Record<string, string>>
+}
+
+export interface TemplateDefinition {
+  width: number
+  height: number
+  fields: Record<string, unknown>
+  content: Record<string, { language: string }>
+  render: (props: unknown) => unknown
+}
+`)
+      await writeFile(path.join(framekitPackage, 'studio.d.ts'), `
+import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
+
+export interface FrameKitStudioTemplate {
+  slug: string
+  title: string
+  segments: string[]
+  assets?: TemplateAssetManifest
+  load: () => Promise<{ default: TemplateDefinition }>
+}
+
+export declare function FrameKitStudio(props: {
+  templates: readonly FrameKitStudioTemplate[]
+}): unknown
+`)
+      await writeFile(path.join(root, 'src', 'consumer.ts'), `
+import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+import { templates } from './generated/framekit/templates'
+
+FrameKitStudio({ templates })
+`)
+      await writeFile(path.join(root, 'tsconfig.json'), JSON.stringify({
+        compilerOptions: {
+          strict: true,
+          noEmit: true,
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          target: 'es2022',
+          jsx: 'react-jsx',
+          skipLibCheck: true,
+        },
+        include: ['src/**/*.ts', 'src/**/*.tsx'],
+      }))
+
+      await expect(execFileAsync(process.execPath, [tscCli, '--project', path.join(root, 'tsconfig.json')])).resolves.toBeDefined()
     } finally {
       await rm(root, { recursive: true, force: true })
     }
