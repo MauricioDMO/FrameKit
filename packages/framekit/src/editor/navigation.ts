@@ -33,7 +33,10 @@ export function humanizeSegment(name: string): string {
     .join(' ')
 }
 
-export function manifestToNavigation(manifest: readonly TemplateManifestEntry[]): TemplateNavigationNode[] {
+export function manifestToNavigation(
+  manifest: readonly TemplateManifestEntry[],
+  basePath = '/editor',
+): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
   const root: TemplateNavigationNode[] = []
 
@@ -55,7 +58,7 @@ export function manifestToNavigation(manifest: readonly TemplateManifestEntry[])
             id: slug,
             slug,
             title: folderTitle,
-            href: `/editor/${slug}`,
+              href: `${basePath}/${slug}`,
           }
           folderMap.set(folderSlug, item)
         } else {

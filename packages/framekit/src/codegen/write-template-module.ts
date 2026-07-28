@@ -2,9 +2,11 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { findTemplateAssets } from '../discovery/find-assets'
+import { findBrandComponents } from '../discovery/find-brand-components'
 import { findTemplates } from '../discovery/find-templates'
 import type { DiscoveredTemplate } from '../discovery/types'
 import type { TemplateAssetManifest } from '../types'
+import { createBrandModule } from './create-brand-module'
 import { createTemplateModule } from './create-template-module'
 
 async function writeIfChanged(filePath: string, content: string): Promise<void> {
@@ -55,6 +57,7 @@ export async function writeTemplateModule(options: {
   const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')
   const outputDirectory = path.join(options.projectRoot, 'src', 'generated', 'framekit')
   const outputFile = path.join(outputDirectory, 'templates.ts')
+  const brandOutputFile = path.join(outputDirectory, 'brands.ts')
   const templates = await findTemplates(templatesDirectory)
 
   if (templates.length === 0) {
@@ -63,9 +66,12 @@ export async function writeTemplateModule(options: {
 
   const assetsBySlug = await syncTemplateAssets(options.projectRoot, templates)
   const source = createTemplateModule(templates, { outputDirectory, assetsBySlug })
+  const brands = await findBrandComponents(path.join(options.projectRoot, 'src', 'brand'))
+  const brandSource = createBrandModule(brands, { outputDirectory })
 
   await mkdir(outputDirectory, { recursive: true })
   await writeIfChanged(outputFile, source)
+  await writeIfChanged(brandOutputFile, brandSource)
 
   return templates
 }

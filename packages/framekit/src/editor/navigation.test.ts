@@ -60,4 +60,16 @@ describe('manifest navigation', () => {
       },
     ])
   })
+
+  it('supports a separate catalog base path', () => {
+    expect(manifestToNavigation([{ slug: 'people/quote', title: 'Quote', segments: ['people', 'quote'] }], '/brand')).toEqual([
+      {
+        type: 'folder',
+        id: 'people',
+        slug: 'people',
+        title: 'People',
+        children: [{ type: 'template', id: 'people/quote', slug: 'people/quote', title: 'Quote', href: '/brand/people/quote' }],
+      },
+    ])
+  })
 })

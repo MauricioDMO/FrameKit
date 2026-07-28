@@ -11,25 +11,28 @@ export function watchTemplates(options: {
   onStructureChange: () => void
   onError: (error: Error) => void
 }): TemplateWatcher {
-  const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')
-  const watcher: FSWatcher = chokidar.watch(templatesDirectory, { ignoreInitial: true })
+  const sourceDirectory = path.join(options.projectRoot, 'src')
+  const templatesDirectory = path.join(sourceDirectory, 'templates')
+  const brandDirectory = path.join(sourceDirectory, 'brand')
+  const watcher: FSWatcher = chokidar.watch(sourceDirectory, { ignoreInitial: true })
+  const isWithin = (root: string, filePath: string) => {
+    const relativePath = path.relative(root, filePath)
+    return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath))
+  }
   const isAssetPath = (filePath: string) => path.relative(templatesDirectory, filePath).split(path.sep).includes('assets')
+  const isBrandPath = (filePath: string) => isWithin(brandDirectory, filePath)
+  const isTemplatePath = (filePath: string) => isWithin(templatesDirectory, filePath)
 
-  watcher.on('add', (filePath) => {
-    if (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath)) {
-      void options.onStructureChange()
-    }
-  })
-  watcher.on('unlink', (filePath) => {
-    if (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath)) {
-      void options.onStructureChange()
-    }
-  })
-  watcher.on('change', (filePath) => {
-    if (isAssetPath(filePath)) void options.onStructureChange()
-  })
-  watcher.on('addDir', options.onStructureChange)
-  watcher.on('unlinkDir', options.onStructureChange)
+  function shouldRegenerate(filePath: string): boolean {
+    if (isBrandPath(filePath)) return true
+    return isTemplatePath(filePath) && (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath))
+  }
+
+  watcher.on('add', (filePath) => { if (shouldRegenerate(filePath)) void options.onStructureChange() })
+  watcher.on('unlink', (filePath) => { if (shouldRegenerate(filePath)) void options.onStructureChange() })
+  watcher.on('change', (filePath) => { if (shouldRegenerate(filePath)) void options.onStructureChange() })
+  watcher.on('addDir', (filePath) => { if (isTemplatePath(filePath) || isBrandPath(filePath)) void options.onStructureChange() })
+  watcher.on('unlinkDir', (filePath) => { if (isTemplatePath(filePath) || isBrandPath(filePath)) void options.onStructureChange() })
   watcher.on('error', (error) => {
     options.onError(error instanceof Error ? error : new Error(String(error)))
   })
