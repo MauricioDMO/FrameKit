@@ -1,5 +1,7 @@
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
+import { BrandHero } from '@/brand/communication/hero/component'
+
 export default defineTemplate({
   width: 1440,
   height: 1440,
@@ -54,14 +56,7 @@ export default defineTemplate({
           </header>
 
           <main className="my-auto grid grid-cols-[1fr_0.8fr] items-center gap-16">
-            <div className="max-w-[720px]">
-              <Markdown value={data.eyebrow} className="mb-7 text-[17px] font-black tracking-[0.28em] uppercase" style={{ color: accentColor }} />
-              <Markdown value={data.title} lists className="text-[76px] leading-[0.95] font-medium tracking-[-0.06em]" />
-              <div className="mt-9 flex items-start gap-5">
-                <span className="mt-3 h-[3px] w-14 shrink-0" style={{ backgroundColor: accentColor }} />
-                <Markdown value={data.description} lists className="max-w-[570px] text-[23px] leading-[1.4] text-white/70" />
-              </div>
-            </div>
+            <BrandHero eyebrow={data.eyebrow} title={data.title} description={data.description} accentColor={accentColor} />
 
             <div className="relative h-[465px]">
               <div className="absolute top-0 right-0 w-[330px] rounded-[22px] border border-white/15 bg-[#173d31] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.28)]">
