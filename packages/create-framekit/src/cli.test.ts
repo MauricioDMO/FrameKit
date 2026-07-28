@@ -121,7 +121,7 @@ describe('create-framekit', () => {
         ])
         expect(commands.every(({ cwd }: { cwd: string }) => cwd === destination)).toBe(true)
         await expect(readFile(path.join(destination, '.gitignore'), 'utf8')).resolves.toContain('.framekit')
-        await expect(readFile(path.join(destination, '.agents', 'skills', 'framekit-project-setup', 'SKILL.md'), 'utf8')).resolves.toContain('name: framekit-project-setup')
+        await expect(readFile(path.join(destination, '.agents', 'skills', 'fk-setup', 'SKILL.md'), 'utf8')).resolves.toContain('name: fk-setup')
       } finally {
         process.env.PATH = previousPath
       }

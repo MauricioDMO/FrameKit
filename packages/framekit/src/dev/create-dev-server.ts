@@ -46,7 +46,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
         do {
           generationPending = false
           const templates = await writeTemplateModule({ projectRoot: options.projectRoot })
-          console.log(`FrameKit: ${templates.length} plantilla(s)`)
+          console.log(`FrameKit: ${templates.length} template${templates.length === 1 ? '' : 's'}`)
         } while (generationPending)
       } finally {
         generationPending = false
@@ -147,24 +147,37 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
       },
     })
 
-    await new Promise<void>((resolve, reject) => {
-      const onError = (error: Error) => {
-        httpServer!.off('error', onError)
-        reject(error)
-      }
+    let port = options.port
+    while (true) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onError = (error: Error) => {
+            httpServer!.off('error', onError)
+            reject(error)
+          }
 
-      httpServer!.once('error', onError)
-      httpServer!.listen(options.port, options.hostname, () => {
-        httpServer!.off('error', onError)
-        resolve()
-      })
-    })
+          httpServer!.once('error', onError)
+          httpServer!.listen(port, options.hostname, () => {
+            httpServer!.off('error', onError)
+            resolve()
+          })
+        })
+        break
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EADDRINUSE' || port >= 65_535) throw error
+        port += 1
+      }
+    }
+
+    const address = httpServer.address()
+    if (!address || typeof address === 'string') throw new Error('Expected a TCP server address')
+    port = address.port
 
     httpServer.on('error', (error) => {
       reportError(error)
     })
 
-    console.log(`FrameKit Studio: http://${options.hostname}:${options.port}`)
+    console.log(`FrameKit Studio: http://${options.hostname}:${port}`)
 
     return { close: closeResources }
   } catch (error) {

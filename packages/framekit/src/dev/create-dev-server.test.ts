@@ -54,19 +54,15 @@ describe('createDevServer startup cleanup', () => {
     expect(mocks.watcher.close).not.toHaveBeenCalled()
   })
 
-  it('closes the watcher, HTTP server, and Next when the port is occupied', async () => {
+  it('uses the next port when the requested port is occupied', async () => {
     const blocker = createServer()
     const port = await listen(blocker)
 
     try {
-      await expect(createDevServer({ ...options, port })).rejects.toMatchObject({ code: 'EADDRINUSE' })
-      expect(mocks.watcher.close).toHaveBeenCalledOnce()
-      expect(mocks.app.close).toHaveBeenCalledOnce()
+      const server = await createDevServer({ ...options, port })
+      await server.close()
     } finally {
       await close(blocker)
     }
-
-    const server = await createDevServer({ ...options, port })
-    await server.close()
   })
 })
