@@ -25,6 +25,7 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 | Tipo                          | Descripción                                                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"textarea"` \| `"color"` \| `"number"` \| `"image"` |
+| `ImageFieldScope`             | Alcance de un campo de imagen: `"common"` \| `"variant"`                                                        |
 | `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
 | `TextFieldDescriptor`         | Descriptor para campos de texto                                                                                |
@@ -70,7 +71,7 @@ Proporciona el componente `FrameKitEditor` y las utilidades de navegación asoci
 
 Proporciona el componente `FrameKitStudio`, que combina el editor y la navegación en una interfaz de estudio completa, junto con utilidades de localización.
 
-Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[] }`.
+Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`. `brands` es opcional y, si se omite, se usa un catálogo vacío.
 
 **Exportaciones del entorno de ejecución**
 
@@ -85,8 +86,12 @@ Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[] }
 | Tipo                     | Descripción                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
 | `FrameKitStudioTemplate` | Tipo de plantilla limitado al contexto del estudio                |
+| `FrameKitStudioBrand`    | Entrada de catálogo de marca con `slug: string`, `title: string`, `segments: string[]`, `description: string` y `load: () => Promise<{ default: unknown }>` |
 | `FrameKitLocale`         | Tipo de locale utilizado dentro del estudio                       |
 | `FrameKitStudioMessages` | Tipo de catálogo de mensajes para cadenas de interfaz del estudio |
+
+`FrameKitBrandCatalog` es un componente interno y no se exporta desde este
+punto de entrada; no forma parte de la API pública.
 
 ---
 
@@ -112,9 +117,11 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | ---------------------- | ------------------------------------------------------------------------------------ |
 | `createDevServer`      | Crea una instancia de servidor de desarrollo                                         |
 | `findTemplates`        | Escanea el sistema de archivos en busca de módulos de plantillas                     |
-| `createTemplateModule` | Genera un módulo de plantilla a partir de una definición de plantilla                |
-| `writeTemplateModule`  | Escribe un módulo de plantilla generado en disco                                     |
-| `watchTemplates`       | Observa archivos de plantillas en busca de cambios y ejecuta devoluciones de llamada |
+| `findBrandComponents`  | Descubre recursivamente componentes de marca en un directorio                       |
+| `createTemplateModule` | Genera un módulo de plantillas a partir de plantillas descubiertas                   |
+| `createBrandModule`    | Genera un módulo de catálogo de marca a partir de componentes descubiertos           |
+| `writeTemplateModule`  | Escribe en disco los módulos generados de plantillas y de marca                      |
+| `watchTemplates`       | Observa plantillas, assets y `src/brand` en busca de cambios y ejecuta callbacks     |
 | `getServerOptions`     | Resuelve las opciones de configuración del servidor                                  |
 
 **Exportaciones de tipos**
@@ -124,7 +131,15 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | `DevServer`          | Tipo de instancia del servidor de desarrollo                     |
 | `DevServerOptions`   | Opciones para crear un servidor de desarrollo                    |
 | `DiscoveredTemplate` | Plantilla descubierta durante el escaneo del sistema de archivos |
+| `DiscoveredBrandComponent` | Componente de marca descubierto, con slug, segmentos, ruta absoluta y descripción |
 | `TemplateWatcher`    | Instancia de vigilancia devuelta por `watchTemplates`            |
+
+Las funciones de codegen escriben el artefacto del proyecto
+`src/generated/framekit/brands.ts`, que contiene `brands`, `brandManifest` y
+`brandRegistry`. Ese archivo es output generado y no es una exportación de un
+punto de entrada publicado de `@mauriciodmo/framekit`; no debe editarse a
+mano. Consulta la [referencia del catálogo de componentes de marca](./brand-catalog.md)
+para el contrato de descubrimiento y su uso en `/brand`.
 
 ---
 

@@ -16,7 +16,7 @@ The root entry point provides the core runtime API for defining, validating, and
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
-| `resolveTemplateData`        | `resolveTemplateData(definition, locale, edits, assets?)`; applies image assets and then defaults -> locale content -> user edits                                  |
+| `resolveTemplateData`        | `resolveTemplateData(definition, locale, edits, assets?)`; applies defaults -> locale content -> user edits, then image assets                                  |
 | `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the keys of `definition.content`                                                                               |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults                                                                   |
 
@@ -25,6 +25,7 @@ The root entry point provides the core runtime API for defining, validating, and
 | Type                          | Description                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
 | `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"textarea"` \| `"color"` \| `"number"` \| `"image"` |
+| `ImageFieldScope`             | Scope for image assets: `"common"` \| `"variant"`                                                   |
 | `BaseFieldDescriptor`         | Base shape shared by all field descriptors                                                              |
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
 | `TextFieldDescriptor`         | Descriptor for text fields                                                                              |
@@ -37,7 +38,7 @@ The root entry point provides the core runtime API for defining, validating, and
 | `TemplateDefinition`          | Complete template definition combining base structure with configuration                                |
 | `TemplateRenderProps`         | Props passed to a template's render function                                                            |
 | `InferTemplateData<T>`        | Utility type that extracts the data shape from a template definition                                    |
-| `TemplateDataValidationError` | Error type returned when template data validation fails                                                 |
+| `TemplateDataValidationError` | Per-field validation error union used by `validateTemplateData`                                        |
 
 ---
 
@@ -70,7 +71,10 @@ Provides the `FrameKitEditor` component and supporting navigation utilities for 
 
 Provides the `FrameKitStudio` component, which combines editor and navigation into a complete studio interface, along with localization utilities.
 
-Its main component accepts `{ templates: readonly FrameKitStudioTemplate[] }`.
+Its main component accepts `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`.
+
+See the [brand catalog reference](./brand-catalog.md) for the `src/brand`
+discovery contract, generated registries, and `/brand` behavior.
 
 **Runtime exports**
 
@@ -85,8 +89,15 @@ Its main component accepts `{ templates: readonly FrameKitStudioTemplate[] }`.
 | Type                     | Description                                |
 | ------------------------ | ------------------------------------------ |
 | `FrameKitStudioTemplate` | Template type scoped to the studio context |
+| `FrameKitStudioBrand`    | Brand catalog entry with metadata and a preview loader |
 | `FrameKitLocale`         | Locale type used within the studio         |
 | `FrameKitStudioMessages` | Message catalog type for studio UI strings |
+
+`FrameKitBrandCatalog` is an internal implementation component. It is not
+exported from `@mauriciodmo/framekit/studio` or from a package export path, so
+it is not part of the public API. The generated project's `brands`,
+`brandManifest`, and `brandRegistry` values are likewise project-local
+generated output, not exports of the `@mauriciodmo/framekit` package.
 
 ---
 
@@ -112,9 +123,11 @@ Advanced server-side utilities for development workflows including dev server sp
 | ---------------------- | --------------------------------------------------------- |
 | `createDevServer`      | Spawns a development server instance                      |
 | `findTemplates`        | Scans the filesystem for template modules                 |
+| `findBrandComponents`  | Scans a brand directory for brand component leaves       |
 | `createTemplateModule` | Generates a template module from a template definition    |
-| `writeTemplateModule`  | Writes a generated template module to disk                |
-| `watchTemplates`       | Watches template files for changes and triggers callbacks |
+| `createBrandModule`    | Generates the brand metadata and loader module            |
+| `writeTemplateModule`  | Writes generated template and brand modules to disk       |
+| `watchTemplates`       | Watches template and brand paths for changes and triggers callbacks |
 | `getServerOptions`     | Resolves server configuration options                     |
 
 **Type exports**
@@ -124,6 +137,7 @@ Advanced server-side utilities for development workflows including dev server sp
 | `DevServer`          | Dev server instance type                       |
 | `DevServerOptions`   | Options for creating a dev server              |
 | `DiscoveredTemplate` | Template discovered during filesystem scanning |
+| `DiscoveredBrandComponent` | Brand component discovered during filesystem scanning |
 | `TemplateWatcher`    | Watcher instance returned by `watchTemplates`  |
 
 ---

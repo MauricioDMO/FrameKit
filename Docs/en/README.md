@@ -10,6 +10,7 @@ English | [Español](../es/README.md)
 ## Guides
 
 - [Template Authoring](guides/template-authoring.md): Define fields, locales, and render functions for templates.
+- [Brand Components](guides/brand-components.md): Author reusable brand components, previews, and documentation.
 - [Studio User Guide](guides/studio.md): Use the visual editor to edit templates.
 
 ## Reference

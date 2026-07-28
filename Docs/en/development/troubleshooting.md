@@ -52,6 +52,92 @@ Rename the offending directory so every segment is lowercase and hyphenated. For
 
 ---
 
+## Brand component discovery errors
+
+Brand components are scanned recursively from `src/brand`. The scanner and the Studio catalog fail in different ways: missing required source files or invalid directory segments are scan-time errors, while a missing route or a preview import failure is a runtime/catalog issue. See the [brand catalog reference](../reference/brand-catalog.md) for the complete directory contract.
+
+### Missing `preview.tsx` or `README.md`
+
+**Cause: a brand leaf has `component.tsx` but is missing a required companion file**
+
+When the scanner finds `component.tsx` in a directory, it treats that directory as a leaf and requires `preview.tsx` and `README.md` in the same directory. Generation fails with `Falta preview.tsx en: ...` or `Falta README.md en: ...`. This is a scanner error, not an empty Studio state.
+
+**Fix: add the missing file beside `component.tsx`**
+
+Add the required file under the same `src/brand/<segments>/` directory, then regenerate:
+
+```
+framekit generate
+```
+
+The scanner checks that these paths exist; preview execution is a separate runtime concern.
+
+### Invalid lowercase-kebab path segment
+
+**Cause: a reachable directory under `src/brand` has an invalid name**
+
+Every non-ignored directory segment must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. Uppercase letters, underscores, repeated hyphens, and other characters cause generation to fail with an invalid-segment error. Directories beginning with `.` or `_` are skipped instead.
+
+**Fix: rename the directory to lowercase kebab-case**
+
+For example, rename `src/brand/Marketing/Hero` to `src/brand/marketing/hero`, then run `framekit generate`. This is a scanner error; Studio does not receive a new catalog until generation succeeds.
+
+### `README.md` has no description
+
+**Cause: no eligible text remains for the first README paragraph**
+
+The scanner skips headings, fenced-code lines, and list-marker lines while looking for the first ordinary paragraph. It strips simple Markdown formatting and links from that paragraph. If no text remains, generation fails with `README sin descripción en: ...`; it does not fall back to the directory name or component title.
+
+**Fix: add a non-empty ordinary paragraph to `README.md`**
+
+Put a short prose description in the README, then run `framekit generate`. This requirement is checked during scanning, before the description is displayed in the brand catalog.
+
+## Brand catalog is empty or stale
+
+**Cause: `src/brand` is absent or contains no discovered leaf**
+
+If `src/brand` does not exist, discovery returns an empty list. The same result occurs when no reachable brand directory contains `component.tsx` with its required files and the scan has no errors. When templates are present, generation can still write `src/generated/framekit/brands.ts` with no brand entries. If `src/templates` exists but has no templates, the shared generation operation fails before brand discovery with the existing `No se encontraron plantillas ...` error; if that directory is missing, the template scan reports the filesystem `ENOENT` error.
+
+**Fix: add a complete brand leaf and regenerate**
+
+Add a directory containing `component.tsx`, `preview.tsx`, and `README.md` under valid path segments, then run `framekit generate`. Do not edit `src/generated/framekit/brands.ts` by hand; it is generated output and the source of truth is `src/brand`. The generator writes the brand module alongside `templates.ts` only after discovery succeeds.
+
+**Cause: a development generation failed after a brand change**
+
+`framekit dev` performs one generation before starting Studio. After startup, its watcher schedules regeneration for any added, removed, or changed path under `src/brand`, including directory changes. Scanner errors are sent through the development server's error path, so a failed generation does not produce a refreshed catalog.
+
+**Fix: correct the source error and regenerate**
+
+Fix the reported file or directory, then run `framekit generate` to verify and refresh the generated module. Changes to generated files themselves are not watched; edit `src/brand` instead.
+
+## Brand catalog route or preview errors
+
+### `/brand` shows the empty state
+
+This route has no selected slug and intentionally shows the brand empty state. If the supplied brand list is empty, Studio also shows the localized no-brands message in navigation. Check the generated `brands.ts` and the discovery issues above if a brand should be listed.
+
+### `/brand/<slug>` shows not found
+
+**Cause: no catalog entry has an exact slug match**
+
+Studio joins the route segments with `/` and compares that value exactly with each brand entry's `slug`. A typo, a different path, or a catalog that has not been regenerated produces the brand 404 state. This is a runtime/catalog lookup result, not a scanner error.
+
+**Fix: use the generated navigation slug or regenerate after changing source paths**
+
+Open the entry from Studio navigation, or use the exact slash-separated path derived from the brand directories. If the source path changed, run `framekit generate` first.
+
+### A listed brand fails while loading its preview
+
+**Cause: the generated loader's dynamic import rejects**
+
+Discovery only checks that `preview.tsx` exists. Studio loads that preview on demand and displays the loader's error string if its dynamic import rejects. This is a runtime error, separate from scanner validation.
+
+**Fix: inspect `preview.tsx` and its imports**
+
+Correct the failing preview module or one of its imports, then regenerate if the source path or metadata changed. The catalog renders the preview module's default export; it does not apply template-definition validation to brand entries.
+
+---
+
 ## TypeScript cannot find `@framekit/generated/templates`
 
 **Cause: tsconfig.json missing the `@framekit/generated/*` path alias**

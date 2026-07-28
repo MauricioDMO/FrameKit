@@ -52,6 +52,92 @@ Renombra el directorio ofensivo para que cada segmento esté en minúsculas y se
 
 ---
 
+## Errores de descubrimiento de componentes de marca
+
+Los componentes de marca se escanean de forma recursiva desde `src/brand`. El escáner y el catálogo de Studio fallan de maneras distintas: la falta de archivos requeridos o los segmentos de directorio inválidos son errores durante el escaneo, mientras que una ruta inexistente o un fallo al importar el preview es un problema de runtime o del catálogo. Consulta la [referencia del catálogo de marca](../reference/brand-catalog.md) para ver el contrato completo de directorios.
+
+### Falta `preview.tsx` o `README.md`
+
+**Causa: una hoja de marca tiene `component.tsx` pero le falta un archivo acompañante requerido**
+
+Cuando el escáner encuentra `component.tsx` en un directorio, considera ese directorio una hoja y exige `preview.tsx` y `README.md` en el mismo lugar. La generación falla con `Falta preview.tsx en: ...` o `Falta README.md en: ...`. Es un error del escáner, no un estado vacío de Studio.
+
+**Solución: añade el archivo que falta junto a `component.tsx`**
+
+Añade el archivo requerido bajo el mismo directorio `src/brand/<segments>/` y regenera:
+
+```
+framekit generate
+```
+
+El escáner comprueba que esas rutas existan; la ejecución del preview es un asunto de runtime separado.
+
+### Segmento de ruta inválido o no escrito en kebab-case minúscula
+
+**Causa: un directorio alcanzable bajo `src/brand` tiene un nombre inválido**
+
+Cada segmento de directorio no ignorado debe coincidir con `^[a-z0-9]+(?:-[a-z0-9]+)*$`. Las mayúsculas, los guiones bajos, los guiones repetidos y otros caracteres hacen que la generación falle con un error de segmento inválido. Los directorios cuyo nombre empieza por `.` o `_` se omiten en cambio.
+
+**Solución: renombra el directorio a kebab-case en minúsculas**
+
+Por ejemplo, cambia `src/brand/Marketing/Hero` por `src/brand/marketing/hero` y luego ejecuta `framekit generate`. Es un error del escáner; Studio no recibe un catálogo nuevo hasta que la generación termina correctamente.
+
+### `README.md` no tiene descripción
+
+**Causa: no queda texto elegible para el primer párrafo del README**
+
+El escáner omite encabezados, líneas de bloques de código cercados y líneas que comienzan una lista mientras busca el primer párrafo ordinario. Quita el formato Markdown simple y los enlaces de ese párrafo. Si no queda texto, la generación falla con `README sin descripción en: ...`; no usa como alternativa el nombre del directorio ni el título del componente.
+
+**Solución: añade un párrafo ordinario no vacío a `README.md`**
+
+Escribe una breve descripción en prosa en el README y ejecuta `framekit generate`. Este requisito se comprueba durante el escaneo, antes de mostrar la descripción en el catálogo de marca.
+
+## Catálogo de marca vacío u obsoleto
+
+**Causa: `src/brand` no existe o no contiene ninguna hoja descubierta**
+
+Si `src/brand` no existe, el descubrimiento devuelve una lista vacía. Ocurre lo mismo cuando ningún directorio de marca alcanzable contiene `component.tsx` con sus archivos requeridos y el escaneo no tiene errores. Si existen plantillas, la generación aún puede escribir `src/generated/framekit/brands.ts` sin entradas de marca. Si `src/templates` existe pero no contiene plantillas, la operación de generación compartida falla antes de descubrir las marcas con el error existente `No se encontraron plantillas ...`; si falta ese directorio, el escaneo de plantillas informa del error de sistema de archivos `ENOENT`.
+
+**Solución: añade una hoja de marca completa y regenera**
+
+Crea un directorio con `component.tsx`, `preview.tsx` y `README.md` bajo segmentos de ruta válidos y ejecuta `framekit generate`. No edites manualmente `src/generated/framekit/brands.ts`: es output generado y la fuente de verdad es `src/brand`. El generador escribe el módulo de marca junto a `templates.ts` solo después de que el descubrimiento termina correctamente.
+
+**Causa: una generación de desarrollo falló después de un cambio de marca**
+
+`framekit dev` hace una generación antes de iniciar Studio. Después del arranque, su watcher solicita regeneración ante cualquier ruta añadida, eliminada o modificada bajo `src/brand`, incluidos los cambios de directorios. Los errores del escáner se envían por la ruta de errores del servidor de desarrollo, por lo que una generación fallida no produce un catálogo actualizado.
+
+**Solución: corrige el error de origen y regenera**
+
+Corrige el archivo o directorio indicado y ejecuta `framekit generate` para verificar y actualizar el módulo generado. Los cambios en archivos generados no se observan; edita `src/brand`.
+
+## Errores de ruta o preview del catálogo de marca
+
+### `/brand` muestra el estado vacío
+
+Esta ruta no tiene un slug seleccionado y muestra intencionadamente el estado vacío de marca. Si la lista de marcas proporcionada está vacía, Studio también muestra en la navegación el mensaje localizado de que no hay marcas. Revisa `brands.ts` generado y los problemas de descubrimiento anteriores si debería aparecer una marca.
+
+### `/brand/<slug>` muestra que no se encontró
+
+**Causa: ninguna entrada del catálogo coincide exactamente con el slug**
+
+Studio une los segmentos de la ruta con `/` y compara ese valor exactamente con el `slug` de cada marca. Un error tipográfico, una ruta diferente o un catálogo que todavía no se ha regenerado producen el estado 404 de marca. Es un resultado de búsqueda en runtime o catálogo, no un error del escáner.
+
+**Solución: usa el slug de la navegación generada o regenera después de cambiar las rutas de origen**
+
+Abre la entrada desde la navegación de Studio o usa la ruta exacta separada por barras que se deriva de los directorios de marca. Si cambió la ruta de origen, ejecuta primero `framekit generate`.
+
+### Una marca listada falla al cargar su preview
+
+**Causa: la importación dinámica del módulo generado rechaza**
+
+El descubrimiento solo comprueba que exista `preview.tsx`. Studio carga ese preview bajo demanda y muestra el texto del error del loader si su importación dinámica rechaza. Es un error de runtime, separado de la validación del escáner.
+
+**Solución: inspecciona `preview.tsx` y sus imports**
+
+Corrige el módulo preview que falla o uno de sus imports y regenera si cambió la ruta o los metadatos de origen. El catálogo renderiza el export default del módulo preview; no aplica a las entradas de marca la validación de definición de plantillas.
+
+---
+
 ## TypeScript no puede encontrar `@framekit/generated/templates`
 
 **Causa: tsconfig.json no tiene el alias de ruta `@framekit/generated/*`**

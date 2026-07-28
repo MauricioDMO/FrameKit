@@ -10,6 +10,7 @@
 ## Guías
 
 - [Creación de Plantillas](guides/template-authoring.md): Define campos, configuraciones regionales y funciones de renderizado para las plantillas.
+- [Componentes de Marca](guides/brand-components.md): Crea, documenta, previsualiza y reutiliza bloques visuales de marca.
 - [Guía de Usuario de Studio](guides/studio.md): Usa el editor visual para editar plantillas.
 
 ## Referencia

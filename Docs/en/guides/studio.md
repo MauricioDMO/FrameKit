@@ -1,14 +1,26 @@
 # Studio
 
-Studio is the visual editor for FrameKit templates. It lets you navigate a template catalog, edit content for any supported locale, preview results, and export final PNG images — all entirely in the browser.
+Studio is the visual workspace for FrameKit. It lets you navigate a template catalog, edit content for any supported locale, preview results, and export final PNG images. It also provides a brand catalog for viewing reusable brand-component previews. Both flows run in the browser.
 
 ## Navigation
+
+Studio has two top-level routes: `/editor` for editing templates and `/brand` for cataloging brand components. The sidebar switches between them; each route has its own navigation tree.
 
 Templates are organized in a sidebar derived from their slug path. Each path segment becomes a folder level, so a slug like `social/instagram/post` creates a `Social` folder containing an `Instagram` subfolder with a `Post` template inside. Shared path prefixes produce shared folder hierarchies automatically.
 
 Within each folder, items are sorted alphabetically by title. Folder names are humanized from their slug segments (e.g., `instagram-post` becomes "Instagram Post").
 
 Selecting a template navigates to `/editor/<slug>`. Folders in the sidebar are collapsible and start expanded. The currently open template is marked with `aria-current="page"` for accessibility.
+
+### Brand catalog
+
+The `/brand` route uses the same slug-based sidebar structure. Selecting a brand component navigates to `/brand/<slug>`; for example, the current `communication/hero` component is available at `/brand/communication/hero`. The sidebar title and folders come from the generated brand metadata, and the navigation is separate from the template navigation.
+
+At runtime, each generated brand entry carries a slug, title, path segments, description, and a loader for its preview. Studio uses the title and segments for navigation, and the title and description for the catalog. The title is derived from the final directory segment, while the description comes from the first prose paragraph in the component README. See the [Brand Components guide](./brand-components.md) and [Brand Catalog Reference](../reference/brand-catalog.md) for the authoring and discovery rules.
+
+When a brand route has a matching slug, Studio calls that entry's loader. The generated loader imports `preview.tsx`; Studio takes its default export as the preview and renders it in the catalog. The catalog shows the generated title in its header, a `Brand` label, the preview in the preview area, the README description in a side panel, and a hint referring to `component.tsx`. A preview can import and render the reusable component, as the current `communication/hero/preview.tsx` does.
+
+The brand catalog is for cataloging and visually checking previews, not for editing component code or props. It does not provide template fields, design-locale editing, template-definition validation, or the template PNG export flow. Templates that reuse a brand component are still edited and rendered through `/editor`, where the surrounding template owns its dimensions, fields, content, assets, and export behavior.
 
 ## Design locale vs. Interface language
 
@@ -66,11 +78,11 @@ The theme can be toggled through the Settings panel. The preference is stored in
 
 Studio displays different states depending on what is happening:
 
-- **Empty** — no template is selected. This is the initial state at `/editor`.
-- **Loading** — a template is being loaded. Shown while the dynamic import is in flight.
-- **Invalid** — the template definition failed runtime validation. The template cannot be edited.
-- **Load error** — the template could not be loaded, such as a failed dynamic import.
-- **Not found** — the URL does not match any template slug. This is a visual 404 within the editor, not an HTTP 404.
+- **Empty** — no item is selected. `/editor` asks you to select a template; `/brand` asks you to select a brand component. If the relevant catalog is empty, the sidebar shows its localized no-items message.
+- **Loading** — the selected template or brand entry is being loaded while its dynamic loader is in flight. The brand flow uses a component-specific loading label.
+- **Invalid** — only a template definition can enter this state: it failed runtime validation and cannot be edited. The brand preview is not passed through template-definition validation.
+- **Load error** — an entry's loader rejected, such as after a failed dynamic import. Studio renders the resulting `String(error)` in a message state; the guide does not promise a localized error string for this case.
+- **Not found** — the URL does not match an exact slug in the active catalog. Studio shows a localized visual 404 and a link back to `/editor` or `/brand`; this is not an HTTP 404.
 
 ---
 

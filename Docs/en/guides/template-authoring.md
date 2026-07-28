@@ -184,7 +184,12 @@ logo: fields.image({
 
 ## Auto-Regeneration
 
-When running `framekit dev`, FrameKit watches the `src/templates/` directory for structural changes and asset changes. Adding, removing, or replacing a template asset regenerates the asset manifest. Editing the content of an existing `template.tsx` file relies on Next.js Hot Module Replacement (HMR) to update the running instance.
+When running `framekit dev`, FrameKit watches `src/` for changes that affect the generated template and brand registries:
+
+- Under `src/templates/`, adding or removing directories, or adding, removing, or changing a `template.tsx` file or a file under an `assets` directory, triggers regeneration. Changes to other template source files do not trigger regeneration through this watcher; Next.js HMR can still update the running instance.
+- Under `src/brand/`, adding, removing, or changing files or directories triggers regeneration. Brand components are discovered recursively, and each component directory must follow the `src/brand` contract described in the [Brand Components](./brand-components.md) guide.
+
+For one-off regeneration, run `framekit generate`. The shared generation command requires at least one template; it discovers both templates and brand components, then writes `src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.
 
 ## Reserved Keys
 

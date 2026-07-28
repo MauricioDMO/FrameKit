@@ -1,14 +1,26 @@
 # Studio
 
-Studio es el editor visual de plantillas de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante de idioma admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales, todo directamente en el navegador.
+Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante de idioma admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales. También ofrece un catálogo para consultar previews de componentes de marca reutilizables. Ambos flujos se ejecutan en el navegador.
 
 ## Navegación
+
+Studio tiene dos rutas principales: `/editor` para editar plantillas y `/brand` para catalogar componentes de marca. La barra lateral permite cambiar entre ellas; cada ruta tiene su propio árbol de navegación.
 
 Las plantillas se organizan en la barra lateral a partir de la ruta de su slug. Cada segmento de la ruta se convierte en un nivel de carpeta, de modo que un slug como `social/instagram/post` crea una carpeta `Social` que contiene una subcarpeta `Instagram` con una plantilla `Post` en su interior. Los prefijos de ruta compartidos producen jerarquías de carpetas compartidas automáticamente.
 
 Dentro de cada carpeta, los elementos se ordenan alfabéticamente por título. Los nombres de las carpetas se humanizan a partir de los segmentos de sus slugs (por ejemplo, `instagram-post` se convierte en "Instagram Post").
 
 Al seleccionar una plantilla se navega a `/editor/<slug>`. Las carpetas en la barra lateral se pueden expandir y colapsar, y comienzan expandidas. La plantilla actualmente abierta se marca con `aria-current="page"` para accesibilidad.
+
+### Catálogo de marca
+
+La ruta `/brand` usa la misma estructura de barra lateral basada en slugs. Al seleccionar un componente de marca se navega a `/brand/<slug>`; por ejemplo, el componente actual `communication/hero` está disponible en `/brand/communication/hero`. El título y las carpetas de la barra lateral proceden de los metadatos de marca generados, y la navegación es independiente de la navegación de plantillas.
+
+En tiempo de ejecución, cada entrada de marca generada contiene el slug, el título, los segmentos de la ruta, la descripción y un loader para su preview. Studio usa el título y los segmentos para la navegación, y el título y la descripción para el catálogo. El título se deriva del último segmento del directorio, mientras que la descripción procede del primer párrafo de prosa del README del componente. Consulta la guía de [Componentes de marca](./brand-components.md) y la [Referencia del catálogo de marca](../reference/brand-catalog.md) para conocer las reglas de authoring y descubrimiento.
+
+Cuando una ruta de marca tiene un slug coincidente, Studio ejecuta el loader de esa entrada. El loader generado importa `preview.tsx`; Studio toma su exportación por defecto como preview y la renderiza en el catálogo. El catálogo muestra el título generado en la cabecera, la etiqueta `Brand`, el preview en el área de vista previa, la descripción del README en un panel lateral y una indicación que hace referencia a `component.tsx`. Un preview puede importar y renderizar el componente reutilizable, como hace el `preview.tsx` actual de `communication/hero`.
+
+El catálogo de marca sirve para catalogar y comprobar visualmente los previews, no para editar el código ni las props del componente. No ofrece campos de plantilla, edición del idioma del diseño, validación de definiciones de plantilla ni el flujo de exportación PNG de plantillas. Las plantillas que reutilizan un componente de marca se siguen editando y renderizando desde `/editor`, donde la plantilla contenedora define sus dimensiones, campos, contenido, assets y comportamiento de exportación.
 
 ## Idioma del diseño vs. Idioma de la interfaz
 
@@ -66,11 +78,11 @@ El tema se puede cambiar a través del panel de Ajustes. La preferencia se almac
 
 Studio muestra diferentes estados según lo que esté ocurriendo:
 
-- **Vacío** — no hay ninguna plantilla seleccionada. Este es el estado inicial en `/editor`.
-- **Cargando** — se está cargando una plantilla. Se muestra mientras la importación dinámica está en curso.
-- **Inválido** — la definición de la plantilla no pasó la validación en tiempo de ejecución. La plantilla no se puede editar.
-- **Error de carga** — no se pudo cargar la plantilla, por ejemplo una importación dinámica fallida.
-- **No encontrado** — la URL no coincide con ningún slug de plantilla. Se trata de un 404 visual dentro del editor, no de un error HTTP 404.
+- **Vacío** — no hay ningún elemento seleccionado. `/editor` pide seleccionar una plantilla; `/brand` pide seleccionar un componente de marca. Si el catálogo correspondiente está vacío, la barra lateral muestra su mensaje localizado de que no hay elementos.
+- **Cargando** — se está cargando la entrada de plantilla o de marca seleccionada mientras su loader dinámico está en curso. El flujo de marca usa una etiqueta de carga específica para componentes.
+- **Inválido** — solo una definición de plantilla puede entrar en este estado: falló la validación en tiempo de ejecución y no se puede editar. El preview de marca no pasa por la validación de definiciones de plantilla.
+- **Error de carga** — el loader de una entrada rechazó la carga, por ejemplo tras fallar una importación dinámica. Studio muestra el `String(error)` resultante en un estado de mensaje; esta guía no promete un texto de error localizado para este caso.
+- **No encontrado** — la URL no coincide exactamente con un slug del catálogo activo. Studio muestra un 404 visual localizado y un enlace de vuelta a `/editor` o `/brand`; no es un error HTTP 404.
 
 ---
 
