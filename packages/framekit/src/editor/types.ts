@@ -5,6 +5,7 @@ export interface EditorMessages {
   reset: string
   generating: string
   downloadPng: string
+  copyPng?: string
   content: string
   preview: string
   actualSize: string

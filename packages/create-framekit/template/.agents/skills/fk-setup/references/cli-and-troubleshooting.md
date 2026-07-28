@@ -2,24 +2,19 @@
 
 ## Commands
 
-```text
-framekit <generate|check|dev|build|start>
-```
-
-- `generate` scans `src/templates` and writes `src/generated/framekit/templates.ts`; it fails when no templates are found.
-- `check` runs generation, then validates every definition and locale data without calling `render` or testing PNG export.
-- `dev` generates first. `FRAMEKIT_HOST`, then `HOST`, then `localhost` selects the host. `PORT` defaults to `3000` and must be 1-65535.
-- `build` runs `check`, `next build`, and standalone asset preparation.
-- `start` requires a successful build and launches the Next standalone server.
+`framekit generate`, `check`, `dev`, `build`, and `start` respectively generate
+the registry, validate data, run Studio, build the standalone app, and start
+that build. `check` does not call `render` or test PNG export. `dev` uses
+`FRAMEKIT_HOST`, then `HOST`, then `localhost`; `PORT` defaults to `3000` and
+must be 1-65535.
 
 The watcher regenerates for added or removed template files/directories and for asset changes under `src/templates/**/assets`. Next HMR handles edits to an existing `template.tsx`; restart `framekit dev` if a structural change is missed.
 
 ## Discovery
 
 - Put templates under `src/templates`.
-- Every path segment must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
-- Directories beginning with `.` or `_` are ignored.
-- A directory with `template.tsx` is a template; directories without it are searched recursively.
+- Use lowercase kebab-case for every path segment; `.` and `_` prefixes are ignored.
+- A directory with `template.tsx` is a template; other directories are searched recursively.
 
 ## Fixes
 

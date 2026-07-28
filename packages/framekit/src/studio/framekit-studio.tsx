@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { validateTemplateDefinition } from '../core/validation'
 import { FrameKitEditor } from '../editor/framekit-editor'
-import { FrameKitNavigation } from '../editor/framekit-navigation'
+import { FrameKitNavigationTree } from '../editor/framekit-navigation'
 import { manifestToNavigation } from '../editor/navigation'
 import type { TemplateAssetManifest, TemplateDefinition } from '../types'
 import { useFrameKitLocale } from './locale-provider'
@@ -82,7 +82,7 @@ export function FrameKitStudio({ templates }: { templates: readonly FrameKitStud
           </div>
         </header>
         <nav aria-label={messages.sidebar.navigationLabel} className="max-h-[38vh] overflow-y-auto p-3 lg:max-h-none lg:min-h-0 lg:flex-1">
-          {navigation.length === 0 ? <p className="px-3 py-4 text-sm text-[#91ae9f]">{messages.sidebar.noTemplates}</p> : navigation.map((node) => <FrameKitNavigation key={node.id} node={node} />)}
+          {navigation.length === 0 ? <p className="px-3 py-4 text-sm text-[#91ae9f]">{messages.sidebar.noTemplates}</p> : <FrameKitNavigationTree nodes={navigation} />}
         </nav>
         <div className="relative mt-auto shrink-0 border-t border-white/10 px-5 py-4">
           <p className="text-center text-[10px] text-[#91ae9f]">{messages.sidebar.developedBy} <a href="https://mauriciodmo.com" className="font-bold text-[#c8f7d9] hover:underline" target="_blank">MauricioDMO</a></p>

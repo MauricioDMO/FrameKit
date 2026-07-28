@@ -1,6 +1,6 @@
 'use client'
 
-import { Download, RotateCcw } from 'lucide-react'
+import { Copy, Download, RotateCcw } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 import { resolveTemplateData } from '../core/resolve-template-data'
@@ -8,7 +8,7 @@ import { validateTemplateData } from '../core/validation'
 import type { ImageFieldScope, TemplateAssetManifest, TemplateDefinition } from '../types'
 import { EditorControls } from './components/editor-controls'
 import { TemplatePreview } from './components/template-preview'
-import { exportTemplate } from './export-template'
+import { copyTemplate, exportTemplate } from './export-template'
 import { useEditorState } from './state/use-editor-state'
 import type { EditorMessages } from './types'
 import { translateValidationError } from './validation'
@@ -64,7 +64,7 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
     }
   }
 
-  async function exportPng() {
+  async function runExport(action: (element: HTMLDivElement) => Promise<void>) {
     const element = exportRef.current
     if (!element || exporting) return
 
@@ -79,13 +79,21 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
 
     try {
       setExporting(true)
-      await exportTemplate(element, slug, definition.width, definition.height)
+      await action(element)
     } catch (error) {
       console.error(messages.exportError, error)
       window.alert(messages.exportAlert)
     } finally {
       setExporting(false)
     }
+  }
+
+  function exportPng() {
+    return runExport((element) => exportTemplate(element, slug, definition.width, definition.height))
+  }
+
+  function copyPng() {
+    return runExport((element) => copyTemplate(element, definition.width, definition.height))
   }
 
   return (
@@ -98,6 +106,7 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={clearLocale} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><RotateCcw size={15} />{messages.reset}</button>
           <button type="button" disabled={exporting} onClick={exportPng} className="inline-flex items-center gap-2 rounded-xl bg-[#173d31] px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-[#0f2c23] disabled:cursor-not-allowed disabled:opacity-50"><Download size={15} />{exporting ? messages.generating : messages.downloadPng}</button>
+          <button type="button" disabled={exporting} onClick={copyPng} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><Copy size={15} />{exporting ? messages.generating : messages.copyPng ?? 'Copy PNG'}</button>
         </div>
       </header>
       <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[300px_1fr] xl:overflow-hidden">

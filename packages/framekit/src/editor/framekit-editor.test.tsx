@@ -6,13 +6,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineTemplate, fields } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
+import { copyTemplate } from './export-template'
 import type { EditorMessages } from './types'
+
+vi.mock('./export-template', () => ({
+  copyTemplate: vi.fn(),
+  exportTemplate: vi.fn(),
+}))
 
 const messages: EditorMessages = {
   templateEditor: 'Editor de plantillas',
   reset: 'Restablecer',
   generating: 'Generando',
   downloadPng: 'Descargar PNG',
+  copyPng: 'Copiar PNG',
   content: 'Contenido',
   preview: 'Vista previa',
   actualSize: 'Tamano real',
@@ -57,6 +64,7 @@ beforeEach(() => localStorage.clear())
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  vi.clearAllMocks()
 })
 
 describe('FrameKitEditor controls', () => {
@@ -110,6 +118,15 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText(messages.errorNumberTooSmall.replace('{min}', '10'))).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooLarge.replace('{max}', '20'))).toBeTruthy()
     expect(screen.getByText(messages.errorInvalidColor)).toBeTruthy()
+  })
+
+  it('copies a valid template PNG', async () => {
+    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', accentColor: '#123456' } } }))
+    renderEditor()
+
+    fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))
+
+    await waitFor(() => expect(copyTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 100, 100))
   })
 
   it('keeps editing when localStorage rejects writes', () => {
