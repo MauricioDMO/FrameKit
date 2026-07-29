@@ -1,9 +1,8 @@
 'use client'
 
-import { brands } from '@framekit/generated/brands'
-import { templates } from '@framekit/generated/templates'
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+import { brands } from '@framekit/generated/brands'
 
 export default function BrandPage() {
-  return <FrameKitStudio templates={templates} brands={brands} />
+  return <FrameKitStudio brands={brands} />
 }
