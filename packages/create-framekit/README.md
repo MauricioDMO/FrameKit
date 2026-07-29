@@ -22,7 +22,7 @@ After copying the template, the creator runs `install` and `framekit generate` a
 To update the official agent skills in an existing project, run this from the project root:
 
 ```bash
-pnpm dlx @mauriciodmo/create-framekit@0.8.0 update-skills
+pnpm dlx @mauriciodmo/create-framekit@0.8.1 update-skills
 ```
 
 You can pass another project directory as the second argument. The command replaces the official FrameKit skills, removes the legacy `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation` directories, and preserves other skill directories.
