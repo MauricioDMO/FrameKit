@@ -6,6 +6,7 @@ English | [Español](../es/README.md)
 
 - [Create a project](getting-started/create-project.md): Bootstrap a new FrameKit project with Studio.
 - [Integrate into existing Next.js project](getting-started/existing-project.md): Add FrameKit to an existing Next.js application.
+- [Migrate from v0.7.0 to v0.8.0](getting-started/migration-v0.8.0.md): Upgrade existing projects, generated projects, and public API integrations.
 
 ## Guides
 
