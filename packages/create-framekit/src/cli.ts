@@ -12,19 +12,25 @@ import {
   type PackageManager,
 } from './prompts.js'
 import { detectPackageManager } from './package-manager.js'
-import { createProject } from './project.js'
+import { createProject, updateSkills } from './project.js'
 import { bold, cyan, dim, green, red } from './terminal.js'
 
-const USAGE = 'Usage: create-framekit [project-directory] [-y|-n]'
+const USAGE = 'Usage: create-framekit [project-directory] [-y|-n] | create-framekit update-skills [project-directory]'
 
 type Answer = boolean | undefined
 
 interface ParsedArgs {
+  command: 'create' | 'update-skills'
   projectName?: string
   answer: Answer
 }
 
 function parseArgs(args: string[]): ParsedArgs {
+  if (args[0] === 'update-skills') {
+    if (args.length > 2 || args[1]?.startsWith('-')) throw new Error(USAGE)
+    return { command: 'update-skills', projectName: args[1], answer: undefined }
+  }
+
   let projectName: string | undefined
   let answer: Answer
 
@@ -40,7 +46,7 @@ function parseArgs(args: string[]): ParsedArgs {
     projectName = arg.trim()
   }
 
-  return { projectName, answer }
+  return { command: 'create', projectName, answer }
 }
 
 function devCommand(pm: PackageManager): string {
@@ -49,6 +55,12 @@ function devCommand(pm: PackageManager): string {
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
   const parsed = parseArgs(args)
+
+  if (parsed.command === 'update-skills') {
+    const target = await updateSkills(parsed.projectName)
+    console.log(`${green('Done!')} Updated FrameKit skills in ${target}.`)
+    return
+  }
 
   console.log()
   console.log(`${bold(cyan('FrameKit'))} ${dim('project creator')}`)

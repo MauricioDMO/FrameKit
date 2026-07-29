@@ -28,6 +28,21 @@ Sin `-y` ni `-n`, si no proporcionas el directorio, lo solicita. Detecta `pnpm` 
 
 `-y` acepta todas las preguntas y `-n` las rechaza todas. Si se usa cualquiera de las dos banderas sin un directorio, se crea `./framekit`. En este modo, si no se detecta el gestor de paquetes, se usa `pnpm` sin preguntar. Las banderas `--y` y `--n` no son válidas.
 
+### `create-framekit update-skills`
+
+Actualiza las skills oficiales de un proyecto existente:
+
+```sh
+create-framekit update-skills [directorio-del-proyecto]
+```
+
+```sh
+pnpm dlx @mauriciodmo/create-framekit@0.8.0 update-skills
+npm exec --yes @mauriciodmo/create-framekit@0.8.0 -- update-skills ./my-framekit
+```
+
+Si no se proporciona un directorio del proyecto, el valor predeterminado es `.` (el directorio de trabajo actual). El comando copia las skills oficiales incluidas en el paquete `create-framekit` instalado y reemplaza los directorios de skills oficiales. También elimina los directorios heredados conocidos: `framekit-project-setup`, `framekit-studio-usage` y `framekit-template-creation`. Los demás directorios de skills, incluidos los personalizados, se conservan. El comando no actualiza los archivos de la aplicación.
+
 Para desarrollar el repositorio localmente, compila y ejecuta la CLI sin publicarla:
 
 ```sh

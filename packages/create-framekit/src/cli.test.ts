@@ -305,6 +305,21 @@ describe('create-framekit', () => {
   })
 
   describe('main', () => {
+    it('updates the official skills without removing custom skills', async () => {
+      const root = await createTemporaryDirectory('create-framekit-update-skills-')
+      const project = path.join(root, 'project')
+      await mkdir(path.join(project, '.agents', 'skills', 'framekit-project-setup'), { recursive: true })
+      await mkdir(path.join(project, '.agents', 'skills', 'custom-skill'), { recursive: true })
+      await writeFile(path.join(project, '.agents', 'skills', 'framekit-project-setup', 'SKILL.md'), 'legacy', 'utf8')
+      await writeFile(path.join(project, '.agents', 'skills', 'custom-skill', 'SKILL.md'), 'custom', 'utf8')
+
+      await main(['update-skills', project])
+
+      await expect(readFile(path.join(project, '.agents', 'skills', 'fk-setup', 'SKILL.md'), 'utf8')).resolves.toContain('name: fk-setup')
+      await expect(readFile(path.join(project, '.agents', 'skills', 'custom-skill', 'SKILL.md'), 'utf8')).resolves.toBe('custom')
+      await expect(readFile(path.join(project, '.agents', 'skills', 'framekit-project-setup', 'SKILL.md'), 'utf8')).rejects.toThrow()
+    })
+
     it('throws usage error when more than one arg', async () => {
       await expect(main(['one', 'two'])).rejects.toThrow(
         'Usage: create-framekit [project-directory] [-y|-n]',

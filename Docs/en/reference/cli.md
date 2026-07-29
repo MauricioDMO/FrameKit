@@ -28,6 +28,21 @@ Without `-y` or `-n`, when no project directory is provided, it asks for one. It
 
 `-y` accepts all prompts and `-n` rejects them all. When either flag is used without a directory, the project is created in `./framekit`. In this mode, an undetected package manager defaults to `pnpm` without prompting. The `--y` and `--n` forms are not valid.
 
+### `create-framekit update-skills`
+
+Updates the official skills in an existing project:
+
+```sh
+create-framekit update-skills [project-directory]
+```
+
+```sh
+pnpm dlx @mauriciodmo/create-framekit@0.8.0 update-skills
+npm exec --yes @mauriciodmo/create-framekit@0.8.0 -- update-skills ./my-framekit
+```
+
+If no project directory is provided, it defaults to `.` (the current working directory). The command copies the official skills shipped by the installed `create-framekit` package, replacing the official skill directories. It also removes the known legacy directories: `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation`. Other or custom skill directories are preserved. The command does not update application files.
+
 For local repository development, build and run the CLI without publishing it:
 
 ```sh

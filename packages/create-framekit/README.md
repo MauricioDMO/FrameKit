@@ -19,6 +19,14 @@ pnpm dlx @mauriciodmo/create-framekit my-project -n
 
 After copying the template, the creator runs `install` and `framekit generate` automatically if you chose to install dependencies. If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
 
+To update the official agent skills in an existing project, run this from the project root:
+
+```bash
+pnpm dlx @mauriciodmo/create-framekit@0.8.0 update-skills
+```
+
+You can pass another project directory as the second argument. The command replaces the official FrameKit skills, removes the legacy `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation` directories, and preserves other skill directories.
+
 For template authoring patterns, see the [Template Authoring Guide](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md).
 
 For full documentation:
