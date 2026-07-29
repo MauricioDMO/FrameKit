@@ -15,7 +15,7 @@ interface EditorControlsProps {
 
 export function EditorControls({ definition, messages, selectedLocale, data, errors, onLocaleChange, onFieldChange, onImageUpload }: EditorControlsProps) {
   return (
-    <aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
+    <aside className="studio-editor-scrollbar rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
       <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
         <h2 className="font-black tracking-tight">{messages.content}</h2>
         <span className="text-xs text-[#5f6963] dark:text-[#b8c8be]">{definition.width} × {definition.height}</span>

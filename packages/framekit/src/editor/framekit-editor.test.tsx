@@ -56,8 +56,8 @@ function createDefinition() {
   })
 }
 
-function renderEditor() {
-  return render(<FrameKitEditor slug="social/campaign" definition={createDefinition()} messages={messages} />)
+function renderEditor(sidebarCollapsed = false) {
+  return render(<FrameKitEditor slug="social/campaign" definition={createDefinition()} messages={messages} sidebarCollapsed={sidebarCollapsed} />)
 }
 
 beforeEach(() => localStorage.clear())
@@ -68,6 +68,13 @@ afterEach(() => {
 })
 
 describe('FrameKitEditor controls', () => {
+  it('expands the fields column when the studio sidebar is collapsed', () => {
+    renderEditor(true)
+
+    const controls = screen.getByRole('heading', { name: messages.content }).closest('aside')
+    expect(controls?.parentElement?.className).toContain('xl:grid-cols-[400px_1fr]')
+  })
+
   it('passes numeric descriptor limits to the input', () => {
     renderEditor()
     expect(screen.getByRole('spinbutton', { name: 'Too small' }).getAttribute('min')).toBe('10')

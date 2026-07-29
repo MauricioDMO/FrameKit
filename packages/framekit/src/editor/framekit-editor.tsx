@@ -18,6 +18,7 @@ interface FrameKitEditorProps {
   definition: TemplateDefinition
   assets?: TemplateAssetManifest
   messages: EditorMessages
+  sidebarCollapsed?: boolean
 }
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
@@ -35,7 +36,7 @@ function readFileAsBase64(file: File): Promise<string> {
   })
 }
 
-export function FrameKitEditor({ slug, definition, assets = emptyAssets, messages }: FrameKitEditorProps) {
+export function FrameKitEditor({ slug, definition, assets = emptyAssets, messages, sidebarCollapsed = false }: FrameKitEditorProps) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const { selectedLocale, userEdits, errors, setErrors, changeLocale, clearLocale, changeField } = useEditorState(slug, definition)
@@ -109,7 +110,7 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
           <button type="button" disabled={exporting} onClick={copyPng} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><Copy size={15} />{exporting ? messages.generating : messages.copyPng ?? 'Copy PNG'}</button>
         </div>
       </header>
-      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[300px_1fr] xl:overflow-hidden">
+      <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
         <EditorControls definition={definition} messages={messages} selectedLocale={selectedLocale} data={resolvedData} errors={errors} onLocaleChange={changeLocale} onFieldChange={changeField} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>

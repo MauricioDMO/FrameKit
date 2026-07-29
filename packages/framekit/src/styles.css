@@ -4,6 +4,19 @@
 @source "./editor";
 @source "./studio";
 
+.studio-editor-scrollbar {
+  scrollbar-width: none;
+}
+
+.studio-editor-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.studio-textarea {
+  field-sizing: content;
+  resize: none;
+}
+
 .studio-select {
   --studio-select-inline-padding: 0.875rem;
   appearance: none;
