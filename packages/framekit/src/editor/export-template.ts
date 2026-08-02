@@ -2,7 +2,20 @@ async function renderTemplate(element: HTMLDivElement, width: number, height: nu
   // The screenshot library captures rendered pixels, so fonts must finish loading first.
   await document.fonts.ready
   const { domToPng } = await import('modern-screenshot')
-  return domToPng(element, { width, height, scale: 1 })
+
+  // Studio scales an ancestor for fit-to-view; capture an untransformed root instead.
+  const capture = element.cloneNode(true) as HTMLDivElement
+  capture.style.position = 'fixed'
+  capture.style.top = '0'
+  capture.style.left = '-100000px'
+  capture.style.transform = 'none'
+  document.body.append(capture)
+
+  try {
+    return await domToPng(capture, { width, height, scale: 1 })
+  } finally {
+    capture.remove()
+  }
 }
 
 export async function exportTemplate(element: HTMLDivElement, slug: string, width: number, height: number) {
