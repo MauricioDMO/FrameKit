@@ -3,3 +3,5 @@ node_modules
 .framekit
 public/__framekit
 src/generated/framekit
+*.tsbuildinfo
+next-env.d.ts
