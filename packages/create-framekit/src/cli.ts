@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { pathToFileURL } from 'node:url'
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
 import {
@@ -108,7 +109,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 }
 
 const invokedFile = process.argv[1]
-if (invokedFile && import.meta.url === pathToFileURL(invokedFile).href) {
+if (invokedFile && realpathSync(invokedFile) === realpathSync(fileURLToPath(import.meta.url))) {
   void main().catch((error: unknown) => {
     console.error(red(error instanceof Error ? error.message : String(error)))
     process.exitCode = 1

@@ -37,8 +37,8 @@ create-framekit update-skills [project-directory]
 ```
 
 ```sh
-pnpm dlx @mauriciodmo/create-framekit@0.8.1 update-skills
-npm exec --yes @mauriciodmo/create-framekit@0.8.1 -- update-skills ./my-framekit
+pnpm dlx @mauriciodmo/create-framekit@0.8.2 update-skills
+npm exec --yes @mauriciodmo/create-framekit@0.8.2 -- update-skills ./my-framekit
 ```
 
 If no project directory is provided, it defaults to `.` (the current working directory). The command copies the official skills shipped by the installed `create-framekit` package, replacing the official skill directories. It also removes the known legacy directories: `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation`. Other or custom skill directories are preserved. The command does not update application files.
