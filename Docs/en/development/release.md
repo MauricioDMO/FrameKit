@@ -4,6 +4,13 @@ Publish the changed package or packages from the repository root with pnpm. Do n
 
 ## Before Publishing
 
+Use Node.js `>=22.13.0` and pnpm `>=11.14.0` for release work. Verify the
+repository contract before running the release gate:
+
+```sh
+pnpm check:runtime
+```
+
 1. Version packages independently. Update only the package with release changes. A `create-framekit` release does not require a new `@mauriciodmo/framekit` version; keep the template dependency at the current published core version unless the template requires a new core API.
 
 2. Run the release gate:

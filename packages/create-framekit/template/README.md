@@ -7,6 +7,9 @@ pnpm dev
 Templates live in `src/templates`. A directory containing `template.tsx`
 appears automatically in the Studio editor.
 
+FrameKit projects require Node.js `>=22.13.0`. Use pnpm `>=11.14.0` or npm 10
+or later to install dependencies.
+
 Shared public company information can live in `src/profile.ts`. The file is
 intentionally flexible and can export any clear structure; template authors
 should read its comments and ask which values to show when there are multiple

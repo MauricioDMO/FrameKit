@@ -8,6 +8,12 @@ cd my-project
 pnpm dev
 ```
 
+## Compatibility
+
+- Node.js `>=22.13.0`
+- pnpm `>=11.14.0` when using pnpm
+- npm 10 or later when using npm
+
 The creator is interactive: if no project name is given, it asks for one. It detects which package manager you are using from your environment (`pnpm` or `npm`); if it cannot detect it, it asks you to choose. It then asks whether to install dependencies, and if you are using pnpm, whether to run `pnpm approve-builds`. Finally, it asks whether to initialize a Git repository with an initial commit.
 
 Use `-y` to accept all questions or `-n` to reject them all. When either flag is used without a project name, the project is created in `./framekit`; an undetected package manager defaults to pnpm in this non-interactive mode.

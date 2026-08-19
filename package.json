@@ -13,6 +13,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "build": "pnpm -r --if-present build",
     "sync:skills": "node scripts/sync-skills.mjs",
+    "check:runtime": "node scripts/check-runtime-contract.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

@@ -6,10 +6,12 @@ import { build, start } from './production'
 import { check } from './check'
 import { dev } from './dev'
 import { generate } from './generate'
+import { assertSupportedRuntime } from './runtime'
 
 const usage = 'Uso: framekit <generate|check|dev|build|start>'
 
 async function main(): Promise<void> {
+  assertSupportedRuntime()
   const [command, ...extraArguments] = process.argv.slice(2)
   if (!command || extraArguments.length > 0) throw new Error(usage)
 

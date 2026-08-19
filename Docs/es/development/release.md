@@ -4,6 +4,14 @@ Publica el paquete o paquetes modificados desde la raíz del repositorio con pnp
 
 ## Antes de publicar
 
+Usa Node.js `>=22.13.0` y pnpm `>=11.14.0` para trabajar en releases.
+Comprueba el contrato del repositorio antes de ejecutar la puerta de
+lanzamiento:
+
+```sh
+pnpm check:runtime
+```
+
 1. Versiona los paquetes de forma independiente. Actualiza solo el paquete que tenga cambios para la versión. Una versión nueva de `create-framekit` no requiere actualizar `@mauriciodmo/framekit`; conserva la dependencia de la plantilla en la versión principal publicada, salvo que la plantilla requiera una API nueva de FrameKit.
 
 2. Ejecuta la puerta de lanzamiento:

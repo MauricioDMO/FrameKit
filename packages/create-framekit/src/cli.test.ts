@@ -22,6 +22,10 @@ async function createFakePnpm(binDirectory: string, logFile: string): Promise<vo
     executable,
     `#!/usr/bin/env node
 import { appendFile } from 'node:fs/promises'
+if (process.argv[2] === '--version') {
+  console.log('11.14.0')
+  process.exit(0)
+}
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
 if (process.env.FRAMEKIT_TEST_FAIL === process.argv[2]) process.exit(7)
 `,
@@ -276,7 +280,7 @@ describe('create-framekit', () => {
       }
     })
 
-    it('removes pnpm-workspace.yaml and engine.pnpm when pm=npm', async () => {
+    it('removes pnpm-workspace.yaml and preserves runtime engines when pm=npm', async () => {
       const root = await createTemporaryDirectory('create-framekit-npm-')
       const bin = path.join(root, 'bin')
       const log = path.join(root, 'commands.jsonl')
@@ -293,7 +297,7 @@ describe('create-framekit', () => {
         })
         await expect(readFile(path.join(destination, 'pnpm-workspace.yaml'), 'utf8')).rejects.toThrow()
         const pkg = JSON.parse(await readFile(path.join(destination, 'package.json'), 'utf8'))
-        expect(pkg.engines?.pnpm).toBeUndefined()
+        expect(pkg.engines).toEqual({ node: '>=22.13.0', pnpm: '>=11.14.0' })
         const commands = (await readFile(log, 'utf8')).trim().split('\n').map((line) => JSON.parse(line))
         expect(commands.map(({ args }: { args: string[] }) => args)).toEqual([
           ['install'],

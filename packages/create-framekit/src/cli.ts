@@ -14,6 +14,7 @@ import {
 } from './prompts.js'
 import { detectPackageManager } from './package-manager.js'
 import { createProject, updateSkills } from './project.js'
+import { assertSupportedNodeRuntime, assertSupportedPackageManager } from './runtime.js'
 import { bold, cyan, dim, green, red } from './terminal.js'
 
 const USAGE = 'Usage: create-framekit [project-directory] [-y|-n] | create-framekit update-skills [project-directory]'
@@ -55,6 +56,7 @@ function devCommand(pm: PackageManager): string {
 }
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
+  assertSupportedNodeRuntime()
   const parsed = parseArgs(args)
 
   if (parsed.command === 'update-skills') {
@@ -76,6 +78,8 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   const packageManager: PackageManager =
     detected ??
     (parsed.answer === undefined ? await promptPackageManager() : 'pnpm')
+
+  assertSupportedPackageManager(packageManager)
 
   const installDependencies =
     parsed.answer ?? (await promptInstallDependencies())

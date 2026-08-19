@@ -3,6 +3,12 @@
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
 
+## Compatibility
+
+- Node.js `>=22.13.0`
+- pnpm `>=11.14.0` when using pnpm
+- npm 10 or later when using npm
+
 ## CLI
 
 FrameKit uses the current directory as the application root:

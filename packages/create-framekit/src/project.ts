@@ -1,4 +1,4 @@
-import { cp, lstat, mkdir, readdir, rename, rm, writeFile, readFile } from 'node:fs/promises'
+import { cp, lstat, mkdir, readdir, rename, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import type { PackageManager } from './prompts.js'
@@ -47,11 +47,6 @@ export async function createProject(
   if (pm === 'npm') {
     const pnpmWorkspace = path.join(target, 'pnpm-workspace.yaml')
     await rm(pnpmWorkspace, { force: true })
-    const pkgPath = path.join(target, 'package.json')
-    const pkg = JSON.parse(await readFile(pkgPath, 'utf8'))
-    delete pkg.engines?.pnpm
-    if (Object.keys(pkg.engines ?? {}).length === 0) delete pkg.engines
-    await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
   }
 
   if (options.installDependencies) {

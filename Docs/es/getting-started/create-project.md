@@ -9,6 +9,9 @@ FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún n
 - Node.js 22.13.0 o posterior.
 - pnpm 11.14.0 o posterior, **o** npm 10.x o posterior.
 
+El creador comprueba la versión de Node.js antes de crear el proyecto y la
+versión de pnpm antes de instalar dependencias con pnpm.
+
 ## Crear el proyecto
 
 Una vez que `@mauriciodmo/create-framekit` esté publicado en npm, ejecuta:
