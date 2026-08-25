@@ -2,6 +2,7 @@ import type { TemplateBase, TemplateDefinition } from '../../types'
 
 const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'image'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
+const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -35,6 +36,33 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
 
   if (!isPlainObject(def.meta)) {
     return { success: false, error: 'meta must be a plain object' }
+  }
+
+  for (const key of Object.keys(def.meta)) {
+    if (!META_KEYS.has(key)) {
+      return { success: false, error: `meta contains unknown property "${key}"` }
+    }
+  }
+
+  const meta = def.meta
+  if (typeof meta.title !== 'string' || meta.title.trim() === '') {
+    return { success: false, error: 'meta.title must be a non-empty string' }
+  }
+  if (meta.description !== undefined && typeof meta.description !== 'string') {
+    return { success: false, error: 'meta.description must be a string' }
+  }
+  if (meta.marketingDescription !== undefined && typeof meta.marketingDescription !== 'string') {
+    return { success: false, error: 'meta.marketingDescription must be a string' }
+  }
+  if (meta.tags !== undefined) {
+    if (!Array.isArray(meta.tags)) {
+      return { success: false, error: 'meta.tags must be an array of strings' }
+    }
+    for (const tag of meta.tags) {
+      if (typeof tag !== 'string') {
+        return { success: false, error: 'meta.tags must be an array of strings' }
+      }
+    }
   }
 
   if (

@@ -49,7 +49,10 @@ export interface TemplateAssetManifest {
 export type TemplateFields = Record<string, FieldDescriptor>
 
 export interface TemplateMeta {
-  [key: string]: unknown
+  title: string
+  description?: string
+  marketingDescription?: string
+  tags?: string[]
 }
 
 export interface TemplateVariants {
@@ -68,6 +71,11 @@ export type TemplateContent<Fields extends TemplateFields> = Record<
 
 export type NoLanguageFields<Fields extends TemplateFields> =
   Extract<keyof Fields, 'language'> extends never ? unknown : 'fields.language is reserved'
+
+export type NoUnknownMetaKeys<Meta extends TemplateMeta> =
+  Exclude<keyof Meta, keyof TemplateMeta> extends never
+    ? unknown
+    : { [Key in Exclude<keyof Meta, keyof TemplateMeta>]: never }
 
 export type NoUnknownContentKeys<
   Content extends TemplateContent<Fields>,
@@ -127,7 +135,7 @@ export type TemplateInput<
   Meta extends TemplateMeta,
   Variants extends TemplateVariants,
 > = {
-  meta: Meta
+  meta: Meta & NoUnknownMetaKeys<Meta>
   width: Width
   height: Height
   fields: Fields

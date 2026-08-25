@@ -15,7 +15,10 @@ intentionally flexible and can export any clear structure; template authors
 should read its comments and ask which values to show when there are multiple
 contact options.
 
-Template definitions use `meta`, `variants`, and field-only `content` entries.
+Template definitions use an exact `meta` object, `variants`, and field-only
+`content` entries. `meta.title` is required; optional metadata is limited to
+`description`, `marketingDescription`, and `tags`. A missing title is invalid and
+is never derived from the template directory.
 Template images live beside the template in `assets/common` or in a directory
 named after a content variant. Variant image files use the field key as their
 filename. Shared project images belong in `public/assets/<category>` and can be

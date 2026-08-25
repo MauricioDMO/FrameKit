@@ -38,7 +38,12 @@ Use `defineTemplate` when the definition and renderer belong in one file. The
 import { defineTemplate, fields } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
-  meta: { title: 'Offer card' },
+  meta: {
+    title: 'Offer card',
+    description: 'A card for presenting a product offer',
+    marketingDescription: 'Highlight the offer and motivate a purchase',
+    tags: ['social', 'promotion'],
+  },
   width: 1080,
   height: 1080,
   fields: {
@@ -73,7 +78,12 @@ contract with `defineTemplateBase`, then type the component with
 import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
-  meta: { title: 'Extracted offer' },
+  meta: {
+    title: 'Extracted offer',
+    description: 'A reusable offer-card definition',
+    marketingDescription: 'Make the offer and next action clear',
+    tags: ['promotion'],
+  },
   width: 1200,
   height: 800,
   fields: { title: fields.text({ label: 'Title' }) },
@@ -121,7 +131,9 @@ import '@mauriciodmo/framekit/styles.css'
 ```
 
 The root entry also exports the public validators, resolvers, field descriptors,
-and structured validation errors.
+structured validation errors, and the exact `TemplateMeta` type. Metadata
+requires a non-empty `title`; only `description`, `marketingDescription`, and
+`tags` are optional additions. There is no slug fallback for missing metadata.
 
 `FrameKitStudioRoot` and `FrameKitStudio` provide the complete editor interface,
 including navigation, variant and theme controls. Pass the generated `templates`

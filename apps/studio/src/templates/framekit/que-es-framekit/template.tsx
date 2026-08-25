@@ -3,7 +3,12 @@ import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { BrandHero } from '@/brand/communication/hero/component'
 
 export default defineTemplate({
-  meta: { title: 'Qué es FrameKit' },
+  meta: {
+    title: 'Qué es FrameKit',
+    description: 'Una introducción visual a FrameKit y su flujo de trabajo.',
+    marketingDescription: 'Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.',
+    tags: ['framekit', 'introducción', 'react'],
+  },
   width: 1440,
   height: 1440,
   fields: {

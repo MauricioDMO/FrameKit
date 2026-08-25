@@ -4,7 +4,12 @@ import { IconSparkles } from '@tabler/icons-react'
 import { profile } from '@/profile'
 
 export default defineTemplate({
-  meta: { title: 'Example template' },
+  meta: {
+    title: 'Example template',
+    description: 'A starter template for learning the FrameKit workflow.',
+    marketingDescription: 'Introduce a message and invite the audience to take the next step.',
+    tags: ['starter', 'example'],
+  },
   width: 1200,
   height: 800,
   fields: {

@@ -3,7 +3,12 @@ import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { BrandHero } from '@/brand/communication/hero/component'
 
 export default defineTemplate({
-  meta: { title: 'Promoción cuadrada' },
+  meta: {
+    title: 'Promoción cuadrada',
+    description: 'Una pieza cuadrada para comunicar una oferta o servicio en redes sociales.',
+    marketingDescription: 'Presentar una oferta, destacar sus beneficios y motivar una conversación.',
+    tags: ['instagram', 'social', 'promoción'],
+  },
   width: 1440,
   height: 1440,
   fields: {

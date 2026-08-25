@@ -2,7 +2,12 @@ import { defineTemplate, fields } from '@mauriciodmo/framekit'
 import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const template = defineTemplate({
-  meta: { title: 'Valid template' },
+  meta: {
+    title: 'Valid template',
+    description: 'A valid template for type tests',
+    marketingDescription: 'Present a clear offer',
+    tags: ['social', 'promotion'],
+  },
   width: 1080,
   height: 1080,
   fields: {
