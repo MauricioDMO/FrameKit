@@ -17,6 +17,8 @@ export interface EditorMessages {
   errorInvalidNumber: string
   errorNumberTooSmall: string
   errorNumberTooLarge: string
+  errorTextTooShort: string
+  errorTextTooLong: string
   errorInvalidColor: string
   imageSelect: string
   imageUploading: string
@@ -30,6 +32,8 @@ export interface TemplateField {
   required: boolean
   min?: number
   max?: number
+  minLength?: number
+  maxLength?: number
   scope?: ImageFieldScope
   label: string
   placeholder?: string

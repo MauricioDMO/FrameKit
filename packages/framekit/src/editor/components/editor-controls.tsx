@@ -30,7 +30,18 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
         {Object.entries(definition.fields).map(([key, field]) => (
           <div key={key} data-field-key={key}>
             <EditorField
-              field={{ key, type: field.kind, required: field.required !== false, min: field.kind === 'number' ? field.min : undefined, max: field.kind === 'number' ? field.max : undefined, scope: field.kind === 'image' ? field.scope : undefined, label: field.label, placeholder: field.placeholder }}
+              field={{
+                key,
+                type: field.kind,
+                required: field.required !== false,
+                min: field.kind === 'number' ? field.min : undefined,
+                max: field.kind === 'number' ? field.max : undefined,
+                minLength: field.kind === 'text' ? field.minLength : undefined,
+                maxLength: field.kind === 'text' ? field.maxLength : undefined,
+                scope: field.kind === 'image' ? field.scope : undefined,
+                label: field.label,
+                placeholder: field.placeholder
+              }}
               value={data[key] ?? ''}
               onChange={(value) => onFieldChange(key, value)}
               error={errors[key]}
