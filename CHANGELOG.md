@@ -20,3 +20,7 @@
   editor state, and `framekit:<slug>:v2` persistence that discards old `v1`
   state. See [plan #4](Docs/Plans/Future/issue-04-content-variants.md) and
   [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+- Replaced the plural field factory namespace with singular `field`, removed the
+  duplicate `textarea` kind, and made `field.text` multiline with optional
+  `minLength` and `maxLength` validation. See [plan #5](Docs/Plans/Future/issue-05-semantic-fields.md)
+  and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).

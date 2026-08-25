@@ -114,13 +114,13 @@ alias and that the template definition property remains `fields`.
 
 ## Completion / Definition of Done
 
-- [ ] The implementation and tests link back to [issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) and this [plan](./issue-05-semantic-fields.md).
-- [ ] English and Spanish public docs are updated.
-- [ ] `CHANGELOG.md` has an `Unreleased` entry.
-- [ ] English and Spanish `migration-next` docs explain the breaking migration.
-- [ ] Tests cover the public contract, validation, editor behavior, and types.
-- [ ] The starter template and generated starter are updated and verified.
-- [ ] No compatibility alias or unrequested control/format abstraction exists.
+- [x] The implementation and tests link back to [issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) and this [plan](./issue-05-semantic-fields.md).
+- [x] English and Spanish public docs are updated.
+- [x] `CHANGELOG.md` has an `Unreleased` entry.
+- [x] English and Spanish `migration-next` docs explain the breaking migration.
+- [x] Tests cover the public contract, validation, editor behavior, and types.
+- [x] The starter template and generated starter are updated and verified.
+- [x] No compatibility alias or unrequested control/format abstraction exists.
 
 ## Out of scope
 
