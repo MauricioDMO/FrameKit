@@ -24,3 +24,6 @@
   duplicate `textarea` kind, and made `field.text` multiline with optional
   `minLength` and `maxLength` validation. See [plan #5](Docs/Plans/Future/issue-05-semantic-fields.md)
   and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
+- Added `field.choice` with frozen ordered options, required defaults, native
+  Studio selects, and `invalid_choice` validation for undeclared values. See
+  [plan #6](Docs/Plans/Future/issue-06-choice-field.md) and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).

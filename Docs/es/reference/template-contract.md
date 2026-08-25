@@ -59,7 +59,7 @@ Las plantillas definen campos usando el objeto singular `field` exportado desde 
 
 ### Opciones Base
 
-Todos los tipos de campos comparten un conjunto común de opciones:
+Los campos text, number, color e image comparten un conjunto común de opciones:
 
 - `label` (string, obligatorio): Un nombre legible para el campo.
 - `placeholder` (string, opcional): Texto provisional mostrado en campos vacíos.
@@ -79,6 +79,29 @@ Los límites deben ser enteros finitos y `minLength` no puede superar a `maxLeng
 ```typescript
 field.text({ label: 'Description', placeholder: 'Write something...', minLength: 1, maxLength: 240 })
 ```
+
+### `choice`
+
+Un campo de strings de conjunto cerrado que se edita con un `<select>` nativo.
+`options` debe ser un array ordenado no vacío de objetos con propiedades `value`
+y `label` string no vacías y valores únicos. `defaultValue` es obligatorio y
+debe coincidir con uno de los valores. Los campos choice no aceptan `required` ni
+`control`, y sus valores no se recortan ni convierten.
+
+```typescript
+field.choice({
+  label: 'Alineación',
+  options: [
+    { value: 'left', label: 'Izquierda' },
+    { value: 'center', label: 'Centro' },
+    { value: 'right', label: 'Derecha' },
+  ],
+  defaultValue: 'center',
+})
+```
+
+El contenido y las ediciones deben usar uno de los valores declarados. Un valor
+desconocido devuelve `{ code: 'invalid_choice' }` durante la validación de datos.
 
 ### `number`
 
@@ -129,7 +152,9 @@ precedencia.
 
 ## Requisito
 
-Los campos son **requeridos por defecto**. Configurar `required: false` hace que un campo sea opcional.
+Los campos text, number, color e image son **requeridos por defecto**.
+Configurar `required: false` hace que uno de esos campos sea opcional. Los
+campos choice siempre tienen un `defaultValue` válido y no aceptan `required`.
 
 - **Campos opcionales** (`required: false`): Una cadena vacía pasa la validación.
 - **Campos requeridos** (por defecto): Una cadena vacía después de eliminar espacios en blanco falla la validación.
@@ -222,6 +247,7 @@ if (!result.success) {
 - Campos `text`: los valores no vacíos deben cumplir `minLength` y `maxLength`; la longitud se mide antes de eliminar espacios, por lo que los espacios y saltos de línea cuentan
 - Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
 - Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
+- Campos `choice`: los valores deben coincidir con uno de los valores de opción declarados
 
 Los errores se retornan como objetos estructurados con códigos legibles por máquina, no strings localizados:
 
@@ -244,6 +270,7 @@ Códigos de error posibles:
 - `text_too_short`: El valor tiene menos caracteres que `minLength`
 - `text_too_long`: El valor tiene más caracteres que `maxLength`
 - `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
+- `invalid_choice`: El valor no pertenece a los valores de opción declarados
 
 ### El Comando CLI `check`
 
@@ -288,6 +315,8 @@ contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/
 y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
 El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
 y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
+El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
+y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 
 ---
 

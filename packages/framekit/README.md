@@ -114,7 +114,9 @@ export default defineTemplate({ ...templateBase, render: Artwork })
 Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
 
-Use `field.image()` for images. Variant files use the field key as their
+Use `field.choice()` for ordered closed-set string selects; its `defaultValue`
+must match an option and undeclared values return `invalid_choice`. Use
+`field.image()` for images. Variant files use the field key as their
 filename under `assets/<variant>`; shared files live under `assets/common`.
 Images under `public/assets` can be referenced with a root-relative
 `defaultValue` such as `/assets/logos/brand.svg`. Studio can replace template

@@ -144,7 +144,7 @@ Cada definición de plantilla requiere estas propiedades:
 - `meta` — un objeto plano reservado para la metadata de la plantilla
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, number, color o image), creado con el export singular `field`
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, number, color, image o choice), creado con el export singular `field`
 - `variants` — un objeto con una key `default` de contenido y labels de visualización opcionales
 - `content` — un registro con al menos una entrada de variante que contiene solo valores parciales de fields
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
@@ -185,6 +185,24 @@ fields: {
 línea. `minLength` y `maxLength` son enteros finitos no negativos opcionales;
 `minLength` no puede superar a `maxLength`. No existe `field.textarea` ni un alias
 de compatibilidad `fields`.
+
+`field.choice` renderiza un `<select>` nativo para un conjunto cerrado de valores
+string. Su array `options` debe ser no vacío y ordenado, con strings `value` y
+`label` no vacíos y valores únicos. `defaultValue` es obligatorio y debe
+coincidir con uno de esos valores. Los campos choice no aceptan `required` ni
+`control`, y un valor no declarado falla la validación con `invalid_choice`.
+
+```tsx
+alignment: field.choice({
+  label: 'Alineación',
+  options: [
+    { value: 'left', label: 'Izquierda' },
+    { value: 'center', label: 'Centro' },
+    { value: 'right', label: 'Derecha' },
+  ],
+  defaultValue: 'center',
+})
+```
 
 ## Contenido y variantes
 
@@ -256,4 +274,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6)

@@ -67,7 +67,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 ## Current capabilities
 
 - Typed templates with `defineTemplate` or reusable `defineTemplateBase` definitions.
-- Editable `text`, `number`, `color`, and `image` fields with defaults and validation. Text fields use a multiline textarea and support length limits; image fields can use template assets or root-relative images from `public`.
+- Editable `text`, `number`, `color`, `image`, and closed-set `choice` fields with defaults and validation. Text fields use a multiline textarea and support length limits; choice fields use an ordered native select; image fields can use template assets or root-relative images from `public`.
 - Template-local assets under `src/templates/**/assets`, common and variant asset resolution, and shared `public/assets` files.
 - Arbitrary content variants such as `en`, `es`, or product-specific variants.
 - Markdown rendering for inline text formatting and basic lists.

@@ -67,7 +67,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 ## Funciones actuales
 
 - Plantillas tipadas con `defineTemplate` o definiciones reutilizables mediante `defineTemplateBase`.
-- Campos editables `text`, `number`, `color` e `image`, con valores predeterminados y validación. Los campos `text` usan un textarea multilínea y admiten límites de longitud; los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
+- Campos editables `text`, `number`, `color`, `image` y `choice` de conjunto cerrado, con valores predeterminados y validación. Los campos `text` usan un textarea multilínea y admiten límites de longitud; `choice` usa un select nativo ordenado; los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
 - Assets locales por plantilla en `src/templates/**/assets` y assets globales compartidos en `public/assets`.
 - Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
 - Renderizado Markdown para formato de texto en línea y listas básicas.

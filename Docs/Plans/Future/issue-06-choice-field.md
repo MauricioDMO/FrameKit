@@ -97,13 +97,13 @@ ordered options, and `invalid_choice` behavior.
 
 ## Completion / Definition of Done
 
-- [ ] The implementation and tests link to [issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) and this [plan](./issue-06-choice-field.md).
-- [ ] English and Spanish public docs are updated.
-- [ ] `CHANGELOG.md` contains the `Unreleased` entry.
-- [ ] English and Spanish `migration-next` docs cover adoption and errors.
-- [ ] Tests cover descriptor validation, runtime behavior, Studio select behavior, and types.
-- [ ] The starter template and generated starter demonstrate a choice field.
-- [ ] No compatibility API, generic control abstraction, or alternate choice UI is added.
+- [x] The implementation and tests link to [issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) and this [plan](./issue-06-choice-field.md).
+- [x] English and Spanish public docs are updated.
+- [x] `CHANGELOG.md` contains the `Unreleased` entry.
+- [x] English and Spanish `migration-next` docs cover adoption and errors.
+- [x] Tests cover descriptor validation, runtime behavior, Studio select behavior, and types.
+- [x] The starter template and generated starter demonstrate a choice field.
+- [x] No compatibility API, generic control abstraction, or alternate choice UI is added.
 
 ## Out of scope
 

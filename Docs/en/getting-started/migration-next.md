@@ -102,3 +102,34 @@ with a no-migration path. Run `framekit generate`, `framekit check`, and
 See the [semantic fields plan](../../Plans/Future/issue-05-semantic-fields.md),
 the [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
+
+## Choice Field
+
+Issue [#6](https://github.com/MauricioDMO/FrameKit/issues/6) adds
+`field.choice` for closed-set string values. This is an additive change; existing
+text, number, color, and image fields do not require migration.
+
+Declare a non-empty ordered option list and a required default that matches one
+of its values:
+
+```tsx
+alignment: field.choice({
+  label: 'Alignment',
+  options: [
+    { value: 'left', label: 'Left' },
+    { value: 'center', label: 'Center' },
+    { value: 'right', label: 'Right' },
+  ],
+  defaultValue: 'center',
+})
+```
+
+Studio renders a native `<select>` in the declared option order. Choice fields
+do not accept `required` or `control`; values are not trimmed or coerced. Content
+and edits must use a declared string value. An unknown value fails data
+validation with `{ code: 'invalid_choice' }` instead of selecting the first
+option as a fallback.
+
+See the [choice field plan](../../Plans/Future/issue-06-choice-field.md), the
+[template contract reference](../reference/template-contract.md), and the
+[public API reference](../reference/public-api.md).

@@ -35,12 +35,13 @@ El idioma de la interfaz se resuelve en este orden: la cookie `locale` → la ca
 ## Edición de campos
 
 Cada campo de una plantilla se renderiza según su tipo: campo de texto
-multilínea, campo numérico, selector de color o vista previa/upload de imagen.
+multilínea, campo numérico, select nativo de opciones, selector de color o vista
+previa/upload de imagen.
 El tipo de entrada específico se determina a partir de la definición del campo.
 
 Los campos obligatorios se validan al intentar exportar. Los campos opcionales pasan la validación cuando se dejan vacíos.
 
-Los campos numéricos respetan las restricciones `min` y `max` definidas en la plantilla. Los campos de imagen pueden previsualizar assets de la plantilla o imágenes desde `public/assets` mediante rutas desde la raíz.
+Los campos numéricos respetan las restricciones `min` y `max` definidas en la plantilla. Los campos de imagen pueden previsualizar assets de la plantilla o imágenes desde `public/assets` mediante rutas desde la raíz. Los campos choice conservan el orden declarado y rechazan valores fuera del conjunto con `invalid_choice`; no usan comportamiento de campo obligatorio.
 
 ## Persistencia
 

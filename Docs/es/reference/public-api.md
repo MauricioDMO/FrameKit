@@ -17,6 +17,8 @@ contrato de metadata.
 
 El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
 y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
+El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
+y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 
 **Exportaciones del entorno de ejecución**
 
@@ -24,7 +26,7 @@ y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `defineTemplate`             | Define y valida la forma canónica de plantilla sin versión, con metadata, fields, variantes, contenido y una función de renderizado                                                                                           |
 | `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
-| `field`                      | Colección de constructores de descriptores de campo (`field.text`, `field.color`, `field.number`, `field.image`)                                                                                                  |
+| `field`                      | Colección de constructores de descriptores de campo (`field.text`, `field.color`, `field.number`, `field.image`, `field.choice`)                                                                                  |
 | `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
 | `validateTemplateBase`       | Valida la forma canónica sin exigir una función de renderizado                                                                                                                                                                  |
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
@@ -37,7 +39,7 @@ y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 
 | Tipo                          | Descripción                                                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"`                   |
+| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"`                   |
 | `ImageFieldScope`             | Alcance de un campo de imagen: `"common"` \| `"variant"`                                                        |
 | `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
@@ -45,6 +47,7 @@ y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 | `ColorFieldDescriptor`        | Descriptor para campos de color                                                                                |
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
+| `ChoiceFieldDescriptor`       | Descriptor para opciones string ordenadas de conjunto cerrado y un valor predeterminado obligatorio          |
 | `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
 | `TemplateMeta`                | Objeto exacto de metadata con `title` obligatorio y `description`, `marketingDescription` y `tags` opcionales |
 | `TemplateVariants`             | Variante de contenido predeterminada y labels de visualización opcionales                                  |

@@ -104,3 +104,34 @@ cambio aditivo sin migración. Ejecuta `framekit generate`, `framekit check` y
 Consulta el [plan de fields semánticos](../../Plans/Future/issue-05-semantic-fields.md),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
+
+## Campo Choice
+
+El issue [#6](https://github.com/MauricioDMO/FrameKit/issues/6) agrega
+`field.choice` para valores string de conjunto cerrado. Es un cambio aditivo;
+los fields text, number, color e image existentes no requieren migración.
+
+Declara una lista de opciones ordenada y no vacía, junto con un valor
+predeterminado obligatorio que coincida con una de ellas:
+
+```tsx
+alignment: field.choice({
+  label: 'Alineación',
+  options: [
+    { value: 'left', label: 'Izquierda' },
+    { value: 'center', label: 'Centro' },
+    { value: 'right', label: 'Derecha' },
+  ],
+  defaultValue: 'center',
+})
+```
+
+Studio renderiza un `<select>` nativo en el orden declarado. Los fields choice
+no aceptan `required` ni `control`; sus valores no se recortan ni convierten. El
+contenido y las ediciones deben usar un string declarado. Un valor desconocido
+falla la validación de datos con `{ code: 'invalid_choice' }` en lugar de
+seleccionar la primera opción como fallback.
+
+Consulta el [plan del field choice](../../Plans/Future/issue-06-choice-field.md),
+la [referencia del contrato de plantilla](../reference/template-contract.md) y la
+[referencia de la API pública](../reference/public-api.md).

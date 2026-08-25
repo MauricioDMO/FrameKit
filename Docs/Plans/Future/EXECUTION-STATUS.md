@@ -24,7 +24,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 3 | [#3 Template Metadata](./issue-03-template-metadata.md) | Metadata de templates | Active | [x] Completado |
 | 4 | [#4 Content Variants](./issue-04-content-variants.md) | Variantes de contenido | Active | [x] Completado |
 | 5 | [#5 Semantic Fields](./issue-05-semantic-fields.md) | Campos semánticos | Planned | [x] Completado |
-| 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [ ] Pendiente |
+| 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [x] Completado |
 | 7 | [#7 Boolean Field](./issue-07-boolean-field.md) | Campo booleano | Planned | [ ] Pendiente |
 | 8 | [#8 Number Field](./issue-08-number-field.md) | Campo numérico | Planned | [ ] Pendiente |
 | 9 | [#9 Typed Data Pipeline](./issue-09-typed-data-pipeline.md) | Pipeline de datos tipados | Planned | [ ] Pendiente |
@@ -87,9 +87,18 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Verificaciones ejecutadas: tests FrameKit (115), typecheck, lint y build del paquete; tests/typecheck/lint de Studio; tests del scaffolder (19 con `--testTimeout=30000`), typecheck y lint; `pnpm check:runtime`; `framekit generate`; `framekit check`; compilación del starter con `next build --webpack`; y checks raíz `pnpm lint`, `pnpm typecheck` y `pnpm build`. El `pnpm test` raíz conserva el timeout Vitest predeterminado de 5 s del scaffolder; la ejecución focalizada con 30 s pasa. El `framekit build` del starter enlazado localmente falla en el prerender de `_global-error` por una invariant de Turbopack/Next, mientras el build webpack equivalente pasa.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
-### #6–#9 Field Contracts and Typed Data Pipeline
+### #6 Choice Field
 
-- [ ] #6 Choice Field completado.
+- [x] `field.choice` implementado con opciones ordenadas congeladas, `defaultValue` obligatorio y valores literales preservados donde TypeScript puede inferirlos.
+- [x] Validación estructural de opciones vacías, labels/values vacíos, duplicados, defaults desconocidos y propiedades `required`/`control` no soportadas.
+- [x] Validación de datos con `invalid_choice` sin coerción ni fallback a la primera opción; Studio usa un `<select>` nativo con orden, accesibilidad, errores y estado string.
+- [x] Tests de factory, definición, runtime, editor y tipos; starter canónico actualizado y salida generada/composición compilada verificada.
+- [x] Documentación pública EN/ES, guías Studio/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
+- [x] Verificaciones ejecutadas: tests FrameKit (129), typecheck, lint y build del paquete; tests/typecheck/lint de Studio; tests del scaffolder (19 con `pnpm exec vitest run --testTimeout=30000`), typecheck y lint; `pnpm check:runtime`; `framekit generate`; `framekit check`; compilación TypeScript y `next build --webpack` del starter; y checks raíz `pnpm lint`, `pnpm typecheck` y `pnpm build`.
+- [ ] Issue de GitHub cerrado por los mantenedores.
+
+### #7–#9 Field Contracts and Typed Data Pipeline
+
 - [ ] #7 Boolean Field completado.
 - [ ] #8 Number Field completado.
 - [ ] #9 Typed Data Pipeline completado.
@@ -148,3 +157,4 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 | 2026-08-24 | Se completa y verifica localmente el issue #3: metadata exacta, templates, tests, documentación EN/ES, changelog, migraciones y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-24 | Se completa y verifica localmente el issue #4: variantes explícitas, validación exacta, editor/persistencia `v2`, tests, documentación EN/ES, changelog, migraciones y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #5: API singular `field`, eliminación de `textarea`, texto multilínea con límites, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
+| 2026-08-25 | Se completa y verifica localmente el issue #6: `field.choice`, select nativo, validación `invalid_choice`, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |

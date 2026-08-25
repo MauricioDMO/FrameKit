@@ -34,11 +34,13 @@ Interface language is resolved in this order: the `locale` cookie → the `Accep
 
 ## Field editing
 
-Each field in a template renders according to its kind: multiline text area, number input, color picker, or image preview/upload control. The specific input type is determined from the field definition.
+Each field in a template renders according to its kind: multiline text area,
+number input, native choice select, color picker, or image preview/upload
+control. The specific input type is determined from the field definition.
 
 Required fields are validated when you attempt to export. Optional fields pass validation when left empty.
 
-Number fields respect `min` and `max` constraints defined in the template. Image fields can preview template assets or root-relative images served from `public/assets`.
+Number fields respect `min` and `max` constraints defined in the template. Image fields can preview template assets or root-relative images served from `public/assets`. Choice fields keep the declared option order and reject values outside the option set with `invalid_choice`; they do not use required-field behavior.
 
 ## Persistence
 

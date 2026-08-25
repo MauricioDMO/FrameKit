@@ -56,7 +56,7 @@ Templates define fields using the singular `field` object exported from `@mauric
 
 ### Base Options
 
-All field kinds share a common set of options:
+Text, number, color, and image fields share a common set of options:
 
 - `label` (string, required): A human-readable name for the field.
 - `placeholder` (string, optional): Placeholder text shown in empty inputs.
@@ -76,6 +76,29 @@ Length limits are finite integers and `minLength` cannot exceed `maxLength`.
 ```typescript
 field.text({ label: 'Description', placeholder: 'Write something...', minLength: 1, maxLength: 240 })
 ```
+
+### `choice`
+
+A closed-set string field edited with a native `<select>`. `options` must be a
+non-empty ordered array of objects with unique, non-empty string `value` and
+`label` properties. `defaultValue` is required and must match one of the option
+values. Choice fields do not accept `required` or `control`, and values are not
+trimmed or coerced.
+
+```typescript
+field.choice({
+  label: 'Alignment',
+  options: [
+    { value: 'left', label: 'Left' },
+    { value: 'center', label: 'Center' },
+    { value: 'right', label: 'Right' },
+  ],
+  defaultValue: 'center',
+})
+```
+
+Content and edits must use one of the declared option values. An unknown value
+returns `{ code: 'invalid_choice' }` during data validation.
 
 ### `number`
 
@@ -124,7 +147,9 @@ FrameKit creates a template-local asset and that asset takes precedence.
 
 ## Requiredness
 
-Fields are **required by default**. Setting `required: false` makes a field optional.
+Text, number, color, and image fields are **required by default**. Setting
+`required: false` makes one of those fields optional. Choice fields always have
+a valid `defaultValue` and do not accept `required`.
 
 - **Optional fields** (`required: false`): An empty string passes validation.
 - **Required fields** (default): An empty string after trimming whitespace fails validation.
@@ -217,6 +242,7 @@ if (!result.success) {
 - `text` fields: non-empty values must satisfy `minLength` and `maxLength`; length is measured before trimming, so spaces and newlines count
 - `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
 - `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
+- `choice` fields: values must match one of the declared option values
 
 Errors are returned as structured objects with machine-readable codes, not localized strings:
 
@@ -239,6 +265,7 @@ Possible error codes:
 - `text_too_short`: Value has fewer characters than `minLength`
 - `text_too_long`: Value has more characters than `maxLength`
 - `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
+- `invalid_choice`: Value is not one of the declared choice option values
 
 ### The `check` CLI Command
 
@@ -283,6 +310,8 @@ variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-cont
 and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 The semantic field contract is defined by [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md)
 and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
+The choice field contract is defined by [Future Plan #6](../../Plans/Future/issue-06-choice-field.md)
+and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 
 ---
 
