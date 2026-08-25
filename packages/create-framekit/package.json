@@ -45,9 +45,17 @@
     "prepublishOnly": "pnpm lint && pnpm test && pnpm typecheck"
   },
   "devDependencies": {
+    "@icons-pack/react-simple-icons": "13.8.0",
+    "@mauriciodmo/framekit": "workspace:*",
+    "@tabler/icons-react": "^3.45.0",
     "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "next": "16.3.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "tsdown": "^0.20",
     "tsx": "^4.19.0",
     "typescript": "^5",
