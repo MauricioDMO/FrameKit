@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields } from '../../index'
+import { defineTemplate, field } from '../../index'
 
 import { getInitialState, loadPersistedState, resetVariant, selectVariant, updateField } from './editor-state'
 
@@ -10,7 +10,7 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-  fields: { title: fields.text({ label: 'Title' }), color: fields.color({ label: 'Color' }) },
+  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }) },
   content: { en: {}, fr: {} },
   variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
   render: () => null,
@@ -19,10 +19,10 @@ const definition = defineTemplate({
 describe('editor state', () => {
   it('keeps variant changes and edits isolated', () => {
     const initial = getInitialState(definition)
-    const english = updateField(initial, 'title', 'English title')
+    const english = updateField(initial, 'title', 'English\ntitle')
     const french = updateField(selectVariant(english, 'fr'), 'title', 'Titre français')
 
-    expect(french.dataByVariant).toEqual({ en: { title: 'English title' }, fr: { title: 'Titre français' } })
+    expect(french.dataByVariant).toEqual({ en: { title: 'English\ntitle' }, fr: { title: 'Titre français' } })
   })
 
   it('resets only the active variant without mutating the previous state', () => {

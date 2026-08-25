@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields, resolveTemplateData } from '../index'
+import { defineTemplate, field, resolveTemplateData } from '../index'
 
 import { extractedTemplate } from '../../tests/types/extracted-template'
 
@@ -11,11 +11,11 @@ describe('resolveTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        backgroundImage: fields.image({
+        backgroundImage: field.image({
           label: 'Background',
           defaultValue: '/assets/images/backgrounds/forest.svg',
         }),
-        title: fields.text({ label: 'Title', defaultValue: 'Default title' }),
+        title: field.text({ label: 'Title', defaultValue: 'Default title' }),
       },
       content: {
         aurora: { title: 'Variant title' },
@@ -38,10 +38,10 @@ describe('resolveTemplateData', () => {
       width: 1440,
       height: 1440,
       fields: {
-        backgroundImage: fields.image({ defaultValue: '/assets/images/backgrounds/forest.svg', label: 'Background' }),
-        accentColor: fields.color({ defaultValue: '#b9f8d2', label: 'Accent' }),
-        eyebrow: fields.text({ label: 'Eyebrow' }),
-        title: fields.text({ label: 'Title' }),
+        backgroundImage: field.image({ defaultValue: '/assets/images/backgrounds/forest.svg', label: 'Background' }),
+        accentColor: field.color({ defaultValue: '#b9f8d2', label: 'Accent' }),
+        eyebrow: field.text({ label: 'Eyebrow' }),
+        title: field.text({ label: 'Title' }),
       },
       content: {
         en: { eyebrow: 'Digital studio / 2026', title: 'Variant title' },
@@ -72,8 +72,8 @@ describe('resolveTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        hero: fields.image({ label: 'Hero' }),
-        background: fields.image({ label: 'Background', scope: 'common' }),
+        hero: field.image({ label: 'Hero' }),
+        background: field.image({ label: 'Background', scope: 'common' }),
       },
       content: { en: {}, es: {} },
       variants: { default: 'en' },
@@ -96,7 +96,7 @@ describe('resolveTemplateData', () => {
       meta: { title: 'Resolution errors' },
       width: 100,
       height: 100,
-      fields: { title: fields.text({ label: 'Title' }) },
+      fields: { title: field.text({ label: 'Title' }) },
       content: { en: {} },
       variants: { default: 'en' },
       render: () => null,

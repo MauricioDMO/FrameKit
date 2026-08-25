@@ -1,4 +1,4 @@
-import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
+import { defineTemplateBase, field } from '@mauriciodmo/framekit'
 import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
@@ -6,8 +6,8 @@ export const templateBase = defineTemplateBase({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Title' }),
-    accentColor: fields.color({ label: 'Accent' }),
+    title: field.text({ label: 'Title' }),
+    accentColor: field.color({ label: 'Accent' }),
   },
   content: {
     aurora: { title: 'Northern light' },

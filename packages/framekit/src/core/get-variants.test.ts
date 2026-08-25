@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, fields, getVariants } from '../index'
+import { defineTemplate, field, getVariants } from '../index'
 
 describe('getVariants', () => {
   it('returns the content variant keys', () => {
@@ -8,7 +8,7 @@ describe('getVariants', () => {
       meta: { title: 'Variants' },
       width: 100,
       height: 100,
-      fields: { title: fields.text({ label: 'Title' }) },
+      fields: { title: field.text({ label: 'Title' }) },
       content: { campaign: { title: 'Campaign' }, mobile: { title: 'Mobile' } },
       variants: { default: 'campaign' },
       render: () => null,

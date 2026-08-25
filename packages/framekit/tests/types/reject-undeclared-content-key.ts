@@ -1,11 +1,11 @@
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 defineTemplate({
   meta: { title: 'Invalid template' },
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Título' }),
+    title: field.text({ label: 'Título' }),
   },
   content: {
     // @ts-expect-error foo is not declared in fields

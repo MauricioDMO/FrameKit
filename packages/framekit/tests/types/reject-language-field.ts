@@ -1,4 +1,4 @@
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 // @ts-expect-error fields.language is reserved
 defineTemplate({
@@ -6,7 +6,7 @@ defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    language: fields.text({ label: 'Idioma' }),
+    language: field.text({ label: 'Idioma' }),
   },
   content: {
     es: {},

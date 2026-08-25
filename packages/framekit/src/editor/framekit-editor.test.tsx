@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { defineTemplate, fields } from '../index'
+import { defineTemplate, field } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
 import { copyTemplate } from './export-template'
@@ -31,6 +31,8 @@ const messages: EditorMessages = {
   errorInvalidNumber: 'Numero invalido',
   errorNumberTooSmall: 'Debe ser al menos {min}',
   errorNumberTooLarge: 'Debe ser como maximo {max}',
+  errorTextTooShort: 'Debe tener al menos {minLength} caracteres',
+  errorTextTooLong: 'Debe tener como maximo {maxLength} caracteres',
   errorInvalidColor: 'Color hexadecimal invalido',
   imageSelect: 'Subir imagen',
   imageUploading: 'Subiendo',
@@ -44,13 +46,13 @@ function createDefinition() {
     width: 100,
     height: 100,
     fields: {
-      title: fields.text({ label: 'Title' }),
-      optionalText: fields.text({ label: 'Optional text', required: false }),
-      invalidNumber: fields.number({ label: 'Invalid number' }),
-      tooSmall: fields.number({ label: 'Too small', min: 10 }),
-      tooLarge: fields.number({ label: 'Too large', max: 20 }),
-      accentColor: fields.color({ label: 'Accent color', defaultValue: '#123456' }),
-      optionalColor: fields.color({ label: 'Optional color', required: false }),
+      title: field.text({ label: 'Title', minLength: 2, maxLength: 20 }),
+      optionalText: field.text({ label: 'Optional text', required: false }),
+      invalidNumber: field.number({ label: 'Invalid number' }),
+      tooSmall: field.number({ label: 'Too small', min: 10 }),
+      tooLarge: field.number({ label: 'Too large', max: 20 }),
+      accentColor: field.color({ label: 'Accent color', defaultValue: '#123456' }),
+      optionalColor: field.color({ label: 'Optional color', required: false }),
     },
     content: { en: { title: 'English title' }, fr: { title: 'French title' } },
     variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
@@ -92,6 +94,18 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByRole('textbox', { name: 'Optional text' }).getAttribute('aria-required')).toBe('false')
   })
 
+  it('renders text fields as textareas with length constraints and literal newlines', () => {
+    renderEditor()
+
+    const title = screen.getByRole('textbox', { name: 'Title' })
+    expect(title.tagName).toBe('TEXTAREA')
+    expect(title.getAttribute('minlength')).toBe('2')
+    expect(title.getAttribute('maxlength')).toBe('20')
+
+    fireEvent.change(title, { target: { value: 'First line\nSecond line' } })
+    expect((title as HTMLTextAreaElement).value).toBe('First line\nSecond line')
+  })
+
   it('resets only the selected variant without mutating other variant data or errors', async () => {
     localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: '' }, fr: { title: 'Saved French title' } } }))
     renderEditor()
@@ -127,6 +141,13 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText(messages.errorNumberTooSmall.replace('{min}', '10'))).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooLarge.replace('{max}', '20'))).toBeTruthy()
     expect(screen.getByText(messages.errorInvalidColor)).toBeTruthy()
+  })
+
+  it('translates text length validation errors', () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'x' } } }))
+    renderEditor()
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+    expect(screen.getByText(messages.errorTextTooShort.replace('{minLength}', '2'))).toBeTruthy()
   })
 
   it('copies a valid template PNG', async () => {

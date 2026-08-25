@@ -1,4 +1,4 @@
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const template = defineTemplate({
@@ -11,8 +11,8 @@ export const template = defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Título', required: true }),
-    accentColor: fields.color({ label: 'Color', defaultValue: '#173d31' }),
+    title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
+    accentColor: field.color({ label: 'Color', defaultValue: '#173d31' }),
   },
   content: {
     moon: { title: 'Oferta' },
