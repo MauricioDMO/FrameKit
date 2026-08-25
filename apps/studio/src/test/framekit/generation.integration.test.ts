@@ -12,10 +12,12 @@ import { validateTemplateDefinition } from '@mauriciodmo/framekit'
 import { writeTemplateModule } from '@mauriciodmo/framekit/dev'
 
 const templateSource = `export default {
+  meta: { title: 'Generated template' },
   width: 120,
   height: 80,
   fields: {},
-  content: { en: { language: 'English' } },
+  content: { en: {} },
+  variants: { default: 'en' },
   render() { return null },
 }
 `

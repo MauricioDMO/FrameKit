@@ -3,6 +3,7 @@ import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { BrandHero } from '@/brand/communication/hero/component'
 
 export default defineTemplate({
+  meta: { title: 'Promoción cuadrada' },
   width: 1440,
   height: 1440,
   fields: {
@@ -18,24 +19,23 @@ export default defineTemplate({
   },
   content: {
     es: {
-      language: 'Español',
       eyebrow: 'Estudio digital / 2026',
       title: 'Diseñamos sitios que hacen crecer tu **negocio**',
       description: 'Estrategia, diseño y desarrollo para construir una presencia digital que trabaja a tu favor.',
       website: 'web.mauriciodmo.com',
     },
     en: {
-      language: 'English',
       eyebrow: 'Digital studio / 2026',
       title: 'We design websites that grow your **business**',
       description: 'Strategy, design, and development to build a digital presence that works for you.',
       website: 'web.mauriciodmo.com',
     },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
+  render({ data, variant, width, height }) {
     const accentColor = data.accentColor || '#b9f8d2'
     const labels =
-      locale === 'es'
+      variant === 'es'
         ? { workshop: 'Taller digital', studio: '01 / Estudio', cta: 'Hablemos' }
         : { workshop: 'Digital workshop', studio: '01 / Studio', cta: 'Let\'s talk' }
 

@@ -3,6 +3,7 @@ import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 import { BrandHero } from '@/brand/communication/hero/component'
 
 export default defineTemplate({
+  meta: { title: 'Qué es FrameKit' },
   width: 1440,
   height: 1440,
   fields: {
@@ -14,23 +15,22 @@ export default defineTemplate({
   },
   content: {
     es: {
-      language: 'Español',
       eyebrow: 'NUEVO / FRAMEKIT',
       title: 'Diseña imágenes desde **React**',
       description: 'Plantillas editables para crear contenido visual consistente, reutilizable y listo para exportar.',
       website: 'framekit.dev',
     },
     en: {
-      language: 'English',
       eyebrow: 'NEW / FRAMEKIT',
       title: 'Design images with **React**',
       description: 'Editable templates for consistent, reusable visual content that is ready to export.',
       website: 'framekit.dev',
     },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
+  render({ data, variant, width, height }) {
     const accentColor = data.accentColor || '#c8f7d9'
-    const labels = locale === 'es'
+    const labels = variant === 'es'
       ? { define: 'Define', edit: 'Edita', export: 'Exporta', output: 'PNG listo', studio: 'Taller visual' }
       : { define: 'Define', edit: 'Edit', export: 'Export', output: 'PNG ready', studio: 'Visual workshop' }
 
