@@ -60,11 +60,11 @@ export default defineTemplate({
 ```
 
 Each template owns its variant keys through `content`. FrameKit does not limit
-or import the application's interface locales. Content entries contain only
+or import the application's interface language. Content entries contain only
 declared field values, and unknown keys are rejected.
 
-Localized field values can be omitted. Resolution applies field defaults,
-localized content, and user edits in that order before required values are
+Variant field values can be omitted. Resolution applies field defaults, variant
+content, and user edits in that order before required values are
 validated.
 
 ## Extracted artwork

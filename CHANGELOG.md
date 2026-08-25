@@ -15,3 +15,8 @@
   optional functional and marketing descriptions, optional string tags, and
   rejection of unsupported metadata properties. See [plan #3](Docs/Plans/Future/issue-03-template-metadata.md)
   and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3).
+- Replaced locale-shaped template selection with the explicit variant contract:
+  `getVariants`, field-only content, validated defaults and labels, variant-named
+  editor state, and `framekit:<slug>:v2` persistence that discards old `v1`
+  state. See [plan #4](Docs/Plans/Future/issue-04-content-variants.md) and
+  [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
