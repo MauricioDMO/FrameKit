@@ -144,7 +144,7 @@ Cada definición de plantilla requiere estas propiedades:
 - `meta` — un objeto plano reservado para la metadata de la plantilla
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, number, color, image o choice), creado con el export singular `field`
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, number, color, image, choice o boolean), creado con el export singular `field`
 - `variants` — un objeto con una key `default` de contenido y labels de visualización opcionales
 - `content` — un registro con al menos una entrada de variante que contiene solo valores parciales de fields
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
@@ -204,6 +204,19 @@ alignment: field.choice({
 })
 ```
 
+`field.boolean` renderiza un checkbox nativo para un valor binario. Solo acepta
+`label` y un `defaultValue` booleano opcional; si se omite, el valor
+predeterminado es `false`. El contenido, las ediciones y los datos de render de
+un field boolean permanecen como booleanos, sin convertir `'true'` ni `'false'`.
+Usa `field.choice` para valores de tres estados.
+
+```tsx
+showLogo: field.boolean({
+  label: 'Mostrar logo',
+  defaultValue: true,
+})
+```
+
 ## Contenido y variantes
 
 Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
@@ -231,7 +244,11 @@ En este ejemplo, el tipo `variant` es `'fjord' | 'moon'`, no una unión global d
 
 La función `render` recibe únicamente inputs de renderizado:
 
-- `data` — un objeto que contiene todas las claves de field como strings tras la resolución. En Studio, los valores se aplican en este orden: valores predeterminados de los fields, contenido de la variante y, por último, ediciones del usuario.
+- `data` — un objeto que contiene todas las claves de field con el tipo definido
+  por cada field tras la resolución. Los valores de text, color, image y choice
+  son strings; los valores boolean son booleanos. En Studio, los valores se
+  aplican en este orden: valores predeterminados de los fields, contenido de la
+  variante y, por último, ediciones del usuario.
 - `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
 - `variant` — la key de la variante actualmente seleccionada, tipada como una unión de todas las keys de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
@@ -274,4 +291,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7)

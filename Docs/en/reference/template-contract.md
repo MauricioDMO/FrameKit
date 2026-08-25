@@ -100,6 +100,24 @@ field.choice({
 Content and edits must use one of the declared option values. An unknown value
 returns `{ code: 'invalid_choice' }` during data validation.
 
+### `boolean`
+
+A binary field edited with a native `<input type="checkbox">`. It accepts only
+`label` and an optional boolean `defaultValue`; omitting `defaultValue` resolves
+to `false`. Boolean fields do not accept `required`, `control`, or string
+coercion. Content, edits, resolved data, and render props must use real
+booleans, so `'true'`, `'false'`, and numeric truthy/falsy values are invalid.
+
+```typescript
+showLogo: field.boolean({
+  label: 'Show logo',
+  defaultValue: true,
+})
+```
+
+A wrong runtime type returns `{ code: 'invalid_boolean' }` during data
+validation. Use a `choice` field when a value needs more than two states.
+
 ### `number`
 
 A numeric input. Accepts the base options plus:
@@ -149,18 +167,21 @@ FrameKit creates a template-local asset and that asset takes precedence.
 
 Text, number, color, and image fields are **required by default**. Setting
 `required: false` makes one of those fields optional. Choice fields always have
-a valid `defaultValue` and do not accept `required`.
+a valid `defaultValue` and do not accept `required`; boolean fields are always
+valid booleans and do not participate in requiredness.
 
 - **Optional fields** (`required: false`): An empty string passes validation.
 - **Required fields** (default): An empty string after trimming whitespace fails validation.
 
-The default value is `true`, not `false`. This is a deliberate default because missing required data is a more common error than accidental over-requiredness.
+Boolean fields use `false` when `defaultValue` is omitted. Other fields use the
+requiredness defaults described above.
 
 ## Data Resolution Order
 
 When a template renders, field values are resolved through a specific order. This determines what the `data` object contains inside the `render` function:
 
-1. **Field `defaultValue`**: The field's `defaultValue` option, or `''` if not set.
+1. **Field `defaultValue`**: The field's `defaultValue` option, or `''` for
+   string fields and `false` for boolean fields if not set.
 2. **Content variant values**: Values from the template's `content` object for the selected variant.
 3. **User edits**: Values the user has edited in the Studio editor, which override everything else.
 
@@ -192,7 +213,7 @@ const data = resolveTemplateData(definition, variant, edits)
 import { getDefaultValues } from '@mauriciodmo/framekit'
 
 const defaults = getDefaultValues(definition.fields)
-// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' }
+// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' or false }
 ```
 
 ### Available Variants
@@ -220,7 +241,8 @@ FrameKit provides two validation functions that check different aspects of a tem
 - `variants` must be a plain object containing only `default` and optional `labels`; `variants.default` must name a content entry, and every label key must name a content entry
 - `fields.language` is reserved and cannot be used
 - `content` must have at least one entry
-- Every content entry may contain only declared field keys, and every value must be a string
+- Every content entry may contain only declared field keys, and values must
+  match their field kind (`string` for string fields and `boolean` for boolean fields)
 - Unsupported top-level properties such as `version` are rejected
 - `render` must be a function
 - Field options must have valid types (e.g., `min`/`max` only on `number` fields, `minLength`/`maxLength` only on `text` fields, finite numbers only)
@@ -243,6 +265,7 @@ if (!result.success) {
 - `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
 - `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
 - `choice` fields: values must match one of the declared option values
+- `boolean` fields: values must be real booleans; strings are not coerced
 
 Errors are returned as structured objects with machine-readable codes, not localized strings:
 
@@ -266,6 +289,7 @@ Possible error codes:
 - `text_too_long`: Value has more characters than `maxLength`
 - `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
 - `invalid_choice`: Value is not one of the declared choice option values
+- `invalid_boolean`: Value is not a boolean
 
 ### The `check` CLI Command
 
@@ -312,6 +336,8 @@ The semantic field contract is defined by [Future Plan #5](../../Plans/Future/is
 and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
 The choice field contract is defined by [Future Plan #6](../../Plans/Future/issue-06-choice-field.md)
 and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
+The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
+and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 
 ---
 

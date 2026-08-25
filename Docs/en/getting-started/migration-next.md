@@ -133,3 +133,36 @@ option as a fallback.
 See the [choice field plan](../../Plans/Future/issue-06-choice-field.md), the
 [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
+
+## Boolean Field
+
+Issue [#7](https://github.com/MauricioDMO/FrameKit/issues/7) adds
+`field.boolean` for binary decisions. This changes the value boundary for
+boolean fields from strings to real booleans. Existing text, number, color,
+image, and choice fields do not need migration unless they are being changed to
+booleans.
+
+Declare the field with an optional boolean default:
+
+```tsx
+showLogo: field.boolean({
+  label: 'Show logo',
+  defaultValue: true,
+})
+```
+
+Update every boolean field's content and render logic to use `true` or `false`,
+not `'true'` or `'false'` strings. If `defaultValue` is omitted, the resolved
+default is `false`. Studio uses a native checkbox, and persisted overrides must
+also be real booleans; old string overrides are discarded rather than coerced.
+Boolean fields do not accept `required` or `control`.
+
+Wrong runtime values return `{ code: 'invalid_boolean' }`. Use a `choice` field
+for tri-state values instead of recommending or storing `'true'`/`'false'`
+strings. This is an additive field kind for existing templates, but adopting it
+requires the typed source update above. Run `framekit generate`, `framekit check`,
+and `framekit build` after updating templates.
+
+See the [boolean field plan](../../Plans/Future/issue-07-boolean-field.md), the
+[template contract reference](../reference/template-contract.md), and the
+[public API reference](../reference/public-api.md).

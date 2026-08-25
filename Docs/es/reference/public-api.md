@@ -19,6 +19,8 @@ El contrato semántico de fields está definido por el [Plan Futuro #5](../../Pl
 y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
 y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
+El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
+y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 
 **Exportaciones del entorno de ejecución**
 
@@ -26,20 +28,20 @@ y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `defineTemplate`             | Define y valida la forma canónica de plantilla sin versión, con metadata, fields, variantes, contenido y una función de renderizado                                                                                           |
 | `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
-| `field`                      | Colección de constructores de descriptores de campo (`field.text`, `field.color`, `field.number`, `field.image`, `field.choice`)                                                                                  |
+| `field`                      | Colección de constructores de descriptores de campo (`field.text`, `field.color`, `field.number`, `field.image`, `field.choice`, `field.boolean`)                                                                  |
 | `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
 | `validateTemplateBase`       | Valida la forma canónica sin exigir una función de renderizado                                                                                                                                                                  |
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; aplica valores predeterminados -> contenido de variante -> ediciones y luego assets de imagen |
 | `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                   |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los valores predeterminados de los campos                                                                                           |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| boolean>`; extrae los valores predeterminados de los campos                                                                       |
 
 **Exportaciones de tipos**
 
 | Tipo                          | Descripción                                                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"`                   |
+| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"` \| `"boolean"`       |
 | `ImageFieldScope`             | Alcance de un campo de imagen: `"common"` \| `"variant"`                                                        |
 | `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
@@ -48,6 +50,7 @@ y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
 | `ChoiceFieldDescriptor`       | Descriptor para opciones string ordenadas de conjunto cerrado y un valor predeterminado obligatorio          |
+| `BooleanFieldDescriptor`      | Descriptor para valores binarios con un valor booleano opcional; Studio usa un checkbox nativo               |
 | `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
 | `TemplateMeta`                | Objeto exacto de metadata con `title` obligatorio y `description`, `marketingDescription` y `tags` opcionales |
 | `TemplateVariants`             | Variante de contenido predeterminada y labels de visualización opcionales                                  |

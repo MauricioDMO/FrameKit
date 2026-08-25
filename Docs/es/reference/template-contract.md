@@ -103,6 +103,26 @@ field.choice({
 El contenido y las ediciones deben usar uno de los valores declarados. Un valor
 desconocido devuelve `{ code: 'invalid_choice' }` durante la validación de datos.
 
+### `boolean`
+
+Un campo binario editado con un `<input type="checkbox">` nativo. Solo acepta
+`label` y un `defaultValue` booleano opcional; si se omite `defaultValue`, la
+resolución usa `false`. Los campos boolean no aceptan `required`, `control` ni
+coerción de strings. El contenido, las ediciones, los datos resueltos y las
+props de renderizado deben usar booleanos reales, por lo que `'true'`, `'false'`
+y valores numéricos truthy/falsy no son válidos.
+
+```typescript
+showLogo: field.boolean({
+  label: 'Mostrar logo',
+  defaultValue: true,
+})
+```
+
+Un tipo de runtime incorrecto devuelve `{ code: 'invalid_boolean' }` durante la
+validación de datos. Usa un field `choice` cuando un valor necesite más de dos
+estados.
+
 ### `number`
 
 Un campo numérico. Acepta las opciones base más:
@@ -154,18 +174,22 @@ precedencia.
 
 Los campos text, number, color e image son **requeridos por defecto**.
 Configurar `required: false` hace que uno de esos campos sea opcional. Los
-campos choice siempre tienen un `defaultValue` válido y no aceptan `required`.
+campos choice siempre tienen un `defaultValue` válido y no aceptan `required`;
+los campos boolean siempre son booleanos válidos y no participan en la
+obligatoriedad.
 
 - **Campos opcionales** (`required: false`): Una cadena vacía pasa la validación.
 - **Campos requeridos** (por defecto): Una cadena vacía después de eliminar espacios en blanco falla la validación.
 
-El valor predeterminado es `true`, no `false`. Es una decisión deliberada porque la falta de datos obligatorios es un error más frecuente que exigir datos accidentalmente.
+Los campos boolean usan `false` cuando se omite `defaultValue`. Los demás fields
+usan los valores de obligatoriedad descritos arriba.
 
 ## Orden de Resolución de Datos
 
 Cuando una plantilla se renderiza, los valores de los campos se resuelven a través de un orden específico. Esto determina lo que contiene el objeto `data` dentro de la función `render`:
 
-1. **`defaultValue` del campo**: La opción `defaultValue` del campo, o `''` si no está configurada.
+1. **`defaultValue` del campo**: La opción `defaultValue` del campo, o `''` para
+   fields string y `false` para fields boolean si no está configurada.
 2. **Valores de variante de contenido**: Valores del objeto `content` de la plantilla para la variante seleccionada.
 3. **Ediciones del usuario**: Valores que el usuario ha editado en el editor de Studio, que sobrescriben todo lo demás.
 
@@ -197,7 +221,7 @@ const data = resolveTemplateData(definition, variant, edits)
 import { getDefaultValues } from '@mauriciodmo/framekit'
 
 const defaults = getDefaultValues(definition.fields)
-// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' }
+// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' o false }
 ```
 
 ### Variantes disponibles
@@ -225,7 +249,9 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 - `variants` debe ser un objeto plano que solo contenga `default` y `labels` opcional; `variants.default` debe nombrar una entrada de contenido y cada key de label debe nombrar una entrada de contenido
 - `fields.language` está reservado y no puede ser usado
 - `content` debe tener al menos una entrada
-- Cada entrada de contenido solo puede contener keys de fields declaradas y cada valor debe ser un string
+- Cada entrada de contenido solo puede contener keys de fields declaradas y cada
+  valor debe coincidir con su tipo de field (`string` para fields string y
+  `boolean` para fields boolean)
 - Las propiedades de nivel superior no soportadas, como `version`, son rechazadas
 - `render` debe ser una función
 - Las opciones de campo deben tener tipos válidos (por ejemplo, `min`/`max` solo en campos `number`, `minLength`/`maxLength` solo en campos `text`, números finitos solamente)
@@ -248,6 +274,7 @@ if (!result.success) {
 - Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
 - Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 - Campos `choice`: los valores deben coincidir con uno de los valores de opción declarados
+- Campos `boolean`: los valores deben ser booleanos reales; los strings no se convierten
 
 Los errores se retornan como objetos estructurados con códigos legibles por máquina, no strings localizados:
 
@@ -271,6 +298,7 @@ Códigos de error posibles:
 - `text_too_long`: El valor tiene más caracteres que `maxLength`
 - `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
 - `invalid_choice`: El valor no pertenece a los valores de opción declarados
+- `invalid_boolean`: El valor no es un booleano
 
 ### El Comando CLI `check`
 
@@ -317,6 +345,8 @@ El contrato semántico de fields está definido por el [Plan Futuro #5](../../Pl
 y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
 y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
+El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
+y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 
 ---
 

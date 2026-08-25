@@ -135,3 +135,38 @@ seleccionar la primera opción como fallback.
 Consulta el [plan del field choice](../../Plans/Future/issue-06-choice-field.md),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
+
+## Campo Boolean
+
+El issue [#7](https://github.com/MauricioDMO/FrameKit/issues/7) agrega
+`field.boolean` para decisiones binarias. Esto cambia la frontera de valores de
+los fields boolean de strings a booleanos reales. Los fields text, number, color,
+image y choice existentes no requieren migración salvo que se conviertan a
+boolean.
+
+Declara el field con un valor predeterminado booleano opcional:
+
+```tsx
+showLogo: field.boolean({
+  label: 'Mostrar logo',
+  defaultValue: true,
+})
+```
+
+Actualiza el contenido y el render de cada field boolean para usar `true` o
+`false`, no strings `'true'` ni `'false'`. Si se omite `defaultValue`, el valor
+resuelto es `false`. Studio usa un checkbox nativo y las ediciones persistidas
+también deben ser booleanos reales; los overrides antiguos con strings se
+descartan en lugar de convertirse. Los fields boolean no aceptan `required` ni
+`control`.
+
+Los valores de runtime incorrectos devuelven `{ code: 'invalid_boolean' }`. Usa
+un field `choice` para valores de tres estados en lugar de recomendar o guardar
+strings `'true'`/`'false'`. Es un kind aditivo para plantillas existentes, pero
+adoptarlo requiere la actualización tipada del código fuente anterior. Ejecuta
+`framekit generate`, `framekit check` y `framekit build` después de actualizar las
+plantillas.
+
+Consulta el [plan del field boolean](../../Plans/Future/issue-07-boolean-field.md),
+la [referencia del contrato de plantilla](../reference/template-contract.md) y la
+[referencia de la API pública](../reference/public-api.md).

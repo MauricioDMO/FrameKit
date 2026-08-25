@@ -17,6 +17,8 @@ The semantic field contract is defined by [Future Plan #5](../../Plans/Future/is
 and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
 The choice field contract is defined by [Future Plan #6](../../Plans/Future/issue-06-choice-field.md)
 and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
+The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
+and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 
 **Runtime exports**
 
@@ -24,20 +26,20 @@ and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `defineTemplate`             | Defines and validates the versionless canonical template shape with metadata, fields, variants, content, and a render function                                                |
 | `defineTemplateBase`         | Defines and validates a template base without a render function                                                                                                                |
-| `field`                      | Collection of field descriptor builders (`field.text`, `field.color`, `field.number`, `field.image`, `field.choice`)                                                          |
+| `field`                      | Collection of field descriptor builders (`field.text`, `field.color`, `field.number`, `field.image`, `field.choice`, `field.boolean`)                                      |
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
 | `validateTemplateBase`       | Validates the canonical template shape without requiring a render function                                                                                                    |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; applies defaults -> variant content -> user edits, then image assets                                |
 | `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                             |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults                                                                   |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| boolean>`; extracts field defaults                                                        |
 
 **Type exports**
 
 | Type                          | Description                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"`                   |
+| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"` \| `"boolean"`       |
 | `ImageFieldScope`             | Scope for image assets: `"common"` \| `"variant"`                                                   |
 | `BaseFieldDescriptor`         | Base shape shared by all field descriptors                                                              |
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
@@ -46,6 +48,7 @@ and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 | `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `ChoiceFieldDescriptor`       | Descriptor for ordered closed-set string options and a required default value                          |
+| `BooleanFieldDescriptor`      | Descriptor for binary values with an optional boolean default; Studio uses a native checkbox           |
 | `TemplateAssetManifest`       | Generated common and variant asset URL maps                                                            |
 | `TemplateMeta`                | Exact metadata object with required `title` and optional `description`, `marketingDescription`, and `tags` |
 | `TemplateVariants`             | Default content variant and optional display labels                                                  |

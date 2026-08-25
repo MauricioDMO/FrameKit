@@ -144,7 +144,7 @@ Every template definition requires these properties:
 - `meta` — a plain object reserved for template metadata
 - `width` — a positive integer specifying the template output width in pixels
 - `height` — a positive integer specifying the template output height in pixels
-- `fields` — a record where each key is a field name and each value is a field descriptor (text, number, color, image, or choice), created with the singular `field` export
+- `fields` — a record where each key is a field name and each value is a field descriptor (text, number, color, image, choice, or boolean), created with the singular `field` export
 - `variants` — an object with a `default` content key and optional display labels
 - `content` — a record with at least one variant entry containing only partial field values
 - `render` — a function that receives typed props and returns a React node
@@ -204,6 +204,18 @@ alignment: field.choice({
 })
 ```
 
+`field.boolean` renders a native checkbox for a binary value. It accepts only a
+`label` and an optional boolean `defaultValue`; the default is `false` when it
+is omitted. Boolean content, edits, and render data stay boolean, with no
+coercion from `'true'` or `'false'`. Use `field.choice` for tri-state values.
+
+```tsx
+showLogo: field.boolean({
+  label: 'Show logo',
+  defaultValue: true,
+})
+```
+
 ## Content and Variants
 
 Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
@@ -230,7 +242,10 @@ In this example, the `variant` type is `'fjord' | 'moon'`, not a global language
 
 The `render` function receives only render inputs:
 
-- `data` — an object containing all field keys as strings after resolution. In Studio, values are applied in this order: field defaults, variant content, then user edits.
+- `data` — an object containing all field keys with the value type defined by
+  each field after resolution. Text, color, image, and choice values are strings;
+  boolean values are booleans. In Studio, values are applied in this order:
+  field defaults, variant content, then user edits.
 - `assets` — generated URLs for common and variant template assets.
 - `variant` — the key of the currently selected variant, typed as a union of all content keys.
 - `width` — the template width as a literal type.
@@ -273,4 +288,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [Future Plan #6](../../Plans/Future/issue-06-choice-field.md) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [Future Plan #6](../../Plans/Future/issue-06-choice-field.md) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7)
