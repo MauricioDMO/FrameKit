@@ -1,6 +1,6 @@
 # Studio
 
-Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante de idioma admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales. También ofrece un catálogo para consultar previews de componentes de marca reutilizables. Ambos flujos se ejecutan en el navegador.
+Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales. También ofrece un catálogo para consultar previews de componentes de marca reutilizables. Ambos flujos se ejecutan en el navegador.
 
 ## Navegación
 
@@ -20,13 +20,13 @@ En tiempo de ejecución, cada entrada de marca generada contiene el slug, el tí
 
 Cuando una ruta de marca tiene un slug coincidente, Studio ejecuta el loader de esa entrada. El loader generado importa `preview.tsx`; Studio toma su exportación por defecto como preview y la renderiza en el catálogo. El catálogo muestra el título generado en la cabecera, la etiqueta `Brand`, el preview en el área de vista previa, la descripción del README en un panel lateral y una indicación que hace referencia a `component.tsx`. Un preview puede importar y renderizar el componente reutilizable, como hace el `preview.tsx` actual de `communication/hero`.
 
-El catálogo de marca sirve para catalogar y comprobar visualmente los previews, no para editar el código ni las props del componente. No ofrece campos de plantilla, edición del idioma del diseño, validación de definiciones de plantilla ni el flujo de exportación PNG de plantillas. Las plantillas que reutilizan un componente de marca se siguen editando y renderizando desde `/editor`, donde la plantilla contenedora define sus dimensiones, campos, contenido, assets y comportamiento de exportación.
+El catálogo de marca sirve para catalogar y comprobar visualmente los previews, no para editar el código ni las props del componente. No ofrece fields de plantilla, edición de variantes, validación de definiciones de plantilla ni el flujo de exportación PNG de plantillas. Las plantillas que reutilizan un componente de marca se siguen editando y renderizando desde `/editor`, donde la plantilla contenedora define sus dimensiones, fields, contenido, assets y comportamiento de exportación.
 
-## Idioma del diseño vs. Idioma de la interfaz
+## Variante de contenido vs. idioma de la interfaz
 
 Studio distingue entre dos aspectos separados del idioma:
 
-El **idioma del diseño** (etiquetado como "Idioma del diseño" en la interfaz) se refiere a qué variante de contenido de la plantilla se está editando. Las plantillas pueden definir claves de idioma arbitrarias — `en`, `es`, `fr` o cualquier cadena — y cada idioma mantiene su propio conjunto de valores de campo. Al cambiar el idioma del diseño se borran todos los mensajes de error de validación que se estén mostrando.
+La **variante de contenido** (etiquetada como "Variante de contenido" en la interfaz) se refiere a qué entrada de contenido de la plantilla se está editando. Las plantillas pueden definir keys de variante arbitrarias — `en`, `es`, `fr` o cualquier cadena — y cada variante mantiene su propio conjunto de valores de field. Al cambiar la variante se borran todos los mensajes de error de validación que se estén mostrando.
 
 El **idioma de la interfaz** controla el idioma de las etiquetas, botones y mensajes propios de Studio. Está limitado a `en` (inglés) o `es` (español). Al cambiarlo se actualiza el estado de React, el atributo `lang` del elemento `<html>` y se guarda una cookie `locale` con vigencia de un año.
 
@@ -42,13 +42,13 @@ Los campos numéricos respetan las restricciones `min` y `max` definidas en la p
 
 ## Persistencia
 
-Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave `framekit:<slug>:v1`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por idioma dentro de esa entrada.
+Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave `framekit:<slug>:v1`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por variante de contenido dentro de esa entrada.
 
-El estado almacenado con formato incorrecto se descarta de forma segura y el editor comienza desde cero. Las ediciones almacenadas para idiomas o campos que ya no existen se ignoran. No hay sincronización con el servidor, ni cuenta, ni colaboración: todo permanece en el navegador del usuario.
+El estado almacenado con formato incorrecto se descarta de forma segura y el editor comienza desde cero. Las ediciones almacenadas para variantes o fields que ya no existen se ignoran. No hay sincronización con el servidor, ni cuenta, ni colaboración: todo permanece en el navegador del usuario.
 
 ## Restablecer
 
-El botón Restablecer elimina las ediciones solo para el idioma actualmente seleccionado de la plantilla actual. No borra otros idiomas ni otras plantillas.
+El botón Restablecer elimina las ediciones solo para la variante actualmente seleccionada de la plantilla actual. No borra otras variantes ni otras plantillas.
 
 ## Vista previa y zoom
 

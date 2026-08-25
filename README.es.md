@@ -12,7 +12,7 @@ FrameKit es un editor de imágenes basado en plantillas para React y Next.js. De
 
 Las publicaciones sociales, tarjetas de campaña y otros gráficos recurrentes suelen convertirse en una cadena de diseños duplicados, archivos copiados y correcciones manuales. FrameKit ofrece una única fuente de verdad tipada para el diseño y una superficie de edición enfocada en las variantes de contenido.
 
-El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores e idiomas en Studio; el navegador exporta el PNG final sin rehacer el diseño.
+El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores y variantes en Studio; el navegador exporta el PNG final sin rehacer el diseño.
 
 ## Studio
 
@@ -40,6 +40,7 @@ Una plantilla define sus dimensiones, campos editables, variantes de contenido y
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
+  meta: { title: 'Tarjeta social' },
   width: 1200,
   height: 630,
   fields: {
@@ -47,13 +48,14 @@ export default defineTemplate({
     accent: fields.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
   },
   content: {
-    en: { language: 'English', title: 'Build once. **Publish often.**' },
-    es: { language: 'Español', title: 'Diseña una vez. **Publica siempre.**' },
+    en: { title: 'Build once. **Publish often.**' },
+    es: { title: 'Diseña una vez. **Publica siempre.**' },
   },
-  render({ data, width, height }) {
+  variants: { default: 'en', labels: { en: 'English', es: 'Español' } },
+  render({ data, variant, width, height }) {
     return (
       <article style={{ width, height, background: '#10271f', color: data.accent }}>
-        <Markdown value={data.title} />
+        <Markdown value={`${data.title} (${variant})`} />
       </article>
     )
   },
@@ -70,7 +72,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 - Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
 - Renderizado Markdown para formato de texto en línea y listas básicas.
 - Descubrimiento de plantillas en `src/templates/**/template.tsx` y registros generados.
-- Navegación en Studio, cambio de idioma, tema claro/oscuro, persistencia local en el navegador, zoom y desplazamiento de la vista previa.
+- Navegación en Studio, cambio de variante, tema claro/oscuro, persistencia local en el navegador, zoom y desplazamiento de la vista previa.
 - Comandos CLI para `generate`, `check`, `dev`, `build` y `start`.
 - Exportación de PNG en el navegador con el ancho y alto declarados por la plantilla.
 
@@ -80,7 +82,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 - La exportación actual solo admite PNG. No hay renderizado del lado del servidor, exportación a GIF/video, otros formatos, control de escala ni DPI.
 - Studio guarda los cambios de contenido en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
-- La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias claves de idioma.
+- La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.
 - El paquete solo publica módulos ESM; no ofrece exports CommonJS.
 
 ## Compatibilidad

@@ -138,7 +138,7 @@ return (
 )
 ```
 
-The `que-es-framekit` template supplies the 1440×1440 canvas, dark artwork, header, decorative cards, footer, editable fields, and locale content around `BrandHero`. The Instagram square promotion supplies its background image, logo and channel-specific framing, plus its own CTA. Both reuse the same hero while keeping those template-specific decisions outside it.
+The `que-es-framekit` template supplies the 1440×1440 canvas, dark artwork, header, decorative cards, footer, editable fields, and variant content around `BrandHero`. The Instagram square promotion supplies its background image, logo and channel-specific framing, plus its own CTA. Both reuse the same hero while keeping those template-specific decisions outside it.
 
 ## What is not currently provided
 

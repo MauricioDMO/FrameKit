@@ -76,7 +76,7 @@ El proyecto generado incluye una plantilla de ejemplo bilingüe visible inmediat
 
 Usa los siguientes comandos para trabajar con el proyecto:
 
-- `pnpm check` — regenera el catálogo de plantillas y valida todas las definiciones y locales.
+- `pnpm check` — regenera el catálogo de plantillas y valida todas las definiciones y variantes de contenido.
 - `pnpm build` — crea una compilación optimizada para producción.
 - `pnpm start` — inicia el servidor de producción.
 

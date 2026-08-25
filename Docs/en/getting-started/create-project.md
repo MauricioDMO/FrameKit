@@ -76,7 +76,7 @@ The generated project includes one bilingual example template visible immediatel
 
 Use the following commands to work with the project:
 
-- `pnpm check` — regenerates the template catalog and validates all definitions and locales.
+- `pnpm check` — regenerates the template catalog and validates all definitions and content variants.
 - `pnpm build` — creates a production-optimized build.
 - `pnpm start` — starts the production server.
 

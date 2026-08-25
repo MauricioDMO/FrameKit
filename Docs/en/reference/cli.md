@@ -72,15 +72,15 @@ framekit generate
 
 ## `framekit check`
 
-Validates every template definition and its resolved content across all declared locales.
+Validates every template definition and its resolved content across all declared variants.
 
 The command first runs `generate` to ensure the registry is current. It then creates a temporary checker directory inside `.framekit/` and writes a temporary TypeScript file that imports every template via bundled `tsx`. This uses the consumer's own `tsconfig`, so TypeScript imports, TSX syntax, and path aliases resolve the same way they do during development.
 
-For each template, `validateTemplateDefinition` checks the structure of the definition: dimensions (width and height must be positive finite integers), fields, content, and the render function. For each locale declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and color fields use valid hexadecimal values.
+For each template, `validateTemplateDefinition` checks the canonical structure of the definition: metadata, dimensions (width and height must be positive finite integers), fields, variants, field-only content, and the render function. For each variant declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max constraints, and color fields use valid hexadecimal values.
 
 The temporary checker directory is always deleted after the check completes, whether it passes or fails.
 
-Structured errors are reported per template, per locale, and per field:
+Structured errors are reported per template, per variant, and per field:
 
 ```
 /path/to/src/templates/example/template.tsx: content.en.title: required

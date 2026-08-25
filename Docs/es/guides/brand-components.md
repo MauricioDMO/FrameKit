@@ -106,7 +106,7 @@ Las dos plantillas actuales importan `BrandHero` desde `@/brand/communication/he
 - `framekit/que-es-framekit/template.tsx` define una salida de `1440 × 1440`, el fondo verde, las formas decorativas, el encabezado, las tarjetas de ejemplo, el pie y los campos `eyebrow`, `title`, `description`, `website` y `accentColor`.
 - `redes-sociales/instagram/promocion-cuadrada/template.tsx` también define `1440 × 1440`, pero añade `backgroundImage`, overlay, una cabecera de Silver Wolf, una composición específica de esa plantilla y una CTA localizada (`Hablemos`/`Let's talk`).
 
-En ambas, la plantilla resuelve `data`, decide el fallback del color (`#c8f7d9` en la primera y `#b9f8d2` en la segunda) y pasa los valores a `BrandHero`. El componente compartido no conoce locales, campos, Instagram, dimensiones de exportación, fondos, logos, etiquetas de plataforma ni CTA. La documentación de authoring de plantillas explica la resolución de datos y locales en [Creación de plantillas](./template-authoring.md).
+En ambas, la plantilla resuelve `data`, decide el fallback del color (`#c8f7d9` en la primera y `#b9f8d2` en la segunda) y pasa los valores a `BrandHero`. El componente compartido no conoce variantes, fields, Instagram, dimensiones de exportación, fondos, logos, etiquetas de plataforma ni CTA. La documentación de authoring de plantillas explica la resolución de datos y variantes en [Creación de plantillas](./template-authoring.md).
 
 ## Catálogo de Studio y límites actuales
 
@@ -121,7 +121,7 @@ En el árbol actual de `src/brand` tampoco hay un componente de logo, un sistema
 1. Elige una ruta semántica en `src/brand/` y usa nombres de directorio válidos.
 2. Añade el README de cada nivel nuevo y el README de la hoja con un primer párrafo descriptivo.
 3. Implementa `component.tsx` con props semánticas y crea `preview.tsx` como exportación por defecto que lo reutilice.
-4. Deja en la plantilla consumidora el layout, las dimensiones, los campos, los locales, los assets y las restricciones del canal.
+4. Deja en la plantilla consumidora el layout, las dimensiones, los fields, las variantes, los assets y las restricciones del canal.
 5. Comprueba el preview en Studio bajo `/brand/<slug>` y revisa la guía de [Studio](./studio.md) para el comportamiento general de navegación y previews.
 
 ---

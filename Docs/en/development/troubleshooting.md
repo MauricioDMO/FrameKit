@@ -238,10 +238,13 @@ FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 
 - invalid dimensions (width or height not positive integers)
 - missing required fields
-- no content entries for a locale
+- no content entries for a variant
+- a missing or malformed `meta` or `variants` object
+- a default variant that is not declared in `content`
 - a field named `language` (this key is reserved)
+- a content key that is not declared in `fields`
 
-The check produces per-template, per-locale, and per-field structured error output naming the exact file and rule that failed.
+The check produces per-template, per-variant, and per-field structured error output naming the exact file and rule that failed.
 
 **Fix: run `framekit check` for detailed errors**
 

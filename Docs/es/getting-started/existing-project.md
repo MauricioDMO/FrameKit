@@ -144,7 +144,7 @@ Para crear una compilación de producción, usa el comando `framekit build`:
 pnpm framekit build
 ```
 
-Este comando primero ejecuta `framekit check` para regenerar el catálogo de plantillas y validar cada definición de plantilla y configuración regional. Si la validación pasa, ejecuta `next build`. A continuación, el directorio `public`, cuando está presente, y los activos estáticos se copian junto al servidor standalone.
+Este comando primero ejecuta `framekit check` para regenerar el catálogo de plantillas y validar cada definición de plantilla y variante de contenido. Si la validación pasa, ejecuta `next build`. A continuación, el directorio `public`, cuando está presente, y los activos estáticos se copian junto al servidor standalone.
 
 ## Iniciar el servidor de producción
 

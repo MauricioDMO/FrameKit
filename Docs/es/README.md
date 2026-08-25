@@ -7,10 +7,11 @@
 - [Crear un proyecto](getting-started/create-project.md): Inicializa un nuevo proyecto FrameKit con Studio.
 - [Integrar en proyecto Next.js existente](getting-started/existing-project.md): Añade FrameKit a una aplicación Next.js existente.
 - [Migrar de v0.7.0 a v0.8.0](getting-started/migration-v0.8.0.md): Actualiza proyectos existentes, proyectos generados e integraciones con la API pública.
+- [Guía de migración rolling](getting-started/migration-next.md): Aplica los cambios actuales del contrato de plantillas sin versión.
 
 ## Guías
 
-- [Creación de Plantillas](guides/template-authoring.md): Define campos, configuraciones regionales y funciones de renderizado para las plantillas.
+- [Creación de Plantillas](guides/template-authoring.md): Define metadata, fields, variantes y funciones de renderizado para las plantillas.
 - [Componentes de Marca](guides/brand-components.md): Crea, documenta, previsualiza y reutiliza bloques visuales de marca.
 - [Guía de Usuario de Studio](guides/studio.md): Usa el editor visual para editar plantillas.
 

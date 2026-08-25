@@ -72,15 +72,15 @@ framekit generate
 
 ## `framekit check`
 
-Valida la definición de cada plantilla y su contenido resuelto en todas las configuraciones regionales declaradas.
+Valida la definición de cada plantilla y su contenido resuelto en todas las variantes declaradas.
 
 El comando primero ejecuta `generate` para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante el `tsx` incluido. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
 
-Para cada plantilla, `validateTemplateDefinition` verifica la estructura de la definición: dimensiones (el ancho y el alto deben ser enteros positivos finitos), campos, contenido y la función de renderizado. Para cada configuración regional declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los campos obligatorios están presentes, los campos numéricos respetan las restricciones de mínimo y máximo, y los campos de color usan valores hexadecimales válidos.
+Para cada plantilla, `validateTemplateDefinition` verifica la estructura canónica de la definición: metadata, dimensiones (el ancho y el alto deben ser enteros positivos finitos), fields, variantes, contenido con solo valores de fields y la función de renderizado. Para cada variante declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los fields obligatorios están presentes, los fields numéricos respetan las restricciones de mínimo y máximo, y los fields de color usan valores hexadecimales válidos.
 
 El directorio temporal de comprobación se elimina siempre al terminar, tanto si la comprobación pasa como si falla.
 
-Los errores estructurados se reportan por plantilla, por regional y por campo:
+Los errores estructurados se reportan por plantilla, por variante y por field:
 
 ```
 /ruta/a/src/templates/example/template.tsx: content.en.title: required

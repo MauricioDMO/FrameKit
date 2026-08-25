@@ -20,11 +20,11 @@ The following areas are covered by the test suite:
 
 **Navigation:** Derivation of the navigation tree from the manifest, alphabetical slug ordering, and nested category handling.
 
-**Data resolution:** Application of default values, locale-content precedence, user-edit overrides, and the guarantee that `language` is never copied into `data`.
+**Data resolution:** Application of default values, variant-content precedence, user-edit overrides, actionable unknown-key failures, and the canonical render boundary.
 
-**Definition and validation:** Runtime validation of template definitions (invalid descriptors, incoherent bounds, decimal dimensions, missing render) and field-level validators (required, number range, color format, locale-switching behavior).
+**Definition and validation:** Runtime validation of the canonical metadata/variant/content shape (invalid descriptors, incoherent bounds, decimal dimensions, unsupported top-level properties, missing render) and field-level validators (required, number range, color format, variant switching behavior).
 
-**Editor state:** localStorage persistence and session restore, reset of a single locale (only that locale's overrides are removed), locale switching (does not mutate other locales' overrides), and clearing of visible errors on reset or locale change.
+**Editor state:** localStorage persistence and session restore, reset of a single content variant (only that variant's overrides are removed), variant switching (does not mutate other variants' overrides), and clearing of visible errors on reset or variant change.
 
 **CLI:** Argument parsing and error paths, check gating a Next.js build, and discovery of standalone template directories.
 
@@ -36,7 +36,7 @@ The test suite does not cover:
 
 - **Browser end-to-end tests** — there are no Playwright or Cypress tests; the Studio integration tests cover generation and build but do not drive a browser.
 - **Visual regression** — no PNG pixel or dimension comparison tests exist.
-- **Full Studio flow** — navigating to a page, editing a field, switching locale, resetting, and exporting the result is not covered as a single automated flow.
+- **Full Studio flow** — navigating to a page, editing a field, switching variant, resetting, and exporting the result is not covered as a single automated flow.
 - **Production build and start** — successful execution of `next build` followed by `next start` is not verified inside unit or integration tests.
 - **Asset copying** — public directory and static file copying are not directly unit-tested.
 - **Other operating systems** — Windows and macOS are not verified, so this documentation does not claim a complete cross-platform support guarantee.

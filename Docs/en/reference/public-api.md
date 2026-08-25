@@ -6,18 +6,24 @@
 
 The root entry point provides the core runtime API for defining, validating, and rendering templates, along with all associated types.
 
+The canonical definition uses `meta`, `width`, `height`, `fields`, `variants`,
+field-only `content`, and `render({ data, assets, variant, width, height })`.
+See the [template contract](./template-contract.md) for the full shape and its
+Studio/server-rendering boundary.
+
 **Runtime exports**
 
 | Export                       | Description                                                                                                                                                                    |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `defineTemplate`             | Defines and validates a template with fields, locale-aware content, and a render function                                                                                      |
+| `defineTemplate`             | Defines and validates the versionless canonical template shape with metadata, fields, variants, content, and a render function                                                |
 | `defineTemplateBase`         | Defines and validates a template base without a render function                                                                                                                |
 | `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.number`, `fields.image`)                                                       |
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
+| `validateTemplateBase`       | Validates the canonical template shape without requiring a render function                                                                                                    |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
-| `resolveTemplateData`        | `resolveTemplateData(definition, locale, edits, assets?)`; applies defaults -> locale content -> user edits, then image assets                                  |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the keys of `definition.content`                                                                               |
+| `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; applies defaults -> variant content -> user edits, then image assets                                |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                              |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults                                                                   |
 
 **Type exports**
@@ -34,6 +40,10 @@ The root entry point provides the core runtime API for defining, validating, and
 | `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `TemplateAssetManifest`       | Generated common and variant asset URL maps                                                            |
+| `TemplateMeta`                | Metadata object carried by the canonical template definition                                       |
+| `TemplateVariants`             | Default content variant and optional display labels                                                  |
+| `TemplateContent`              | Variant-keyed record of field-only content values                                                   |
+| `TemplateContentEntry`        | Partial field-value record for one content variant                                                  |
 | `TemplateBase`                | Base type for a template containing field definitions                                                   |
 | `TemplateDefinition`          | Complete template definition combining base structure with configuration                                |
 | `TemplateRenderProps`         | Props passed to a template's render function                                                            |

@@ -6,18 +6,25 @@
 
 El punto de entrada raíz proporciona la API central de tiempo de ejecución para definir, validar y renderizar plantillas, junto con todos los tipos asociados.
 
+La definición canónica usa `meta`, `width`, `height`, `fields`, `variants`,
+`content` con solo valores de fields y
+`render({ data, assets, variant, width, height })`. Consulta el [contrato de
+plantilla](./template-contract.md) para conocer la forma completa y su frontera
+entre Studio y el futuro renderizado de servidor.
+
 **Exportaciones del entorno de ejecución**
 
 | Exportación                  | Descripción                                                                                                                                                                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `defineTemplate`             | Define y valida una plantilla con campos, contenido adaptado a la configuración regional y una función de renderizado                                                                                                           |
+| `defineTemplate`             | Define y valida la forma canónica de plantilla sin versión, con metadata, fields, variantes, contenido y una función de renderizado                                                                                           |
 | `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
 | `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.number`, `fields.image`)                                                                                |
 | `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
+| `validateTemplateBase`       | Valida la forma canónica sin exigir una función de renderizado                                                                                                                                                                  |
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
-| `resolveTemplateData`        | `resolveTemplateData(definition, locale, edits, assets?)`; aplica assets de imagen y luego valores predeterminados -> contenido -> ediciones del usuario               |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las claves de `definition.content`                                                                                                                             |
+| `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; aplica valores predeterminados -> contenido de variante -> ediciones y luego assets de imagen |
+| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                    |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los valores predeterminados de los campos                                                                                           |
 
 **Exportaciones de tipos**
@@ -34,6 +41,10 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
 | `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
+| `TemplateMeta`                | Objeto de metadata que transporta la definición canónica                                                 |
+| `TemplateVariants`             | Variante de contenido predeterminada y labels de visualización opcionales                                  |
+| `TemplateContent`              | Registro por variante con valores de fields                                                             |
+| `TemplateContentEntry`        | Registro parcial de valores de fields para una variante                                                 |
 | `TemplateBase`                | Tipo base para una plantilla que contiene definiciones de campos                                               |
 | `TemplateDefinition`          | Definición completa de plantilla que combina la estructura base con la configuración                           |
 | `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado de una plantilla                                               |

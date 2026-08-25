@@ -144,7 +144,7 @@ To create a production build, use the `framekit build` command:
 pnpm framekit build
 ```
 
-This command first runs `framekit check` to regenerate the template catalog and validate every template definition and locale. If validation passes, it runs `next build`. The `public` directory, when present, and static assets are then copied beside the standalone server.
+This command first runs `framekit check` to regenerate the template catalog and validate every template definition and content variant. If validation passes, it runs `next build`. The `public` directory, when present, and static assets are then copied beside the standalone server.
 
 ## Start the production server
 

@@ -20,11 +20,11 @@ Las siguientes áreas están cubiertas por el conjunto de pruebas:
 
 **Navegación:** Derivación del árbol de navegación desde el manifiesto, orden alfabético de slugs y manejo de categorías anidadas.
 
-**Resolución de datos:** Aplicación de valores por defecto, precedencia de contenido por locale, overrides de edición del usuario, y la garantía de que `language` nunca se copia a `data`.
+**Resolución de datos:** Aplicación de valores por defecto, precedencia del contenido de la variante, overrides de edición del usuario, errores accionables para keys desconocidas y la frontera canónica de renderizado.
 
-**Definición y validación:** Validación en tiempo de ejecución de definiciones de plantillas (descriptores inválidos, límites incoherentes, dimensiones decimales, render ausente) y validadores a nivel de campo (requerido, rango numérico, formato de color, comportamiento de cambio de locale).
+**Definición y validación:** Validación en tiempo de ejecución de la forma canónica de metadata, variantes y contenido (descriptores inválidos, límites incoherentes, dimensiones decimales, propiedades superiores no soportadas, render ausente) y validadores a nivel de field (requerido, rango numérico, formato de color, cambio de variante).
 
-**Estado del editor:** Persistencia en localStorage y restauración de sesión, reseteo de un solo locale (solo se eliminan los overrides de ese locale), cambio de locale (no muta los overrides de otros locales) y limpieza de errores visibles al hacer reset o cambiar de locale.
+**Estado del editor:** Persistencia en localStorage y restauración de sesión, reseteo de una sola variante de contenido (solo se eliminan sus overrides), cambio de variante (no muta los overrides de otras variantes) y limpieza de errores visibles al hacer reset o cambiar de variante.
 
 **CLI:** Análisis de argumentos y rutas de error, verificación que activa el build de Next.js y descubrimiento de directorios de plantillas independientes.
 
@@ -36,7 +36,7 @@ El conjunto de pruebas no cubre:
 
 - **Pruebas de extremo a extremo en navegador** — no existen pruebas de Playwright ni Cypress; las pruebas de integración de Studio cubren la generación y el build, pero no automatizan un navegador.
 - **Regresión visual** — no existen pruebas de comparación de píxeles PNG ni de dimensiones.
-- **Flujo completo de Studio** — navegar a una página, editar un campo, cambiar de locale, hacer reset y exportar el resultado no está cubierto como un flujo automatizado único.
+- **Flujo completo de Studio** — navegar a una página, editar un field, cambiar de variante, hacer reset y exportar el resultado no está cubierto como un flujo automatizado único.
 - **Build y arranque en producción** — la ejecución correcta de `next build` seguida de `next start` no se verifica en las pruebas unitarias ni de integración.
 - **Copia de assets** — la copia del directorio public y archivos estáticos no tiene pruebas unitarias directas.
 - **Otros sistemas operativos** — Windows y macOS no se verifican, por lo que esta documentación no garantiza una compatibilidad completa entre plataformas.

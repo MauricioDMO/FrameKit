@@ -12,11 +12,11 @@ FrameKit is a template-based image editor for React and Next.js. Define the artw
 
 Social posts, campaign cards, and other recurring graphics often turn into a loop of duplicated layouts, copy-pasted files, and manual corrections. FrameKit gives teams one typed source of truth for the visual design and a focused editing surface for content variants.
 
-The result is a repeatable workflow: developers own the template and its constraints; content editors change text, colors, URLs, and locales in Studio; the browser exports the finished PNG without rebuilding the design by hand.
+The result is a repeatable workflow: developers own the template and its constraints; content editors change text, colors, URLs, and variants in Studio; the browser exports the finished PNG without rebuilding the design by hand.
 
 ## Studio
 
-Studio is the visual workspace for browsing templates, editing their fields, switching content locales, and checking the final composition before export.
+Studio is the visual workspace for browsing templates, editing their fields, switching content variants, and checking the final composition before export.
 
 ![FrameKit Studio](Docs/img/studio.webp)
 
@@ -40,6 +40,7 @@ A template defines its dimensions, editable fields, content variants, and React 
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
+  meta: { title: 'Social card' },
   width: 1200,
   height: 630,
   fields: {
@@ -47,13 +48,14 @@ export default defineTemplate({
     accent: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
-    en: { language: 'English', title: 'Build once. **Publish often.**' },
-    es: { language: 'Español', title: 'Diseña una vez. **Publica siempre.**' },
+    en: { title: 'Build once. **Publish often.**' },
+    es: { title: 'Diseña una vez. **Publica siempre.**' },
   },
-  render({ data, width, height }) {
+  variants: { default: 'en', labels: { en: 'English', es: 'Español' } },
+  render({ data, variant, width, height }) {
     return (
       <article style={{ width, height, background: '#10271f', color: data.accent }}>
-        <Markdown value={data.title} />
+        <Markdown value={`${data.title} (${variant})`} />
       </article>
     )
   },
@@ -70,7 +72,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 - Arbitrary content variants such as `en`, `es`, or product-specific variants.
 - Markdown rendering for inline text formatting and basic lists.
 - Template discovery under `src/templates/**/template.tsx` and generated registries.
-- Studio navigation, locale switching, light/dark theme, local browser persistence, preview zoom, and pan.
+- Studio navigation, variant switching, light/dark theme, local browser persistence, preview zoom, and pan.
 - CLI commands for `generate`, `check`, `dev`, `build`, and `start`.
 - Client-side PNG export at the template's declared width and height.
 
@@ -80,7 +82,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 - Export currently supports PNG only. There is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
 - Studio stores text and field references in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.
-- The Studio interface is localized to English and Spanish. Template content can define its own locale keys.
+- The Studio interface is localized to English and Spanish. Template content can define its own variant keys.
 - The package is ESM-only and does not provide CommonJS exports.
 
 ## Compatibility

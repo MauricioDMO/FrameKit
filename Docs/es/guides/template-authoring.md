@@ -38,6 +38,7 @@ Para plantillas directas, define todo en un único archivo `template.tsx`:
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
+  meta: { title: 'Tarjeta social' },
   width: 1200,
   height: 800,
   fields: {
@@ -46,15 +47,14 @@ export default defineTemplate({
   },
   content: {
     en: {
-      language: 'English',
       title: 'Your next story starts here',
     },
     es: {
-      language: 'Español',
       title: 'Tu próxima historia empieza aquí',
     },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'en', labels: { en: 'English', es: 'Español' } },
+  render({ data, variant, width, height }) {
     return (
       <article
         style={{
@@ -85,6 +85,7 @@ import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
+  meta: { title: 'Tarjeta social extraída' },
   width: 1080,
   height: 1080,
   fields: {
@@ -92,9 +93,10 @@ export const templateBase = defineTemplateBase({
     accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
-    aurora: { language: 'Aurora', title: 'Northern light' },
-    desert: { language: 'Desert', title: 'Open horizon' },
+    aurora: { title: 'Northern light' },
+    desert: { title: 'Open horizon' },
   },
+  variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } },
 })
 
 export type ArtworkProps = TemplateRenderProps<typeof templateBase>
@@ -104,9 +106,9 @@ export type ArtworkProps = TemplateRenderProps<typeof templateBase>
 // artwork.tsx
 import type { ArtworkProps } from './definition'
 
-export function Artwork({ data, locale, width, height }: ArtworkProps) {
+export function Artwork({ data, variant, width, height }: ArtworkProps) {
   return (
-    <article lang={locale} style={{ width, height, color: data.accentColor }}>
+    <article data-variant={variant} style={{ width, height, color: data.accentColor }}>
       {data.title}
     </article>
   )
@@ -127,40 +129,46 @@ export default defineTemplate({
 
 ## Estructura de la definición de plantilla
 
-Cada definición de plantilla requiere cinco propiedades:
+Cada definición de plantilla requiere estas propiedades:
 
+- `meta` — un objeto plano reservado para la metadata de la plantilla
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
 - `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o image)
-- `content` — un registro con al menos una entrada de locale, donde cada una contiene una cadena `language` y valores de campo parciales
+- `variants` — un objeto con una key `default` de contenido y labels de visualización opcionales
+- `content` — un registro con al menos una entrada de variante que contiene solo valores parciales de fields
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
 
-## Contenido y locales
+## Contenido y variantes
 
-Las claves de locale son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada de locale debe incluir una propiedad `language` con una etiqueta legible para las personas y puede incluir valores para cualquiera de los campos definidos en la plantilla. Los campos que no estén presentes en un locale comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido del locale -> ediciones del usuario.
+Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
 
-La clave `language` dentro de cada entrada de locale está reservada. Se usa solo como etiqueta de visualización en la interfaz de Studio y nunca se incluye en el objeto `data` que se pasa a `render`.
+Usa `variants.labels` para las labels legibles de las opciones. Si falta una label, Studio usa la key de la variante. Las entradas de `content` no contienen metadata como `language`; cada key de contenido debe ser un field editable.
 
 ```tsx
+variants: {
+  default: 'fjord',
+  labels: { fjord: 'Fjordic', moon: 'Lunar' },
+},
 content: {
-  fjord: { language: 'Fjordic', title: 'Offer' },
-  moon: { language: 'Lunar', title: 'Oferta' },
+  fjord: { title: 'Offer' },
+  moon: { title: 'Oferta' },
 }
 ```
 
-En este ejemplo, el tipo `locale` es `'fjord' | 'moon'`, no una unión global de idiomas.
+En este ejemplo, el tipo `variant` es `'fjord' | 'moon'`, no una unión global de idiomas.
 
 ## Props de renderizado
 
-La función `render` recibe un único objeto con cinco propiedades:
+La función `render` recibe únicamente inputs de renderizado:
 
-- `data` — un objeto que contiene todas las claves de campo como cadenas tras la resolución. En Studio, los valores se aplican en este orden: valores predeterminados de los campos, contenido del locale y, por último, ediciones del usuario.
-- `locale` — la clave del locale actualmente seleccionado, tipado como una unión de todas las claves de contenido.
+- `data` — un objeto que contiene todas las claves de field como strings tras la resolución. En Studio, los valores se aplican en este orden: valores predeterminados de los fields, contenido de la variante y, por último, ediciones del usuario.
+- `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
+- `variant` — la key de la variante actualmente seleccionada, tipada como una unión de todas las keys de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
 - `height` — la altura de la plantilla como tipo literal.
-- `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
 
-Un campo de imagen resuelve una cadena URL para el navegador. Los campos por variante usan `assets/<locale>/<field-key>.*`; los campos comunes usan `assets/common/<field-key>.*`. Una imagen pública puede referenciarse con una ruta desde la raíz como `/assets/logos/brand.svg` en `defaultValue` o en el contenido del locale. Los archivos públicos no se escanean dentro del manifest de assets de la plantilla.
+La función de renderizado es independiente del estado de Studio y de APIs del editor exclusivas del navegador. Un field de imagen resuelve una cadena URL para el navegador. Los fields por variante usan `assets/<variant>/<field-key>.*`; los comunes usan `assets/common/<field-key>.*`. Una imagen pública puede referenciarse con una ruta desde la raíz como `/assets/logos/brand.svg` en `defaultValue` o en el contenido de la variante. Los archivos públicos no se escanean dentro del manifest de assets de la plantilla.
 
 ```tsx
 fields: {
@@ -193,7 +201,7 @@ Para una regeneración puntual, ejecuta `framekit generate`. El comando comparti
 
 ## Claves reservadas
 
-La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de campo. FrameKit lo rechaza tanto en tiempo de compilación como en tiempo de ejecución. Cada entrada de `content` debe contener una propiedad `language` de tipo cadena.
+La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida. Las definiciones no tienen una propiedad de versión ni una forma alternativa de compatibilidad.
 
 ---
 

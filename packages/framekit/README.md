@@ -32,29 +32,31 @@ Next.js standalone output under `.framekit/next`.
 ## Inline templates
 
 Use `defineTemplate` when the definition and renderer belong in one file. The
-`render` callback infers `data` and `locale` from the fields and content keys:
+`render` callback infers `data` and `variant` from the fields and content keys:
 
 ```tsx
 import { defineTemplate, fields } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
+  meta: { title: 'Offer card' },
   width: 1080,
   height: 1080,
   fields: {
     title: fields.text({ label: 'Title', required: true }),
   },
   content: {
-    en: { language: 'English', title: 'Offer' },
+    en: { title: 'Offer' },
   },
-  render({ data, locale, width, height }) {
-    return <article style={{ width, height }}>{data.title} ({locale})</article>
+  variants: { default: 'en', labels: { en: 'English' } },
+  render({ data, variant, width, height }) {
+    return <article style={{ width, height }}>{data.title} ({variant})</article>
   },
 })
 ```
 
-Each template owns its locale keys through `content`. FrameKit does not limit
-or import the application's interface locales. Every content entry requires
-`language`, autocompletes the declared field keys, and rejects unknown keys.
+Each template owns its variant keys through `content`. FrameKit does not limit
+or import the application's interface locales. Content entries contain only
+declared field values, and unknown keys are rejected.
 
 Localized field values can be omitted. Resolution applies field defaults,
 localized content, and user edits in that order before required values are
@@ -71,10 +73,12 @@ contract with `defineTemplateBase`, then type the component with
 import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
+  meta: { title: 'Extracted offer' },
   width: 1200,
   height: 800,
   fields: { title: fields.text({ label: 'Title' }) },
-  content: { en: { language: 'English', title: 'Offer' } },
+  content: { en: { title: 'Offer' } },
+  variants: { default: 'en', labels: { en: 'English' } },
 })
 ```
 
@@ -101,7 +105,7 @@ Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
 
 Use `fields.image()` for images. Variant files use the field key as their
-filename under `assets/<locale>`; shared files live under `assets/common`.
+filename under `assets/<variant>`; shared files live under `assets/common`.
 Images under `public/assets` can be referenced with a root-relative
 `defaultValue` such as `/assets/logos/brand.svg`. Studio can replace template
 images through `framekit dev`; public files remain application assets.
@@ -120,7 +124,7 @@ The root entry also exports the public validators, resolvers, field descriptors,
 and structured validation errors.
 
 `FrameKitStudioRoot` and `FrameKitStudio` provide the complete editor interface,
-including navigation, locale and theme controls. Pass the generated `templates`
+including navigation, variant and theme controls. Pass the generated `templates`
 array to `FrameKitStudio` from a client page under `/editor`.
 
 ## Full documentation

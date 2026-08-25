@@ -38,6 +38,7 @@ For straightforward templates, define everything in a single `template.tsx` file
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
+  meta: { title: 'Social card' },
   width: 1200,
   height: 800,
   fields: {
@@ -46,15 +47,14 @@ export default defineTemplate({
   },
   content: {
     en: {
-      language: 'English',
       title: 'Your next story starts here',
     },
     es: {
-      language: 'Español',
       title: 'Tu próxima historia empieza aquí',
     },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'en', labels: { en: 'English', es: 'Español' } },
+  render({ data, variant, width, height }) {
     return (
       <article
         style={{
@@ -85,6 +85,7 @@ import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
+  meta: { title: 'Extracted social card' },
   width: 1080,
   height: 1080,
   fields: {
@@ -92,9 +93,10 @@ export const templateBase = defineTemplateBase({
     accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
-    aurora: { language: 'Aurora', title: 'Northern light' },
-    desert: { language: 'Desert', title: 'Open horizon' },
+    aurora: { title: 'Northern light' },
+    desert: { title: 'Open horizon' },
   },
+  variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } },
 })
 
 export type ArtworkProps = TemplateRenderProps<typeof templateBase>
@@ -104,9 +106,9 @@ export type ArtworkProps = TemplateRenderProps<typeof templateBase>
 // artwork.tsx
 import type { ArtworkProps } from './definition'
 
-export function Artwork({ data, locale, width, height }: ArtworkProps) {
+export function Artwork({ data, variant, width, height }: ArtworkProps) {
   return (
-    <article lang={locale} style={{ width, height, color: data.accentColor }}>
+    <article data-variant={variant} style={{ width, height, color: data.accentColor }}>
       {data.title}
     </article>
   )
@@ -127,40 +129,46 @@ export default defineTemplate({
 
 ## Template Definition Structure
 
-Every template definition requires five properties:
+Every template definition requires these properties:
 
+- `meta` — a plain object reserved for template metadata
 - `width` — a positive integer specifying the template output width in pixels
 - `height` — a positive integer specifying the template output height in pixels
 - `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, or image)
-- `content` — a record with at least one locale entry, where each entry contains a `language` string and partial field values
+- `variants` — an object with a `default` content key and optional display labels
+- `content` — a record with at least one variant entry containing only partial field values
 - `render` — a function that receives typed props and returns a React node
 
-## Content and Locales
+## Content and Variants
 
-Locale keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each locale entry must include a `language` property with a human-readable label, and may include values for any of the fields defined in the template. Fields not present in a locale start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> locale content -> user edits.
+Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
 
-The `language` key inside each locale entry is reserved. It is used only as a display label in the Studio UI and is never included in the `data` object passed to `render`.
+Use `variants.labels` for human-readable option labels. A missing label falls back to the variant key. Content entries do not contain metadata such as `language`; every content key must be an editable field.
 
 ```tsx
+variants: {
+  default: 'fjord',
+  labels: { fjord: 'Fjordic', moon: 'Lunar' },
+},
 content: {
-  fjord: { language: 'Fjordic', title: 'Offer' },
-  moon: { language: 'Lunar', title: 'Oferta' },
+  fjord: { title: 'Offer' },
+  moon: { title: 'Oferta' },
 }
 ```
 
-In this example, the `locale` type is `'fjord' | 'moon'`, not a global language union.
+In this example, the `variant` type is `'fjord' | 'moon'`, not a global language union.
 
 ## Render Props
 
-The `render` function receives a single object with five properties:
+The `render` function receives only render inputs:
 
-- `data` — an object containing all field keys as strings after resolution. In Studio, values are applied in this order: field defaults, locale content, then user edits.
-- `locale` — the key of the currently selected locale, typed as a union of all content keys.
+- `data` — an object containing all field keys as strings after resolution. In Studio, values are applied in this order: field defaults, variant content, then user edits.
+- `assets` — generated URLs for common and variant template assets.
+- `variant` — the key of the currently selected variant, typed as a union of all content keys.
 - `width` — the template width as a literal type.
 - `height` — the template height as a literal type.
-- `assets` — generated URLs for common and variant template assets.
 
-An image field resolves to a browser URL string. Variant fields use `assets/<locale>/<field-key>.*`; common fields use `assets/common/<field-key>.*`. A public image can be referenced with a root-relative value such as `/assets/logos/brand.svg` in `defaultValue` or locale content. Public files are not scanned into the template asset manifest.
+The render function is independent of Studio state and browser-only editor APIs. An image field resolves to a browser URL string. Variant fields use `assets/<variant>/<field-key>.*`; common fields use `assets/common/<field-key>.*`. A public image can be referenced with a root-relative value such as `/assets/logos/brand.svg` in `defaultValue` or variant content. Public files are not scanned into the template asset manifest.
 
 ```tsx
 fields: {
@@ -193,7 +201,7 @@ For one-off regeneration, run `framekit generate`. The shared generation command
 
 ## Reserved Keys
 
-The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects this at both build time and runtime. Each entry in `content` must contain a `language` string property.
+The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key. Definitions do not have a version property or an alternate compatibility shape.
 
 ---
 

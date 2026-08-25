@@ -1,6 +1,39 @@
 # Contrato de plantilla
 
-Este documento describe el contrato de plantilla: el sistema de campos, el manejo de datos y las reglas de validación que definen cómo funcionan las plantillas de FrameKit.
+Este documento describe el contrato de plantilla sin versión: el sistema de campos, el manejo de datos por variante, la frontera de renderizado y las reglas de validación compartidas por Studio y un futuro renderizador de servidor.
+
+## Definición canónica
+
+Cada plantilla usa una única forma pública. `meta` es un objeto plano de
+metadata y `variants.default` selecciona una de las entradas de `content`, que
+solo contienen valores de fields.
+
+```tsx
+export default defineTemplate({
+  meta: { title: 'Título requerido de la plantilla' },
+  width: 1200,
+  height: 630,
+  fields: { title: fields.text({ label: 'Título' }) },
+  variants: {
+    default: 'en',
+    labels: { en: 'English', es: 'Español' },
+  },
+  content: {
+    en: { title: 'Hello' },
+    es: { title: 'Hola' },
+  },
+  render({ data, assets, variant, width, height }) {
+    return <article style={{ width, height }}>{data.title} ({variant})</article>
+  },
+})
+```
+
+La definición no tiene propiedad de versión ni una forma alternativa exclusiva
+del editor. `render` recibe únicamente `data`, `assets`, `variant`, `width` y
+`height`, por lo que la misma definición puede cruzar una futura frontera de
+renderizado de servidor. El contrato exacto de metadata se rastrea en el [issue
+#3](https://github.com/MauricioDMO/FrameKit/issues/3); las reglas exactas de
+variantes se rastrean en el [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Tipos de Campos
 
@@ -58,7 +91,7 @@ Un campo de imagen resuelve un asset de la plantilla o una imagen pública desde
 `public` como una cadena URL para el navegador. El alcance predeterminado es
 `variant`; usa `scope: 'common'` para una imagen compartida por todas las
 variantes de contenido. Una imagen pública puede proporcionarse como
-`defaultValue` o como valor del locale, por ejemplo
+`defaultValue` o como valor de la variante, por ejemplo
 `/assets/logos/brand.svg`.
 
 ```typescript
@@ -92,14 +125,14 @@ El valor predeterminado es `true`, no `false`. Es una decisión deliberada porqu
 Cuando una plantilla se renderiza, los valores de los campos se resuelven a través de un orden específico. Esto determina lo que contiene el objeto `data` dentro de la función `render`:
 
 1. **`defaultValue` del campo**: La opción `defaultValue` del campo, o `''` si no está configurada.
-2. **Valores de locale de contenido**: Valores del objeto `content` de la plantilla para el locale seleccionado.
+2. **Valores de variante de contenido**: Valores del objeto `content` de la plantilla para la variante seleccionada.
 3. **Ediciones del usuario**: Valores que el usuario ha editado en el editor de Studio, que sobrescriben todo lo demás.
 
 Para campos de imagen, un asset de la variante tiene prioridad, seguido por un
 asset común. Si no existe un asset del proyecto, se usa la resolución normal de
 valor predeterminado, contenido y edición del usuario.
 
-Esto significa que las ediciones del usuario tienen precedencia sobre el contenido del locale, que tiene precedencia sobre los valores por defecto de los campos.
+Esto significa que las ediciones del usuario tienen precedencia sobre el contenido de la variante, que tiene precedencia sobre los valores por defecto de los campos.
 
 ### Resolución programática de datos
 
@@ -108,16 +141,16 @@ Usa `resolveTemplateData` para aplicar este orden de resolución:
 ```typescript
 import { resolveTemplateData } from '@mauriciodmo/framekit'
 
-const data = resolveTemplateData(definition, locale, edits)
+const data = resolveTemplateData(definition, variant, edits)
 ```
 
 - `definition`: La definición de la plantilla.
-- `locale`: La clave del locale de contenido a usar.
+- `variant`: La clave de la variante de contenido a usar. Las variantes desconocidas y las keys de edición desconocidas producen un error accionable.
 - `edits`: Un objeto de valores de campos editados por el usuario (el objeto vacío `{}` si no hay ediciones).
 
 ### Valores por Defecto
 
-`getDefaultValues` devuelve solo los valores predeterminados de los campos (paso 1), sin aplicar contenido del locale ni ediciones:
+`getDefaultValues` devuelve solo los valores predeterminados de los campos (paso 1), sin aplicar contenido de la variante ni ediciones:
 
 ```typescript
 import { getDefaultValues } from '@mauriciodmo/framekit'
@@ -126,14 +159,14 @@ const defaults = getDefaultValues(definition.fields)
 // { fieldKey: definition.fields[fieldKey].defaultValue ?? '' }
 ```
 
-### Locales Disponibles
+### Variantes disponibles
 
-`getLocales` devuelve las claves de locale definidas en el objeto `content` de la plantilla:
+`getLocales` devuelve las claves de variante definidas en el objeto `content` de la plantilla:
 
 ```typescript
 import { getLocales } from '@mauriciodmo/framekit'
 
-const locales = getLocales(definition) // por ejemplo, ['en', 'es']
+const variants = getLocales(definition) // por ejemplo, ['en', 'es']
 ```
 
 Estas claves son strings arbitrarios elegidos por el autor de la plantilla. No están restringidos a códigos de idioma como `en` o `es`.
@@ -147,9 +180,11 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 `validateTemplateDefinition` verifica la estructura de una definición de plantilla:
 
 - `width` y `height` deben ser enteros finitos positivos
+- `meta` y `variants` deben ser objetos planos; `variants.default` debe nombrar una entrada de contenido
 - `fields.language` está reservado y no puede ser usado
 - `content` debe tener al menos una entrada
-- Cada entrada de contenido debe tener una propiedad `language`
+- Cada entrada de contenido solo puede contener keys de fields declaradas y cada valor debe ser un string
+- Las propiedades de nivel superior no soportadas, como `version`, son rechazadas
 - `render` debe ser una función
 - Las opciones de campo deben tener tipos válidos (por ejemplo, `min`/`max` solo en campos `number`, números finitos solamente)
 
@@ -201,18 +236,19 @@ framekit check
 Realiza los siguientes pasos para cada plantilla:
 
 1. Ejecuta `validateTemplateDefinition` para asegurar validez estructural.
-2. Resuelve datos para cada locale de contenido usando `resolveTemplateData` sin ediciones del usuario.
+2. Resuelve datos para cada variante de contenido usando `resolveTemplateData` sin ediciones del usuario.
 3. Ejecuta `validateTemplateData` sobre los valores resueltos para detectar valores por defecto faltantes o inválidos.
 
 Este comando ayuda a detectar errores de configuración antes de ejecutar Studio.
 
-## Sistema de Locales
+## Idioma de la Interfaz de Studio
 
-FrameKit separa dos preocupaciones que ambas usan la palabra "locale":
+FrameKit separa las variantes del contenido de la plantilla del idioma usado por
+la interfaz de Studio.
 
-### Locales de Contenido de Plantilla
+### Variantes de Contenido de Plantilla
 
-Estas son las claves en el objeto `content` de la plantilla. Son strings arbitrarios elegidos por el autor de la plantilla. Una plantilla podría usar claves de locale como `en`, `es`, `fr`, o identificadores completamente diferentes como `desktop`, `mobile`, `newsletter`.
+Estas son las claves en el objeto `content` de la plantilla. Son strings arbitrarios elegidos por el autor de la plantilla. Una plantilla podría usar claves como `en`, `es`, `fr`, o identificadores completamente diferentes como `desktop`, `mobile`, `newsletter`.
 
 ### Idioma de la Interfaz de Studio
 
@@ -222,7 +258,10 @@ La interfaz de Studio (etiquetas, botones y mensajes) usa uno de dos idiomas: es
 2. El encabezado `Accept-Language` del navegador
 3. Se usa español (`es`) como alternativa
 
-Esta separación significa que los locales de contenido de la plantilla y el idioma de la interfaz de Studio son preocupaciones independientes.
+Esta separación significa que las variantes de contenido de la plantilla y el idioma de la interfaz de Studio son preocupaciones independientes.
+
+Este contrato canónico implementa el [Plan Futuro #1](../../Plans/Future/issue-01-canonical-template-contract.md)
+y el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1).
 
 ---
 

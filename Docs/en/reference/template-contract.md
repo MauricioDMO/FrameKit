@@ -1,6 +1,37 @@
 # Template Contract
 
-This document describes the template contract: the field system, data handling, and validation rules that define how FrameKit templates work.
+This document describes the versionless template contract: the field system, variant data handling, render boundary, and validation rules shared by Studio and future server rendering.
+
+## Canonical Definition
+
+Every template uses one public shape. `meta` is a plain metadata object, and
+`variants.default` selects one of the field-only `content` entries.
+
+```tsx
+export default defineTemplate({
+  meta: { title: 'Required template title' },
+  width: 1200,
+  height: 630,
+  fields: { title: fields.text({ label: 'Title' }) },
+  variants: {
+    default: 'en',
+    labels: { en: 'English', es: 'Español' },
+  },
+  content: {
+    en: { title: 'Hello' },
+    es: { title: 'Hola' },
+  },
+  render({ data, assets, variant, width, height }) {
+    return <article style={{ width, height }}>{data.title} ({variant})</article>
+  },
+})
+```
+
+The definition has no version property or editor-only alternate shape. `render`
+receives only `data`, `assets`, `variant`, `width`, and `height`, so the same
+definition can cross a future server-rendering boundary. The exact metadata
+property contract is tracked by [issue #3](https://github.com/MauricioDMO/FrameKit/issues/3);
+the exact variant refinements are tracked by [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Field Kinds
 
@@ -57,7 +88,7 @@ fields.color({ label: 'Background Color' })
 An image field resolves a template asset or a root-relative image from `public`
 to a browser URL string. The default scope is `variant`; use `scope: 'common'`
 for an image shared by every content variant. A public image can be provided as
-the field `defaultValue` or as a locale value, for example
+the field `defaultValue` or as a variant value, for example
 `/assets/logos/brand.svg`.
 
 ```typescript
@@ -90,14 +121,14 @@ The default value is `true`, not `false`. This is a deliberate default because m
 When a template renders, field values are resolved through a specific order. This determines what the `data` object contains inside the `render` function:
 
 1. **Field `defaultValue`**: The field's `defaultValue` option, or `''` if not set.
-2. **Content locale values**: Values from the template's `content` object for the selected locale.
+2. **Content variant values**: Values from the template's `content` object for the selected variant.
 3. **User edits**: Values the user has edited in the Studio editor, which override everything else.
 
 For image fields, a matching variant asset takes precedence, followed by a
-matching common asset. If no project asset exists, the normal default, locale,
+matching common asset. If no project asset exists, the normal default, variant,
 and user-edit resolution is used.
 
-This means user edits take precedence over locale content, which takes precedence over field defaults.
+This means user edits take precedence over variant content, which takes precedence over field defaults.
 
 ### Resolving Data Programmatically
 
@@ -106,16 +137,16 @@ Use `resolveTemplateData` to apply this resolution order:
 ```typescript
 import { resolveTemplateData } from '@mauriciodmo/framekit'
 
-const data = resolveTemplateData(definition, locale, edits)
+const data = resolveTemplateData(definition, variant, edits)
 ```
 
 - `definition`: The template definition.
-- `locale`: The content locale key to use.
+- `variant`: The content variant key to use. Unknown variants and unknown edit keys fail with an actionable error.
 - `edits`: An object of field values edited by the user (empty object `{}` for no edits).
 
 ### Default Values
 
-`getDefaultValues` returns only the field defaults (step 1), without applying locale content or edits:
+`getDefaultValues` returns only the field defaults (step 1), without applying variant content or edits:
 
 ```typescript
 import { getDefaultValues } from '@mauriciodmo/framekit'
@@ -124,14 +155,14 @@ const defaults = getDefaultValues(definition.fields)
 // { fieldKey: definition.fields[fieldKey].defaultValue ?? '' }
 ```
 
-### Available Locales
+### Available Variants
 
-`getLocales` returns the locale keys defined in the template's `content` object:
+`getLocales` returns the content variant keys defined in the template's `content` object:
 
 ```typescript
 import { getLocales } from '@mauriciodmo/framekit'
 
-const locales = getLocales(definition) // e.g., ['en', 'es']
+const variants = getLocales(definition) // e.g., ['en', 'es']
 ```
 
 These keys are arbitrary strings chosen by the template author. They are not restricted to language codes like `en` or `es`.
@@ -145,9 +176,11 @@ FrameKit provides two validation functions that check different aspects of a tem
 `validateTemplateDefinition` checks the structure of a template definition:
 
 - `width` and `height` must be positive finite integers
+- `meta` and `variants` must be plain objects; `variants.default` must name a content entry
 - `fields.language` is reserved and cannot be used
 - `content` must have at least one entry
-- Every content entry must have a `language` property
+- Every content entry may contain only declared field keys, and every value must be a string
+- Unsupported top-level properties such as `version` are rejected
 - `render` must be a function
 - Field options must have valid types (e.g., `min`/`max` only on `number` fields, finite numbers only)
 
@@ -199,18 +232,19 @@ framekit check
 It performs the following steps for each template:
 
 1. Runs `validateTemplateDefinition` to ensure structural validity.
-2. Resolves data for every content locale using `resolveTemplateData` with no user edits.
+2. Resolves data for every content variant using `resolveTemplateData` with no user edits.
 3. Runs `validateTemplateData` on the resolved values to catch missing or invalid defaults.
 
 This command helps catch configuration errors before running the Studio.
 
-## Locale System
+## Studio UI Language
 
-FrameKit separates two concerns that both use the word "locale":
+FrameKit separates template content variants from the language used by Studio's
+own interface.
 
-### Template Content Locales
+### Template Content Variants
 
-These are the keys in the template's `content` object. They are arbitrary strings chosen by the template author. A template might use locale keys like `en`, `es`, `fr`, or entirely different identifiers like `desktop`, `mobile`, `newsletter`.
+These are the keys in the template's `content` object. They are arbitrary strings chosen by the template author. A template might use keys like `en`, `es`, `fr`, or entirely different identifiers like `desktop`, `mobile`, `newsletter`.
 
 ### Studio UI Language
 
@@ -220,7 +254,10 @@ The Studio interface (labels, buttons, messages) uses one of two languages: Span
 2. The browser's `Accept-Language` header
 3. Fallback to Spanish (`es`)
 
-This separation means template content locales and Studio UI language are independent concerns.
+This separation means template content variants and Studio UI language are independent concerns.
+
+This canonical contract is implemented by [Future Plan #1](../../Plans/Future/issue-01-canonical-template-contract.md)
+and [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1).
 
 ---
 

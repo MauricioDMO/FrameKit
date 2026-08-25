@@ -238,10 +238,13 @@ FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 
 - dimensiones inválidas (ancho o alto que no sean enteros positivos)
 - campos requeridos faltantes
-- sin entradas de contenido para un idioma
+- sin entradas de contenido para una variante
+- un objeto `meta` o `variants` ausente o mal formado
+- una variante predeterminada que no está declarada en `content`
 - un campo llamado `language` (esta clave está reservada)
+- una key de contenido que no está declarada en `fields`
 
-La comprobación produce una salida de errores estructurada por plantilla, por idioma y por campo, nombrando el archivo exacto y la regla que falló.
+La comprobación produce una salida de errores estructurada por plantilla, por variante y por field, nombrando el archivo exacto y la regla que falló.
 
 **Solución: ejecuta `framekit check` para ver los errores detallados**
 

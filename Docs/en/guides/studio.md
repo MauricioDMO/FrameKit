@@ -1,6 +1,6 @@
 # Studio
 
-Studio is the visual workspace for FrameKit. It lets you navigate a template catalog, edit content for any supported locale, preview results, and export final PNG images. It also provides a brand catalog for viewing reusable brand-component previews. Both flows run in the browser.
+Studio is the visual workspace for FrameKit. It lets you navigate a template catalog, edit content for any supported variant, preview results, and export final PNG images. It also provides a brand catalog for viewing reusable brand-component previews. Both flows run in the browser.
 
 ## Navigation
 
@@ -20,13 +20,13 @@ At runtime, each generated brand entry carries a slug, title, path segments, des
 
 When a brand route has a matching slug, Studio calls that entry's loader. The generated loader imports `preview.tsx`; Studio takes its default export as the preview and renders it in the catalog. The catalog shows the generated title in its header, a `Brand` label, the preview in the preview area, the README description in a side panel, and a hint referring to `component.tsx`. A preview can import and render the reusable component, as the current `communication/hero/preview.tsx` does.
 
-The brand catalog is for cataloging and visually checking previews, not for editing component code or props. It does not provide template fields, design-locale editing, template-definition validation, or the template PNG export flow. Templates that reuse a brand component are still edited and rendered through `/editor`, where the surrounding template owns its dimensions, fields, content, assets, and export behavior.
+The brand catalog is for cataloging and visually checking previews, not for editing component code or props. It does not provide template fields, variant editing, template-definition validation, or the template PNG export flow. Templates that reuse a brand component are still edited and rendered through `/editor`, where the surrounding template owns its dimensions, fields, content, assets, and export behavior.
 
-## Design locale vs. Interface language
+## Content Variant vs. Interface Language
 
 Studio distinguishes between two separate language concerns:
 
-**Design locale** (labeled "Design language" in the UI) refers to which content variant of a template is being edited. Templates can define arbitrary locale keys — `en`, `es`, `fr`, or any string — and each locale holds its own set of field values. Switching the design locale clears all currently displayed validation errors.
+**Content variant** (labeled "Content variant" in the UI) refers to which content entry of a template is being edited. Templates can define arbitrary variant keys — `en`, `es`, `fr`, or any string — and each variant holds its own set of field values. Switching the variant clears all currently displayed validation errors.
 
 **Interface language** controls the language of Studio's own labels, buttons, and messages. It is limited to `en` (English) or `es` (Spanish). Changing it updates the React state, the `lang` attribute on the `<html>` element, and stores a one-year `locale` cookie.
 
@@ -42,13 +42,13 @@ Number fields respect `min` and `max` constraints defined in the template. Image
 
 ## Persistence
 
-All edits are stored in the browser's `localStorage` under the key `framekit:<slug>:v1`. Each template slug has its own isolated storage entry, and data is also isolated per locale within that entry.
+All edits are stored in the browser's `localStorage` under the key `framekit:<slug>:v1`. Each template slug has its own isolated storage entry, and data is also isolated per content variant within that entry.
 
-Malformed stored state is discarded safely and the editor starts fresh. Stored edits for locales or fields that no longer exist are ignored. No server sync, no account, and no collaboration — everything stays in your browser.
+Malformed stored state is discarded safely and the editor starts fresh. Stored edits for variants or fields that no longer exist are ignored. No server sync, no account, and no collaboration — everything stays in your browser.
 
 ## Reset
 
-The Reset button removes edits only for the currently selected locale of the current template. It does not clear other locales or other templates.
+The Reset button removes edits only for the currently selected variant of the current template. It does not clear other variants or other templates.
 
 ## Preview and zoom
 
