@@ -1,12 +1,12 @@
 # Image Fields
 
-`fields.image` represents an image value. It can resolve a project-owned template asset or a root-relative image served from `public`.
+`field.image` represents an image value. It can resolve a project-owned template asset or a root-relative image served from `public`.
 
 ```tsx
 fields: {
-  hero: fields.image({ label: 'Hero image' }),
-  background: fields.image({ label: 'Background', scope: 'common' }),
-  logo: fields.image({
+  hero: field.image({ label: 'Hero image' }),
+  background: field.image({ label: 'Background', scope: 'common' }),
+  logo: field.image({
     label: 'Logo',
     defaultValue: '/assets/logos/brand.svg',
   }),
@@ -41,7 +41,7 @@ Project-wide files are separate. Put them below `public/assets/<category>` and r
 An image field may use that public path through `defaultValue` or a variant value:
 
 ```tsx
-logo: fields.image({
+logo: field.image({
   label: 'Logo',
   defaultValue: '/assets/logos/brand.svg',
 })

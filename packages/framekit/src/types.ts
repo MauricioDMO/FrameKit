@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type TemplateFieldKind = 'text' | 'textarea' | 'number' | 'color' | 'image'
+export type TemplateFieldKind = 'text' | 'number' | 'color' | 'image'
 
 export type ImageFieldScope = 'common' | 'variant'
 
@@ -13,10 +13,8 @@ export interface BaseFieldDescriptor {
 
 export interface TextFieldDescriptor extends BaseFieldDescriptor {
   kind: 'text'
-}
-
-export interface TextareaFieldDescriptor extends BaseFieldDescriptor {
-  kind: 'textarea'
+  minLength?: number
+  maxLength?: number
 }
 
 export interface ColorFieldDescriptor extends BaseFieldDescriptor {
@@ -36,7 +34,6 @@ export interface ImageFieldDescriptor extends BaseFieldDescriptor {
 
 export type FieldDescriptor =
   | TextFieldDescriptor
-  | TextareaFieldDescriptor
   | ColorFieldDescriptor
   | NumberFieldDescriptor
   | ImageFieldDescriptor

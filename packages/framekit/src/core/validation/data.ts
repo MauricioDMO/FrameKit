@@ -5,6 +5,8 @@ export type TemplateDataValidationError =
   | { code: 'invalid_number' }
   | { code: 'number_too_small'; min: number }
   | { code: 'number_too_large'; max: number }
+  | { code: 'text_too_short'; minLength: number }
+  | { code: 'text_too_long'; maxLength: number }
   | { code: 'invalid_color' }
 
 export function isValidColor(value: string): boolean {
@@ -53,6 +55,24 @@ export function validateTemplateData(
       }
       if (trimmed !== '' && !isValidColor(trimmed)) {
         errors[key] = { code: 'invalid_color' }
+      }
+      continue
+    }
+
+    if (field.kind === 'text') {
+      if (isRequired && trimmed === '') {
+        errors[key] = { code: 'required' }
+        continue
+      }
+      if (value === '') {
+        continue
+      }
+      if (field.minLength !== undefined && value.length < field.minLength) {
+        errors[key] = { code: 'text_too_short', minLength: field.minLength }
+        continue
+      }
+      if (field.maxLength !== undefined && value.length > field.maxLength) {
+        errors[key] = { code: 'text_too_long', maxLength: field.maxLength }
       }
       continue
     }

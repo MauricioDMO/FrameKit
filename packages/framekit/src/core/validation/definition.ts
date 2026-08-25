@@ -1,6 +1,6 @@
 import type { TemplateBase, TemplateDefinition } from '../../types'
 
-const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'image'])
+const FIELD_KINDS = new Set(['text', 'number', 'color', 'image'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 const VARIANT_KEYS = new Set(['default', 'labels'])
@@ -112,6 +112,20 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
     }
     if (field.defaultValue !== undefined && typeof field.defaultValue !== 'string') {
       return { success: false, error: `fields.${key}.defaultValue must be a string` }
+    }
+
+    if (field.kind === 'text') {
+      if (field.minLength !== undefined && (typeof field.minLength !== 'number' || !Number.isFinite(field.minLength) || !Number.isInteger(field.minLength) || field.minLength < 0)) {
+        return { success: false, error: `fields.${key}.minLength must be a finite non-negative integer` }
+      }
+      if (field.maxLength !== undefined && (typeof field.maxLength !== 'number' || !Number.isFinite(field.maxLength) || !Number.isInteger(field.maxLength) || field.maxLength < 0)) {
+        return { success: false, error: `fields.${key}.maxLength must be a finite non-negative integer` }
+      }
+      if (field.minLength !== undefined && field.maxLength !== undefined && field.minLength > field.maxLength) {
+        return { success: false, error: `fields.${key}.minLength must be less than or equal to maxLength` }
+      }
+    } else if ('minLength' in field || 'maxLength' in field) {
+      return { success: false, error: `fields.${key} cannot define minLength or maxLength` }
     }
 
     if (field.kind === 'image') {

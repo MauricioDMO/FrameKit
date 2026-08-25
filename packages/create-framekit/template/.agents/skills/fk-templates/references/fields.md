@@ -1,6 +1,6 @@
 # Template Fields
 
-Fields describe the values a Studio user may edit. Define them in the template's `fields` object and read the resolved values from `data` in `render`.
+Fields describe the values a Studio user may edit. Define them in the template's `fields` object with the singular `field` export and read the resolved values from `data` in `render`.
 
 ## Shared Options
 
@@ -16,57 +16,48 @@ Each `content` entry is a field-value-only object: its keys are declared field n
 
 | Kind | Studio control | Use for | Validation |
 | --- | --- | --- | --- |
-| `fields.text` | Single-line text input | Titles, labels, CTAs, short copy | Required fields cannot be blank after trimming. |
-| `fields.textarea` | Resizable multiline textarea | Paragraphs and long copy | Required fields cannot be blank after trimming. |
-| `fields.number` | Number input | Counts, prices, percentages, bounded values | The trimmed value must be finite and within `min` and `max` when declared. |
-| `fields.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
-| `fields.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
+| `field.text` | Multiline textarea | Titles, labels, CTAs, and copy with newlines | Required fields cannot be blank after trimming; optional `minLength` and `maxLength` count the original characters. |
+| `field.number` | Number input | Counts, prices, percentages, bounded values | The trimmed value must be finite and within `min` and `max` when declared. |
+| `field.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
+| `field.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
 
 ### Text
 
-`fields.text` is a plain single-line string. FrameKit does not impose a length limit or automatically interpret Markdown.
+`field.text` is a string rendered with a native multiline textarea. Newlines are
+preserved. `minLength` and `maxLength` are optional finite non-negative integers;
+`minLength` cannot exceed `maxLength`. FrameKit does not automatically interpret
+Markdown.
 
 ```tsx
-title: fields.text({
+title: field.text({
   label: 'Title',
   placeholder: 'Add a title',
   defaultValue: 'Your next story',
 })
 ```
 
-### Textarea
-
-`fields.textarea` keeps newlines and is intended for paragraphs or longer copy. It is not automatically rendered as Markdown; pass its value to [`Markdown`](./markdown.md) when formatting is desired.
-
-```tsx
-description: fields.textarea({
-  label: 'Description',
-  required: false,
-})
-```
-
 ### Number
 
-`fields.number` uses a browser number control, but `data.count` remains a string. Parse it before arithmetic. `min` and `max` constrain validation as well as the editor control.
+`field.number` uses a browser number control, but `data.count` remains a string. Parse it before arithmetic. `min` and `max` constrain validation as well as the editor control.
 
 ```tsx
-count: fields.number({ label: 'Count', min: 0, max: 100, defaultValue: '10' })
+count: field.number({ label: 'Count', min: 0, max: 100, defaultValue: '10' })
 ```
 
 ### Color
 
-`fields.color` accepts six hexadecimal digits with a leading `#`. The editor provides a native color picker and a text representation. Use the value directly as a CSS color after validation.
+`field.color` accepts six hexadecimal digits with a leading `#`. The editor provides a native color picker and a text representation. Use the value directly as a CSS color after validation.
 
 ```tsx
-accent: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' })
+accent: field.color({ label: 'Accent', defaultValue: '#b9f8d2' })
 ```
 
 ### Image
 
-`fields.image` is for image values. Template assets are resolved from the `assets` directory; a public image can be referenced with a root-relative default or variant value:
+`field.image` is for image values. Template assets are resolved from the `assets` directory; a public image can be referenced with a root-relative default or variant value:
 
 ```tsx
-hero: fields.image({
+hero: field.image({
   label: 'Hero image',
   defaultValue: '/assets/photos/hero.webp',
 })

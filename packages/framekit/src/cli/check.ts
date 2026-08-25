@@ -48,7 +48,7 @@ for (const [templatePath, definition, assets] of templates) {
     const errors = validateTemplateData(definitionResult.definition, data)
 
     for (const [field, error] of Object.entries(errors)) {
-      const limit = 'min' in error ? \` (min: \${error.min})\` : 'max' in error ? \` (max: \${error.max})\` : ''
+      const limit = 'min' in error ? \` (min: \${error.min})\` : 'max' in error ? \` (max: \${error.max})\` : 'minLength' in error ? \` (minLength: \${error.minLength})\` : 'maxLength' in error ? \` (maxLength: \${error.maxLength})\` : ''
       console.error(\`\${templatePath}: content.\${variant}.\${field}: \${error.code}\${limit}\`)
       failed = true
     }
