@@ -1,3 +1,2 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @import "tailwindcss";
-@import "@mauriciodmo/framekit/styles.css";
