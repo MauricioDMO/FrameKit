@@ -4,6 +4,7 @@ import { IconSparkles } from '@tabler/icons-react'
 import { profile } from '@/profile'
 
 export default defineTemplate({
+  meta: { title: 'Example template' },
   width: 1200,
   height: 800,
   fields: {
@@ -12,15 +13,14 @@ export default defineTemplate({
   },
   content: {
     es: {
-      language: 'Español',
       title: 'Tu próxima historia comienza aquí',
     },
     en: {
-      language: 'English',
       title: 'Your next story starts here',
     },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'en', labels: { es: 'Español', en: 'English' } },
+  render({ data, variant, width, height }) {
     return (
       <article
         style={{ width, height }}
@@ -29,7 +29,7 @@ export default defineTemplate({
         <div className="flex items-center gap-3 text-[#b9f8d2]">
           <IconSparkles className="size-6" stroke={1.8} aria-hidden="true" />
           <SiReact className="size-7" aria-hidden="true" />
-          <span className="text-lg tracking-[4px]">{profile.companyName.toUpperCase()} / {locale.toUpperCase()}</span>
+          <span className="text-lg tracking-[4px]">{profile.companyName.toUpperCase()} / {variant.toUpperCase()}</span>
         </div>
         <Markdown
           value={data.title}
@@ -37,7 +37,7 @@ export default defineTemplate({
         />
         {data.hero && <img src={data.hero} alt="" className="mt-9 h-[120px] w-[180px] rounded-[18px] object-cover" />}
         <p className="mt-10 text-xl opacity-75">
-          {locale === 'es' ? 'Edita este archivo para crear tu primera plantilla.' : 'Edit this file to create your first template.'}
+          {variant === 'es' ? 'Edita este archivo para crear tu primera plantilla.' : 'Edit this file to create your first template.'}
         </p>
       </article>
     )
