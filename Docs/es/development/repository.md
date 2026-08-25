@@ -10,17 +10,15 @@ El `package.json` raíz tiene `"private": true` y el nombre `framekit-workspace`
 packages:
   - apps/*
   - packages/*
-  - examples/*
 ```
 
-El espacio de trabajo contiene cuatro espacios de trabajo secundarios:
+El espacio de trabajo contiene tres espacios de trabajo secundarios:
 
 | Espacio de trabajo          | Nombre                         | Privado | Propósito                                                                                                                    |
 | --------------------------- | ------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `apps/studio/`              | `studio`                       | Sí      | Aplicación Next.js propia — interfaz del editor visual, plantillas, registro y rutas de la aplicación                        |
 | `packages/framekit/`        | `@mauriciodmo/framekit`        | No      | Paquete público — runtime, componentes del editor, componentes de Studio, CLI, servidor de desarrollo y generación de código |
 | `packages/create-framekit/` | `@mauriciodmo/create-framekit` | No      | CLI pública para la creación de proyectos                                                                                    |
-| `examples/basic/`           | `framekit-example-basic`       | Sí      | Arnés mínimo de consumidor para pruebas de distribución                                                                      |
 
 El espacio de trabajo raíz en sí no tiene dependencias de ejecución. Todo el código de la aplicación vive en los espacios de trabajo secundarios.
 
@@ -45,7 +43,7 @@ El `package.json` raíz define scripts para todo el repositorio y un script de d
 
 ## Razón de la compilación primero del paquete
 
-`@mauriciodmo/framekit` debe compilarse **antes** de que Studio o el ejemplo puedan ejecutarse. Tanto `studio` como `framekit-example-basic` declaran `@mauriciodmo/framekit` con un enlace `workspace:*`:
+`@mauriciodmo/framekit` debe compilarse **antes** de que Studio pueda ejecutarse. Studio declara `@mauriciodmo/framekit` con un enlace `workspace:*`:
 
 ```json
 "@mauriciodmo/framekit": "workspace:*"
@@ -65,7 +63,6 @@ Para orientar un espacio de trabajo específico sin ejecutar recursivamente todo
 pnpm --filter @mauriciodmo/framekit build
 pnpm --filter @mauriciodmo/create-framekit build
 pnpm --filter studio dev
-pnpm --filter framekit-example-basic build
 ```
 
 Estos son equivalentes a ejecutar el script dentro del directorio de ese paquete.
@@ -77,7 +74,7 @@ Las siguientes rutas se producen durante el desarrollo:
 | Ruta                               | Contenido                                                                                       | Estado en git                                                          |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `src/generated/framekit/templates.ts` | Registro de plantillas tipado auto-generado                                                 | **Ignorado** — se regenera con `framekit generate` cuando es necesario |
-| `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone (Studio o ejemplo)          | Ignorado                                                               |
+| `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone de Studio                    | Ignorado                                                               |
 | `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                               |
 
 Los directorios generados están en `.gitignore` mediante `**/.framekit/`, `**/src/generated/framekit/`, `**/dist/` y patrones específicos de Next.js en `.next/`. El registro generado es desechable y debe regenerarse antes de ejecutar comandos que lo importen.
@@ -103,7 +100,7 @@ Usa esta guía para determinar dónde debe vivir un determinado archivo o pieza 
 - `next.config.ts`, configuración local de ESLint y TypeScript
 - Pruebas de integración que ejercitan el flujo completo de generación de Studio
 
-**`examples/basic/`** — Un proyecto Next.js independiente que importa `@mauriciodmo/framekit` como lo haría un consumidor. No tiene código compartido con Studio y sirve como arnés de prueba de distribución.
+**`packages/create-framekit/template/`** — El proyecto consumidor canónico que copia `create-framekit`. Los consumidores aislados de distribución se crean temporalmente fuera de este repositorio.
 
 **Archivos incluidos en los tarballs de npm** — `README.md` y `LICENSE` dentro de `packages/framekit/` y `packages/create-framekit/` se incluyen en los paquetes publicados mediante el campo `files` en cada `package.json`.
 

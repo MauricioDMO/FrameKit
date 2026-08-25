@@ -38,3 +38,17 @@ changes are tracked separately in the future execution plans.
 
 See the [canonical contract plan](../../Plans/Future/issue-01-canonical-template-contract.md)
 and the [template contract reference](../reference/template-contract.md).
+
+## Template Metadata
+
+Issue [#3](https://github.com/MauricioDMO/FrameKit/issues/3) makes the metadata
+contract exact. Update every template definition so `meta` has a non-empty
+`title`; optionally add `description`, `marketingDescription`, and `tags`.
+Remove `revision`, `status`, `keywords`, `order`, and any other unsupported
+metadata properties. A title is required even when the directory name already
+looks like a suitable catalog label; there is no slug fallback. This is a
+required source update for existing templates, not an additive no-migration
+change.
+
+See the [template metadata plan](../../Plans/Future/issue-03-template-metadata.md)
+and the [template contract reference](../reference/template-contract.md#template-metadata).

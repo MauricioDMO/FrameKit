@@ -77,7 +77,7 @@ The shared contract is:
    definitions, deterministic resolution, render props, and the preserved
    asset precedence.
 5. Apply the shared Definition of Done below, including both language docs,
-   the rolling migration guides, changelog entry, generated starter/example,
+   the rolling migration guides, changelog entry, and generated starter output,
    and links to this plan and issue #1.
 
 ## Documentation and migration requirements
@@ -113,7 +113,7 @@ so explicitly rather than implying a migration.
 For this active issue: code implementation, tests, English and Spanish public docs,
 root `CHANGELOG.md` under `Unreleased`, rolling English and Spanish
 `migration-next.md` guides (with an explicit no-migration note for additive
-changes), generated starter/examples, and plan/issue links are all required.
+changes), generated starter output, and plan/issue links are all required.
 
 ## Out of scope
 

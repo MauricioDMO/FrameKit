@@ -10,6 +10,13 @@ work.
 No release version is preselected by these plans. The release that contains a
 breaking contract change is chosen later by maintainers.
 
+## Consumer and fixture boundary
+
+The canonical in-repository consumer fixture is
+`packages/create-framekit/template/`. Distribution smoke consumers are
+temporary projects created outside this repository. Any “starter” or “generated
+starter” requirement below refers to that template and its generated output.
+
 ## Execution index
 
 1. [#1 — Canonical Template Contract](./issue-01-canonical-template-contract.md)
@@ -83,7 +90,7 @@ active order #3 -> #4 -> #5 -> #6 -> #7 -> #8 -> #9 -> #12 -> #13 -> #14 ->
   `Docs/en/getting-started/migration-next.md` and
   `Docs/es/getting-started/migration-next.md` guides, including an explicit
   no-migration note when the change is additive;
-- updated generated starter/examples;
+- updated generated starter output from `packages/create-framekit/template/`;
 - links between the implementation, its plan, and its GitHub issue.
 
 Do not create the changelog entry or migration guides while writing these

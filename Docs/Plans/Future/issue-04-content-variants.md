@@ -99,7 +99,7 @@ Rules:
    unknown variants, render props, editor selection, persistence invalidation,
    and common/variant asset precedence.
 7. Apply the shared Definition of Done below, including English and Spanish
-   docs, rolling migration guides, changelog, generated starter/examples, and
+   docs, rolling migration guides, changelog, generated starter output, and
    plan/issue links.
 
 ## Documentation and migration requirements
@@ -134,13 +134,13 @@ errors, and the fact that old localStorage is discarded rather than migrated.
   migrated.
 - Registry summaries remain deferred to #12.
 - Tests, both public-language docs, migration/changelog records, generated
-  examples, and links satisfy the shared Definition of Done.
+  starter output, and links satisfy the shared Definition of Done.
 
 ## Shared Definition of Done
 
 For this active issue: code implementation, tests, English and Spanish public docs,
 root `CHANGELOG.md` under `Unreleased`, rolling English and Spanish
-`migration-next.md` guides, generated starter/examples, and plan/issue links
+`migration-next.md` guides, generated starter output, and plan/issue links
 are required. The migration guides must include the explicit breaking-change
 steps and localStorage invalidation; the no-migration note applies only to an
 additive change.

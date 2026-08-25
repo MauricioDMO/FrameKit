@@ -74,7 +74,7 @@ Cuando un usuario ejecuta `create-framekit`, el directorio `template/` se copia 
 
 Para validar ambos tarballs antes de cualquier paso de publicación:
 
-1. Crear un proyecto consumidor básico aislado fuera del repositorio de FrameKit.
+1. Crear un proyecto consumidor aislado fuera del repositorio de FrameKit.
 2. Instalar el tarball de FrameKit en el: `pnpm add <ruta-al-tgz-de-framekit>`.
 3. Ejecutar `pnpm check` y `pnpm build` en el proyecto consumidor y confirmar que ambos finalizan correctamente.
 4. Instalar el tarball de `create-framekit` y ejecutar `create-framekit <nuevo-directorio>` desde una ruta fuera del repositorio.

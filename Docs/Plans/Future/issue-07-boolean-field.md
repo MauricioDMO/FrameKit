@@ -87,7 +87,7 @@ must not recommend `'true'`/`'false'` strings.
 - Test content and overrides preserve booleans through resolution, local
   persistence, editor callbacks, and render props.
 - Test native checkbox accessibility and keyboard interaction in the Studio.
-- Test the starter/example and generated starter typecheck and render.
+- Test the starter template and generated starter typecheck and render.
 - Run `pnpm --filter @mauriciodmo/framekit lint`, `test`, and `typecheck`.
 
 ## Completion / Definition of Done
@@ -97,7 +97,7 @@ must not recommend `'true'`/`'false'` strings.
 - [ ] `CHANGELOG.md` contains the `Unreleased` entry.
 - [ ] English and Spanish `migration-next` docs explain the typed migration.
 - [ ] Tests cover factory/defaults, runtime rejection, editor behavior, persistence, and types.
-- [ ] The starter/example and generated starter demonstrate a boolean field.
+- [ ] The starter template and generated starter demonstrate a boolean field.
 - [ ] No required flag, control abstraction, coercion, compatibility alias, or tri-state behavior is added.
 
 ## Out of scope

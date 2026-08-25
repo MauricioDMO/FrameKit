@@ -74,7 +74,7 @@ When a user runs `create-framekit`, the `template/` directory is copied from the
 
 To validate both tarballs before any publish step:
 
-1. Create an isolated basic consumer project outside the FrameKit repository.
+1. Create an isolated consumer project outside the FrameKit repository.
 2. Install the FrameKit tarball into it: `pnpm add <path-to-framekit-tgz>`.
 3. Run `pnpm check` and `pnpm build` in the consumer project and confirm both succeed.
 4. Install the `create-framekit` tarball and run `create-framekit <new-directory>` from a path outside the repository.

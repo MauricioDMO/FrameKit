@@ -67,7 +67,7 @@ Contract rules:
 5. Leave generated registry summaries and Studio metadata rendering unchanged;
    add only the contract data needed for #12/#13 to consume later.
 6. Apply the shared Definition of Done below, including both language docs,
-   changelog/migration records, generated starter/examples, and plan/issue
+   changelog/migration records, generated starter output, and plan/issue
    links.
 
 ## Documentation and migration requirements
@@ -98,13 +98,13 @@ version is named.
 - No slug fallback, compatibility alias, registry-summary change, or Studio
   metadata-consumption change is introduced.
 - Tests, both public-language docs, migration/changelog records, generated
-  examples, and links satisfy the shared Definition of Done.
+  starter output, and links satisfy the shared Definition of Done.
 
 ## Shared Definition of Done
 
 For this active issue: code implementation, tests, English and Spanish public docs,
 root `CHANGELOG.md` under `Unreleased`, rolling English and Spanish
-`migration-next.md` guides, generated starter/examples, and plan/issue links
+`migration-next.md` guides, generated starter output, and plan/issue links
 are required. The migration guides must explicitly describe the required
 `meta.title` update; the no-migration note applies only to additive changes.
 

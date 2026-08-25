@@ -10,7 +10,10 @@ La definición canónica usa `meta`, `width`, `height`, `fields`, `variants`,
 `content` con solo valores de fields y
 `render({ data, assets, variant, width, height })`. Consulta el [contrato de
 plantilla](./template-contract.md) para conocer la forma completa y su frontera
-entre Studio y el futuro renderizado de servidor.
+entre Studio y el futuro renderizado de servidor. `meta` exige un `title` no
+vacío y solo acepta además `description`, `marketingDescription` y `tags`. El
+[Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) define este
+contrato de metadata.
 
 **Exportaciones del entorno de ejecución**
 
@@ -41,7 +44,7 @@ entre Studio y el futuro renderizado de servidor.
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
 | `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
-| `TemplateMeta`                | Objeto de metadata que transporta la definición canónica                                                 |
+| `TemplateMeta`                | Objeto exacto de metadata con `title` obligatorio y `description`, `marketingDescription` y `tags` opcionales |
 | `TemplateVariants`             | Variante de contenido predeterminada y labels de visualización opcionales                                  |
 | `TemplateContent`              | Registro por variante con valores de fields                                                             |
 | `TemplateContentEntry`        | Registro parcial de valores de fields para una variante                                                 |

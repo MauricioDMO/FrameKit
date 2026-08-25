@@ -8,8 +8,10 @@ The root entry point provides the core runtime API for defining, validating, and
 
 The canonical definition uses `meta`, `width`, `height`, `fields`, `variants`,
 field-only `content`, and `render({ data, assets, variant, width, height })`.
-See the [template contract](./template-contract.md) for the full shape and its
-Studio/server-rendering boundary.
+`meta` requires a non-empty `title` and accepts only `description`,
+`marketingDescription`, and `tags` in addition. See the [template contract](./template-contract.md)
+for the full shape and its Studio/server-rendering boundary, and [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
+for the metadata contract.
 
 **Runtime exports**
 
@@ -40,7 +42,7 @@ Studio/server-rendering boundary.
 | `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `TemplateAssetManifest`       | Generated common and variant asset URL maps                                                            |
-| `TemplateMeta`                | Metadata object carried by the canonical template definition                                       |
+| `TemplateMeta`                | Exact metadata object with required `title` and optional `description`, `marketingDescription`, and `tags` |
 | `TemplateVariants`             | Default content variant and optional display labels                                                  |
 | `TemplateContent`              | Variant-keyed record of field-only content values                                                   |
 | `TemplateContentEntry`        | Partial field-value record for one content variant                                                  |

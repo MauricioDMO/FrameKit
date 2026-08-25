@@ -4,12 +4,17 @@ This document describes the versionless template contract: the field system, var
 
 ## Canonical Definition
 
-Every template uses one public shape. `meta` is a plain metadata object, and
+Every template uses one public shape. `meta` is an exact metadata object, and
 `variants.default` selects one of the field-only `content` entries.
 
 ```tsx
 export default defineTemplate({
-  meta: { title: 'Required template title' },
+  meta: {
+    title: 'Square promotion',
+    description: 'A promotional image for discounts and product offers',
+    marketingDescription: 'Present the offer, show its price, and motivate the customer to buy',
+    tags: ['social', 'promotion'],
+  },
   width: 1200,
   height: 630,
   fields: { title: fields.text({ label: 'Title' }) },
@@ -29,9 +34,18 @@ export default defineTemplate({
 
 The definition has no version property or editor-only alternate shape. `render`
 receives only `data`, `assets`, `variant`, `width`, and `height`, so the same
-definition can cross a future server-rendering boundary. The exact metadata
-property contract is tracked by [issue #3](https://github.com/MauricioDMO/FrameKit/issues/3);
-the exact variant refinements are tracked by [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+definition can cross a future server-rendering boundary.
+
+## Template Metadata
+
+`meta.title` is required and must be a non-empty string. The optional
+`description` explains what the template is for; `marketingDescription` explains
+the concrete communication goal; and `tags` is an array of strings. These are the
+only accepted metadata properties. `revision`, `status`, `keywords`, `order`, and
+other properties are rejected. A definition without a valid `meta.title` fails
+validation instead of deriving a title from its directory name.
+
+The exact variant refinements are tracked by [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Field Kinds
 
@@ -176,7 +190,8 @@ FrameKit provides two validation functions that check different aspects of a tem
 `validateTemplateDefinition` checks the structure of a template definition:
 
 - `width` and `height` must be positive finite integers
-- `meta` and `variants` must be plain objects; `variants.default` must name a content entry
+- `meta` must be a plain object with only `title`, `description`, `marketingDescription`, and `tags`; `title` must be non-empty and `tags` must be an array of strings
+- `variants` must be a plain object; `variants.default` must name a content entry
 - `fields.language` is reserved and cannot be used
 - `content` must have at least one entry
 - Every content entry may contain only declared field keys, and every value must be a string
@@ -257,7 +272,9 @@ The Studio interface (labels, buttons, messages) uses one of two languages: Span
 This separation means template content variants and Studio UI language are independent concerns.
 
 This canonical contract is implemented by [Future Plan #1](../../Plans/Future/issue-01-canonical-template-contract.md)
-and [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1).
+and [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1). The exact
+metadata contract is defined by [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
+and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3).
 
 ---
 

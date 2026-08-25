@@ -120,7 +120,7 @@ The pipeline must:
 6. Update field components and editor callbacks to emit their declared types:
    text/color/image strings, choice strings, boolean booleans, and number
    numbers. Keep native controls and image upload behavior from earlier plans.
-7. Update tests, the starter example, and generated starter artifacts to
+7. Update tests, the starter template, and generated starter artifacts to
    exercise every kind, precedence, unknown-key/variant rejection, typed
    inference, invalid preview recovery, and unchanged image asset behavior.
 
@@ -155,7 +155,7 @@ rule, and the image precedence guarantee. It must link to [#5](https://github.co
 - Add editor tests proving invalid edits do not reach `render`, the last valid
   preview remains visible, field errors are localized only at the UI boundary,
   and export uses valid data.
-- Verify starter/example and generated starter output with generation,
+- Verify the starter template and generated starter output with generation,
   compilation, and runtime tests.
 - Run `pnpm --filter @mauriciodmo/framekit lint`, `test`, and `typecheck`,
   followed by the repository checks when practical.
@@ -167,7 +167,7 @@ rule, and the image precedence guarantee. It must link to [#5](https://github.co
 - [ ] `CHANGELOG.md` contains the `Unreleased` entry.
 - [ ] English and Spanish `migration-next` docs explain the result contract and typed migration.
 - [ ] Tests cover inference, resolution, errors, precedence, editor recovery, export, and images.
-- [ ] The starter/example and generated starter exercise all six canonical kinds.
+- [ ] The starter template and generated starter exercise all six canonical kinds.
 - [ ] Renderer input is always valid typed data; no compatibility resolver,
   coercion, or parallel resolve/validate path remains.
 

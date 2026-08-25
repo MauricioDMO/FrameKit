@@ -5,7 +5,7 @@ description: Work safely in the FrameKit pnpm monorepo. Use for repository devel
 
 # FrameKit Repo
 
-Work from the repository root. This private pnpm workspace contains the Studio app, the public `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` packages, and `examples/basic/`.
+Work from the repository root. This private pnpm workspace contains the Studio app, the public `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` packages, and the canonical consumer template at `packages/create-framekit/template/`.
 
 Keep reusable runtime code in `packages/framekit/src/`, Studio-only code in `apps/studio/src/`, and scaffolding logic in `packages/create-framekit/src/`.
 

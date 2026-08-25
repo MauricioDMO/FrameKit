@@ -42,7 +42,7 @@ implement another runtime contract.
 - Distinguish Studio interface locale from generic template variants everywhere.
 - Do not present future server image generation, advanced catalog, persistence,
   or extension ideas as implemented.
-- Public examples must agree with executable starter/type fixtures where
+- Public documentation examples must agree with executable starter/type fixtures where
   practical; do not build a general Markdown snippet compiler for this issue.
 
 ## Required coverage
@@ -148,7 +148,7 @@ copies; never edit those targets directly or add another sync system.
   and mutually consistent.
 - Historical released migration documentation remains historical.
 - Canonical skills and both synchronized target trees describe final behavior.
-- Central examples and Quick Start are executable on the supported runtime.
+- Central documentation examples and Quick Start are executable on the supported runtime.
 - No future release version, compatibility promise, migration command, or
   unimplemented capability is presented as current.
 

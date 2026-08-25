@@ -92,7 +92,7 @@ ordered options, and `invalid_choice` behavior.
   data tests.
 - Test native select rendering, option order, keyboard selection, and error
   accessibility in editor tests.
-- Test the starter example and generated starter compilation.
+- Test the starter template and generated starter compilation.
 - Run `pnpm --filter @mauriciodmo/framekit lint`, `test`, and `typecheck`.
 
 ## Completion / Definition of Done
@@ -102,7 +102,7 @@ ordered options, and `invalid_choice` behavior.
 - [ ] `CHANGELOG.md` contains the `Unreleased` entry.
 - [ ] English and Spanish `migration-next` docs cover adoption and errors.
 - [ ] Tests cover descriptor validation, runtime behavior, Studio select behavior, and types.
-- [ ] The starter/example and generated starter demonstrate a choice field.
+- [ ] The starter template and generated starter demonstrate a choice field.
 - [ ] No compatibility API, generic control abstraction, or alternate choice UI is added.
 
 ## Out of scope

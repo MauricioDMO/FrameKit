@@ -22,7 +22,7 @@ Las imágenes de una plantilla viven en un directorio `assets` junto a `template
 
 El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con los segmentos unidos por barras. Por ejemplo, `src/templates/social-cards/instagram/post` se convierte en `social-cards/instagram/post`.
 
-Los títulos mostrados en la interfaz de Studio se derivan de los nombres de directorio separando por guiones y poniendo en mayúscula la inicial de cada palabra. Por ejemplo, `social-cards` se convierte en "Social Cards" e `instagram-post` se convierte en "Instagram Post".
+Los títulos mostrados en el catálogo de Studio actualmente se derivan de los nombres de directorio separando por guiones y poniendo en mayúscula la inicial de cada palabra. Por ejemplo, `social-cards` se convierte en "Social Cards" e `instagram-post` se convierte en "Instagram Post". Este resumen del catálogo es distinto de `meta.title`, que es obligatorio; un `meta.title` ausente o inválido nunca se completa desde el nombre del directorio. Los resúmenes del registro y el consumo de metadata en Studio quedan para los issues [#12](../../Plans/Future/issue-12-generated-template-registry.md) y [#13](../../Plans/Future/issue-13-studio-canonical-contract.md).
 
 El registro de plantillas generado se ordena alfabéticamente por slug. En la interfaz de Studio, las plantillas y carpetas se ordenan alfabéticamente por sus títulos humanizados.
 
@@ -38,7 +38,12 @@ Para plantillas directas, define todo en un único archivo `template.tsx`:
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
-  meta: { title: 'Tarjeta social' },
+  meta: {
+    title: 'Tarjeta social',
+    description: 'Una tarjeta cuadrada para publicaciones y campañas sociales',
+    marketingDescription: 'Presentar el mensaje con claridad y motivar a la audiencia a actuar',
+    tags: ['social', 'promoción'],
+  },
   width: 1200,
   height: 800,
   fields: {
@@ -85,7 +90,12 @@ import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
-  meta: { title: 'Tarjeta social extraída' },
+  meta: {
+    title: 'Tarjeta social extraída',
+    description: 'Una definición reutilizable para una tarjeta social',
+    marketingDescription: 'Explicar la oferta y dejar clara la siguiente acción',
+    tags: ['social'],
+  },
   width: 1080,
   height: 1080,
   fields: {
@@ -138,6 +148,22 @@ Cada definición de plantilla requiere estas propiedades:
 - `variants` — un objeto con una key `default` de contenido y labels de visualización opcionales
 - `content` — un registro con al menos una entrada de variante que contiene solo valores parciales de fields
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
+
+### Metadata De La Plantilla
+
+`meta` es el objeto de metadata autodescriptivo de la plantilla. Acepta
+exactamente estas propiedades:
+
+- `title` (obligatorio): un título de plantilla no vacío.
+- `description` (opcional): una descripción funcional del propósito de la plantilla.
+- `marketingDescription` (opcional): el objetivo concreto de comunicación, como presentar un servicio, explicar precios, destacar beneficios o motivar una acción.
+- `tags` (opcional): un array de strings para el uso posterior del catálogo.
+
+`meta` no acepta `revision`, `status`, `keywords`, `order` ni ninguna otra
+propiedad. No existe fallback al slug ni alias de compatibilidad: una definición
+sin un `meta.title` válido falla la validación. El registro actual todavía deriva
+su resumen de catálogo del sistema de archivos; el consumo de metadata pertenece
+a los issues #12 y #13.
 
 ## Contenido y variantes
 
@@ -201,8 +227,8 @@ Para una regeneración puntual, ejecuta `framekit generate`. El comando comparti
 
 ## Claves reservadas
 
-La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida. Las definiciones no tienen una propiedad de versión ni una forma alternativa de compatibilidad.
+La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida. Las definiciones no tienen una propiedad de versión ni una forma alternativa de compatibilidad. La metadata solo acepta `title`, `description`, `marketingDescription` y `tags`; las propiedades no soportadas se rechazan.
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3)

@@ -21,7 +21,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | ---: | --- | --- | --- | --- |
 | 1 | [#1 Canonical Template Contract](./issue-01-canonical-template-contract.md) | Contrato canónico sin versión | Active | [x] Completado |
 | 2 | [#2 Runtime Requirements](./issue-02-runtime-requirements.md) | Requisitos de runtime | Completed baseline | [x] Completado |
-| 3 | [#3 Template Metadata](./issue-03-template-metadata.md) | Metadata de templates | Active | [ ] Pendiente |
+| 3 | [#3 Template Metadata](./issue-03-template-metadata.md) | Metadata de templates | Active | [x] Completado |
 | 4 | [#4 Content Variants](./issue-04-content-variants.md) | Variantes de contenido | Active | [ ] Pendiente |
 | 5 | [#5 Semantic Fields](./issue-05-semantic-fields.md) | Campos semánticos | Planned | [ ] Pendiente |
 | 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [ ] Pendiente |
@@ -45,7 +45,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [ ] `Docs/en/getting-started/migration-next.md` actualizado.
 - [ ] `Docs/es/getting-started/migration-next.md` actualizado.
 - [ ] Nota explícita de no migración incluida cuando el cambio sea aditivo.
-- [ ] Starter y ejemplos generados actualizados.
+- [ ] Starter template y salida generada actualizados.
 - [ ] Implementación, plan e issue de GitHub enlazados.
 - [ ] Verificaciones del issue ejecutadas y registradas.
 
@@ -56,14 +56,16 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Contrato canónico implementado.
 - [x] Tests y documentación del issue completados.
 - [x] Definition of Done completada.
+- [x] Verificaciones del issue ejecutadas y registradas.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #3 Template Metadata
 
-- [ ] Metadata `meta` implementada y validada.
-- [ ] Templates actuales actualizados.
-- [ ] Tests y documentación del issue completados.
-- [ ] Definition of Done completada.
+- [x] Metadata `meta` implementada y validada.
+- [x] Templates actuales actualizados.
+- [x] Tests y documentación del issue completados.
+- [x] Definition of Done completada.
+- [x] Verificaciones del issue ejecutadas y registradas.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #4 Content Variants
@@ -132,3 +134,5 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 | --- | --- | --- |
 | 2026-08-24 | Se crea el checklist inicial basado en `README.md`. | — |
 | 2026-08-24 | Se completa y verifica localmente el issue #1; el issue de GitHub permanece abierto. | — |
+| 2026-08-24 | Se verificó de nuevo el issue #1 con tests, typecheck, build, runtime, `studio check` y `framekit check` sobre un starter generado; también se confirmaron los errores de `meta.title` ausente y metadata no soportada. | — |
+| 2026-08-24 | Se completa y verifica localmente el issue #3: metadata exacta, templates, tests, documentación EN/ES, changelog, migraciones y starter generado; el issue de GitHub permanece abierto. | — |

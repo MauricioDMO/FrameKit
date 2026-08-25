@@ -17,8 +17,7 @@ kind while keeping multiline editing as the behavior of `field.text`.
   textarea have separate editor components.
 - `field.number` currently stores `defaultValue` as a string and the editor
   treats field data as strings. Number semantics are finalized by #8 and #9.
-- The current starter uses `fields.text` and `fields.image`; there is no
-  standalone `examples/` directory in this checkout.
+- The current starter uses `fields.text` and `fields.image`.
 - Image descriptors, asset manifests, image upload behavior, and image
   precedence are already established and are not redesigned here.
 
@@ -120,7 +119,7 @@ alias and that the template definition property remains `fields`.
 - [ ] `CHANGELOG.md` has an `Unreleased` entry.
 - [ ] English and Spanish `migration-next` docs explain the breaking migration.
 - [ ] Tests cover the public contract, validation, editor behavior, and types.
-- [ ] The starter/template example and generated starter are updated and verified.
+- [ ] The starter template and generated starter are updated and verified.
 - [ ] No compatibility alias or unrequested control/format abstraction exists.
 
 ## Out of scope

@@ -93,7 +93,7 @@ public packages. In an isolated temporary consumer outside the workspace:
 
 - inspect expected tarball files and reject source-only tests, secrets,
   workspace references, or local repository paths;
-- install the FrameKit tarball in a basic consumer and run generate/check/build;
+- install the FrameKit tarball in an isolated consumer outside the repository and run generate/check/build;
 - install the creator tarball, create a project non-interactively, replace its
   registry dependency with the FrameKit tarball, and install with a clean
   lockfile;

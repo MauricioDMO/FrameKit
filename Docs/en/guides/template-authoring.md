@@ -22,7 +22,7 @@ Template images belong in an `assets` directory beside `template.tsx`. Put share
 
 The slug is the path from `src/templates/` to the template directory, with segments joined by slashes. Example: `src/templates/social-cards/instagram/post` becomes `social-cards/instagram/post`.
 
-Titles shown in the Studio UI are derived from directory names by splitting on hyphens and capitalizing each word. For example, `social-cards` becomes "Social Cards" and `instagram-post` becomes "Instagram Post".
+Titles shown in the Studio catalog are currently derived from directory names by splitting on hyphens and capitalizing each word. For example, `social-cards` becomes "Social Cards" and `instagram-post` becomes "Instagram Post". This catalog summary is separate from the required `meta.title`; a missing or invalid `meta.title` is never filled from the directory name. Registry summaries and Studio metadata consumption remain deferred to issues [#12](../../Plans/Future/issue-12-generated-template-registry.md) and [#13](../../Plans/Future/issue-13-studio-canonical-contract.md).
 
 The generated template registry is sorted alphabetically by slug. In the Studio UI, templates and folders are sorted alphabetically by their humanized titles.
 
@@ -38,7 +38,12 @@ For straightforward templates, define everything in a single `template.tsx` file
 import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
-  meta: { title: 'Social card' },
+  meta: {
+    title: 'Social card',
+    description: 'A square card for social posts and campaign updates',
+    marketingDescription: 'Present the message clearly and motivate the audience to act',
+    tags: ['social', 'promotion'],
+  },
   width: 1200,
   height: 800,
   fields: {
@@ -85,7 +90,12 @@ import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
-  meta: { title: 'Extracted social card' },
+  meta: {
+    title: 'Extracted social card',
+    description: 'A reusable definition for a social card',
+    marketingDescription: 'Explain the offer and make the next action clear',
+    tags: ['social'],
+  },
   width: 1080,
   height: 1080,
   fields: {
@@ -138,6 +148,22 @@ Every template definition requires these properties:
 - `variants` — an object with a `default` content key and optional display labels
 - `content` — a record with at least one variant entry containing only partial field values
 - `render` — a function that receives typed props and returns a React node
+
+### Template Metadata
+
+`meta` is the template's self-described metadata object. It accepts exactly these
+properties:
+
+- `title` (required): a non-empty template title.
+- `description` (optional): a functional description of what the template is for.
+- `marketingDescription` (optional): the concrete communication goal, such as presenting a service, explaining prices, highlighting benefits, or motivating an action.
+- `tags` (optional): an array of strings for later catalog use.
+
+`meta` does not accept `revision`, `status`, `keywords`, `order`, or any other
+property. There is no slug fallback or compatibility alias: a definition without
+a valid `meta.title` fails validation. The current registry still derives its
+catalog summary from the filesystem; metadata consumption belongs to issues #12
+and #13.
 
 ## Content and Variants
 
@@ -201,8 +227,8 @@ For one-off regeneration, run `framekit generate`. The shared generation command
 
 ## Reserved Keys
 
-The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key. Definitions do not have a version property or an alternate compatibility shape.
+The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key. Definitions do not have a version property or an alternate compatibility shape. Metadata accepts only `title`, `description`, `marketingDescription`, and `tags`; unsupported properties are rejected.
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3)

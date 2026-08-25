@@ -4,13 +4,18 @@ Este documento describe el contrato de plantilla sin versión: el sistema de cam
 
 ## Definición canónica
 
-Cada plantilla usa una única forma pública. `meta` es un objeto plano de
+Cada plantilla usa una única forma pública. `meta` es un objeto exacto de
 metadata y `variants.default` selecciona una de las entradas de `content`, que
 solo contienen valores de fields.
 
 ```tsx
 export default defineTemplate({
-  meta: { title: 'Título requerido de la plantilla' },
+  meta: {
+    title: 'Promoción cuadrada',
+    description: 'Una imagen promocional para descuentos y ofertas de productos',
+    marketingDescription: 'Presentar la oferta, mostrar su precio y motivar al cliente a comprar',
+    tags: ['social', 'promoción'],
+  },
   width: 1200,
   height: 630,
   fields: { title: fields.text({ label: 'Título' }) },
@@ -31,9 +36,19 @@ export default defineTemplate({
 La definición no tiene propiedad de versión ni una forma alternativa exclusiva
 del editor. `render` recibe únicamente `data`, `assets`, `variant`, `width` y
 `height`, por lo que la misma definición puede cruzar una futura frontera de
-renderizado de servidor. El contrato exacto de metadata se rastrea en el [issue
-#3](https://github.com/MauricioDMO/FrameKit/issues/3); las reglas exactas de
-variantes se rastrean en el [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+renderizado de servidor.
+
+## Metadata De La Plantilla
+
+`meta.title` es obligatorio y debe ser un string no vacío. `description` es
+opcional y explica para qué sirve la plantilla; `marketingDescription` es
+opcional y explica el objetivo concreto de comunicación; `tags` es opcional y
+debe ser un array de strings. Estas son las únicas propiedades de metadata
+aceptadas. Se rechazan `revision`, `status`, `keywords`, `order` y cualquier otra
+propiedad. Una definición sin un `meta.title` válido falla la validación en lugar
+de derivar un título desde su directorio.
+
+Las reglas exactas de variantes se rastrean en el [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Tipos de Campos
 
@@ -180,7 +195,8 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 `validateTemplateDefinition` verifica la estructura de una definición de plantilla:
 
 - `width` y `height` deben ser enteros finitos positivos
-- `meta` y `variants` deben ser objetos planos; `variants.default` debe nombrar una entrada de contenido
+- `meta` debe ser un objeto plano que solo contenga `title`, `description`, `marketingDescription` y `tags`; `title` debe ser no vacío y `tags` debe ser un array de strings
+- `variants` debe ser un objeto plano; `variants.default` debe nombrar una entrada de contenido
 - `fields.language` está reservado y no puede ser usado
 - `content` debe tener al menos una entrada
 - Cada entrada de contenido solo puede contener keys de fields declaradas y cada valor debe ser un string
@@ -261,7 +277,9 @@ La interfaz de Studio (etiquetas, botones y mensajes) usa uno de dos idiomas: es
 Esta separación significa que las variantes de contenido de la plantilla y el idioma de la interfaz de Studio son preocupaciones independientes.
 
 Este contrato canónico implementa el [Plan Futuro #1](../../Plans/Future/issue-01-canonical-template-contract.md)
-y el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1).
+y el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1). El
+contrato exacto de metadata está definido por el [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md)
+y el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3).
 
 ---
 

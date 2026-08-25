@@ -39,3 +39,17 @@ rastrean por separado en los planes de ejecución.
 
 Consulta el [plan del contrato canónico](../../Plans/Future/issue-01-canonical-template-contract.md)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
+
+## Metadata De La Plantilla
+
+El issue [#3](https://github.com/MauricioDMO/FrameKit/issues/3) hace exacto el
+contrato de metadata. Actualiza cada definición para que `meta` tenga un
+`title` no vacío; de forma opcional puede incluir `description`,
+`marketingDescription` y `tags`. Elimina `revision`, `status`, `keywords`,
+`order` y cualquier otra propiedad de metadata no soportada. El título es
+obligatorio aunque el nombre del directorio ya parezca una etiqueta adecuada
+del catálogo: no existe fallback al slug. Es una actualización de código fuente
+obligatoria para las plantillas existentes, no un cambio aditivo sin migración.
+
+Consulta el [plan de metadata](../../Plans/Future/issue-03-template-metadata.md)
+y la [referencia del contrato de plantilla](../reference/template-contract.md#metadata-de-la-plantilla).
