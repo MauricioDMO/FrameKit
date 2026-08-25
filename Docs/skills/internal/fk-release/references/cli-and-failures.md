@@ -10,7 +10,7 @@
 
 ## Build And Start
 
-- `framekit build` validation failure: run `framekit check` to get template, locale, and field errors. Check does not test rendering or PNG export.
+- `framekit build` validation failure: run `framekit check` to get template, variant data, and field errors. Check does not test rendering or PNG export.
 - `framekit start` cannot find a server: run `framekit build` first.
 - Multiple server candidates: ensure a single Next.js build output and remove nested output that confuses server discovery.
 
