@@ -1,4 +1,4 @@
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 import { BrandHero } from '@/brand/communication/hero/component'
 
@@ -12,11 +12,11 @@ export default defineTemplate({
   width: 1440,
   height: 1440,
   fields: {
-    eyebrow: fields.text({ label: 'Etiqueta', placeholder: 'NUEVO / FRAMEKIT' }),
-    title: fields.textarea({ label: 'Título', placeholder: 'Diseña imágenes desde React' }),
-    description: fields.textarea({ label: 'Descripción' }),
-    website: fields.text({ label: 'Sitio web' }),
-    accentColor: fields.color({ label: 'Color de acento', defaultValue: '#c8f7d9' }),
+    eyebrow: field.text({ label: 'Etiqueta', placeholder: 'NUEVO / FRAMEKIT' }),
+    title: field.text({ label: 'Título', placeholder: 'Diseña imágenes desde React' }),
+    description: field.text({ label: 'Descripción' }),
+    website: field.text({ label: 'Sitio web' }),
+    accentColor: field.color({ label: 'Color de acento', defaultValue: '#c8f7d9' }),
   },
   content: {
     es: {

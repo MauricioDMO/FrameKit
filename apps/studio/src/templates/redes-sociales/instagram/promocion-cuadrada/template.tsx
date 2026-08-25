@@ -1,4 +1,4 @@
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 import { BrandHero } from '@/brand/communication/hero/component'
 
@@ -12,15 +12,15 @@ export default defineTemplate({
   width: 1440,
   height: 1440,
   fields: {
-    eyebrow: fields.text({ label: 'Etiqueta', placeholder: 'Oferta especial' }),
-    title: fields.textarea({ label: 'Título', placeholder: 'Diseñamos tu sitio web' }),
-    description: fields.textarea({ label: 'Descripción' }),
-    website: fields.text({ label: 'Sitio web' }),
-    backgroundImage: fields.image({
+    eyebrow: field.text({ label: 'Etiqueta', placeholder: 'Oferta especial' }),
+    title: field.text({ label: 'Título', placeholder: 'Diseñamos tu sitio web' }),
+    description: field.text({ label: 'Descripción' }),
+    website: field.text({ label: 'Sitio web' }),
+    backgroundImage: field.image({
       label: 'Imagen de fondo',
       scope: 'common',
     }),
-    accentColor: fields.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
+    accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
   content: {
     es: {

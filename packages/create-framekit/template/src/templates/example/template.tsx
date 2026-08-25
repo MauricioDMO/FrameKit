@@ -1,4 +1,4 @@
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 import { SiReact } from '@icons-pack/react-simple-icons'
 import { IconSparkles } from '@tabler/icons-react'
 import { profile } from '@/profile'
@@ -13,15 +13,15 @@ export default defineTemplate({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Title', required: true }),
-    hero: fields.image({ label: 'Hero image', scope: 'common' }),
+    title: field.text({ label: 'Title', required: true, minLength: 1, maxLength: 80 }),
+    hero: field.image({ label: 'Hero image', scope: 'common' }),
   },
   content: {
     es: {
-      title: 'Tu próxima historia comienza aquí',
+      title: 'Tu próxima historia\ncomienza aquí',
     },
     en: {
-      title: 'Your next story starts here',
+      title: 'Your next story\nstarts here',
     },
   },
   variants: { default: 'en', labels: { es: 'Español', en: 'English' } },
