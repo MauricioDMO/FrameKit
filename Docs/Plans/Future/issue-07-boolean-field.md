@@ -92,13 +92,13 @@ must not recommend `'true'`/`'false'` strings.
 
 ## Completion / Definition of Done
 
-- [ ] The implementation and tests link to [issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) and this [plan](./issue-07-boolean-field.md).
-- [ ] English and Spanish public docs are updated.
-- [ ] `CHANGELOG.md` contains the `Unreleased` entry.
-- [ ] English and Spanish `migration-next` docs explain the typed migration.
-- [ ] Tests cover factory/defaults, runtime rejection, editor behavior, persistence, and types.
-- [ ] The starter template and generated starter demonstrate a boolean field.
-- [ ] No required flag, control abstraction, coercion, compatibility alias, or tri-state behavior is added.
+- [x] The implementation and tests link to [issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) and this [plan](./issue-07-boolean-field.md).
+- [x] English and Spanish public docs are updated.
+- [x] `CHANGELOG.md` contains the `Unreleased` entry.
+- [x] English and Spanish `migration-next` docs explain the typed migration.
+- [x] Tests cover factory/defaults, runtime rejection, editor behavior, persistence, and types.
+- [x] The starter template and generated starter demonstrate a boolean field.
+- [x] No required flag, control abstraction, coercion, compatibility alias, or tri-state behavior is added.
 
 ## Out of scope
 

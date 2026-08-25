@@ -27,3 +27,7 @@
 - Added `field.choice` with frozen ordered options, required defaults, native
   Studio selects, and `invalid_choice` validation for undeclared values. See
   [plan #6](Docs/Plans/Future/issue-06-choice-field.md) and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
+- Added `field.boolean` with real boolean defaults, typed content and overrides,
+  native Studio checkboxes, and `invalid_boolean` validation without string
+  coercion. See [plan #7](Docs/Plans/Future/issue-07-boolean-field.md) and
+  [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).

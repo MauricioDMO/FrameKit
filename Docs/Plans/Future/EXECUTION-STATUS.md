@@ -25,7 +25,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 4 | [#4 Content Variants](./issue-04-content-variants.md) | Variantes de contenido | Active | [x] Completado |
 | 5 | [#5 Semantic Fields](./issue-05-semantic-fields.md) | Campos semánticos | Planned | [x] Completado |
 | 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [x] Completado |
-| 7 | [#7 Boolean Field](./issue-07-boolean-field.md) | Campo booleano | Planned | [ ] Pendiente |
+| 7 | [#7 Boolean Field](./issue-07-boolean-field.md) | Campo booleano | Planned | [x] Completado |
 | 8 | [#8 Number Field](./issue-08-number-field.md) | Campo numérico | Planned | [ ] Pendiente |
 | 9 | [#9 Typed Data Pipeline](./issue-09-typed-data-pipeline.md) | Pipeline de datos tipados | Planned | [ ] Pendiente |
 | 10 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [ ] Pendiente |
@@ -97,9 +97,19 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Verificaciones ejecutadas: tests FrameKit (129), typecheck, lint y build del paquete; tests/typecheck/lint de Studio; tests del scaffolder (19 con `pnpm exec vitest run --testTimeout=30000`), typecheck y lint; `pnpm check:runtime`; `framekit generate`; `framekit check`; compilación TypeScript y `next build --webpack` del starter; y checks raíz `pnpm lint`, `pnpm typecheck` y `pnpm build`.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
-### #7–#9 Field Contracts and Typed Data Pipeline
+### #7 Boolean Field
 
-- [ ] #7 Boolean Field completado.
+- [x] `field.boolean` implementado con default booleano `false`, sin `required`, `control` ni coerción.
+- [x] Valores booleanos preservados en contenido, overrides, resolución, render props, persistencia y callbacks del editor.
+- [x] Validación estructural y runtime con `invalid_boolean`; Studio usa un checkbox nativo accesible.
+- [x] Tests de factory, defaults, runtime, editor, persistencia y tipos; starter canónico actualizado y generado verificado.
+- [x] Documentación pública EN/ES, guías Studio/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
+- [x] Definition of Done completada.
+- [x] Verificaciones ejecutadas: tests raíz (FrameKit 142, Studio 2, scaffolder 19), typecheck, lint y build raíz; `framekit generate`, `framekit check`, typecheck y `next build --webpack` del starter enlazado localmente.
+- [ ] Issue de GitHub cerrado por los mantenedores.
+
+### #8–#9 Field Contracts and Typed Data Pipeline
+
 - [ ] #8 Number Field completado.
 - [ ] #9 Typed Data Pipeline completado.
 - [ ] Definition of Done completada para cada issue.
@@ -158,3 +168,4 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 | 2026-08-24 | Se completa y verifica localmente el issue #4: variantes explícitas, validación exacta, editor/persistencia `v2`, tests, documentación EN/ES, changelog, migraciones y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #5: API singular `field`, eliminación de `textarea`, texto multilínea con límites, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #6: `field.choice`, select nativo, validación `invalid_choice`, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
+| 2026-08-25 | Se completa y verifica localmente el issue #7: `field.boolean`, checkbox nativo, validación `invalid_boolean`, persistencia booleana, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
