@@ -5,7 +5,7 @@
 - This is a private pnpm monorepo. Use pnpm `11.14.0` from the repository root.
 - `packages/framekit/` is the public reusable runtime, editor, Studio components, CLI, codegen, and dev server.
 - `packages/create-framekit/` is the public project-scaffolding CLI; its `template/` is the generated consumer project.
-- `apps/studio/` is the first-party private Next.js app. `examples/basic/` is the consumer-style distribution harness.
+- `apps/studio/` is the first-party private Next.js app. `packages/create-framekit/template/` is the canonical generated consumer project.
 - Put reusable consumer-facing code in `packages/framekit/src/`; keep Studio-only code in `apps/studio/src/` and scaffolding logic in `packages/create-framekit/src/`.
 - The supported `@mauriciodmo/framekit` imports are `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, and `./styles.css`; do not import `packages/framekit/src/*` as a consumer.
 
@@ -15,7 +15,7 @@
 - Run `pnpm dev` only from the repository root. It builds `@mauriciodmo/framekit` before starting Studio because workspace consumers resolve its built `dist/` files.
 - Repository checks: `pnpm lint`, `pnpm test`, `pnpm typecheck`, and `pnpm build`.
 - Focused checks: `pnpm --filter @mauriciodmo/framekit test`, `pnpm --filter studio test`, and `pnpm --filter @mauriciodmo/create-framekit test`.
-- Build a workspace with `pnpm --filter <workspace> build`; build `@mauriciodmo/framekit` before Studio or the example.
+- Build a workspace with `pnpm --filter <workspace> build`; build `@mauriciodmo/framekit` before Studio or a generated consumer.
 - After changing any `package.json`, run `pnpm install` at the root, then `pnpm build`.
 
 ## Generated Files
@@ -31,5 +31,5 @@
 
 ## Distribution
 
-- Only `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` are public packages; the root, Studio, and example are not publish targets.
+- Only `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` are public packages; the root and Studio are not publish targets.
 - For packaging changes, run `pnpm --filter @mauriciodmo/framekit pack` and `pnpm --filter @mauriciodmo/create-framekit pack`, then follow `Docs/en/development/testing-and-distribution.md` for the external consumer smoke test.
