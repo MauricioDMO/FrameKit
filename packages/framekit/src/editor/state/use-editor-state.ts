@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import type { TemplateDefinition } from '../../types'
-import { getInitialState, loadPersistedState, resetLocale, selectLocale, storageKey, updateField } from './editor-state'
+import { getInitialState, loadPersistedState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
 
 export function useEditorState(slug: string, definition: TemplateDefinition) {
   const hydratedRef = useRef(false)
@@ -30,13 +30,13 @@ export function useEditorState(slug: string, definition: TemplateDefinition) {
     }
   }, [slug, state])
 
-  function changeLocale(locale: string) {
-    setState((current) => selectLocale(current, locale))
+  function changeVariant(variant: string) {
+    setState((current) => selectVariant(current, variant))
     setErrors({})
   }
 
-  function clearLocale() {
-    setState(resetLocale)
+  function clearVariant() {
+    setState(resetVariant)
     setErrors({})
   }
 
@@ -50,5 +50,5 @@ export function useEditorState(slug: string, definition: TemplateDefinition) {
     })
   }
 
-  return { selectedLocale: state.selectedLocale, userEdits: state.dataByLocale[state.selectedLocale] ?? {}, errors, setErrors, changeLocale, clearLocale, changeField }
+  return { selectedVariant: state.selectedVariant, userEdits: state.dataByVariant[state.selectedVariant] ?? {}, errors, setErrors, changeVariant, clearVariant, changeField }
 }

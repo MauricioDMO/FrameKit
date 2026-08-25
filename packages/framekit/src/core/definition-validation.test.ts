@@ -111,10 +111,22 @@ describe('validateTemplateDefinition', () => {
     ['unknown content key', { content: { en: { missing: 'value' } } }, 'content.en contains unknown field key "missing"'],
     ['content metadata', { content: { en: { language: 'English' } } }, 'content.en contains unknown field key "language"'],
     ['unknown default variant', { variants: { default: 'fr' } }, 'variants.default "fr" is not defined in content'],
+    ['unsupported variant property', { variants: { default: 'en', mode: 'language' } }, 'variants contains unknown property "mode"'],
+    ['unknown variant label', { variants: { default: 'en', labels: { fr: 'French' } } }, 'variants.labels contains unknown variant key "fr"'],
   ])('rejects %s', (_name, change, error) => {
     expect(validateTemplateDefinition({ ...validDefinition(), ...change })).toEqual({
       success: false,
       error,
     })
+  })
+
+  it.each([
+    ['non-object labels', [], 'variants.labels must be a plain object'],
+    ['non-string label', { en: 1 }, 'variants.labels.en must be a non-empty string'],
+  ])('rejects invalid variant labels: %s', (_name, labels, error) => {
+    expect(validateTemplateDefinition({
+      ...validDefinition(),
+      variants: { default: 'en', labels },
+    })).toEqual({ success: false, error })
   })
 })

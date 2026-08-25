@@ -6,6 +6,6 @@ export type { TemplateBase, TemplateDefinition, TemplateRenderProps, InferTempla
 export { fields } from './core/fields'
 export { resolveTemplateData } from './core/resolve-template-data'
 export type { TemplateDataValidationError } from './core/validation'
-export { getLocales } from './core/get-locales'
+export { getVariants } from './core/get-variants'
 export { getDefaultValues } from './core/get-default-values'
 export { Markdown } from './markdown/markdown'

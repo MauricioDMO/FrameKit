@@ -3,6 +3,7 @@ import type { TemplateBase, TemplateDefinition } from '../../types'
 const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'image'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
+const VARIANT_KEYS = new Set(['default', 'labels'])
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -150,6 +151,12 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
   }
 
   const variants = def.variants
+  for (const key of Object.keys(variants)) {
+    if (!VARIANT_KEYS.has(key)) {
+      return { success: false, error: `variants contains unknown property "${key}"` }
+    }
+  }
+
   if (typeof variants.default !== 'string' || variants.default.trim() === '') {
     return { success: false, error: 'variants.default must be a non-empty string' }
   }
@@ -180,6 +187,14 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
 
   if (!contentKeys.includes(variants.default)) {
     return { success: false, error: `variants.default "${variants.default}" is not defined in content` }
+  }
+
+  if (variants.labels) {
+    for (const key of Object.keys(variants.labels)) {
+      if (!contentKeys.includes(key)) {
+        return { success: false, error: `variants.labels contains unknown variant key "${key}"` }
+      }
+    }
   }
 
   for (const variant of contentKeys) {

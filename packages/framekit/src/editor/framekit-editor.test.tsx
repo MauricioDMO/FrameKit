@@ -24,7 +24,7 @@ const messages: EditorMessages = {
   preview: 'Vista previa',
   actualSize: 'Tamano real',
   fitToView: 'Ajustar a vista',
-  contentLanguageLabel: 'Idioma del contenido',
+  contentVariantLabel: 'Variante del contenido',
   exportError: 'Error de exportacion',
   exportAlert: 'No se pudo exportar',
   errorRequired: 'Campo obligatorio',
@@ -92,18 +92,18 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByRole('textbox', { name: 'Optional text' }).getAttribute('aria-required')).toBe('false')
   })
 
-  it('resets only the selected locale without mutating other locale data or errors', async () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: '' }, fr: { title: 'Saved French title' } } }))
+  it('resets only the selected variant without mutating other variant data or errors', async () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: '' }, fr: { title: 'Saved French title' } } }))
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getAllByText(messages.errorRequired)).not.toHaveLength(0)
     fireEvent.click(screen.getByRole('button', { name: messages.reset }))
     expect(screen.queryByText(messages.errorRequired)).toBeNull()
-    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v1')!).dataByLocale).toEqual({ fr: { title: 'Saved French title' } }))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant).toEqual({ fr: { title: 'Saved French title' } }))
   })
 
-  it('clears validation errors when changing locale', () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: '' } } }))
+  it('clears validation errors when changing variant', () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: '' } } }))
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getAllByText(messages.errorRequired)).not.toHaveLength(0)
@@ -112,7 +112,7 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('focuses the first control with a validation error', () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: '' } } }))
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: '' } } }))
     renderEditor()
     const titleInput = screen.getByRole('textbox', { name: 'Title' })
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
@@ -120,7 +120,7 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('translates structured validation errors before displaying them', () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: 'Ready', invalidNumber: 'nope', tooSmall: '9', tooLarge: '21', accentColor: 'red' } } }))
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 'nope', tooSmall: '9', tooLarge: '21', accentColor: 'red' } } }))
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
@@ -130,7 +130,7 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('copies a valid template PNG', async () => {
-    localStorage.setItem('framekit:social/campaign:v1', JSON.stringify({ selectedLocale: 'en', dataByLocale: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', accentColor: '#123456' } } }))
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', accentColor: '#123456' } } }))
     renderEditor()
 
     fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))

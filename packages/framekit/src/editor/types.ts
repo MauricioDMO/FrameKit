@@ -10,7 +10,7 @@ export interface EditorMessages {
   preview: string
   actualSize: string
   fitToView: string
-  contentLanguageLabel: string
+  contentVariantLabel: string
   exportError: string
   exportAlert: string
   errorRequired: string

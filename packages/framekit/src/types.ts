@@ -58,7 +58,6 @@ export interface TemplateMeta {
 export interface TemplateVariants {
   default: string
   labels?: Record<string, string>
-  [key: string]: unknown
 }
 
 export type TemplateContentEntry<Fields extends TemplateFields> =
