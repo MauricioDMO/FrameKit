@@ -7,6 +7,7 @@ import { defineTemplate, field } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
 import { copyTemplate } from './export-template'
+import { EditorField } from './fields/editor-field'
 import type { EditorMessages } from './types'
 
 vi.mock('./export-template', () => ({
@@ -35,6 +36,7 @@ const messages: EditorMessages = {
   errorTextTooLong: 'Debe tener como maximo {maxLength} caracteres',
   errorInvalidColor: 'Color hexadecimal invalido',
   errorInvalidChoice: 'Seleccion invalida',
+  errorInvalidBoolean: 'Booleano invalido',
   imageSelect: 'Subir imagen',
   imageUploading: 'Subiendo',
   imageLoadError: 'No se pudo cargar el asset',
@@ -61,12 +63,15 @@ function createDefinition() {
         ],
         defaultValue: 'center',
       }),
+      showLogo: field.boolean({ label: 'Show logo', defaultValue: true }),
       accentColor: field.color({ label: 'Accent color', defaultValue: '#123456' }),
       optionalColor: field.color({ label: 'Optional color', required: false }),
     },
     content: { en: { title: 'English title' }, fr: { title: 'French title' } },
     variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
-    render: () => null,
+    render({ data }) {
+      return <span>{data.showLogo ? 'logo-on' : 'logo-off'}</span>
+    },
   })
 }
 
@@ -110,6 +115,40 @@ describe('FrameKitEditor controls', () => {
 
     fireEvent.change(alignment, { target: { value: 'right' } })
     expect((alignment as HTMLSelectElement).value).toBe('right')
+  })
+
+  it('renders boolean fields as switches and persists real booleans', async () => {
+    renderEditor()
+
+    const switchInput = screen.getByRole('switch', { name: 'Show logo' })
+    expect(switchInput.tagName).toBe('INPUT')
+    expect((switchInput as HTMLInputElement).type).toBe('checkbox')
+    expect((switchInput as HTMLInputElement).checked).toBe(true)
+    expect(switchInput.className).toContain('sr-only')
+    expect(screen.getByText('logo-on')).toBeTruthy()
+
+    switchInput.focus()
+    expect(document.activeElement).toBe(switchInput)
+
+    fireEvent.click(switchInput)
+
+    expect((switchInput as HTMLInputElement).checked).toBe(false)
+    expect(screen.getByText('logo-off')).toBeTruthy()
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en.showLogo).toBe(false))
+  })
+
+  it('keeps boolean errors associated with the accessible switch', () => {
+    const onChange = vi.fn()
+    render(<EditorField field={{ key: 'showLogo', type: 'boolean', required: false, label: 'Show logo' }} value="true" onChange={onChange} error={messages.errorInvalidBoolean} />)
+
+    const switchInput = screen.getByRole('switch', { name: 'Show logo' })
+    expect((switchInput as HTMLInputElement).checked).toBe(false)
+    expect(switchInput.getAttribute('aria-invalid')).toBe('true')
+    expect(switchInput.getAttribute('aria-describedby')).toBe('showLogo-error')
+    expect(screen.getByText(messages.errorInvalidBoolean)).toBeTruthy()
+
+    fireEvent.click(switchInput)
+    expect(onChange).toHaveBeenCalledWith(true)
   })
 
   it('uses the descriptor required flag for HTML and ARIA controls', () => {

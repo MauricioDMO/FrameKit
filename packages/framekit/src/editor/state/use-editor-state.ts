@@ -40,7 +40,7 @@ export function useEditorState(slug: string, definition: TemplateBase) {
     setErrors({})
   }
 
-  function changeField(key: string, value: string) {
+  function changeField(key: string, value: string | boolean) {
     setState((current) => updateField(current, key, value))
     setErrors((current) => {
       if (!current[key]) return current

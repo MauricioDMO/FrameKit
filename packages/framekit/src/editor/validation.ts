@@ -11,5 +11,6 @@ export function translateValidationError(error: TemplateDataValidationError, mes
     case 'text_too_long': return messages.errorTextTooLong.replace('{maxLength}', String(error.maxLength ?? ''))
     case 'invalid_color': return messages.errorInvalidColor
     case 'invalid_choice': return messages.errorInvalidChoice
+    case 'invalid_boolean': return messages.errorInvalidBoolean
   }
 }

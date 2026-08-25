@@ -23,16 +23,19 @@ export default defineTemplate({
       ],
       defaultValue: 'center',
     }),
+    showLogo: field.boolean({ label: 'Show React logo', defaultValue: true }),
     hero: field.image({ label: 'Hero image', scope: 'common' }),
   },
   content: {
     es: {
       title: 'Tu próxima historia\ncomienza aquí',
       alignment: 'center',
+      showLogo: true,
     },
     en: {
       title: 'Your next story\nstarts here',
       alignment: 'center',
+      showLogo: true,
     },
   },
   variants: { default: 'en', labels: { es: 'Español', en: 'English' } },
@@ -44,7 +47,7 @@ export default defineTemplate({
       >
         <div className="flex items-center gap-3 text-[#b9f8d2]">
           <IconSparkles className="size-6" stroke={1.8} aria-hidden="true" />
-          <SiReact className="size-7" aria-hidden="true" />
+          {data.showLogo && <SiReact className="size-7" aria-hidden="true" />}
           <span className="text-lg tracking-[4px]">{profile.companyName.toUpperCase()} / {variant.toUpperCase()}</span>
         </div>
         <Markdown

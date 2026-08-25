@@ -6,10 +6,10 @@ interface EditorControlsProps {
   definition: TemplateBase
   messages: EditorMessages
   selectedVariant: string
-  data: Record<string, string>
+  data: Record<string, string | boolean>
   errors: Record<string, string>
   onVariantChange: (variant: string) => void
-  onFieldChange: (key: string, value: string) => void
+  onFieldChange: (key: string, value: string | boolean) => void
   onImageUpload?: (key: string, file: File, scope: 'common' | 'variant') => Promise<void>
 }
 
@@ -21,8 +21,8 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
         <span className="text-xs text-[#5f6963] dark:text-[#b8c8be]">{definition.width} × {definition.height}</span>
       </div>
       <div className="mt-4 space-y-4">
-        <label className="block">
-          <span className="mb-1.5 block text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.contentVariantLabel}</span>
+        <label className="block select-none">
+          <span className="mb-1.5 block select-none text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.contentVariantLabel}</span>
           <select value={selectedVariant} onChange={(event) => onVariantChange(event.target.value)} className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] transition outline-none focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]">
             {Object.keys(definition.content).map((value) => <option key={value} value={value}>{definition.variants.labels?.[value] ?? value}</option>)}
           </select>
@@ -33,7 +33,7 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
               field={{
                 key,
                 type: field.kind,
-                required: field.kind === 'choice' ? false : field.required !== false,
+                required: field.kind === 'choice' || field.kind === 'boolean' ? false : field.required !== false,
                 min: field.kind === 'number' ? field.min : undefined,
                 max: field.kind === 'number' ? field.max : undefined,
                 minLength: field.kind === 'text' ? field.minLength : undefined,
@@ -43,7 +43,7 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
                 label: field.label,
                 placeholder: 'placeholder' in field ? field.placeholder : undefined,
               }}
-              value={data[key] ?? ''}
+              value={data[key] ?? (field.kind === 'boolean' ? false : '')}
               onChange={(value) => onFieldChange(key, value)}
               error={errors[key]}
               imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError, uploadError: messages.imageUploadError }}

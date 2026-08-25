@@ -83,6 +83,11 @@ describe('validateTemplateDefinition', () => {
     ['unknown choice default', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'right' }, 'fields.title.defaultValue must match an option value'],
     ['required on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', required: false }, 'fields.title cannot define required'],
     ['control on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', control: 'select' }, 'fields.title cannot define control'],
+    ['invalid boolean default', { kind: 'boolean', label: 'Show logo', defaultValue: 'true' }, 'fields.title.defaultValue must be a boolean'],
+    ['null boolean default', { kind: 'boolean', label: 'Show logo', defaultValue: null }, 'fields.title.defaultValue must be a boolean'],
+    ['placeholder on boolean', { kind: 'boolean', label: 'Show logo', placeholder: 'yes' }, 'fields.title cannot define placeholder'],
+    ['required on boolean', { kind: 'boolean', label: 'Show logo', required: false }, 'fields.title cannot define required'],
+    ['control on boolean', { kind: 'boolean', label: 'Show logo', control: 'checkbox' }, 'fields.title cannot define control'],
     ['non-finite minimum', { kind: 'number', label: 'Count', min: Infinity }, 'fields.title.min must be a finite number'],
     ['non-finite maximum', { kind: 'number', label: 'Count', max: NaN }, 'fields.title.max must be a finite number'],
     ['reversed limits', { kind: 'number', label: 'Count', min: 5, max: 4 }, 'fields.title.min must be less than or equal to max'],
@@ -119,6 +124,14 @@ describe('validateTemplateDefinition', () => {
     }).success).toBe(true)
   })
 
+  it('accepts boolean descriptors and content values', () => {
+    expect(validateTemplateDefinition({
+      ...validDefinition(),
+      fields: { showLogo: { kind: 'boolean', label: 'Show logo', defaultValue: false } },
+      content: { en: { showLogo: true } },
+    }).success).toBe(true)
+  })
+
   it.each(['width', 'height'] as const)('rejects decimal %s', (dimension) => {
     const definition = validDefinition()
     definition[dimension] = 100.5
@@ -143,6 +156,8 @@ describe('validateTemplateDefinition', () => {
     ['empty content', { content: {} }, 'content must have at least one entry'],
     ['unknown content key', { content: { en: { missing: 'value' } } }, 'content.en contains unknown field key "missing"'],
     ['content metadata', { content: { en: { language: 'English' } } }, 'content.en contains unknown field key "language"'],
+    ['string boolean content', { fields: { showLogo: { kind: 'boolean', label: 'Show logo' } }, content: { en: { showLogo: 'true' } } }, 'content.en.showLogo must be a boolean'],
+    ['numeric boolean content', { fields: { showLogo: { kind: 'boolean', label: 'Show logo' } }, content: { en: { showLogo: 1 } } }, 'content.en.showLogo must be a boolean'],
     ['unknown default variant', { variants: { default: 'fr' } }, 'variants.default "fr" is not defined in content'],
     ['unsupported variant property', { variants: { default: 'en', mode: 'language' } }, 'variants contains unknown property "mode"'],
     ['unknown variant label', { variants: { default: 'en', labels: { fr: 'French' } } }, 'variants.labels contains unknown variant key "fr"'],

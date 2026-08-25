@@ -21,6 +21,7 @@ export interface EditorMessages {
   errorTextTooLong: string
   errorInvalidColor: string
   errorInvalidChoice: string
+  errorInvalidBoolean: string
   imageSelect: string
   imageUploading: string
   imageLoadError: string
@@ -50,8 +51,8 @@ export interface ImageFieldLabels {
 
 export interface EditorFieldProps {
   field: TemplateField
-  value: string
-  onChange: (value: string) => void
+  value: string | boolean
+  onChange: (value: string | boolean) => void
   error?: string
   imageLabels?: ImageFieldLabels
   onImageUpload?: (file: File) => Promise<void>

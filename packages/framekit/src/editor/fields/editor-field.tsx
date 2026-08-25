@@ -4,10 +4,11 @@ import type { EditorFieldProps } from '../types'
 
 export function EditorField({ field, value, onChange, error, imageLabels, onImageUpload }: EditorFieldProps) {
   const Field = fieldComponents[field.type]
-  const Container = field.type === 'color' || field.type === 'image' ? 'div' : 'label'
+  const isLabelContainer = field.type !== 'color' && field.type !== 'image'
+  const Container = isLabelContainer ? 'label' : 'div'
 
   return (
-    <Container className="block">
+    <Container className={isLabelContainer ? 'block select-none' : 'block'}>
       <FieldLabel label={field.label} />
       <Field field={field} value={value} onChange={onChange} error={error} imageLabels={imageLabels} onImageUpload={onImageUpload} />
       {error && <p id={`${field.key}-error`} className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}

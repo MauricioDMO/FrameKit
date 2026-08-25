@@ -16,10 +16,19 @@ export default defineTemplate({
     title: field.text({ label: 'Título', placeholder: 'Diseñamos tu sitio web' }),
     description: field.text({ label: 'Descripción' }),
     website: field.text({ label: 'Sitio web' }),
+    ctaStyle: field.choice({
+      label: 'Estilo del CTA',
+      options: [
+        { value: 'solid', label: 'Sólido' },
+        { value: 'outline', label: 'Contorno' },
+      ],
+      defaultValue: 'solid',
+    }),
     backgroundImage: field.image({
       label: 'Imagen de fondo',
       scope: 'common',
     }),
+    showBackgroundImage: field.boolean({ label: 'Mostrar imagen de fondo', defaultValue: true }),
     accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
   content: {
@@ -49,7 +58,7 @@ export default defineTemplate({
         className="relative flex overflow-hidden bg-[#071a15] text-white"
         style={{ width, height }}
       >
-        {data.backgroundImage && (
+        {data.showBackgroundImage && data.backgroundImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.backgroundImage}
@@ -100,8 +109,8 @@ export default defineTemplate({
               className="text-[17px] font-bold tracking-[0.08em]"
             />
             <p
-              className="rounded-full px-7 py-3 text-[14px] font-black tracking-[0.14em] text-[#092118] uppercase"
-              style={{ backgroundColor: accentColor }}
+              className={`rounded-full px-7 py-3 text-[14px] font-black tracking-[0.14em] uppercase ${data.ctaStyle === 'outline' ? 'border border-white/35 text-white' : 'text-[#092118]'}`}
+              style={data.ctaStyle === 'solid' ? { backgroundColor: accentColor } : undefined}
             >
               {labels.cta}
             </p>

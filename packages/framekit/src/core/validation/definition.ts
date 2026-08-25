@@ -1,6 +1,6 @@
 import type { TemplateBase, TemplateDefinition } from '../../types'
 
-const FIELD_KINDS = new Set(['text', 'number', 'color', 'image', 'choice'])
+const FIELD_KINDS = new Set(['text', 'number', 'color', 'image', 'choice', 'boolean'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 const VARIANT_KEYS = new Set(['default', 'labels'])
@@ -146,12 +146,26 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       if (!optionValues.has(field.defaultValue)) {
         return { success: false, error: `fields.${key}.defaultValue must match an option value` }
       }
-    }
-    if (field.required !== undefined && typeof field.required !== 'boolean') {
-      return { success: false, error: `fields.${key}.required must be a boolean` }
-    }
-    if (field.defaultValue !== undefined && typeof field.defaultValue !== 'string') {
-      return { success: false, error: `fields.${key}.defaultValue must be a string` }
+    } else if (field.kind === 'boolean') {
+      if ('placeholder' in field) {
+        return { success: false, error: `fields.${key} cannot define placeholder` }
+      }
+      if ('required' in field) {
+        return { success: false, error: `fields.${key} cannot define required` }
+      }
+      if ('control' in field) {
+        return { success: false, error: `fields.${key} cannot define control` }
+      }
+      if (field.defaultValue !== undefined && typeof field.defaultValue !== 'boolean') {
+        return { success: false, error: `fields.${key}.defaultValue must be a boolean` }
+      }
+    } else {
+      if (field.required !== undefined && typeof field.required !== 'boolean') {
+        return { success: false, error: `fields.${key}.required must be a boolean` }
+      }
+      if (field.defaultValue !== undefined && typeof field.defaultValue !== 'string') {
+        return { success: false, error: `fields.${key}.defaultValue must be a string` }
+      }
     }
 
     if (field.kind === 'text') {
@@ -261,8 +275,9 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       if (!fieldKeys.has(key)) {
         return { success: false, error: `content.${variant} contains unknown field key "${key}"` }
       }
-      if (typeof entry[key] !== 'string') {
-        return { success: false, error: `content.${variant}.${key} must be a string` }
+      const expectedType = (def.fields[key] as Record<string, unknown>).kind === 'boolean' ? 'boolean' : 'string'
+      if (typeof entry[key] !== expectedType) {
+        return { success: false, error: `content.${variant}.${key} must be a ${expectedType}` }
       }
     }
   }

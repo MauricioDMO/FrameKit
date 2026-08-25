@@ -58,6 +58,28 @@ describe('resolveTemplateData', () => {
     })
   })
 
+  it('resolves boolean defaults, content, and false edits without coercion', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Boolean resolution' },
+      width: 100,
+      height: 100,
+      fields: {
+        omittedDefault: field.boolean({ label: 'Omitted default' }),
+        explicitTrue: field.boolean({ label: 'Explicit true', defaultValue: true }),
+        fromContent: field.boolean({ label: 'From content' }),
+      },
+      content: { en: { fromContent: true } },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(resolveTemplateData(definition, 'en', { fromContent: false })).toEqual({
+      omittedDefault: false,
+      explicitTrue: true,
+      fromContent: false,
+    })
+  })
+
   it('loads a template assembled from an extracted definition base', () => {
     expect(extractedTemplate).toMatchObject({ width: 1200, height: 800 })
     expect(resolveTemplateData(extractedTemplate, 'aurora', {})).toEqual({

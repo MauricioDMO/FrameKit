@@ -9,6 +9,7 @@ export type TemplateDataValidationError =
   | { code: 'text_too_long'; maxLength: number }
   | { code: 'invalid_color' }
   | { code: 'invalid_choice' }
+  | { code: 'invalid_boolean' }
 
 export function isValidColor(value: string): boolean {
   return /^#[\da-f]{6}$/i.test(value)
@@ -16,17 +17,33 @@ export function isValidColor(value: string): boolean {
 
 export function validateTemplateData(
   definition: TemplateBase,
-  data: Record<string, string>,
+  data: Record<string, string | boolean>,
 ): Record<string, TemplateDataValidationError> {
   const errors: Record<string, TemplateDataValidationError> = {}
 
   for (const [key, field] of Object.entries(definition.fields)) {
     const value = data[key] ?? ''
 
+    if (field.kind === 'boolean') {
+      if (typeof value !== 'boolean') {
+        errors[key] = { code: 'invalid_boolean' }
+      }
+      continue
+    }
+
     if (field.kind === 'choice') {
       if (typeof value !== 'string' || !field.options.some((option) => option.value === value)) {
         errors[key] = { code: 'invalid_choice' }
       }
+      continue
+    }
+
+    if (typeof value !== 'string') {
+      errors[key] = field.kind === 'number'
+        ? { code: 'invalid_number' }
+        : field.kind === 'color'
+          ? { code: 'invalid_color' }
+          : { code: 'required' }
       continue
     }
 

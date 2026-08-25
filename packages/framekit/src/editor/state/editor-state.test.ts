@@ -10,7 +10,7 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }) },
+  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }), enabled: field.boolean({ label: 'Enabled' }) },
   content: { en: {}, fr: {} },
   variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
   render: () => null,
@@ -21,8 +21,9 @@ describe('editor state', () => {
     const initial = getInitialState(definition)
     const english = updateField(initial, 'title', 'English\ntitle')
     const french = updateField(selectVariant(english, 'fr'), 'title', 'Titre français')
+    const disabled = updateField(french, 'enabled', false)
 
-    expect(french.dataByVariant).toEqual({ en: { title: 'English\ntitle' }, fr: { title: 'Titre français' } })
+    expect(disabled.dataByVariant).toEqual({ en: { title: 'English\ntitle' }, fr: { title: 'Titre français', enabled: false } })
   })
 
   it('resets only the active variant without mutating the previous state', () => {
@@ -34,9 +35,15 @@ describe('editor state', () => {
   })
 
   it('discards malformed persisted variants, fields, and values', () => {
-    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', unknown: 'discarded', color: 7 }, unknown: { title: 'discarded' } } }) }
+    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true, unknown: 'discarded', color: 7 }, unknown: { title: 'discarded' } } }) }
 
-    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved' } } })
+    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true } } })
+  })
+
+  it('discards persisted boolean strings instead of coercing them', () => {
+    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { enabled: 'true' } } }) }
+
+    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: {} } })
   })
 
   it('rejects a persisted selected variant that is no longer declared', () => {

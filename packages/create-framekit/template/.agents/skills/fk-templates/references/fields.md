@@ -9,9 +9,13 @@ fields also accept:
 
 - `placeholder` — hint text shown by the editor; it is not a value and does not satisfy a required field.
 - `required` — whether an empty value is invalid. It defaults to `true`; use `required: false` for optional content.
-- `defaultValue` — the initial string value when neither the selected variant nor a Studio edit provides one.
+- `defaultValue` — the initial string value when neither the selected variant nor a Studio edit provides one. Boolean fields use a boolean default and fall back to `false`.
 
-Each `content` entry is a field-value-only object: its keys are declared field names and its values are strings. Do not add an entry-level `language` property; it is rejected as an unknown content key. The field name `language` is reserved and cannot be declared in `fields`. Values in `data` are always strings, including numbers.
+Each `content` entry is a field-value-only object: its keys are declared field
+names and values match their field type. String fields, including number fields,
+remain strings; boolean fields use real `true`/`false` values. Do not add an
+entry-level `language` property; it is rejected as an unknown content key. The
+field name `language` is reserved and cannot be declared in `fields`.
 
 ## Field Kinds
 
@@ -22,6 +26,7 @@ Each `content` entry is a field-value-only object: its keys are declared field n
 | `field.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
 | `field.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
 | `field.choice` | Native select | A closed set of ordered string options | `defaultValue` must match an option; undeclared values return `invalid_choice`. |
+| `field.boolean` | Native checkbox | A binary decision | Omitted defaults resolve to `false`; non-boolean values return `invalid_boolean`. |
 
 ### Text
 
@@ -84,6 +89,17 @@ alignment: field.choice({
   ],
   defaultValue: 'center',
 })
+```
+
+### Boolean
+
+`field.boolean` uses a native checkbox and preserves real boolean values through
+content, Studio edits, persistence, and render props. It has no `required`,
+`control`, or coercion behavior. Use `field.choice` for tri-state values instead
+of strings such as `'true'` and `'false'`.
+
+```tsx
+showLogo: field.boolean({ label: 'Show logo', defaultValue: true })
 ```
 
 ## Resolution And Validation

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 
 import { resolveTemplateData } from '../core/resolve-template-data'
 import { validateTemplateData } from '../core/validation'
-import type { ImageFieldScope, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '../types'
+import type { ImageFieldScope, InferTemplateData, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '../types'
 import { EditorControls } from './components/editor-controls'
 import { TemplatePreview } from './components/template-preview'
 import { copyTemplate, exportTemplate } from './export-template'
@@ -43,7 +43,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ slug, definiti
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const { selectedVariant, userEdits, errors, setErrors, changeVariant, clearVariant, changeField } = useEditorState(slug, definition)
-  const resolvedData = resolveTemplateData(definition, selectedVariant, userEdits, assets)
+  const resolvedData = resolveTemplateData(definition, selectedVariant, userEdits as Partial<InferTemplateData<Definition>> & Record<string, string | boolean>, assets)
 
   async function uploadImage(key: string, file: File, scope: ImageFieldScope): Promise<void> {
     try {
@@ -118,7 +118,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ slug, definiti
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
             {definition.render({
-              data: resolvedData as TemplateRenderProps<Definition>['data'],
+              data: resolvedData,
               assets,
               variant: selectedVariant as TemplateRenderProps<Definition>['variant'],
               width: definition.width,

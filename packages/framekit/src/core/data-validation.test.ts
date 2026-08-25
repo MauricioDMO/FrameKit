@@ -51,6 +51,22 @@ function createChoiceDefinition() {
   })
 }
 
+function createBooleanDefinition() {
+  return defineTemplate({
+    meta: { title: 'Boolean validation' },
+    width: 100,
+    height: 100,
+    fields: {
+      omittedDefault: field.boolean({ label: 'Omitted default' }),
+      explicitTrue: field.boolean({ label: 'Explicit true', defaultValue: true }),
+      explicitFalse: field.boolean({ label: 'Explicit false', defaultValue: false }),
+    },
+    content: { en: {} },
+    variants: { default: 'en' },
+    render: () => null,
+  })
+}
+
 describe('validateTemplateData', () => {
   it('rejects required empty values but accepts optional empty values', () => {
     const definition = createDefinition()
@@ -163,5 +179,21 @@ describe('validateTemplateData', () => {
     expect(validateTemplateData(definition, { alignment: ' center ' })).toEqual({ alignment: { code: 'invalid_choice' } })
     expect(validateTemplateData(definition, { alignment: 1 as unknown as string })).toEqual({ alignment: { code: 'invalid_choice' } })
     expect(validateTemplateData(definition, {})).toEqual({ alignment: { code: 'invalid_choice' } })
+  })
+
+  it('accepts real booleans and rejects string or numeric substitutes', () => {
+    const definition = createBooleanDefinition()
+
+    expect(validateTemplateData(definition, { omittedDefault: false, explicitTrue: true, explicitFalse: false })).toEqual({})
+    expect(validateTemplateData(definition, { omittedDefault: 'false', explicitTrue: 'true', explicitFalse: 0 as unknown as boolean })).toEqual({
+      omittedDefault: { code: 'invalid_boolean' },
+      explicitTrue: { code: 'invalid_boolean' },
+      explicitFalse: { code: 'invalid_boolean' },
+    })
+    expect(validateTemplateData(definition, {})).toEqual({
+      omittedDefault: { code: 'invalid_boolean' },
+      explicitTrue: { code: 'invalid_boolean' },
+      explicitFalse: { code: 'invalid_boolean' },
+    })
   })
 })

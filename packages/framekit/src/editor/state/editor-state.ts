@@ -2,7 +2,7 @@ import type { TemplateBase } from '../../types'
 
 export interface EditorState {
   selectedVariant: string
-  dataByVariant: Record<string, Record<string, string>>
+  dataByVariant: Record<string, Record<string, string | boolean>>
 }
 
 export const storageKey = (slug: string) => `framekit:${slug}:v2`
@@ -29,7 +29,10 @@ export function loadPersistedState(slug: string, definition: TemplateBase, stora
     if (parsed.dataByVariant && typeof parsed.dataByVariant === 'object' && !Array.isArray(parsed.dataByVariant)) {
       for (const [variant, fields] of Object.entries(parsed.dataByVariant)) {
         if (!validVariants.has(variant) || !fields || typeof fields !== 'object' || Array.isArray(fields)) continue
-        dataByVariant[variant] = Object.fromEntries(Object.entries(fields).filter(([key, value]) => validFieldKeys.has(key) && typeof value === 'string'))
+        dataByVariant[variant] = Object.fromEntries(Object.entries(fields).filter(([key, value]) => {
+          const field = definition.fields[key]
+          return validFieldKeys.has(key) && field !== undefined && typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')
+        }))
       }
     }
 
@@ -50,7 +53,7 @@ export function resetVariant(state: EditorState): EditorState {
   return { ...state, dataByVariant }
 }
 
-export function updateField(state: EditorState, key: string, value: string): EditorState {
+export function updateField(state: EditorState, key: string, value: string | boolean): EditorState {
   return {
     ...state,
     dataByVariant: {

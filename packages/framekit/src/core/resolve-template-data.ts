@@ -1,14 +1,14 @@
-import type { TemplateAssetManifest, TemplateBase } from '../types'
+import type { InferTemplateData, TemplateAssetManifest, TemplateBase } from '../types'
 import { getDefaultValues } from './get-default-values'
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
-export function resolveTemplateData(
-  definition: TemplateBase,
+export function resolveTemplateData<Definition extends TemplateBase>(
+  definition: Definition,
   variant: string,
-  edits: Record<string, string>,
+  edits: Partial<InferTemplateData<Definition>> & Record<string, string | boolean>,
   assets: TemplateAssetManifest = emptyAssets,
-): Record<string, string> {
+): InferTemplateData<Definition> {
   if (!Object.prototype.hasOwnProperty.call(definition.content, variant)) {
     throw new Error(`content variant "${variant}" is not defined`)
   }
@@ -17,7 +17,7 @@ export function resolveTemplateData(
     throw new Error('edits must be a plain object')
   }
 
-  const result = getDefaultValues(definition.fields)
+  const result = getDefaultValues(definition.fields) as Record<string, string | boolean>
   const fieldKeys = new Set(Object.keys(definition.fields))
   const variantContent = definition.content[variant]
 
@@ -25,20 +25,22 @@ export function resolveTemplateData(
     if (!fieldKeys.has(key)) {
       throw new Error(`content.${variant} contains unknown field key "${key}"`)
     }
-    if (typeof value !== 'string') {
-      throw new Error(`content.${variant}.${key} must be a string`)
+    const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : 'string'
+    if (typeof value !== expectedType) {
+      throw new Error(`content.${variant}.${key} must be a ${expectedType}`)
     }
-    result[key] = value
+    result[key] = value as string | boolean
   }
 
   for (const [key, value] of Object.entries(edits)) {
     if (!fieldKeys.has(key)) {
       throw new Error(`edits contains unknown field key "${key}"`)
     }
-    if (typeof value !== 'string') {
-      throw new Error(`edits.${key} must be a string`)
+    const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : 'string'
+    if (typeof value !== expectedType) {
+      throw new Error(`edits.${key} must be a ${expectedType}`)
     }
-    result[key] = value
+    result[key] = value as string | boolean
   }
 
   for (const [key, field] of Object.entries(definition.fields)) {
@@ -51,5 +53,5 @@ export function resolveTemplateData(
     if (source) result[key] = source
   }
 
-  return result
+  return result as InferTemplateData<Definition>
 }

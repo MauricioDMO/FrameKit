@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type TemplateFieldKind = 'text' | 'number' | 'color' | 'image' | 'choice'
+export type TemplateFieldKind = 'text' | 'number' | 'color' | 'image' | 'choice' | 'boolean'
 
 export type ImageFieldScope = 'common' | 'variant'
 
@@ -39,12 +39,19 @@ export interface ChoiceFieldDescriptor<OptionValue extends string = string> {
   defaultValue: OptionValue
 }
 
+export interface BooleanFieldDescriptor {
+  kind: 'boolean'
+  label: string
+  defaultValue?: boolean
+}
+
 export type FieldDescriptor =
   | TextFieldDescriptor
   | ColorFieldDescriptor
   | NumberFieldDescriptor
   | ImageFieldDescriptor
   | ChoiceFieldDescriptor
+  | BooleanFieldDescriptor
 
 export interface TemplateAssetManifest {
   common: Record<string, string>
@@ -54,12 +61,14 @@ export interface TemplateAssetManifest {
 export type TemplateFields = Record<string, FieldDescriptor>
 
 type InferFieldValue<Field> =
-  Field extends {
-    kind: 'choice'
-    options: readonly { value: infer OptionValue extends string }[]
-  }
-    ? OptionValue
-    : string
+  Field extends { kind: 'boolean' }
+    ? boolean
+    : Field extends {
+        kind: 'choice'
+        options: readonly { value: infer OptionValue extends string }[]
+      }
+      ? OptionValue
+      : string
 
 type InferFieldsData<Fields> = {
   -readonly [K in keyof Fields]: InferFieldValue<Fields[K]>
@@ -77,8 +86,9 @@ export interface TemplateVariants {
   labels?: Record<string, string>
 }
 
-export type TemplateContentEntry<Fields extends TemplateFields> =
-  Partial<Record<Exclude<keyof Fields, 'language'> & string, string>>
+export type TemplateContentEntry<Fields extends TemplateFields> = Partial<{
+  [Key in Exclude<keyof Fields, 'language'> & string]: InferFieldValue<Fields[Key]>
+}>
 
 export type TemplateContent<Fields extends TemplateFields> = Record<
   string,

@@ -9,6 +9,7 @@ describe('field factories', () => {
       number: expect.any(Function),
       image: expect.any(Function),
       choice: expect.any(Function),
+      boolean: expect.any(Function),
     })
     expect(api).not.toHaveProperty('fields')
     expect(api.field).not.toHaveProperty('textarea')
@@ -35,5 +36,22 @@ describe('field factories', () => {
     expect(Object.isFrozen(descriptor)).toBe(true)
     expect(Object.isFrozen(descriptor.options)).toBe(true)
     expect(Object.isFrozen(descriptor.options[0])).toBe(true)
+  })
+
+  it('creates frozen boolean descriptors with a false default', () => {
+    const omitted = api.field.boolean({ label: 'Show logo' })
+    const explicitTrue = api.field.boolean({ label: 'Show logo', defaultValue: true })
+    const explicitFalse = api.field.boolean({ label: 'Show logo', defaultValue: false })
+
+    expect(omitted).toEqual({ kind: 'boolean', label: 'Show logo', defaultValue: false })
+    expect(explicitTrue.defaultValue).toBe(true)
+    expect(explicitFalse.defaultValue).toBe(false)
+    expect(Object.isFrozen(omitted)).toBe(true)
+  })
+
+  it('does not coerce an invalid runtime default', () => {
+    const descriptor = api.field.boolean({ label: 'Show logo', defaultValue: null as unknown as boolean })
+
+    expect(descriptor.defaultValue).toBeNull()
   })
 })
