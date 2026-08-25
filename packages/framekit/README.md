@@ -35,7 +35,7 @@ Use `defineTemplate` when the definition and renderer belong in one file. The
 `render` callback infers `data` and `variant` from the fields and content keys:
 
 ```tsx
-import { defineTemplate, fields } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
   meta: {
@@ -47,7 +47,7 @@ export default defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Title', required: true }),
+    title: field.text({ label: 'Title', required: true }),
   },
   content: {
     en: { title: 'Offer' },
@@ -75,7 +75,7 @@ contract with `defineTemplateBase`, then type the component with
 
 ```tsx
 // definition.ts
-import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
+import { defineTemplateBase, field } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
   meta: {
@@ -86,7 +86,7 @@ export const templateBase = defineTemplateBase({
   },
   width: 1200,
   height: 800,
-  fields: { title: fields.text({ label: 'Title' }) },
+  fields: { title: field.text({ label: 'Title' }) },
   content: { en: { title: 'Offer' } },
   variants: { default: 'en', labels: { en: 'English' } },
 })
@@ -114,7 +114,7 @@ export default defineTemplate({ ...templateBase, render: Artwork })
 Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
 
-Use `fields.image()` for images. Variant files use the field key as their
+Use `field.image()` for images. Variant files use the field key as their
 filename under `assets/<variant>`; shared files live under `assets/common`.
 Images under `public/assets` can be referenced with a root-relative
 `defaultValue` such as `/assets/logos/brand.svg`. Studio can replace template
@@ -123,7 +123,7 @@ images through `framekit dev`; public files remain application assets.
 ## Public entry points
 
 ```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 import { FrameKitEditor, FrameKitNavigation } from '@mauriciodmo/framekit/editor'
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'

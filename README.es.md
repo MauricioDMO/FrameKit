@@ -37,15 +37,15 @@ El creador copia un proyecto Next.js funcional, pregunta si debe instalar las de
 Una plantilla define sus dimensiones, campos editables, variantes de contenido y renderizador React. Este ejemplo renderiza una tarjeta social con contenido localizado y texto Markdown:
 
 ```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
   meta: { title: 'Tarjeta social' },
   width: 1200,
   height: 630,
   fields: {
-    title: fields.textarea({ label: 'Título', required: true }),
-    accent: fields.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
+    accent: field.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
   },
   content: {
     en: { title: 'Build once. **Publish often.**' },
@@ -67,7 +67,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 ## Funciones actuales
 
 - Plantillas tipadas con `defineTemplate` o definiciones reutilizables mediante `defineTemplateBase`.
-- Campos editables `text`, `textarea`, `number`, `color` e `image`, con valores predeterminados y validación. Los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
+- Campos editables `text`, `number`, `color` e `image`, con valores predeterminados y validación. Los campos `text` usan un textarea multilínea y admiten límites de longitud; los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
 - Assets locales por plantilla en `src/templates/**/assets` y assets globales compartidos en `public/assets`.
 - Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
 - Renderizado Markdown para formato de texto en línea y listas básicas.

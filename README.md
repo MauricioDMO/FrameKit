@@ -37,15 +37,15 @@ The creator copies a working Next.js project, asks whether to install dependenci
 A template defines its dimensions, editable fields, content variants, and React renderer. The following example renders a social card with localized content and Markdown text:
 
 ```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
   meta: { title: 'Social card' },
   width: 1200,
   height: 630,
   fields: {
-    title: fields.textarea({ label: 'Title', required: true }),
-    accent: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Title', required: true, minLength: 1, maxLength: 80 }),
+    accent: field.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
     en: { title: 'Build once. **Publish often.**' },
@@ -67,7 +67,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 ## Current capabilities
 
 - Typed templates with `defineTemplate` or reusable `defineTemplateBase` definitions.
-- Editable `text`, `textarea`, `number`, `color`, and `image` fields with defaults and validation. Image fields can use template assets or root-relative images from `public`.
+- Editable `text`, `number`, `color`, and `image` fields with defaults and validation. Text fields use a multiline textarea and support length limits; image fields can use template assets or root-relative images from `public`.
 - Template-local assets under `src/templates/**/assets`, common and variant asset resolution, and shared `public/assets` files.
 - Arbitrary content variants such as `en`, `es`, or product-specific variants.
 - Markdown rendering for inline text formatting and basic lists.
