@@ -8,6 +8,8 @@ Every template uses one public shape. `meta` is an exact metadata object, and
 `variants.default` selects one of the field-only `content` entries.
 
 ```tsx
+import { defineTemplate, field } from '@mauriciodmo/framekit'
+
 export default defineTemplate({
   meta: {
     title: 'Square promotion',
@@ -17,7 +19,7 @@ export default defineTemplate({
   },
   width: 1200,
   height: 630,
-  fields: { title: fields.text({ label: 'Title' }) },
+  fields: { title: field.text({ label: 'Title' }) },
   variants: {
     default: 'en',
     labels: { en: 'English', es: 'Español' },
@@ -50,7 +52,7 @@ and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Field Kinds
 
-Templates define fields using the `fields` object exported from `@mauriciodmo/framekit`. Each field has a `kind` that determines its behavior and the options it accepts.
+Templates define fields using the singular `field` object exported from `@mauriciodmo/framekit`. The definition property remains `fields`. Each field has a `kind` that determines its behavior and the options it accepts.
 
 ### Base Options
 
@@ -63,18 +65,16 @@ All field kinds share a common set of options:
 
 ### `text`
 
-A single-line text input. Accepts only the base options.
+A multiline text input backed by a native `<textarea>`. Newlines are preserved in
+the field value. It accepts the base options plus:
+
+- `minLength` (non-negative integer, optional): The minimum number of characters.
+- `maxLength` (non-negative integer, optional): The maximum number of characters.
+
+Length limits are finite integers and `minLength` cannot exceed `maxLength`.
 
 ```typescript
-fields.text({ label: 'Title', placeholder: 'Enter a title' })
-```
-
-### `textarea`
-
-A multi-line text input. Accepts the same options as `text`.
-
-```typescript
-fields.textarea({ label: 'Description', placeholder: 'Write something...' })
+field.text({ label: 'Description', placeholder: 'Write something...', minLength: 1, maxLength: 240 })
 ```
 
 ### `number`
@@ -87,7 +87,7 @@ A numeric input. Accepts the base options plus:
 **Important:** Despite being a `number` field, the value stored in template data is always a **string**. The `min` and `max` constraints validate the numeric interpretation of that string.
 
 ```typescript
-fields.number({ label: 'Count', min: 0, max: 100 })
+field.number({ label: 'Count', min: 0, max: 100 })
 ```
 
 ### `color`
@@ -95,7 +95,7 @@ fields.number({ label: 'Count', min: 0, max: 100 })
 A color picker field. Accepts only the base options. Non-empty values must be a six-digit hexadecimal color in the form `#RRGGBB`.
 
 ```typescript
-fields.color({ label: 'Background Color' })
+field.color({ label: 'Background Color' })
 ```
 
 ### `image`
@@ -107,8 +107,8 @@ the field `defaultValue` or as a variant value, for example
 `/assets/logos/brand.svg`.
 
 ```typescript
-fields.image({ label: 'Hero image' })
-fields.image({ label: 'Background', scope: 'common' })
+field.image({ label: 'Hero image' })
+field.image({ label: 'Background', scope: 'common' })
 ```
 
 Variant files use the field key as their basename:
@@ -198,7 +198,7 @@ FrameKit provides two validation functions that check different aspects of a tem
 - Every content entry may contain only declared field keys, and every value must be a string
 - Unsupported top-level properties such as `version` are rejected
 - `render` must be a function
-- Field options must have valid types (e.g., `min`/`max` only on `number` fields, finite numbers only)
+- Field options must have valid types (e.g., `min`/`max` only on `number` fields, `minLength`/`maxLength` only on `text` fields, finite numbers only)
 
 ```typescript
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
@@ -214,6 +214,7 @@ if (!result.success) {
 `validateTemplateData` checks field values against their constraints:
 
 - Required fields: empty string (after trim) fails
+- `text` fields: non-empty values must satisfy `minLength` and `maxLength`; length is measured before trimming, so spaces and newlines count
 - `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
 - `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
 
@@ -235,6 +236,8 @@ Possible error codes:
 - `invalid_number`: Value is not a finite number
 - `number_too_small`: Value is less than the `min` constraint
 - `number_too_large`: Value is greater than the `max` constraint
+- `text_too_short`: Value has fewer characters than `minLength`
+- `text_too_long`: Value has more characters than `maxLength`
 - `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
 
 ### The `check` CLI Command
@@ -278,6 +281,8 @@ metadata contract is defined by [Future Plan #3](../../Plans/Future/issue-03-tem
 and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3). The exact
 variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-content-variants.md)
 and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+The semantic field contract is defined by [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md)
+and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
 
 ---
 

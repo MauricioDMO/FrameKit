@@ -34,7 +34,9 @@ El idioma de la interfaz se resuelve en este orden: la cookie `locale` → la ca
 
 ## Edición de campos
 
-Cada campo de una plantilla se renderiza según su tipo: campo de texto, área de texto, campo numérico, selector de color o vista previa/upload de imagen. El tipo de entrada específico se determina a partir de la definición del campo.
+Cada campo de una plantilla se renderiza según su tipo: campo de texto
+multilínea, campo numérico, selector de color o vista previa/upload de imagen.
+El tipo de entrada específico se determina a partir de la definición del campo.
 
 Los campos obligatorios se validan al intentar exportar. Los campos opcionales pasan la validación cuando se dejan vacíos.
 

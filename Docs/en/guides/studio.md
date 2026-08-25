@@ -34,7 +34,7 @@ Interface language is resolved in this order: the `locale` cookie → the `Accep
 
 ## Field editing
 
-Each field in a template renders according to its kind: text input, textarea, number input, color picker, or image preview/upload control. The specific input type is determined from the field definition.
+Each field in a template renders according to its kind: multiline text area, number input, color picker, or image preview/upload control. The specific input type is determined from the field definition.
 
 Required fields are validated when you attempt to export. Optional fields pass validation when left empty.
 

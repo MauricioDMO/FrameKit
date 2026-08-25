@@ -35,7 +35,7 @@ FrameKit supports two forms for defining templates. Both produce the same end re
 For straightforward templates, define everything in a single `template.tsx` file:
 
 ```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
   meta: {
@@ -47,8 +47,8 @@ export default defineTemplate({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Title', required: true }),
-    accentColor: fields.color({ label: 'Accent Color', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Title', required: true, minLength: 1, maxLength: 80 }),
+    accentColor: field.color({ label: 'Accent Color', defaultValue: '#b9f8d2' }),
   },
   content: {
     en: {
@@ -86,7 +86,7 @@ For templates with complex rendering logic, separate the definition from the Rea
 
 ```tsx
 // definition.ts
-import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
+import { defineTemplateBase, field } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
@@ -99,8 +99,8 @@ export const templateBase = defineTemplateBase({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Title' }),
-    accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Title' }),
+    accentColor: field.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
     aurora: { title: 'Northern light' },
@@ -144,7 +144,7 @@ Every template definition requires these properties:
 - `meta` — a plain object reserved for template metadata
 - `width` — a positive integer specifying the template output width in pixels
 - `height` — a positive integer specifying the template output height in pixels
-- `fields` — a record where each key is a field name and each value is a field descriptor (text, textarea, number, color, or image)
+- `fields` — a record where each key is a field name and each value is a field descriptor (text, number, color, or image), created with the singular `field` export
 - `variants` — an object with a `default` content key and optional display labels
 - `content` — a record with at least one variant entry containing only partial field values
 - `render` — a function that receives typed props and returns a React node
@@ -164,6 +164,27 @@ property. There is no slug fallback or compatibility alias: a definition without
 a valid `meta.title` fails validation. The current registry still derives its
 catalog summary from the filesystem; metadata consumption belongs to issues #12
 and #13.
+
+## Field API
+
+The root package exports `field`, not `fields`. The template definition property
+is still named `fields`:
+
+```tsx
+fields: {
+  title: field.text({
+    label: 'Title',
+    placeholder: 'Write a title',
+    minLength: 1,
+    maxLength: 80,
+  }),
+}
+```
+
+`field.text` always renders a native `<textarea>` and preserves newline
+characters. `minLength` and `maxLength` are optional finite non-negative integers;
+`minLength` cannot exceed `maxLength`. There is no `field.textarea` or `fields`
+compatibility alias.
 
 ## Content and Variants
 
@@ -201,8 +222,8 @@ The render function is independent of Studio state and browser-only editor APIs.
 
 ```tsx
 fields: {
-  hero: fields.image({ label: 'Hero image' }),
-  background: fields.image({ label: 'Background', scope: 'common' }),
+  hero: field.image({ label: 'Hero image' }),
+  background: field.image({ label: 'Background', scope: 'common' }),
 },
 ```
 
@@ -213,7 +234,7 @@ src/templates/social-card/assets/
 ```
 
 ```tsx
-logo: fields.image({
+logo: field.image({
   label: 'Brand logo',
   defaultValue: '/assets/logos/brand.svg',
 })
@@ -234,4 +255,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5)

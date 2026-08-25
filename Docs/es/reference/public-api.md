@@ -15,13 +15,16 @@ vacío y solo acepta además `description`, `marketingDescription` y `tags`. El
 [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) define este
 contrato de metadata.
 
+El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
+y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
+
 **Exportaciones del entorno de ejecución**
 
 | Exportación                  | Descripción                                                                                                                                                                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `defineTemplate`             | Define y valida la forma canónica de plantilla sin versión, con metadata, fields, variantes, contenido y una función de renderizado                                                                                           |
 | `defineTemplateBase`         | Define y valida la base de una plantilla sin una función de renderizado                                                                                                                                                         |
-| `fields`                     | Colección de constructores de descriptores de campo (`fields.text`, `fields.textarea`, `fields.color`, `fields.number`, `fields.image`)                                                                                |
+| `field`                      | Colección de constructores de descriptores de campo (`field.text`, `field.color`, `field.number`, `field.image`)                                                                                                  |
 | `Markdown`                   | Renderiza contenido markdown compatible con formato en línea y listas opcionales                                                                                                                                                |
 | `validateTemplateBase`       | Valida la forma canónica sin exigir una función de renderizado                                                                                                                                                                  |
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
@@ -34,12 +37,11 @@ contrato de metadata.
 
 | Tipo                          | Descripción                                                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"textarea"` \| `"color"` \| `"number"` \| `"image"` |
+| `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"`                   |
 | `ImageFieldScope`             | Alcance de un campo de imagen: `"common"` \| `"variant"`                                                        |
 | `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
-| `TextFieldDescriptor`         | Descriptor para campos de texto                                                                                |
-| `TextareaFieldDescriptor`     | Descriptor para campos de área de texto                                                                        |
+| `TextFieldDescriptor`         | Descriptor para campos de texto multilínea, con `minLength` y `maxLength` opcionales                         |
 | `ColorFieldDescriptor`        | Descriptor para campos de color                                                                                |
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |

@@ -10,11 +10,13 @@ template shape for Studio and the future server-rendering boundary. Update each
 template definition to include:
 
 ```tsx
+import { defineTemplate, field } from '@mauriciodmo/framekit'
+
 export default defineTemplate({
   meta: { title: 'Template title' },
   width: 1200,
   height: 630,
-  fields: { title: fields.text({ label: 'Title' }) },
+  fields: { title: field.text({ label: 'Title' }) },
   variants: { default: 'en', labels: { en: 'English' } },
   content: { en: { title: 'Hello' } },
   render({ data, assets, variant, width, height }) {
@@ -73,3 +75,30 @@ or automatic migration command. Run `framekit generate`, `framekit check`, and
 
 See the [content variants plan](../../Plans/Future/issue-04-content-variants.md)
 and the [template contract reference](../reference/template-contract.md).
+
+## Semantic Fields
+
+Issue [#5](https://github.com/MauricioDMO/FrameKit/issues/5) makes the field
+factory API singular and removes the duplicate textarea kind. Update template
+source as follows:
+
+- change the root import from `fields` to `field`;
+- keep the template definition property named `fields`;
+- replace `fields.text`, `fields.color`, `fields.number`, and `fields.image` with
+  `field.text`, `field.color`, `field.number`, and `field.image`;
+- replace every `fields.textarea` with `field.text`;
+- use `minLength` and `maxLength` only on `field.text`; they must be finite,
+  non-negative integers with `minLength <= maxLength`;
+- expect `field.text` to render a native multiline `<textarea>` and preserve
+  newline characters;
+- handle `text_too_short` and `text_too_long` validation errors without
+  trimming the value before measuring its length.
+
+There is no `fields` compatibility alias, no `field.textarea`, and no separate
+`textarea` field kind. This is a breaking source change, not an additive change
+with a no-migration path. Run `framekit generate`, `framekit check`, and
+`framekit build` after updating the starter and project templates.
+
+See the [semantic fields plan](../../Plans/Future/issue-05-semantic-fields.md),
+the [template contract reference](../reference/template-contract.md), and the
+[public API reference](../reference/public-api.md).

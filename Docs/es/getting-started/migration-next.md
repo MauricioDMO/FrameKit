@@ -10,11 +10,13 @@ El issue [#1](https://github.com/MauricioDMO/FrameKit/issues/1) establece una
 servidor. Actualiza cada definición para incluir:
 
 ```tsx
+import { defineTemplate, field } from '@mauriciodmo/framekit'
+
 export default defineTemplate({
   meta: { title: 'Título de la plantilla' },
   width: 1200,
   height: 630,
-  fields: { title: fields.text({ label: 'Título' }) },
+  fields: { title: field.text({ label: 'Título' }) },
   variants: { default: 'en', labels: { en: 'English' } },
   content: { en: { title: 'Hola' } },
   render({ data, assets, variant, width, height }) {
@@ -75,3 +77,30 @@ las plantillas.
 
 Consulta el [plan de variantes de contenido](../../Plans/Future/issue-04-content-variants.md)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
+
+## Fields Semánticos
+
+El issue [#5](https://github.com/MauricioDMO/FrameKit/issues/5) hace singular la
+API de fábricas de fields y elimina el kind duplicado de textarea. Actualiza el
+código fuente de las plantillas así:
+
+- cambia el import raíz de `fields` a `field`;
+- conserva la propiedad `fields` dentro de la definición de la plantilla;
+- cambia `fields.text`, `fields.color`, `fields.number` y `fields.image` por
+  `field.text`, `field.color`, `field.number` y `field.image`;
+- cambia cada `fields.textarea` por `field.text`;
+- usa `minLength` y `maxLength` únicamente en `field.text`; deben ser enteros
+  finitos no negativos y cumplir `minLength <= maxLength`;
+- espera que `field.text` renderice un `<textarea>` nativo multilínea y conserve
+  los saltos de línea;
+- maneja los errores de validación `text_too_short` y `text_too_long` sin
+  eliminar espacios antes de medir la longitud.
+
+No existe un alias de compatibilidad `fields`, ni `field.textarea`, ni un kind
+separado `textarea`. Este es un cambio incompatible del código fuente, no un
+cambio aditivo sin migración. Ejecuta `framekit generate`, `framekit check` y
+`framekit build` después de actualizar el starter y las plantillas del proyecto.
+
+Consulta el [plan de fields semánticos](../../Plans/Future/issue-05-semantic-fields.md),
+la [referencia del contrato de plantilla](../reference/template-contract.md) y la
+[referencia de la API pública](../reference/public-api.md).

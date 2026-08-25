@@ -35,7 +35,7 @@ FrameKit soporta dos formas para definir plantillas. Ambas producen el mismo res
 Para plantillas directas, define todo en un único archivo `template.tsx`:
 
 ```tsx
-import { defineTemplate, fields, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
   meta: {
@@ -47,8 +47,8 @@ export default defineTemplate({
   width: 1200,
   height: 800,
   fields: {
-    title: fields.text({ label: 'Title', required: true }),
-    accentColor: fields.color({ label: 'Accent Color', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Title', required: true, minLength: 1, maxLength: 80 }),
+    accentColor: field.color({ label: 'Accent Color', defaultValue: '#b9f8d2' }),
   },
   content: {
     en: {
@@ -86,7 +86,7 @@ Para plantillas con lógica de renderizado compleja, separa la definición del c
 
 ```tsx
 // definition.ts
-import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
+import { defineTemplateBase, field } from '@mauriciodmo/framekit'
 import type { TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
@@ -99,8 +99,8 @@ export const templateBase = defineTemplateBase({
   width: 1080,
   height: 1080,
   fields: {
-    title: fields.text({ label: 'Title' }),
-    accentColor: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Title' }),
+    accentColor: field.color({ label: 'Accent', defaultValue: '#b9f8d2' }),
   },
   content: {
     aurora: { title: 'Northern light' },
@@ -144,7 +144,7 @@ Cada definición de plantilla requiere estas propiedades:
 - `meta` — un objeto plano reservado para la metadata de la plantilla
 - `width` — un entero positivo que especifica el ancho de salida de la plantilla en píxeles
 - `height` — un entero positivo que especifica la altura de salida de la plantilla en píxeles
-- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, textarea, number, color o image)
+- `fields` — un registro en el que cada clave es un nombre de campo y cada valor es un descriptor de campo (text, number, color o image), creado con el export singular `field`
 - `variants` — un objeto con una key `default` de contenido y labels de visualización opcionales
 - `content` — un registro con al menos una entrada de variante que contiene solo valores parciales de fields
 - `render` — una función que recibe propiedades tipadas y devuelve un nodo React
@@ -164,6 +164,27 @@ propiedad. No existe fallback al slug ni alias de compatibilidad: una definició
 sin un `meta.title` válido falla la validación. El registro actual todavía deriva
 su resumen de catálogo del sistema de archivos; el consumo de metadata pertenece
 a los issues #12 y #13.
+
+## API De Fields
+
+El paquete raíz exporta `field`, no `fields`. La propiedad de la definición de
+plantilla sigue llamándose `fields`:
+
+```tsx
+fields: {
+  title: field.text({
+    label: 'Título',
+    placeholder: 'Escribe un título',
+    minLength: 1,
+    maxLength: 80,
+  }),
+}
+```
+
+`field.text` siempre renderiza un `<textarea>` nativo y conserva los saltos de
+línea. `minLength` y `maxLength` son enteros finitos no negativos opcionales;
+`minLength` no puede superar a `maxLength`. No existe `field.textarea` ni un alias
+de compatibilidad `fields`.
 
 ## Contenido y variantes
 
@@ -202,8 +223,8 @@ La función de renderizado es independiente del estado de Studio y de APIs del e
 
 ```tsx
 fields: {
-  hero: fields.image({ label: 'Hero image' }),
-  background: fields.image({ label: 'Background', scope: 'common' }),
+  hero: field.image({ label: 'Hero image' }),
+  background: field.image({ label: 'Background', scope: 'common' }),
 },
 ```
 
@@ -214,7 +235,7 @@ src/templates/social-card/assets/
 ```
 
 ```tsx
-logo: fields.image({
+logo: field.image({
   label: 'Logo de marca',
   defaultValue: '/assets/logos/brand.svg',
 })
@@ -235,4 +256,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5)

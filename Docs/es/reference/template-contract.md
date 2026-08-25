@@ -9,6 +9,8 @@ metadata y `variants.default` selecciona una de las entradas de `content`, que
 solo contienen valores de fields.
 
 ```tsx
+import { defineTemplate, field } from '@mauriciodmo/framekit'
+
 export default defineTemplate({
   meta: {
     title: 'Promoción cuadrada',
@@ -18,7 +20,7 @@ export default defineTemplate({
   },
   width: 1200,
   height: 630,
-  fields: { title: fields.text({ label: 'Título' }) },
+  fields: { title: field.text({ label: 'Título' }) },
   variants: {
     default: 'en',
     labels: { en: 'English', es: 'Español' },
@@ -53,7 +55,7 @@ y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Tipos de Campos
 
-Las plantillas definen campos usando el objeto `fields` exportado desde `@mauriciodmo/framekit`. Cada campo tiene un `kind` que determina su comportamiento y las opciones que acepta.
+Las plantillas definen campos usando el objeto singular `field` exportado desde `@mauriciodmo/framekit`. La propiedad de la definición sigue siendo `fields`. Cada campo tiene un `kind` que determina su comportamiento y las opciones que acepta.
 
 ### Opciones Base
 
@@ -66,18 +68,16 @@ Todos los tipos de campos comparten un conjunto común de opciones:
 
 ### `text`
 
-Un campo de texto de una sola línea. Acepta solo las opciones base.
+Un campo de texto multilínea respaldado por un `<textarea>` nativo. Conserva los
+saltos de línea en el valor. Acepta las opciones base más:
+
+- `minLength` (entero no negativo, opcional): La cantidad mínima de caracteres.
+- `maxLength` (entero no negativo, opcional): La cantidad máxima de caracteres.
+
+Los límites deben ser enteros finitos y `minLength` no puede superar a `maxLength`.
 
 ```typescript
-fields.text({ label: 'Title', placeholder: 'Enter a title' })
-```
-
-### `textarea`
-
-Un campo de texto multilínea. Acepta las mismas opciones que `text`.
-
-```typescript
-fields.textarea({ label: 'Description', placeholder: 'Write something...' })
+field.text({ label: 'Description', placeholder: 'Write something...', minLength: 1, maxLength: 240 })
 ```
 
 ### `number`
@@ -90,7 +90,7 @@ Un campo numérico. Acepta las opciones base más:
 **Importante:** A pesar de ser un campo `number`, el valor almacenado en los datos de la plantilla es siempre un **string**. Las restricciones `min` y `max` validan la interpretación numérica de ese string.
 
 ```typescript
-fields.number({ label: 'Count', min: 0, max: 100 })
+field.number({ label: 'Count', min: 0, max: 100 })
 ```
 
 ### `color`
@@ -98,7 +98,7 @@ fields.number({ label: 'Count', min: 0, max: 100 })
 Un campo selector de color. Acepta solo las opciones base. Los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`.
 
 ```typescript
-fields.color({ label: 'Background Color' })
+field.color({ label: 'Background Color' })
 ```
 
 ### `image`
@@ -111,8 +111,8 @@ variantes de contenido. Una imagen pública puede proporcionarse como
 `/assets/logos/brand.svg`.
 
 ```typescript
-fields.image({ label: 'Hero image' })
-fields.image({ label: 'Background', scope: 'common' })
+field.image({ label: 'Hero image' })
+field.image({ label: 'Background', scope: 'common' })
 ```
 
 Los archivos por variante usan la key del field como nombre base:
@@ -203,7 +203,7 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 - Cada entrada de contenido solo puede contener keys de fields declaradas y cada valor debe ser un string
 - Las propiedades de nivel superior no soportadas, como `version`, son rechazadas
 - `render` debe ser una función
-- Las opciones de campo deben tener tipos válidos (por ejemplo, `min`/`max` solo en campos `number`, números finitos solamente)
+- Las opciones de campo deben tener tipos válidos (por ejemplo, `min`/`max` solo en campos `number`, `minLength`/`maxLength` solo en campos `text`, números finitos solamente)
 
 ```typescript
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
@@ -219,6 +219,7 @@ if (!result.success) {
 `validateTemplateData` verifica los valores de los campos contra sus restricciones:
 
 - Campos requeridos: una cadena vacía (tras eliminar los espacios en blanco) no supera la validación
+- Campos `text`: los valores no vacíos deben cumplir `minLength` y `maxLength`; la longitud se mide antes de eliminar espacios, por lo que los espacios y saltos de línea cuentan
 - Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
 - Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 
@@ -240,6 +241,8 @@ Códigos de error posibles:
 - `invalid_number`: El valor no es un número finito
 - `number_too_small`: El valor es menor que la restricción `min`
 - `number_too_large`: El valor es mayor que la restricción `max`
+- `text_too_short`: El valor tiene menos caracteres que `minLength`
+- `text_too_long`: El valor tiene más caracteres que `maxLength`
 - `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
 
 ### El Comando CLI `check`
@@ -283,6 +286,8 @@ contrato exacto de metadata está definido por el [Plan Futuro #3](../../Plans/F
 y el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3). El
 contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md)
 y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
+El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
+y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
 
 ---
 

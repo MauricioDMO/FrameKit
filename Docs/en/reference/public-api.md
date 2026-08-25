@@ -13,13 +13,16 @@ field-only `content`, and `render({ data, assets, variant, width, height })`.
 for the full shape and its Studio/server-rendering boundary, and [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
 for the metadata contract.
 
+The semantic field contract is defined by [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md)
+and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
+
 **Runtime exports**
 
 | Export                       | Description                                                                                                                                                                    |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `defineTemplate`             | Defines and validates the versionless canonical template shape with metadata, fields, variants, content, and a render function                                                |
 | `defineTemplateBase`         | Defines and validates a template base without a render function                                                                                                                |
-| `fields`                     | Collection of field descriptor builders (`fields.text`, `fields.textarea`, `fields.color`, `fields.number`, `fields.image`)                                                       |
+| `field`                      | Collection of field descriptor builders (`field.text`, `field.color`, `field.number`, `field.image`)                                                                          |
 | `Markdown`                   | Renders supported markdown content with inline formatting and optional lists                                                                                                   |
 | `validateTemplateBase`       | Validates the canonical template shape without requiring a render function                                                                                                    |
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
@@ -32,12 +35,11 @@ for the metadata contract.
 
 | Type                          | Description                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"textarea"` \| `"color"` \| `"number"` \| `"image"` |
+| `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"color"` \| `"number"` \| `"image"`                   |
 | `ImageFieldScope`             | Scope for image assets: `"common"` \| `"variant"`                                                   |
 | `BaseFieldDescriptor`         | Base shape shared by all field descriptors                                                              |
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
-| `TextFieldDescriptor`         | Descriptor for text fields                                                                              |
-| `TextareaFieldDescriptor`     | Descriptor for textarea fields                                                                          |
+| `TextFieldDescriptor`         | Descriptor for multiline text fields, including optional `minLength` and `maxLength`                         |
 | `ColorFieldDescriptor`        | Descriptor for color fields                                                                             |
 | `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
