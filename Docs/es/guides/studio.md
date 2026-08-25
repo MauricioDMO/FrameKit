@@ -42,7 +42,7 @@ Los campos numéricos respetan las restricciones `min` y `max` definidas en la p
 
 ## Persistencia
 
-Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave `framekit:<slug>:v1`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por variante de contenido dentro de esa entrada.
+Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave `framekit:<slug>:v2`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por variante de contenido dentro de esa entrada. La entrada antigua `v1` se ignora en lugar de migrarse.
 
 El estado almacenado con formato incorrecto se descarta de forma segura y el editor comienza desde cero. Las ediciones almacenadas para variantes o fields que ya no existen se ignoran. No hay sincronización con el servidor, ni cuenta, ni colaboración: todo permanece en el navegador del usuario.
 

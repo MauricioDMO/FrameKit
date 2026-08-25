@@ -169,7 +169,11 @@ a los issues #12 y #13.
 
 Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
 
-Usa `variants.labels` para las labels legibles de las opciones. Si falta una label, Studio usa la key de la variante. Las entradas de `content` no contienen metadata como `language`; cada key de contenido debe ser un field editable.
+Usa `variants.labels` para las labels legibles de las opciones. Es opcional y
+cada key de label debe coincidir con una key de variante de contenido. Si falta
+una label, Studio usa la key de la variante. Las entradas de `content` no
+contienen metadata como `language`; cada key de contenido debe ser un field
+editable.
 
 ```tsx
 variants: {
@@ -231,4 +235,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4)

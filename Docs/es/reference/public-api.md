@@ -27,7 +27,7 @@ contrato de metadata.
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; aplica valores predeterminados -> contenido de variante -> ediciones y luego assets de imagen |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                    |
+| `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                   |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extrae los valores predeterminados de los campos                                                                                           |
 
 **Exportaciones de tipos**

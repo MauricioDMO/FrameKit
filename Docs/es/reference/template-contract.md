@@ -48,7 +48,8 @@ aceptadas. Se rechazan `revision`, `status`, `keywords`, `order` y cualquier otr
 propiedad. Una definición sin un `meta.title` válido falla la validación en lugar
 de derivar un título desde su directorio.
 
-Las reglas exactas de variantes se rastrean en el [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+El contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md)
+y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Tipos de Campos
 
@@ -176,12 +177,12 @@ const defaults = getDefaultValues(definition.fields)
 
 ### Variantes disponibles
 
-`getLocales` devuelve las claves de variante definidas en el objeto `content` de la plantilla:
+`getVariants` devuelve las claves de variante definidas en el objeto `content` de la plantilla:
 
 ```typescript
-import { getLocales } from '@mauriciodmo/framekit'
+import { getVariants } from '@mauriciodmo/framekit'
 
-const variants = getLocales(definition) // por ejemplo, ['en', 'es']
+const variants = getVariants(definition) // por ejemplo, ['en', 'es']
 ```
 
 Estas claves son strings arbitrarios elegidos por el autor de la plantilla. No están restringidos a códigos de idioma como `en` o `es`.
@@ -196,7 +197,7 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 
 - `width` y `height` deben ser enteros finitos positivos
 - `meta` debe ser un objeto plano que solo contenga `title`, `description`, `marketingDescription` y `tags`; `title` debe ser no vacío y `tags` debe ser un array de strings
-- `variants` debe ser un objeto plano; `variants.default` debe nombrar una entrada de contenido
+- `variants` debe ser un objeto plano que solo contenga `default` y `labels` opcional; `variants.default` debe nombrar una entrada de contenido y cada key de label debe nombrar una entrada de contenido
 - `fields.language` está reservado y no puede ser usado
 - `content` debe tener al menos una entrada
 - Cada entrada de contenido solo puede contener keys de fields declaradas y cada valor debe ser un string
@@ -279,7 +280,9 @@ Esta separación significa que las variantes de contenido de la plantilla y el i
 Este contrato canónico implementa el [Plan Futuro #1](../../Plans/Future/issue-01-canonical-template-contract.md)
 y el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1). El
 contrato exacto de metadata está definido por el [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md)
-y el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3).
+y el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3). El
+contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md)
+y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ---
 

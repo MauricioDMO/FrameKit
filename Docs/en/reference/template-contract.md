@@ -45,7 +45,8 @@ only accepted metadata properties. `revision`, `status`, `keywords`, `order`, an
 other properties are rejected. A definition without a valid `meta.title` fails
 validation instead of deriving a title from its directory name.
 
-The exact variant refinements are tracked by [issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+The exact variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-content-variants.md)
+and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Field Kinds
 
@@ -171,12 +172,12 @@ const defaults = getDefaultValues(definition.fields)
 
 ### Available Variants
 
-`getLocales` returns the content variant keys defined in the template's `content` object:
+`getVariants` returns the content variant keys defined in the template's `content` object:
 
 ```typescript
-import { getLocales } from '@mauriciodmo/framekit'
+import { getVariants } from '@mauriciodmo/framekit'
 
-const variants = getLocales(definition) // e.g., ['en', 'es']
+const variants = getVariants(definition) // e.g., ['en', 'es']
 ```
 
 These keys are arbitrary strings chosen by the template author. They are not restricted to language codes like `en` or `es`.
@@ -191,7 +192,7 @@ FrameKit provides two validation functions that check different aspects of a tem
 
 - `width` and `height` must be positive finite integers
 - `meta` must be a plain object with only `title`, `description`, `marketingDescription`, and `tags`; `title` must be non-empty and `tags` must be an array of strings
-- `variants` must be a plain object; `variants.default` must name a content entry
+- `variants` must be a plain object containing only `default` and optional `labels`; `variants.default` must name a content entry, and every label key must name a content entry
 - `fields.language` is reserved and cannot be used
 - `content` must have at least one entry
 - Every content entry may contain only declared field keys, and every value must be a string
@@ -274,7 +275,9 @@ This separation means template content variants and Studio UI language are indep
 This canonical contract is implemented by [Future Plan #1](../../Plans/Future/issue-01-canonical-template-contract.md)
 and [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1). The exact
 metadata contract is defined by [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
-and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3).
+and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3). The exact
+variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-content-variants.md)
+and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ---
 

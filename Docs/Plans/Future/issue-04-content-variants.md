@@ -6,22 +6,27 @@
 
 ## Objective
 
-Replace the current locale/language-shaped content contract with an explicit
-variant contract that supports language, campaign, channel, or any other
-variant meaning without compatibility aliases.
+Complete the remaining locale/language-shaped template-content consumers with
+an explicit variant contract that supports language, campaign, channel, or any
+other variant meaning without compatibility aliases.
 
 ## Current baseline
 
-- `TemplateContentEntry` requires a `language` property and permits field
-  values beside it (`packages/framekit/src/types.ts`).
-- Render props and resolver parameters call the selected key `locale`;
-  `getLocales` returns `Object.keys(definition.content)`.
-- Definition validation requires `content.<key>.language` and excludes that
-  key from resolved data.
-- Editor controls display `contentEntry.language`; editor state stores a
-  selected locale and uses `framekit:<slug>:v1` in localStorage.
+The baseline below describes `HEAD` before Issue #4 implementation changes.
+
+- `TemplateContentEntry` is already field-only and `TemplateRenderProps` plus
+  `resolveTemplateData` already use `variant`; `getLocales` remains the old
+  public helper (`packages/framekit/src/types.ts`).
+- `TemplateVariants` already provides `default` and optional `labels`, but its
+  open index signature still permits unsupported variant metadata.
+- Definition validation already rejects unknown content field keys and
+  non-string values, but it does not yet reject unsupported variant metadata or
+  label keys that are absent from `content`.
+- Editor controls already use `variants.labels` for option text, but editor
+  state/actions still use locale names and persistence remains
+  `framekit:<slug>:v1`.
 - Asset resolution already separates `assets.common` and
-  `assets.variants[locale]`, with variant assets taking precedence over common
+  `assets.variants[variant]`, with variant assets taking precedence over common
   assets for variant-scoped image fields.
 
 ## Agreed public contract
@@ -58,8 +63,11 @@ Rules:
 - Variant keys remain arbitrary strings. A requested variant that is not in
   `content`, an unknown default, or an unknown label key is an error; do not
   silently fall back to another variant.
-- The selected render prop is named `variant`. There is no `locale`,
-  `language`, `variants.mode`, alias, or compatibility shape.
+- Within the template-content contract, the selected render prop is named
+  `variant`. There is no template-selection `locale`, entry-level `language`,
+  `variants.mode`, alias, or compatibility shape. Studio's independent
+  interface locale (`FrameKitLocale`, its messages, and its `locale` cookie)
+  remains unchanged.
 - The public helper for enumerating content keys is `getVariants`; the old
   `getLocales` name is not retained as an alias.
 - Update all current consumers atomically: public types, validation, data
@@ -75,13 +83,16 @@ Rules:
 
 ## Ordered implementation steps
 
-1. Add the `variants` type and replace locale-shaped render/content types in
+1. Tighten the existing `variants` type and preserve the already canonical
+   field-only content and `variant` render/resolution types in
    `packages/framekit/src/types.ts`. Rename the public helper/parameter surface
    as needed (for example, `getLocales` to `getVariants`) rather than keeping
    aliases.
-2. Update definition validation to require `variants.default`, validate the
-   optional labels map, reject `language`/other content metadata, reject
-   unknown field keys, and reject unknown requested/default/label variants.
+2. Update definition validation to keep requiring `variants.default`, validate
+   the optional labels map, reject `language`/other content metadata, reject
+   unknown field keys, and reject unknown default/label variants. Enforce an
+   unknown requested variant at the resolution/editor boundary, not in
+   definition validation.
 3. Update resolution and all editor consumers to use `variant`; rename
    locale-named state, actions, and UI props such as `selectedLocale`,
    `dataByLocale`, and `changeLocale` rather than retaining aliases. Make an
@@ -91,10 +102,10 @@ Rules:
 4. Change editor persistence to exactly `framekit:<slug>:v2` and remove any
    read path for `v1`. Add a test that a valid old `v1` payload is ignored
    rather than transformed.
-5. Update codegen-facing types, CLI/check paths, and every current
-   template/example in the implementation scope in one atomic change. Keep
-   `TemplateAssetManifest` and image discovery/resolution paths unchanged
-   except for the selected-key rename.
+5. Audit codegen-facing types, CLI/check paths, and every current
+   template/example in the implementation scope, updating only consumers that
+   still expose the old names. Keep `TemplateAssetManifest` and image
+   discovery/resolution paths unchanged except for the selected-key rename.
 6. Add type and runtime tests for defaults, labels, field-only content,
    unknown variants, render props, editor selection, persistence invalidation,
    and common/variant asset precedence.
@@ -104,13 +115,15 @@ Rules:
 
 ## Documentation and migration requirements
 
-Update English and Spanish public API, template-authoring, and template
-contract docs to use `variant`, `variants.default`, optional
+Update English and Spanish public API, template-authoring, template contract,
+and Studio guide docs to use `variant`, `variants.default`, optional
 `variants.labels`, and field-only content entries. Remove examples and prose
-that present `locale` or `language` as the template contract. The rolling
-migration guides must describe the breaking rename, removal of entry-level
-`language`, addition of `variants.default`, optional labels, unknown-variant
-errors, and the fact that old localStorage is discarded rather than migrated.
+that present `locale` or `language` as the template contract, while preserving
+the separate Studio interface-locale documentation. The rolling migration
+guides must describe the breaking rename, removal of entry-level `language`,
+addition of `variants.default`, optional labels, unknown-variant errors, and
+the fact that old template-editor localStorage is discarded rather than
+migrated.
 
 ## Verification
 
@@ -120,14 +133,16 @@ errors, and the fact that old localStorage is discarded rather than migrated.
 - `pnpm test`, `pnpm typecheck`, and `pnpm build`
 - `pnpm check:runtime`
 - Run `framekit check` on the generated starter.
-- Exercise Studio with the default variant, a labeled variant, an unknown
-  variant, a common image, and a variant image; confirm the old `v1` local
-  storage entry is not loaded.
+- Exercise Studio with the default variant, a labeled variant, a common image,
+  and a variant image. Exercise an unknown variant through the resolver or an
+  invalid-state test; the selector itself only exposes declared content keys.
+  Confirm the old `framekit:<slug>:v1` local storage entry is not loaded.
 
 ## Completion criteria
 
-- All current consumers use the exact variant contract with no locale,
-  language, mode, alias, or compatibility path.
+- All template-content consumers use the exact variant contract with no
+  template-selection locale, entry-level language, mode, alias, or
+  compatibility path. Studio interface localization remains independent.
 - Invalid or unknown variants fail explicitly.
 - Existing image and asset behavior is unchanged.
 - The localStorage schema/key is incremented and old state is discarded, not
@@ -147,7 +162,9 @@ additive change.
 
 ## Out of scope
 
-- `variants.mode`, `locale`, `language`, aliases, or compatibility support.
+- Template-content `variants.mode`, template-selection `locale`, entry-level
+  `language`, aliases, or compatibility support. Studio's interface locale,
+  messages, and cookie remain in scope for preservation, not removal.
 - Registry summaries or Studio metadata consumption; registry work remains in
   #12/#13 as applicable.
 - Migrating old localStorage data.

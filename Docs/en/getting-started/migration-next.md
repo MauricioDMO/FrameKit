@@ -52,3 +52,24 @@ change.
 
 See the [template metadata plan](../../Plans/Future/issue-03-template-metadata.md)
 and the [template contract reference](../reference/template-contract.md#template-metadata).
+
+## Content Variants
+
+Issue [#4](https://github.com/MauricioDMO/FrameKit/issues/4) replaces the
+locale-shaped template content contract with explicit variants. Update existing
+template and editor consumers as follows:
+
+- keep field-only `content` entries and remove any entry-level `language` metadata;
+- require `variants.default` to name an existing content key;
+- keep `variants.labels` optional, and make every label key name an existing content key;
+- reject `variants.mode`, other unsupported variant properties, unknown labels, unknown defaults, and requested variants that are not defined;
+- rename `getLocales` to `getVariants` with no compatibility alias;
+- rename editor content state and actions from locale names to variant names;
+- change editor persistence from `framekit:<slug>:v1` to `framekit:<slug>:v2`; old `v1` state is discarded, not migrated.
+
+This is a breaking source and persistence change. There is no compatibility alias
+or automatic migration command. Run `framekit generate`, `framekit check`, and
+`framekit build` after updating the templates.
+
+See the [content variants plan](../../Plans/Future/issue-04-content-variants.md)
+and the [template contract reference](../reference/template-contract.md).

@@ -25,7 +25,7 @@ for the metadata contract.
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; applies defaults -> variant content -> user edits, then image assets                                |
-| `getLocales`                 | `getLocales(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                              |
+| `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                             |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string>`; extracts field defaults                                                                   |
 
 **Type exports**

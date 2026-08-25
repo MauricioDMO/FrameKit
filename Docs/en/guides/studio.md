@@ -42,7 +42,7 @@ Number fields respect `min` and `max` constraints defined in the template. Image
 
 ## Persistence
 
-All edits are stored in the browser's `localStorage` under the key `framekit:<slug>:v1`. Each template slug has its own isolated storage entry, and data is also isolated per content variant within that entry.
+All edits are stored in the browser's `localStorage` under the key `framekit:<slug>:v2`. Each template slug has its own isolated storage entry, and data is also isolated per content variant within that entry. The old `v1` entry is ignored rather than migrated.
 
 Malformed stored state is discarded safely and the editor starts fresh. Stored edits for variants or fields that no longer exist are ignored. No server sync, no account, and no collaboration — everything stays in your browser.
 

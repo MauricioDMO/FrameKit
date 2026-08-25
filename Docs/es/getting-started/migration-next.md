@@ -53,3 +53,25 @@ obligatoria para las plantillas existentes, no un cambio aditivo sin migración.
 
 Consulta el [plan de metadata](../../Plans/Future/issue-03-template-metadata.md)
 y la [referencia del contrato de plantilla](../reference/template-contract.md#metadata-de-la-plantilla).
+
+## Variantes De Contenido
+
+El issue [#4](https://github.com/MauricioDMO/FrameKit/issues/4) reemplaza el
+contrato de contenido de plantillas basado en locale por variantes explícitas.
+Actualiza las plantillas y consumidores del editor existentes de esta forma:
+
+- conserva entradas de `content` que solo contengan valores de fields y elimina cualquier metadata `language` de nivel de entrada;
+- exige que `variants.default` nombre una key de contenido existente;
+- deja `variants.labels` como opcional y exige que cada key de label nombre una key de contenido existente;
+- rechaza `variants.mode`, otras propiedades de variante no soportadas, labels desconocidas, defaults desconocidos y variantes solicitadas que no estén definidas;
+- cambia `getLocales` por `getVariants` sin alias de compatibilidad;
+- cambia los nombres de estado y acciones del contenido del editor de locale a variante;
+- cambia la persistencia del editor de `framekit:<slug>:v1` a `framekit:<slug>:v2`; el estado antiguo `v1` se descarta, no se migra.
+
+Este es un cambio incompatible de código fuente y persistencia. No existe un
+alias de compatibilidad ni un comando de migración automático. Ejecuta
+`framekit generate`, `framekit check` y `framekit build` después de actualizar
+las plantillas.
+
+Consulta el [plan de variantes de contenido](../../Plans/Future/issue-04-content-variants.md)
+y la [referencia del contrato de plantilla](../reference/template-contract.md).
