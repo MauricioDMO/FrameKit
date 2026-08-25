@@ -4,6 +4,7 @@ import { defineTemplate, fields, validateTemplateData } from '../index'
 
 function createDefinition() {
   return defineTemplate({
+    meta: { title: 'Data validation' },
     width: 100,
     height: 200,
     fields: {
@@ -20,8 +21,9 @@ function createDefinition() {
       optionalColor: fields.color({ label: 'Optional color', required: false }),
     },
     content: {
-      en: { language: 'English' },
+      en: {},
     },
+    variants: { default: 'en' },
     render: () => null,
   })
 }

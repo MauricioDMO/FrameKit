@@ -43,13 +43,13 @@ for (const [templatePath, definition, assets] of templates) {
     continue
   }
 
-  for (const locale of Object.keys(definitionResult.definition.content)) {
-    const data = resolveTemplateData(definitionResult.definition, locale, {}, assets)
+  for (const variant of Object.keys(definitionResult.definition.content)) {
+    const data = resolveTemplateData(definitionResult.definition, variant, {}, assets)
     const errors = validateTemplateData(definitionResult.definition, data)
 
     for (const [field, error] of Object.entries(errors)) {
       const limit = 'min' in error ? \` (min: \${error.min})\` : 'max' in error ? \` (max: \${error.max})\` : ''
-      console.error(\`\${templatePath}: content.\${locale}.\${field}: \${error.code}\${limit}\`)
+      console.error(\`\${templatePath}: content.\${variant}.\${field}: \${error.code}\${limit}\`)
       failed = true
     }
   }

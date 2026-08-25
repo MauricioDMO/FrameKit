@@ -58,8 +58,8 @@ export function validateTemplateDefinition(definition) {
     ? { success: true, definition }
     : { success: false, error: 'width must be a positive finite integer' }
 }
-export function resolveTemplateData(definition, locale) {
-  return definition.content[locale]
+export function resolveTemplateData(definition, variant) {
+  return definition.content[variant]
 }
 export function validateTemplateData() {
   return {}
@@ -95,10 +95,12 @@ describe('framekit CLI', () => {
     const root = await createProject()
     await addFrameKitStub(root)
     await addTemplate(root, `export default {
+      meta: { title: 'Invalid template' },
       width: 0,
       height: 100,
       fields: {},
-      content: { en: { language: 'English' } },
+      content: { en: {} },
+      variants: { default: 'en' },
       render: () => null,
     }`)
 
@@ -114,10 +116,12 @@ describe('framekit CLI', () => {
     const root = await createProject()
     await addFrameKitStub(root)
     await addTemplate(root, `export default {
+      meta: { title: 'Invalid template' },
       width: 0,
       height: 100,
       fields: {},
-      content: { en: { language: 'English' } },
+      content: { en: {} },
+      variants: { default: 'en' },
       render: () => null,
     }`)
 

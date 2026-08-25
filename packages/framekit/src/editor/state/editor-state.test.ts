@@ -7,10 +7,12 @@ import { defineTemplate, fields } from '../../index'
 import { getInitialState, loadPersistedState, resetLocale, selectLocale, updateField } from './editor-state'
 
 const definition = defineTemplate({
+  meta: { title: 'Editor state' },
   width: 100,
   height: 100,
   fields: { title: fields.text({ label: 'Title' }), color: fields.color({ label: 'Color' }) },
-  content: { en: { language: 'English' }, fr: { language: 'French' } },
+  content: { en: {}, fr: {} },
+  variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
   render: () => null,
 })
 

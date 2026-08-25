@@ -27,7 +27,7 @@ The watcher regenerates for added or removed template files/directories and for 
 | Creator refuses the target | Use a path that does not exist, including no empty pre-existing directory. |
 | Native installation fails | Install Python, make, and a C++ toolchain, then retry normally. Do not use `--ignore-scripts` as a general fix. |
 | Development port is occupied | Set a free port, for example `PORT=3001 framekit dev`. |
-| Build stops at validation | Run `framekit check` and fix the reported template, locale, and field errors. |
+| Build stops at validation | Run `framekit check` and fix the reported template, variant data, and field errors. |
 | Start cannot find a server | Run `framekit build` first. |
 
 On Windows, use `set VAR=value && pnpm dev` in cmd.exe or `$env:VAR="value"; pnpm dev` in PowerShell.

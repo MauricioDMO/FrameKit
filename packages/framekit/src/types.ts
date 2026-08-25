@@ -48,9 +48,18 @@ export interface TemplateAssetManifest {
 
 export type TemplateFields = Record<string, FieldDescriptor>
 
-export type TemplateContentEntry<Fields extends TemplateFields> = {
-  language: string
-} & Partial<Record<Exclude<keyof Fields, 'language'> & string, string>>
+export interface TemplateMeta {
+  [key: string]: unknown
+}
+
+export interface TemplateVariants {
+  default: string
+  labels?: Record<string, string>
+  [key: string]: unknown
+}
+
+export type TemplateContentEntry<Fields extends TemplateFields> =
+  Partial<Record<Exclude<keyof Fields, 'language'> & string, string>>
 
 export type TemplateContent<Fields extends TemplateFields> = Record<
   string,
@@ -64,8 +73,8 @@ export type NoUnknownContentKeys<
   Content extends TemplateContent<Fields>,
   Fields extends TemplateFields,
 > = {
-  [Locale in keyof Content]: Content[Locale] & Record<
-    Exclude<keyof Content[Locale], 'language' | keyof Fields>,
+  [Variant in keyof Content]: Content[Variant] & Record<
+    Exclude<keyof Content[Variant], keyof Fields>,
     never
   >
 }
@@ -75,10 +84,14 @@ export interface TemplateBase<
   Content extends TemplateContent<Fields> = TemplateContent<Fields>,
   Width extends number = number,
   Height extends number = number,
+  Meta extends TemplateMeta = TemplateMeta,
+  Variants extends TemplateVariants = TemplateVariants,
 > {
+  meta: Meta
   width: Width
   height: Height
   fields: Fields
+  variants: Variants
   content: Content
 }
 
@@ -87,8 +100,10 @@ export interface TemplateDefinition<
   Content extends TemplateContent<Fields> = TemplateContent<Fields>,
   Width extends number = number,
   Height extends number = number,
-> extends TemplateBase<Fields, Content, Width, Height> {
-  render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height>>): ReactNode
+  Meta extends TemplateMeta = TemplateMeta,
+  Variants extends TemplateVariants = TemplateVariants,
+> extends TemplateBase<Fields, Content, Width, Height, Meta, Variants> {
+  render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height, Meta, Variants>>): ReactNode
 }
 
 export interface TemplateRenderProps<
@@ -96,7 +111,7 @@ export interface TemplateRenderProps<
 > {
   data: { -readonly [K in keyof Definition['fields']]: string }
   assets: TemplateAssetManifest
-  locale: keyof Definition['content'] & string
+  variant: keyof Definition['content'] & string
   width: Definition['width']
   height: Definition['height']
 }
@@ -109,9 +124,13 @@ export type TemplateInput<
   Content extends TemplateContent<Fields>,
   Width extends number,
   Height extends number,
+  Meta extends TemplateMeta,
+  Variants extends TemplateVariants,
 > = {
+  meta: Meta
   width: Width
   height: Height
   fields: Fields
+  variants: Variants
   content: Content & NoUnknownContentKeys<Content, Fields>
 }

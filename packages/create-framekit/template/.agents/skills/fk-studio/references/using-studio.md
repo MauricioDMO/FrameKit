@@ -5,13 +5,13 @@
 - Studio is a browser editor for template content, preview, and PNG export.
 - Slashes in a template slug create nested folders. Navigation nodes are alphabetized by title, folders start expanded, and selecting a template opens `/editor/<slug>`.
 
-## Languages and edits
+## Content variants and interface localization
 
-- **Design language** selects the template content locale. Locale keys may be any string; each locale has separate values.
-- **App language** changes Studio labels and messages. It supports English (`en`) and Spanish (`es`). The `locale` cookie takes precedence over `Accept-Language`; only an English-prefixed value selects English.
-- Edits are stored in browser `localStorage` by template slug and design locale. There is no server sync, account, or collaboration feature.
-- Malformed persisted state or an invalid selected locale is discarded. Unknown saved fields and locales inside valid data are ignored.
-- **Reset** clears only the selected locale's edits. Changing the design language also clears displayed validation errors.
+- **Content variant** selects the template content variant. Variant keys may be any string; each variant has separate values.
+- **Studio interface locale** changes Studio labels and messages. It supports English (`en`) and Spanish (`es`). The `locale` cookie takes precedence over `Accept-Language`; only an English-prefixed value selects English.
+- Edits are stored in browser `localStorage` under a template-slug key, with edits grouped by content variant. There is no server sync, account, or collaboration feature.
+- Malformed top-level persisted state or an invalid selected content variant is discarded. Unknown saved fields and variants, plus malformed variant entries, are ignored.
+- **Reset** clears only the selected variant's edits. Changing the content variant also clears displayed validation errors.
 
 ## Fields and preview
 

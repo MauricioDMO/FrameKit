@@ -114,7 +114,7 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
         <EditorControls definition={definition} messages={messages} selectedLocale={selectedLocale} data={resolvedData} errors={errors} onLocaleChange={changeLocale} onFieldChange={changeField} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
-            {definition.render({ data: resolvedData, assets, locale: selectedLocale, width: definition.width, height: definition.height })}
+            {definition.render({ data: resolvedData, assets, variant: selectedLocale, width: definition.width, height: definition.height })}
           </div>
         </TemplatePreview>
       </div>

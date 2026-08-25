@@ -8,7 +8,7 @@ export interface EditorState {
 export const storageKey = (slug: string) => `framekit:${slug}:v1`
 
 export function getInitialState(definition: TemplateDefinition): EditorState {
-  return { selectedLocale: Object.keys(definition.content)[0], dataByLocale: {} }
+  return { selectedLocale: definition.variants.default, dataByLocale: {} }
 }
 
 export function loadPersistedState(slug: string, definition: TemplateDefinition, storage: Pick<Storage, 'getItem'>): EditorState | null {
@@ -33,7 +33,7 @@ export function loadPersistedState(slug: string, definition: TemplateDefinition,
       }
     }
 
-    return { selectedLocale: selectedLocale ?? Object.keys(definition.content)[0], dataByLocale }
+    return { selectedLocale: selectedLocale ?? definition.variants.default, dataByLocale }
   } catch {
     // Stored sessions are untrusted; a malformed value must not prevent editing.
     return null

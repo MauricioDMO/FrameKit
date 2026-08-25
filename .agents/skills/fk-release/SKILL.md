@@ -55,7 +55,7 @@ pnpm --filter @mauriciodmo/create-framekit test
 Run FrameKit commands from the consumer project root. They scan `src/templates` and accept no alternate templates path.
 
 - Run `framekit generate` after changing template structure; it creates `src/generated/framekit/templates.ts` only when content changes.
-- Run `framekit check` to validate definitions and locale data. It regenerates first and cleans temporary checker files even on failure.
+- Run `framekit check` to validate definitions and variant data. It regenerates first and cleans temporary checker files even on failure.
 - Run `framekit build` for the consumer release check. It runs `check` first, then builds Next.js and copies static assets beside the standalone server.
 - Run `framekit start` only after a successful build. It requires exactly one valid standalone server.
 

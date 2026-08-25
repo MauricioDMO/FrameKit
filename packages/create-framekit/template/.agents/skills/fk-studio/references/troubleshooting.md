@@ -4,7 +4,7 @@ Use [CLI and troubleshooting](../../fk-setup/references/cli-and-troubleshooting.
 for discovery, aliases, CSS, ports, validation, builds, starts, and installation.
 
 Use [template validation](../../fk-templates/references/validation-and-troubleshooting.md)
-for definition and locale errors.
+for definition and content-variant errors.
 
 ## PNG export fails
 

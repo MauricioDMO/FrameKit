@@ -1,6 +1,6 @@
 ---
 name: fk-studio
-description: Help users operate or troubleshoot FrameKit Studio in a generated project, including catalog navigation, editing, locales, preview, themes, PNG export, and Studio-specific failures.
+description: Help users operate or troubleshoot FrameKit Studio in a generated project, including catalog navigation, editing, content variants, interface localization, preview, themes, PNG export, and Studio-specific failures.
 ---
 
 # FrameKit Studio

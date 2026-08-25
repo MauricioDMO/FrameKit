@@ -5,8 +5,9 @@ import { defineTemplate, fields, resolveTemplateData } from '../index'
 import { extractedTemplate } from '../../tests/types/extracted-template'
 
 describe('resolveTemplateData', () => {
-  it('resolves defaults, localized content, and edits in order without copying language', () => {
+  it('resolves defaults, variant content, and edits in order', () => {
     const definition = defineTemplate({
+      meta: { title: 'Resolution test' },
       width: 100,
       height: 100,
       fields: {
@@ -17,22 +18,23 @@ describe('resolveTemplateData', () => {
         title: fields.text({ label: 'Title', defaultValue: 'Default title' }),
       },
       content: {
-        aurora: { language: 'Aurora', title: 'Localized title' },
+        aurora: { title: 'Variant title' },
       },
+      variants: { default: 'aurora' },
       render: () => null,
     })
 
     expect(resolveTemplateData(definition, 'aurora', {
       title: 'Edited title',
-      language: 'must stay excluded',
     })).toEqual({
       backgroundImage: '/assets/images/backgrounds/forest.svg',
       title: 'Edited title',
     })
   })
 
-  it('resolves defaults before localized content and edits', () => {
+  it('resolves defaults before variant content and edits', () => {
     const definition = defineTemplate({
+      meta: { title: 'Resolution order' },
       width: 1440,
       height: 1440,
       fields: {
@@ -42,8 +44,9 @@ describe('resolveTemplateData', () => {
         title: fields.text({ label: 'Title' }),
       },
       content: {
-        en: { language: 'English', eyebrow: 'Digital studio / 2026', title: 'Localized title' },
+        en: { eyebrow: 'Digital studio / 2026', title: 'Variant title' },
       },
+      variants: { default: 'en' },
       render: () => null,
     })
 
@@ -65,13 +68,15 @@ describe('resolveTemplateData', () => {
 
   it('resolves image fields from variant assets before common assets', () => {
     const definition = defineTemplate({
+      meta: { title: 'Asset precedence' },
       width: 100,
       height: 100,
       fields: {
         hero: fields.image({ label: 'Hero' }),
         background: fields.image({ label: 'Background', scope: 'common' }),
       },
-      content: { en: { language: 'English' }, es: { language: 'Spanish' } },
+      content: { en: {}, es: {} },
+      variants: { default: 'en' },
       render: () => null,
     })
 
@@ -84,5 +89,20 @@ describe('resolveTemplateData', () => {
       common: { hero: '/common/hero.svg', background: '/common/background.svg' },
       variants: {},
     })).toEqual({ hero: '/common/hero.svg', background: '/common/background.svg' })
+  })
+
+  it('rejects unknown variants and edit keys instead of silently resolving them', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Resolution errors' },
+      width: 100,
+      height: 100,
+      fields: { title: fields.text({ label: 'Title' }) },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(() => resolveTemplateData(definition, 'missing', {})).toThrow('content variant "missing" is not defined')
+    expect(() => resolveTemplateData(definition, 'en', { missing: 'value' })).toThrow('edits contains unknown field key "missing"')
   })
 })

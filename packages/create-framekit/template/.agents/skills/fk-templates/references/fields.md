@@ -8,9 +8,9 @@ Every field requires a human-readable `label`. All fields also accept:
 
 - `placeholder` — hint text shown by the editor; it is not a value and does not satisfy a required field.
 - `required` — whether an empty value is invalid. It defaults to `true`; use `required: false` for optional content.
-- `defaultValue` — the initial string value when neither the selected locale nor a Studio edit provides one.
+- `defaultValue` — the initial string value when neither the selected variant nor a Studio edit provides one.
 
-The `language` property in each content entry is reserved and never appears in `data`. Values in `data` are always strings, including numbers.
+Each `content` entry is a field-value-only object: its keys are declared field names and its values are strings. Do not add an entry-level `language` property; it is rejected as an unknown content key. The field name `language` is reserved and cannot be declared in `fields`. Values in `data` are always strings, including numbers.
 
 ## Field Kinds
 
@@ -63,7 +63,7 @@ accent: fields.color({ label: 'Accent', defaultValue: '#b9f8d2' })
 
 ### Image
 
-`fields.image` is for image values. Template assets are resolved from the `assets` directory; a public image can be referenced with a root-relative default or locale value:
+`fields.image` is for image values. Template assets are resolved from the `assets` directory; a public image can be referenced with a root-relative default or variant value:
 
 ```tsx
 hero: fields.image({
@@ -79,9 +79,9 @@ Files under `public/assets` are served directly by the application. They are not
 For ordinary fields, Studio resolves values in this order:
 
 1. `defaultValue` from the field descriptor.
-2. The selected locale's content entry.
-3. The saved edit for that template and locale in browser `localStorage`.
+2. The selected variant's content entry.
+3. The saved edit for that template and variant in browser `localStorage`.
 
-`framekit check` validates definitions and resolved locale data without Studio edits. Export validates the final resolved data before capturing the PNG. Required values are checked after trimming whitespace.
+`framekit check` validates definitions and resolved variant data without Studio edits. Export validates the final resolved data before capturing the PNG. Required values are checked after trimming whitespace.
 
-Image fields have an additional asset-manifest step; see [Image Fields](./image-fields.md). A discovered image asset overrides the default, locale content, or saved edit for that image field.
+Image fields have an additional asset-manifest step; see [Image Fields](./image-fields.md). A discovered image asset overrides the default, variant content, or saved edit for that image field.

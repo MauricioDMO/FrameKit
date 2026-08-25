@@ -1,6 +1,7 @@
 import type { TemplateBase, TemplateDefinition } from '../../types'
 
 const FIELD_KINDS = new Set(['text', 'textarea', 'number', 'color', 'image'])
+const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -25,6 +26,16 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
   }
 
   const def = definition
+
+  for (const key of Object.keys(def)) {
+    if (!DEFINITION_KEYS.has(key)) {
+      return { success: false, error: `definition contains unknown property "${key}"` }
+    }
+  }
+
+  if (!isPlainObject(def.meta)) {
+    return { success: false, error: 'meta must be a plain object' }
+  }
 
   if (
     typeof def.width !== 'number' ||
@@ -106,6 +117,27 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
     }
   }
 
+  if (!isPlainObject(def.variants)) {
+    return { success: false, error: 'variants must be a plain object' }
+  }
+
+  const variants = def.variants
+  if (typeof variants.default !== 'string' || variants.default.trim() === '') {
+    return { success: false, error: 'variants.default must be a non-empty string' }
+  }
+
+  if (variants.labels !== undefined) {
+    if (!isPlainObject(variants.labels)) {
+      return { success: false, error: 'variants.labels must be a plain object' }
+    }
+
+    for (const [key, label] of Object.entries(variants.labels)) {
+      if (typeof label !== 'string' || label.trim() === '') {
+        return { success: false, error: `variants.labels.${key} must be a non-empty string` }
+      }
+    }
+  }
+
   if (!isPlainObject(def.content)) {
     return { success: false, error: 'content must be a plain object' }
   }
@@ -118,22 +150,22 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
 
   const fieldKeys = new Set(Object.keys(def.fields))
 
-  for (const locale of contentKeys) {
-    const entry = content[locale]
-    if (!isPlainObject(entry)) {
-      return { success: false, error: `content.${locale} must be a plain object` }
-    }
+  if (!contentKeys.includes(variants.default)) {
+    return { success: false, error: `variants.default "${variants.default}" is not defined in content` }
+  }
 
-    if (typeof entry.language !== 'string') {
-      return { success: false, error: `content.${locale}.language must be a string` }
+  for (const variant of contentKeys) {
+    const entry = content[variant]
+    if (!isPlainObject(entry)) {
+      return { success: false, error: `content.${variant} must be a plain object` }
     }
 
     for (const key of Object.keys(entry)) {
-      if (key !== 'language' && !fieldKeys.has(key)) {
-        return { success: false, error: `content.${locale} contains unknown field key "${key}"` }
+      if (!fieldKeys.has(key)) {
+        return { success: false, error: `content.${variant} contains unknown field key "${key}"` }
       }
-      if (key !== 'language' && typeof entry[key] !== 'string') {
-        return { success: false, error: `content.${locale}.${key} must be a string` }
+      if (typeof entry[key] !== 'string') {
+        return { success: false, error: `content.${variant}.${key} must be a string` }
       }
     }
   }

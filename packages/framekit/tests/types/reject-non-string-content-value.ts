@@ -1,6 +1,7 @@
 import { defineTemplate, fields } from '@mauriciodmo/framekit'
 
 defineTemplate({
+  meta: { title: 'Invalid template' },
   width: 1080,
   height: 1080,
   fields: {
@@ -8,8 +9,9 @@ defineTemplate({
   },
   content: {
     // @ts-expect-error content.es.title must be string, not number
-    es: { language: 'Español', title: 42 },
+    es: { title: 42 },
   },
+  variants: { default: 'es' },
   render() {
     return null
   },

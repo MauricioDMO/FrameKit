@@ -24,7 +24,7 @@ export function EditorControls({ definition, messages, selectedLocale, data, err
         <label className="block">
           <span className="mb-1.5 block text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.contentLanguageLabel}</span>
           <select value={selectedLocale} onChange={(event) => onLocaleChange(event.target.value)} className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] transition outline-none focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]">
-            {Object.entries(definition.content).map(([value, contentEntry]) => <option key={value} value={value}>{contentEntry.language}</option>)}
+            {Object.keys(definition.content).map((value) => <option key={value} value={value}>{definition.variants.labels?.[value] ?? value}</option>)}
           </select>
         </label>
         {Object.entries(definition.fields).map(([key, field]) => (

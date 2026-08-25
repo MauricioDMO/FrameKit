@@ -4,11 +4,11 @@ import type { templateBase } from './extracted-definition'
 
 export type ExtractedArtworkProps = TemplateRenderProps<typeof templateBase>
 
-export function ExtractedArtwork({ data, locale, width, height }: ExtractedArtworkProps) {
+export function ExtractedArtwork({ data, variant, width, height }: ExtractedArtworkProps) {
   const title: string = data.title
-  const localeKey: 'aurora' | 'desert' = locale
+  const variantKey: 'aurora' | 'desert' = variant
 
   void title
-  void localeKey
+  void variantKey
   return <article style={{ width, height }} />
 }

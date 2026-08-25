@@ -5,25 +5,40 @@ const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
 export function resolveTemplateData(
   definition: TemplateBase,
-  locale: string,
+  variant: string,
   edits: Record<string, string>,
   assets: TemplateAssetManifest = emptyAssets,
 ): Record<string, string> {
-  const result = getDefaultValues(definition.fields)
-
-  const localeContent = definition.content[locale]
-  if (localeContent) {
-    for (const key in localeContent) {
-      if (key !== 'language' && typeof localeContent[key] === 'string') {
-        result[key] = localeContent[key]
-      }
-    }
+  if (!Object.prototype.hasOwnProperty.call(definition.content, variant)) {
+    throw new Error(`content variant "${variant}" is not defined`)
   }
 
-  for (const key in edits) {
-    if (key !== 'language' && typeof edits[key] === 'string') {
-      result[key] = edits[key]
+  if (!edits || typeof edits !== 'object' || Array.isArray(edits)) {
+    throw new Error('edits must be a plain object')
+  }
+
+  const result = getDefaultValues(definition.fields)
+  const fieldKeys = new Set(Object.keys(definition.fields))
+  const variantContent = definition.content[variant]
+
+  for (const [key, value] of Object.entries(variantContent)) {
+    if (!fieldKeys.has(key)) {
+      throw new Error(`content.${variant} contains unknown field key "${key}"`)
     }
+    if (typeof value !== 'string') {
+      throw new Error(`content.${variant}.${key} must be a string`)
+    }
+    result[key] = value
+  }
+
+  for (const [key, value] of Object.entries(edits)) {
+    if (!fieldKeys.has(key)) {
+      throw new Error(`edits contains unknown field key "${key}"`)
+    }
+    if (typeof value !== 'string') {
+      throw new Error(`edits.${key} must be a string`)
+    }
+    result[key] = value
   }
 
   for (const [key, field] of Object.entries(definition.fields)) {
@@ -31,7 +46,7 @@ export function resolveTemplateData(
 
     const source = field.scope === 'common'
       ? assets.common[key]
-      : assets.variants[locale]?.[key] ?? assets.common[key]
+      : assets.variants[variant]?.[key] ?? assets.common[key]
 
     if (source) result[key] = source
   }

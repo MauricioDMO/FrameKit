@@ -4,14 +4,16 @@ import { validateTemplateDefinition } from '../index'
 
 function validDefinition() {
   return {
+    meta: { title: 'Valid template' },
     width: 100,
     height: 200,
     fields: {
       title: { kind: 'text', label: 'Title' },
     },
     content: {
-      en: { language: 'English', title: 'Hello' },
+      en: { title: 'Hello' },
     },
+    variants: { default: 'en', labels: { en: 'English' } },
     render: () => null,
   }
 }
@@ -20,8 +22,12 @@ describe('validateTemplateDefinition', () => {
   it.each([
     ['non-object definition', null, 'definition must be a non-null object'],
     ['array definition', [], 'definition must be a non-null object'],
+    ['missing metadata', { meta: undefined }, 'meta must be a plain object'],
+    ['missing variants', { variants: undefined }, 'variants must be a plain object'],
+    ['unknown top-level property', { version: 1 }, 'definition contains unknown property "version"'],
   ])('rejects a %s', (_name, definition, error) => {
-    expect(validateTemplateDefinition(definition)).toEqual({ success: false, error })
+    const candidate = definition === null || Array.isArray(definition) ? definition : { ...validDefinition(), ...definition }
+    expect(validateTemplateDefinition(candidate)).toEqual({ success: false, error })
   })
 
   it.each([
@@ -67,7 +73,9 @@ describe('validateTemplateDefinition', () => {
 
   it.each([
     ['empty content', { content: {} }, 'content must have at least one entry'],
-    ['unknown content key', { content: { en: { language: 'English', missing: 'value' } } }, 'content.en contains unknown field key "missing"'],
+    ['unknown content key', { content: { en: { missing: 'value' } } }, 'content.en contains unknown field key "missing"'],
+    ['content metadata', { content: { en: { language: 'English' } } }, 'content.en contains unknown field key "language"'],
+    ['unknown default variant', { variants: { default: 'fr' } }, 'variants.default "fr" is not defined in content'],
   ])('rejects %s', (_name, change, error) => {
     expect(validateTemplateDefinition({ ...validDefinition(), ...change })).toEqual({
       success: false,

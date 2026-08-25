@@ -15,10 +15,12 @@ import { writeTemplateModule } from './write-template-module'
 const execFileAsync = promisify(execFile)
 const tscCli = fileURLToPath(import.meta.resolve('typescript/bin/tsc'))
 const validTemplateSource = `export default {
+  meta: { title: 'Generated template' },
   width: 1080,
   height: 1080,
   fields: {},
-  content: { en: { language: 'English' } },
+  content: { en: {} },
+  variants: { default: 'en' },
   render: () => null,
 }`
 
@@ -187,10 +189,12 @@ export interface TemplateAssetManifest {
 }
 
 export interface TemplateDefinition {
+  meta: Record<string, unknown>
   width: number
   height: number
   fields: Record<string, unknown>
-  content: Record<string, { language: string }>
+  variants: { default: string; labels?: Record<string, string> }
+  content: Record<string, Record<string, string>>
   render: (props: unknown) => unknown
 }
 `)

@@ -4,8 +4,10 @@ import type {
   TemplateContent,
   TemplateDefinition,
   TemplateFields,
+  TemplateMeta,
   TemplateInput,
   TemplateRenderProps,
+  TemplateVariants,
 } from '../types'
 import type { ReactNode } from 'react'
 
@@ -20,9 +22,11 @@ export function defineTemplateBase<
   const Content extends TemplateContent<Fields>,
   const Width extends number,
   const Height extends number,
+  const Meta extends TemplateMeta,
+  const Variants extends TemplateVariants,
 >(
-  definition: TemplateInput<Fields, Content, Width, Height> & NoLanguageFields<Fields>,
-): TemplateBase<Fields, Content, Width, Height> {
+  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & NoLanguageFields<Fields>,
+): TemplateBase<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateBase(definition))
   return definition
 }
@@ -32,11 +36,13 @@ export function defineTemplate<
   const Content extends TemplateContent<Fields>,
   const Width extends number,
   const Height extends number,
+  const Meta extends TemplateMeta,
+  const Variants extends TemplateVariants,
 >(
-  definition: TemplateInput<Fields, Content, Width, Height> & {
-    render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height>>): ReactNode
+  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & {
+    render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height, Meta, Variants>>): ReactNode
   } & NoLanguageFields<Fields>,
-): TemplateDefinition<Fields, Content, Width, Height> {
+): TemplateDefinition<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateDefinition(definition))
   return definition
 }

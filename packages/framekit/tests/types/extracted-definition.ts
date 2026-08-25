@@ -2,6 +2,7 @@ import { defineTemplateBase, fields } from '@mauriciodmo/framekit'
 import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const templateBase = defineTemplateBase({
+  meta: { title: 'Extracted template' },
   width: 1200,
   height: 800,
   fields: {
@@ -9,9 +10,10 @@ export const templateBase = defineTemplateBase({
     accentColor: fields.color({ label: 'Accent' }),
   },
   content: {
-    aurora: { language: 'Aurora', title: 'Northern light' },
-    desert: { language: 'Desert', title: 'Open horizon' },
+    aurora: { title: 'Northern light' },
+    desert: { title: 'Open horizon' },
   },
+  variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } },
 })
 
 type Equal<Left, Right> =
@@ -26,7 +28,7 @@ type DataAssertion = Expect<Equal<
   { title: string; accentColor: string }
 >>
 type PropsAssertion = Expect<Equal<
-  TemplateRenderProps<typeof templateBase>['locale'],
+  TemplateRenderProps<typeof templateBase>['variant'],
   'aurora' | 'desert'
 >>
 type WidthAssertion = Expect<Equal<

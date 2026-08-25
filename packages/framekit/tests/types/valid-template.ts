@@ -2,6 +2,7 @@ import { defineTemplate, fields } from '@mauriciodmo/framekit'
 import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
 
 export const template = defineTemplate({
+  meta: { title: 'Valid template' },
   width: 1080,
   height: 1080,
   fields: {
@@ -9,19 +10,20 @@ export const template = defineTemplate({
     accentColor: fields.color({ label: 'Color', defaultValue: '#173d31' }),
   },
   content: {
-    moon: { language: 'Lunar', title: 'Oferta' },
-    fjord: { language: 'Fjordic', title: 'Offer' },
+    moon: { title: 'Oferta' },
+    fjord: { title: 'Offer' },
   },
-  render({ data, locale, width, height }) {
+  variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
+  render({ data, variant, width, height }) {
     const title: string = data.title
-    const localeKey: 'moon' | 'fjord' = locale
+    const variantKey: 'moon' | 'fjord' = variant
     const dimension: number = width + height
 
     // @ts-expect-error data keys come from fields
     String(data.missing)
 
     void title
-    void localeKey
+    void variantKey
     void dimension
     return null
   },
@@ -39,7 +41,7 @@ type DataAssertion = Expect<Equal<
   { title: string; accentColor: string }
 >>
 type PropsAssertion = Expect<Equal<
-  TemplateRenderProps<typeof template>['locale'],
+  TemplateRenderProps<typeof template>['variant'],
   'moon' | 'fjord'
 >>
 type WidthAssertion = Expect<Equal<

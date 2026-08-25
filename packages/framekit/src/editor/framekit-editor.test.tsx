@@ -40,6 +40,7 @@ const messages: EditorMessages = {
 
 function createDefinition() {
   return defineTemplate({
+    meta: { title: 'Editor test' },
     width: 100,
     height: 100,
     fields: {
@@ -51,7 +52,8 @@ function createDefinition() {
       accentColor: fields.color({ label: 'Accent color', defaultValue: '#123456' }),
       optionalColor: fields.color({ label: 'Optional color', required: false }),
     },
-    content: { en: { language: 'English', title: 'English title' }, fr: { language: 'French', title: 'French title' } },
+    content: { en: { title: 'English title' }, fr: { title: 'French title' } },
+    variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
     render: () => null,
   })
 }
