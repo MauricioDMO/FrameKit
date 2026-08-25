@@ -5,12 +5,13 @@ import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../../types'
 
 export function ColorField({ field, value, onChange, error }: EditorFieldProps) {
-  const normalizedValue = value.trim()
+  const stringValue = typeof value === 'string' ? value : ''
+  const normalizedValue = stringValue.trim()
   const externalPickerValue = isValidColor(normalizedValue) ? normalizedValue : '#000000'
   const [pickerState, setPickerState] = useState(() => ({ externalValue: externalPickerValue, pickerValue: externalPickerValue }))
   const pendingValueRef = useRef<string | null>(null)
   const timeoutRef = useRef<number | null>(null)
-  const hexValue = value.replace(/^#+/, '')
+  const hexValue = stringValue.replace(/^#+/, '')
   const pickerId = `${field.key}-picker`
 
   useEffect(() => () => {
@@ -49,7 +50,7 @@ export function ColorField({ field, value, onChange, error }: EditorFieldProps) 
         setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })
         schedulePickerUpdate(nextValue)
       }} className="sr-only" />
-      <label htmlFor={pickerId} aria-label={`Seleccionar ${field.label}`} className="h-10 w-16 shrink-0 cursor-pointer rounded-xl border border-[#d6d5ce] p-1 dark:border-white/15">
+      <label htmlFor={pickerId} aria-label={`Seleccionar ${field.label}`} className="h-10 w-16 shrink-0 cursor-pointer select-none rounded-xl border border-[#d6d5ce] p-1 dark:border-white/15">
         <span aria-hidden="true" className="block size-full rounded-lg" style={{ backgroundColor: pickerState.pickerValue }} />
       </label>
       <div className={`${controlClass} flex h-10 items-center gap-1 px-3 py-0`}>

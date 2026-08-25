@@ -10,7 +10,7 @@ export function TextField({ field, value, onChange, error }: EditorFieldProps) {
     placeholder={field.placeholder}
     minLength={field.minLength}
     maxLength={field.maxLength}
-    value={value}
+    value={typeof value === 'string' ? value : ''}
     onChange={(event) => onChange(event.target.value)}
     className={`${controlClass} studio-textarea`}
   />

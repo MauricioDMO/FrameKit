@@ -3,7 +3,8 @@ import type { EditorFieldProps } from '../../types'
 
 export function ChoiceField({ field, value, onChange, error }: EditorFieldProps) {
   const options = field.options ?? []
-  const hasDeclaredValue = options.some((option) => option.value === value)
+  const stringValue = typeof value === 'string' ? value : ''
+  const hasDeclaredValue = options.some((option) => option.value === stringValue)
 
   return (
     <select
@@ -11,11 +12,11 @@ export function ChoiceField({ field, value, onChange, error }: EditorFieldProps)
       aria-label={field.label}
       aria-invalid={error !== undefined}
       aria-describedby={error ? `${field.key}-error` : undefined}
-      value={value}
+      value={stringValue}
       onChange={(event) => onChange(event.target.value)}
       className={controlClass}
     >
-      {!hasDeclaredValue && <option value={value} hidden disabled>{value}</option>}
+      {!hasDeclaredValue && <option value={stringValue} hidden disabled>{stringValue}</option>}
       {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
   )
