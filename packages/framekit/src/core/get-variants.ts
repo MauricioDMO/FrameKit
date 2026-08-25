@@ -1,5 +1,5 @@
-import type { TemplateDefinition } from '../types'
+import type { TemplateBase } from '../types'
 
-export function getVariants(definition: TemplateDefinition): string[] {
+export function getVariants(definition: TemplateBase): string[] {
   return Object.keys(definition.content)
 }

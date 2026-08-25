@@ -29,6 +29,28 @@ function createDefinition() {
   })
 }
 
+function createChoiceDefinition() {
+  return defineTemplate({
+    meta: { title: 'Choice validation' },
+    width: 100,
+    height: 100,
+    fields: {
+      alignment: field.choice({
+        label: 'Alignment',
+        options: [
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' },
+        ],
+        defaultValue: 'center',
+      }),
+    },
+    content: { en: {} },
+    variants: { default: 'en' },
+    render: () => null,
+  })
+}
+
 describe('validateTemplateData', () => {
   it('rejects required empty values but accepts optional empty values', () => {
     const definition = createDefinition()
@@ -129,5 +151,17 @@ describe('validateTemplateData', () => {
     expect(validateTemplateData(definition, { ...baseData, limitedText: 'abcd\n' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
     expect(validateTemplateData(definition, { ...baseData, limitedText: ' ' })).toEqual({ limitedText: { code: 'text_too_short', minLength: 2 } })
     expect(validateTemplateData(definition, { ...baseData, limitedText: '     ' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
+  })
+
+  it('accepts only declared choice strings without coercion or recovery', () => {
+    const definition = createChoiceDefinition()
+
+    expect(validateTemplateData(definition, { alignment: 'left' })).toEqual({})
+    expect(validateTemplateData(definition, { alignment: 'center' })).toEqual({})
+    expect(validateTemplateData(definition, { alignment: 'right' })).toEqual({})
+    expect(validateTemplateData(definition, { alignment: 'first' })).toEqual({ alignment: { code: 'invalid_choice' } })
+    expect(validateTemplateData(definition, { alignment: ' center ' })).toEqual({ alignment: { code: 'invalid_choice' } })
+    expect(validateTemplateData(definition, { alignment: 1 as unknown as string })).toEqual({ alignment: { code: 'invalid_choice' } })
+    expect(validateTemplateData(definition, {})).toEqual({ alignment: { code: 'invalid_choice' } })
   })
 })

@@ -13,6 +13,15 @@ export const template = defineTemplate({
   fields: {
     title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
     accentColor: field.color({ label: 'Color', defaultValue: '#173d31' }),
+    alignment: field.choice({
+      label: 'Alignment',
+      options: [
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' },
+        { value: 'right', label: 'Right' },
+      ],
+      defaultValue: 'center',
+    }),
   },
   content: {
     moon: { title: 'Oferta' },
@@ -21,6 +30,7 @@ export const template = defineTemplate({
   variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
   render({ data, variant, width, height }) {
     const title: string = data.title
+    const alignment: 'left' | 'center' | 'right' = data.alignment
     const variantKey: 'moon' | 'fjord' = variant
     const dimension: number = width + height
 
@@ -28,6 +38,7 @@ export const template = defineTemplate({
     String(data.missing)
 
     void title
+    void alignment
     void variantKey
     void dimension
     return null
@@ -43,7 +54,7 @@ type Expect<Value extends true> = Value
 
 type DataAssertion = Expect<Equal<
   InferTemplateData<typeof template>,
-  { title: string; accentColor: string }
+  { title: string; accentColor: string; alignment: 'left' | 'center' | 'right' }
 >>
 type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['variant'],

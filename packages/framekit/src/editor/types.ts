@@ -20,6 +20,7 @@ export interface EditorMessages {
   errorTextTooShort: string
   errorTextTooLong: string
   errorInvalidColor: string
+  errorInvalidChoice: string
   imageSelect: string
   imageUploading: string
   imageLoadError: string
@@ -35,6 +36,7 @@ export interface TemplateField {
   minLength?: number
   maxLength?: number
   scope?: ImageFieldScope
+  options?: readonly { value: string; label: string }[]
   label: string
   placeholder?: string
 }

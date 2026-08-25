@@ -4,7 +4,8 @@ Fields describe the values a Studio user may edit. Define them in the template's
 
 ## Shared Options
 
-Every field requires a human-readable `label`. All fields also accept:
+Every field requires a human-readable `label`. Text, number, color, and image
+fields also accept:
 
 - `placeholder` — hint text shown by the editor; it is not a value and does not satisfy a required field.
 - `required` — whether an empty value is invalid. It defaults to `true`; use `required: false` for optional content.
@@ -20,6 +21,7 @@ Each `content` entry is a field-value-only object: its keys are declared field n
 | `field.number` | Number input | Counts, prices, percentages, bounded values | The trimmed value must be finite and within `min` and `max` when declared. |
 | `field.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
 | `field.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
+| `field.choice` | Native select | A closed set of ordered string options | `defaultValue` must match an option; undeclared values return `invalid_choice`. |
 
 ### Text
 
@@ -64,6 +66,25 @@ hero: field.image({
 ```
 
 Files under `public/assets` are served directly by the application. They are not scanned into the template asset manifest and are not replaced by Studio uploads. A Studio upload creates a template-local asset that takes precedence over the public fallback.
+
+### Choice
+
+`field.choice` uses a native select and preserves the declared option order. The
+`options` array must be non-empty, with unique non-empty string `value` and
+`label` properties. `defaultValue` is required and must match an option. Choice
+fields do not accept `required` or `control`, and values are never coerced.
+
+```tsx
+alignment: field.choice({
+  label: 'Alignment',
+  options: [
+    { value: 'left', label: 'Left' },
+    { value: 'center', label: 'Center' },
+    { value: 'right', label: 'Right' },
+  ],
+  defaultValue: 'center',
+})
+```
 
 ## Resolution And Validation
 

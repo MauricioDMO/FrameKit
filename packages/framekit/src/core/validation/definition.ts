@@ -1,6 +1,6 @@
 import type { TemplateBase, TemplateDefinition } from '../../types'
 
-const FIELD_KINDS = new Set(['text', 'number', 'color', 'image'])
+const FIELD_KINDS = new Set(['text', 'number', 'color', 'image', 'choice'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 const VARIANT_KEYS = new Set(['default', 'labels'])
@@ -106,6 +106,46 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
     }
     if (field.placeholder !== undefined && typeof field.placeholder !== 'string') {
       return { success: false, error: `fields.${key}.placeholder must be a string` }
+    }
+    if (field.kind === 'choice') {
+      if ('required' in field) {
+        return { success: false, error: `fields.${key} cannot define required` }
+      }
+      if ('control' in field) {
+        return { success: false, error: `fields.${key} cannot define control` }
+      }
+
+      const options = field.options
+      if (!Array.isArray(options) || options.length === 0) {
+        return { success: false, error: `fields.${key}.options must be a non-empty array` }
+      }
+
+      const optionValues = new Set<string>()
+      for (const [index, option] of options.entries()) {
+        if (!isPlainObject(option)) {
+          return { success: false, error: `fields.${key}.options[${index}] must be a plain object` }
+        }
+        if (typeof option.value !== 'string' || option.value.trim() === '') {
+          return { success: false, error: `fields.${key}.options[${index}].value must be a non-empty string` }
+        }
+        if (typeof option.label !== 'string' || option.label.trim() === '') {
+          return { success: false, error: `fields.${key}.options[${index}].label must be a non-empty string` }
+        }
+        if (optionValues.has(option.value)) {
+          return { success: false, error: `fields.${key}.options contains duplicate value "${option.value}"` }
+        }
+        optionValues.add(option.value)
+      }
+
+      if (!('defaultValue' in field)) {
+        return { success: false, error: `fields.${key}.defaultValue is required` }
+      }
+      if (typeof field.defaultValue !== 'string') {
+        return { success: false, error: `fields.${key}.defaultValue must be a string` }
+      }
+      if (!optionValues.has(field.defaultValue)) {
+        return { success: false, error: `fields.${key}.defaultValue must match an option value` }
+      }
     }
     if (field.required !== undefined && typeof field.required !== 'boolean') {
       return { success: false, error: `fields.${key}.required must be a boolean` }

@@ -34,6 +34,7 @@ const messages: EditorMessages = {
   errorTextTooShort: 'Debe tener al menos {minLength} caracteres',
   errorTextTooLong: 'Debe tener como maximo {maxLength} caracteres',
   errorInvalidColor: 'Color hexadecimal invalido',
+  errorInvalidChoice: 'Seleccion invalida',
   imageSelect: 'Subir imagen',
   imageUploading: 'Subiendo',
   imageLoadError: 'No se pudo cargar el asset',
@@ -51,6 +52,15 @@ function createDefinition() {
       invalidNumber: field.number({ label: 'Invalid number' }),
       tooSmall: field.number({ label: 'Too small', min: 10 }),
       tooLarge: field.number({ label: 'Too large', max: 20 }),
+      alignment: field.choice({
+        label: 'Alignment',
+        options: [
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' },
+        ],
+        defaultValue: 'center',
+      }),
       accentColor: field.color({ label: 'Accent color', defaultValue: '#123456' }),
       optionalColor: field.color({ label: 'Optional color', required: false }),
     },
@@ -83,6 +93,23 @@ describe('FrameKitEditor controls', () => {
     renderEditor()
     expect(screen.getByRole('spinbutton', { name: 'Too small' }).getAttribute('min')).toBe('10')
     expect(screen.getByRole('spinbutton', { name: 'Too large' }).getAttribute('max')).toBe('20')
+  })
+
+  it('renders choice fields as ordered native selects without required behavior', () => {
+    renderEditor()
+
+    const alignment = screen.getByRole('combobox', { name: 'Alignment' })
+    expect(alignment.tagName).toBe('SELECT')
+    expect(Array.from((alignment as HTMLSelectElement).options).map((option) => [option.value, option.textContent])).toEqual([
+      ['left', 'Left'],
+      ['center', 'Center'],
+      ['right', 'Right'],
+    ])
+    expect((alignment as HTMLSelectElement).value).toBe('center')
+    expect(alignment.getAttribute('required')).toBeNull()
+
+    fireEvent.change(alignment, { target: { value: 'right' } })
+    expect((alignment as HTMLSelectElement).value).toBe('right')
   })
 
   it('uses the descriptor required flag for HTML and ARIA controls', () => {
@@ -121,7 +148,7 @@ describe('FrameKitEditor controls', () => {
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getAllByText(messages.errorRequired)).not.toHaveLength(0)
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'fr' } })
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'fr' } })
     expect(screen.queryByText(messages.errorRequired)).toBeNull()
   })
 
@@ -148,6 +175,19 @@ describe('FrameKitEditor controls', () => {
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getByText(messages.errorTextTooShort.replace('{minLength}', '2'))).toBeTruthy()
+  })
+
+  it('renders accessible choice errors without selecting a recovery option', () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', alignment: 'unknown', accentColor: '#123456' } } }))
+    renderEditor()
+
+    const alignment = screen.getByRole('combobox', { name: 'Alignment' })
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+
+    expect(screen.getByText(messages.errorInvalidChoice)).toBeTruthy()
+    expect(alignment.getAttribute('aria-invalid')).toBe('true')
+    expect(alignment.getAttribute('aria-describedby')).toBe('alignment-error')
+    expect((alignment as HTMLSelectElement).value).toBe('unknown')
   })
 
   it('copies a valid template PNG', async () => {

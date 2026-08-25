@@ -1,4 +1,4 @@
-import type { TemplateDefinition } from '../../types'
+import type { TemplateBase } from '../../types'
 
 export interface EditorState {
   selectedVariant: string
@@ -7,11 +7,11 @@ export interface EditorState {
 
 export const storageKey = (slug: string) => `framekit:${slug}:v2`
 
-export function getInitialState(definition: TemplateDefinition): EditorState {
+export function getInitialState(definition: TemplateBase): EditorState {
   return { selectedVariant: definition.variants.default, dataByVariant: {} }
 }
 
-export function loadPersistedState(slug: string, definition: TemplateDefinition, storage: Pick<Storage, 'getItem'>): EditorState | null {
+export function loadPersistedState(slug: string, definition: TemplateBase, storage: Pick<Storage, 'getItem'>): EditorState | null {
   try {
     const stored = storage.getItem(storageKey(slug))
     if (!stored) return null

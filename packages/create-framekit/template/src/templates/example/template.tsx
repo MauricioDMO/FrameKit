@@ -14,14 +14,25 @@ export default defineTemplate({
   height: 800,
   fields: {
     title: field.text({ label: 'Title', required: true, minLength: 1, maxLength: 80 }),
+    alignment: field.choice({
+      label: 'Alignment',
+      options: [
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' },
+        { value: 'right', label: 'Right' },
+      ],
+      defaultValue: 'center',
+    }),
     hero: field.image({ label: 'Hero image', scope: 'common' }),
   },
   content: {
     es: {
       title: 'Tu próxima historia\ncomienza aquí',
+      alignment: 'center',
     },
     en: {
       title: 'Your next story\nstarts here',
+      alignment: 'center',
     },
   },
   variants: { default: 'en', labels: { es: 'Español', en: 'English' } },
@@ -39,6 +50,7 @@ export default defineTemplate({
         <Markdown
           value={data.title}
           className="mt-7 max-w-200 text-[72px] leading-[1.05]"
+          style={{ textAlign: data.alignment }}
         />
         {data.hero && <img src={data.hero} alt="" className="mt-9 h-[120px] w-[180px] rounded-[18px] object-cover" />}
         <p className="mt-10 text-xl opacity-75">

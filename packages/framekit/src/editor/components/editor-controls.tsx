@@ -1,9 +1,9 @@
-import type { TemplateDefinition } from '../../types'
+import type { TemplateBase } from '../../types'
 import { EditorField } from '../fields'
 import type { EditorMessages } from '../types'
 
 interface EditorControlsProps {
-  definition: TemplateDefinition
+  definition: TemplateBase
   messages: EditorMessages
   selectedVariant: string
   data: Record<string, string>
@@ -33,14 +33,15 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
               field={{
                 key,
                 type: field.kind,
-                required: field.required !== false,
+                required: field.kind === 'choice' ? false : field.required !== false,
                 min: field.kind === 'number' ? field.min : undefined,
                 max: field.kind === 'number' ? field.max : undefined,
                 minLength: field.kind === 'text' ? field.minLength : undefined,
                 maxLength: field.kind === 'text' ? field.maxLength : undefined,
                 scope: field.kind === 'image' ? field.scope : undefined,
+                options: field.kind === 'choice' ? field.options : undefined,
                 label: field.label,
-                placeholder: field.placeholder
+                placeholder: 'placeholder' in field ? field.placeholder : undefined,
               }}
               value={data[key] ?? ''}
               onChange={(value) => onFieldChange(key, value)}

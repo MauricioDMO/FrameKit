@@ -15,7 +15,7 @@
 
 ## Fields and preview
 
-- Field definitions select multiline text, number, color, or image controls. Text values preserve newlines and may declare length limits. Required values are checked on export; optional empty values are valid.
+- Field definitions select multiline text, number, choice, color, or image controls. Text values preserve newlines and may declare length limits. Choice values follow the declared ordered options and invalid values return `invalid_choice`. Required values are checked on export; optional empty values are valid.
 - Image resolution and uploads are documented in [Image Fields](../../fk-templates/references/image-fields.md).
 - The preview fits the available area without exceeding 100%, with a 10% minimum. Hold Ctrl while scrolling to zoom from 10% to 400% around the pointer; drag to pan. **Actual size** sets 100%; **Fit to view** refits. Resize refitting only runs in fit mode.
 

@@ -4,6 +4,7 @@ import { ColorField } from './components/color-field'
 import { NumberField } from './components/number-field'
 import { TextField } from './components/text-field'
 import { ImageField } from './components/image-field'
+import { ChoiceField } from './components/choice-field'
 import type { EditorFieldProps } from '../types'
 
 export const fieldComponents = {
@@ -11,4 +12,5 @@ export const fieldComponents = {
   color: ColorField,
   number: NumberField,
   image: ImageField,
+  choice: ChoiceField,
 } satisfies Record<string, ComponentType<EditorFieldProps>>

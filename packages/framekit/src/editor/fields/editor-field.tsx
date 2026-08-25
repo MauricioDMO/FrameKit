@@ -10,7 +10,7 @@ export function EditorField({ field, value, onChange, error, imageLabels, onImag
     <Container className="block">
       <FieldLabel label={field.label} />
       <Field field={field} value={value} onChange={onChange} error={error} imageLabels={imageLabels} onImageUpload={onImageUpload} />
-      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p id={`${field.key}-error`} className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
     </Container>
   )
 }

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-import type { TemplateDefinition } from '../../types'
+import type { TemplateBase } from '../../types'
 import { getInitialState, loadPersistedState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
 
-export function useEditorState(slug: string, definition: TemplateDefinition) {
+export function useEditorState(slug: string, definition: TemplateBase) {
   const hydratedRef = useRef(false)
   const [state, setState] = useState(() => {
     if (typeof window === 'undefined') return getInitialState(definition)

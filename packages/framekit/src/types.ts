@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type TemplateFieldKind = 'text' | 'number' | 'color' | 'image'
+export type TemplateFieldKind = 'text' | 'number' | 'color' | 'image' | 'choice'
 
 export type ImageFieldScope = 'common' | 'variant'
 
@@ -32,11 +32,19 @@ export interface ImageFieldDescriptor extends BaseFieldDescriptor {
   scope?: ImageFieldScope
 }
 
+export interface ChoiceFieldDescriptor<OptionValue extends string = string> {
+  kind: 'choice'
+  label: string
+  options: readonly { value: OptionValue; label: string }[]
+  defaultValue: OptionValue
+}
+
 export type FieldDescriptor =
   | TextFieldDescriptor
   | ColorFieldDescriptor
   | NumberFieldDescriptor
   | ImageFieldDescriptor
+  | ChoiceFieldDescriptor
 
 export interface TemplateAssetManifest {
   common: Record<string, string>
@@ -44,6 +52,18 @@ export interface TemplateAssetManifest {
 }
 
 export type TemplateFields = Record<string, FieldDescriptor>
+
+type InferFieldValue<Field> =
+  Field extends {
+    kind: 'choice'
+    options: readonly { value: infer OptionValue extends string }[]
+  }
+    ? OptionValue
+    : string
+
+type InferFieldsData<Fields> = {
+  -readonly [K in keyof Fields]: InferFieldValue<Fields[K]>
+}
 
 export interface TemplateMeta {
   title: string
@@ -113,15 +133,14 @@ export interface TemplateDefinition<
 export interface TemplateRenderProps<
   Definition extends TemplateBase = TemplateDefinition,
 > {
-  data: { -readonly [K in keyof Definition['fields']]: string }
+  data: InferTemplateData<Definition>
   assets: TemplateAssetManifest
   variant: keyof Definition['content'] & string
   width: Definition['width']
   height: Definition['height']
 }
 
-export type InferTemplateData<Def extends TemplateBase> =
-  { -readonly [K in keyof Def['fields']]: string }
+export type InferTemplateData<Def extends TemplateBase> = InferFieldsData<Def['fields']>
 
 export type TemplateInput<
   Fields extends TemplateFields,

@@ -2,10 +2,11 @@
 
 import { Copy, Download, RotateCcw } from 'lucide-react'
 import { useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 
 import { resolveTemplateData } from '../core/resolve-template-data'
 import { validateTemplateData } from '../core/validation'
-import type { ImageFieldScope, TemplateAssetManifest, TemplateDefinition } from '../types'
+import type { ImageFieldScope, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '../types'
 import { EditorControls } from './components/editor-controls'
 import { TemplatePreview } from './components/template-preview'
 import { copyTemplate, exportTemplate } from './export-template'
@@ -13,9 +14,11 @@ import { useEditorState } from './state/use-editor-state'
 import type { EditorMessages } from './types'
 import { translateValidationError } from './validation'
 
-interface FrameKitEditorProps {
+interface FrameKitEditorProps<Definition extends TemplateBase> {
   slug: string
-  definition: TemplateDefinition
+  definition: Definition & {
+    render(props: TemplateRenderProps<Definition>): ReactNode
+  }
   assets?: TemplateAssetManifest
   messages: EditorMessages
   sidebarCollapsed?: boolean
@@ -36,7 +39,7 @@ function readFileAsBase64(file: File): Promise<string> {
   })
 }
 
-export function FrameKitEditor({ slug, definition, assets = emptyAssets, messages, sidebarCollapsed = false }: FrameKitEditorProps) {
+export function FrameKitEditor<Definition extends TemplateBase>({ slug, definition, assets = emptyAssets, messages, sidebarCollapsed = false }: FrameKitEditorProps<Definition>) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const { selectedVariant, userEdits, errors, setErrors, changeVariant, clearVariant, changeField } = useEditorState(slug, definition)
@@ -114,7 +117,13 @@ export function FrameKitEditor({ slug, definition, assets = emptyAssets, message
         <EditorControls definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
-            {definition.render({ data: resolvedData, assets, variant: selectedVariant, width: definition.width, height: definition.height })}
+            {definition.render({
+              data: resolvedData as TemplateRenderProps<Definition>['data'],
+              assets,
+              variant: selectedVariant as TemplateRenderProps<Definition>['variant'],
+              width: definition.width,
+              height: definition.height,
+            })}
           </div>
         </TemplatePreview>
       </div>

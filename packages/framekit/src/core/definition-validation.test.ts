@@ -74,6 +74,15 @@ describe('validateTemplateDefinition', () => {
     ['invalid placeholder', { kind: 'text', label: 'Title', placeholder: 1 }, 'fields.title.placeholder must be a string'],
     ['invalid required', { kind: 'text', label: 'Title', required: 1 }, 'fields.title.required must be a boolean'],
     ['invalid default', { kind: 'text', label: 'Title', defaultValue: 1 }, 'fields.title.defaultValue must be a string'],
+    ['empty choice options', { kind: 'choice', label: 'Alignment', options: [], defaultValue: 'center' }, 'fields.title.options must be a non-empty array'],
+    ['non-object choice option', { kind: 'choice', label: 'Alignment', options: [null], defaultValue: 'center' }, 'fields.title.options[0] must be a plain object'],
+    ['empty choice option value', { kind: 'choice', label: 'Alignment', options: [{ value: ' ', label: 'Blank' }], defaultValue: ' ' }, 'fields.title.options[0].value must be a non-empty string'],
+    ['empty choice option label', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: ' ' }], defaultValue: 'left' }, 'fields.title.options[0].label must be a non-empty string'],
+    ['duplicate choice option values', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }, { value: 'left', label: 'Also left' }], defaultValue: 'left' }, 'fields.title.options contains duplicate value "left"'],
+    ['missing choice default', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }] }, 'fields.title.defaultValue is required'],
+    ['unknown choice default', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'right' }, 'fields.title.defaultValue must match an option value'],
+    ['required on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', required: false }, 'fields.title cannot define required'],
+    ['control on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', control: 'select' }, 'fields.title cannot define control'],
     ['non-finite minimum', { kind: 'number', label: 'Count', min: Infinity }, 'fields.title.min must be a finite number'],
     ['non-finite maximum', { kind: 'number', label: 'Count', max: NaN }, 'fields.title.max must be a finite number'],
     ['reversed limits', { kind: 'number', label: 'Count', min: 5, max: 4 }, 'fields.title.min must be less than or equal to max'],
@@ -90,6 +99,24 @@ describe('validateTemplateDefinition', () => {
       ...validDefinition(),
       fields: { title: field },
     })).toEqual({ success: false, error })
+  })
+
+  it('accepts a valid choice descriptor', () => {
+    expect(validateTemplateDefinition({
+      ...validDefinition(),
+      fields: {
+        alignment: {
+          kind: 'choice',
+          label: 'Alignment',
+          options: [
+            { value: 'left', label: 'Left' },
+            { value: 'center', label: 'Center' },
+          ],
+          defaultValue: 'center',
+        },
+      },
+      content: { en: { alignment: 'center' } },
+    }).success).toBe(true)
   })
 
   it.each(['width', 'height'] as const)('rejects decimal %s', (dimension) => {

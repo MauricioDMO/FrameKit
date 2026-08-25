@@ -1,4 +1,4 @@
-import type { TemplateDefinition } from '../../types'
+import type { TemplateBase } from '../../types'
 
 export type TemplateDataValidationError =
   | { code: 'required' }
@@ -8,19 +8,28 @@ export type TemplateDataValidationError =
   | { code: 'text_too_short'; minLength: number }
   | { code: 'text_too_long'; maxLength: number }
   | { code: 'invalid_color' }
+  | { code: 'invalid_choice' }
 
 export function isValidColor(value: string): boolean {
   return /^#[\da-f]{6}$/i.test(value)
 }
 
 export function validateTemplateData(
-  definition: TemplateDefinition,
+  definition: TemplateBase,
   data: Record<string, string>,
 ): Record<string, TemplateDataValidationError> {
   const errors: Record<string, TemplateDataValidationError> = {}
 
   for (const [key, field] of Object.entries(definition.fields)) {
     const value = data[key] ?? ''
+
+    if (field.kind === 'choice') {
+      if (typeof value !== 'string' || !field.options.some((option) => option.value === value)) {
+        errors[key] = { code: 'invalid_choice' }
+      }
+      continue
+    }
+
     const trimmed = value.trim()
     const isRequired = field.required !== false
 
