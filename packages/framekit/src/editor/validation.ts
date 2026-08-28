@@ -7,6 +7,7 @@ export function translateValidationError(error: TemplateDataValidationError, mes
     case 'invalid_number': return messages.errorInvalidNumber
     case 'number_too_small': return messages.errorNumberTooSmall.replace('{min}', String(error.min ?? ''))
     case 'number_too_large': return messages.errorNumberTooLarge.replace('{max}', String(error.max ?? ''))
+    case 'invalid_step': return messages.errorInvalidStep.replace('{step}', String(error.step))
     case 'text_too_short': return messages.errorTextTooShort.replace('{minLength}', String(error.minLength ?? ''))
     case 'text_too_long': return messages.errorTextTooLong.replace('{maxLength}', String(error.maxLength ?? ''))
     case 'invalid_color': return messages.errorInvalidColor

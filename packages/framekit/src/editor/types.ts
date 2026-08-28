@@ -1,3 +1,4 @@
+import type { TemplateDataValidationError } from '../core/validation'
 import type { ImageFieldScope, TemplateFieldKind } from '../types'
 
 export interface EditorMessages {
@@ -17,6 +18,7 @@ export interface EditorMessages {
   errorInvalidNumber: string
   errorNumberTooSmall: string
   errorNumberTooLarge: string
+  errorInvalidStep: string
   errorTextTooShort: string
   errorTextTooLong: string
   errorInvalidColor: string
@@ -34,6 +36,8 @@ export interface TemplateField {
   required: boolean
   min?: number
   max?: number
+  step?: number
+  control?: 'input' | 'slider'
   minLength?: number
   maxLength?: number
   scope?: ImageFieldScope
@@ -51,9 +55,10 @@ export interface ImageFieldLabels {
 
 export interface EditorFieldProps {
   field: TemplateField
-  value: string | boolean
-  onChange: (value: string | boolean) => void
+  value: string | number | boolean
+  onChange: (value: string | number | boolean) => void
   error?: string
+  onValidationError?: (error?: TemplateDataValidationError) => void
   imageLabels?: ImageFieldLabels
   onImageUpload?: (file: File) => Promise<void>
 }

@@ -1,4 +1,5 @@
-import type { TemplateBase, TemplateDefinition } from '../../types'
+import type { NumberFieldDescriptor, TemplateBase, TemplateDefinition } from '../../types'
+import { isValidNumberStep, validateNumberValue } from './data'
 
 const FIELD_KINDS = new Set(['text', 'number', 'color', 'image', 'choice', 'boolean'])
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
@@ -114,6 +115,9 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       if ('control' in field) {
         return { success: false, error: `fields.${key} cannot define control` }
       }
+      if ('step' in field) {
+        return { success: false, error: `fields.${key} cannot define step` }
+      }
 
       const options = field.options
       if (!Array.isArray(options) || options.length === 0) {
@@ -156,8 +160,48 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       if ('control' in field) {
         return { success: false, error: `fields.${key} cannot define control` }
       }
+      if ('step' in field) {
+        return { success: false, error: `fields.${key} cannot define step` }
+      }
       if (field.defaultValue !== undefined && typeof field.defaultValue !== 'boolean') {
         return { success: false, error: `fields.${key}.defaultValue must be a boolean` }
+      }
+    } else if (field.kind === 'number') {
+      if ('required' in field) {
+        return { success: false, error: `fields.${key} cannot define required` }
+      }
+      if (!('defaultValue' in field)) {
+        return { success: false, error: `fields.${key}.defaultValue is required` }
+      }
+      if (typeof field.defaultValue !== 'number' || !Number.isFinite(field.defaultValue)) {
+        return { success: false, error: `fields.${key}.defaultValue must be a finite number` }
+      }
+      if (field.control !== undefined && field.control !== 'input' && field.control !== 'slider') {
+        return { success: false, error: `fields.${key}.control must be "input" or "slider"` }
+      }
+      if (field.min !== undefined && (typeof field.min !== 'number' || !Number.isFinite(field.min))) {
+        return { success: false, error: `fields.${key}.min must be a finite number` }
+      }
+      if (field.max !== undefined && (typeof field.max !== 'number' || !Number.isFinite(field.max))) {
+        return { success: false, error: `fields.${key}.max must be a finite number` }
+      }
+      if (field.min !== undefined && field.max !== undefined && field.min > field.max) {
+        return { success: false, error: `fields.${key}.min must be less than or equal to max` }
+      }
+      if (field.step !== undefined && (typeof field.step !== 'number' || !Number.isFinite(field.step) || field.step <= 0)) {
+        return { success: false, error: `fields.${key}.step must be a finite positive number` }
+      }
+      if (field.control === 'slider' && (field.min === undefined || field.max === undefined)) {
+        return { success: false, error: `fields.${key}.slider requires explicit min and max` }
+      }
+      if (field.min !== undefined && field.defaultValue < field.min) {
+        return { success: false, error: `fields.${key}.defaultValue must be greater than or equal to min` }
+      }
+      if (field.max !== undefined && field.defaultValue > field.max) {
+        return { success: false, error: `fields.${key}.defaultValue must be less than or equal to max` }
+      }
+      if (!isValidNumberStep(field.defaultValue, field.min, field.step ?? 1)) {
+        return { success: false, error: `fields.${key}.defaultValue must match step` }
       }
     } else {
       if (field.required !== undefined && typeof field.required !== 'boolean') {
@@ -165,6 +209,12 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       }
       if (field.defaultValue !== undefined && typeof field.defaultValue !== 'string') {
         return { success: false, error: `fields.${key}.defaultValue must be a string` }
+      }
+      if ('control' in field) {
+        return { success: false, error: `fields.${key} cannot define control` }
+      }
+      if ('step' in field) {
+        return { success: false, error: `fields.${key} cannot define step` }
       }
     }
 
@@ -201,16 +251,6 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
         return { success: false, error: `fields.${key} cannot define min or max` }
       }
       continue
-    }
-
-    if (field.min !== undefined && (typeof field.min !== 'number' || !Number.isFinite(field.min))) {
-      return { success: false, error: `fields.${key}.min must be a finite number` }
-    }
-    if (field.max !== undefined && (typeof field.max !== 'number' || !Number.isFinite(field.max))) {
-      return { success: false, error: `fields.${key}.max must be a finite number` }
-    }
-    if (field.min !== undefined && field.max !== undefined && field.min > field.max) {
-      return { success: false, error: `fields.${key}.min must be less than or equal to max` }
     }
   }
 
@@ -275,9 +315,27 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
       if (!fieldKeys.has(key)) {
         return { success: false, error: `content.${variant} contains unknown field key "${key}"` }
       }
-      const expectedType = (def.fields[key] as Record<string, unknown>).kind === 'boolean' ? 'boolean' : 'string'
-      if (typeof entry[key] !== expectedType) {
+      const field = def.fields[key] as Record<string, unknown>
+      const expectedType = field.kind === 'boolean'
+        ? 'boolean'
+        : field.kind === 'number'
+          ? 'number'
+          : 'string'
+      if (typeof entry[key] !== expectedType || (expectedType === 'number' && !Number.isFinite(entry[key]))) {
         return { success: false, error: `content.${variant}.${key} must be a ${expectedType}` }
+      }
+      if (field.kind === 'number') {
+        const numberField = field as unknown as Pick<NumberFieldDescriptor, 'min' | 'max' | 'step'>
+        const error = validateNumberValue(entry[key], numberField)
+        if (error?.code === 'number_too_small') {
+          return { success: false, error: `content.${variant}.${key} must be greater than or equal to min` }
+        }
+        if (error?.code === 'number_too_large') {
+          return { success: false, error: `content.${variant}.${key} must be less than or equal to max` }
+        }
+        if (error?.code === 'invalid_step') {
+          return { success: false, error: `content.${variant}.${key} must match step` }
+        }
       }
     }
   }

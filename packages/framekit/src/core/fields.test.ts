@@ -23,6 +23,15 @@ describe('field factories', () => {
     })
   })
 
+  it('creates numeric descriptors with native control defaults', () => {
+    const input = api.field.number({ label: 'Opacity', defaultValue: 100 })
+    const slider = api.field.number({ label: 'Opacity', defaultValue: 50, min: 0, max: 100, step: 5, control: 'slider' })
+
+    expect(input).toEqual({ kind: 'number', label: 'Opacity', placeholder: undefined, defaultValue: 100, min: undefined, max: undefined, step: 1, control: 'input' })
+    expect(slider).toEqual({ kind: 'number', label: 'Opacity', placeholder: undefined, defaultValue: 50, min: 0, max: 100, step: 5, control: 'slider' })
+    expect(Object.isFrozen(input)).toBe(true)
+  })
+
   it('freezes choice descriptors while preserving option order', () => {
     const sourceOptions = [
       { value: 'left', label: 'Left' },

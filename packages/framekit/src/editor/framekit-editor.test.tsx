@@ -8,6 +8,7 @@ import { defineTemplate, field } from '../index'
 import { FrameKitEditor } from './framekit-editor'
 import { copyTemplate } from './export-template'
 import { EditorField } from './fields/editor-field'
+import { NumberField } from './fields/components/number-field'
 import type { EditorMessages } from './types'
 
 vi.mock('./export-template', () => ({
@@ -32,6 +33,7 @@ const messages: EditorMessages = {
   errorInvalidNumber: 'Numero invalido',
   errorNumberTooSmall: 'Debe ser al menos {min}',
   errorNumberTooLarge: 'Debe ser como maximo {max}',
+  errorInvalidStep: 'Debe respetar el incremento {step}',
   errorTextTooShort: 'Debe tener al menos {minLength} caracteres',
   errorTextTooLong: 'Debe tener como maximo {maxLength} caracteres',
   errorInvalidColor: 'Color hexadecimal invalido',
@@ -51,9 +53,11 @@ function createDefinition() {
     fields: {
       title: field.text({ label: 'Title', minLength: 2, maxLength: 20 }),
       optionalText: field.text({ label: 'Optional text', required: false }),
-      invalidNumber: field.number({ label: 'Invalid number' }),
-      tooSmall: field.number({ label: 'Too small', min: 10 }),
-      tooLarge: field.number({ label: 'Too large', max: 20 }),
+      invalidNumber: field.number({ label: 'Invalid number', defaultValue: 1 }),
+      tooSmall: field.number({ label: 'Too small', defaultValue: 10, min: 10 }),
+      tooLarge: field.number({ label: 'Too large', defaultValue: 20, max: 20 }),
+      steppedNumber: field.number({ label: 'Stepped number', defaultValue: 4, min: 0, max: 10, step: 2 }),
+      sliderNumber: field.number({ label: 'Slider number', defaultValue: 50, min: 0, max: 100, step: 10, control: 'slider' }),
       alignment: field.choice({
         label: 'Alignment',
         options: [
@@ -70,7 +74,7 @@ function createDefinition() {
     content: { en: { title: 'English title' }, fr: { title: 'French title' } },
     variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
     render({ data }) {
-      return <span>{data.showLogo ? 'logo-on' : 'logo-off'}</span>
+      return <span>{data.showLogo ? 'logo-on' : 'logo-off'}:{data.invalidNumber}</span>
     },
   })
 }
@@ -100,6 +104,81 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByRole('spinbutton', { name: 'Too large' }).getAttribute('max')).toBe('20')
   })
 
+  it('keeps malformed input drafts local while committing valid numbers', async () => {
+    renderEditor()
+
+    const input = screen.getByRole('spinbutton', { name: 'Invalid number' })
+    expect((input as HTMLInputElement).value).toBe('1')
+    fireEvent.change(input, { target: { value: '' } })
+
+    expect((input as HTMLInputElement).value).toBe('')
+    expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
+    expect(screen.getByText('logo-on:1')).toBeTruthy()
+
+    fireEvent.change(input, { target: { value: '2' } })
+    expect((input as HTMLInputElement).value).toBe('2')
+    expect(screen.queryByText(messages.errorInvalidNumber)).toBeNull()
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en.invalidNumber).toBe(2))
+  })
+
+  it('preserves malformed number errors alongside export validation errors', async () => {
+    renderEditor()
+
+    const invalidNumber = screen.getByRole('spinbutton', { name: 'Invalid number' })
+    fireEvent.change(invalidNumber, { target: { value: '' } })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Title' }), { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+
+    expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
+    expect(screen.getByText(messages.errorRequired)).toBeTruthy()
+    expect((invalidNumber as HTMLInputElement).value).toBe('')
+    expect(screen.getByText('logo-on:1')).toBeTruthy()
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en).toEqual({ title: '' }))
+  })
+
+  it('clears a malformed number draft when resetting the active variant', () => {
+    renderEditor()
+
+    const input = screen.getByRole('spinbutton', { name: 'Invalid number' })
+    fireEvent.change(input, { target: { value: '' } })
+    expect((input as HTMLInputElement).value).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: messages.reset }))
+
+    expect((screen.getByRole('spinbutton', { name: 'Invalid number' }) as HTMLInputElement).value).toBe('1')
+    expect(screen.queryByText(messages.errorInvalidNumber)).toBeNull()
+  })
+
+  it('renders slider numbers with native constraints and a visible value', () => {
+    renderEditor()
+
+    const slider = screen.getByRole('slider', { name: 'Slider number' })
+    expect(slider.getAttribute('min')).toBe('0')
+    expect(slider.getAttribute('max')).toBe('100')
+    expect(slider.getAttribute('step')).toBe('10')
+    expect(screen.getByText('50')).toBeTruthy()
+
+    fireEvent.change(slider, { target: { value: '70' } })
+
+    expect((slider as HTMLInputElement).value).toBe('70')
+    expect(screen.getByText('70')).toBeTruthy()
+  })
+
+  it('shows the native normalized value for decimal sliders', () => {
+    render(<NumberField field={{ key: 'decimal', type: 'number', required: true, label: 'Decimal slider', min: 0, max: 1, step: 0.1, control: 'slider' }} value={0.30000000000000004} onChange={vi.fn()} />)
+
+    expect((screen.getByRole('slider', { name: 'Decimal slider' }) as HTMLInputElement).value).toBe('0.3')
+    expect(screen.getByText('0.3')).toBeTruthy()
+  })
+
+  it('preserves finite slider values when the range width overflows', () => {
+    const value = 5e307
+    render(<NumberField field={{ key: 'extreme', type: 'number', required: true, label: 'Extreme slider', min: -Number.MAX_VALUE, max: Number.MAX_VALUE, step: 1, control: 'slider' }} value={value} onChange={vi.fn()} />)
+
+    expect((screen.getByRole('slider', { name: 'Extreme slider' }) as HTMLInputElement).valueAsNumber).toBe(value)
+    expect(screen.getByText(String(value))).toBeTruthy()
+  })
+
   it('renders choice fields as ordered native selects without required behavior', () => {
     renderEditor()
 
@@ -125,7 +204,7 @@ describe('FrameKitEditor controls', () => {
     expect((switchInput as HTMLInputElement).type).toBe('checkbox')
     expect((switchInput as HTMLInputElement).checked).toBe(true)
     expect(switchInput.className).toContain('sr-only')
-    expect(screen.getByText('logo-on')).toBeTruthy()
+    expect(screen.getByText('logo-on:1')).toBeTruthy()
 
     switchInput.focus()
     expect(document.activeElement).toBe(switchInput)
@@ -133,7 +212,7 @@ describe('FrameKitEditor controls', () => {
     fireEvent.click(switchInput)
 
     expect((switchInput as HTMLInputElement).checked).toBe(false)
-    expect(screen.getByText('logo-off')).toBeTruthy()
+    expect(screen.getByText('logo-off:1')).toBeTruthy()
     await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en.showLogo).toBe(false))
   })
 
@@ -199,14 +278,19 @@ describe('FrameKitEditor controls', () => {
     expect(document.activeElement).toBe(titleInput)
   })
 
-  it('translates structured validation errors before displaying them', () => {
-    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 'nope', tooSmall: '9', tooLarge: '21', accentColor: 'red' } } }))
+  it('translates number draft validation errors without replacing committed data', () => {
     renderEditor()
-    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Invalid number' }), { target: { value: 'nope' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Too small' }), { target: { value: '9' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Too large' }), { target: { value: '21' } })
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Stepped number' }), { target: { value: '3' } })
+
     expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooSmall.replace('{min}', '10'))).toBeTruthy()
     expect(screen.getByText(messages.errorNumberTooLarge.replace('{max}', '20'))).toBeTruthy()
-    expect(screen.getByText(messages.errorInvalidColor)).toBeTruthy()
+    expect(screen.getByText(messages.errorInvalidStep.replace('{step}', '2'))).toBeTruthy()
+    expect(screen.getByText('logo-on:1')).toBeTruthy()
   })
 
   it('translates text length validation errors', () => {
@@ -217,7 +301,7 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('renders accessible choice errors without selecting a recovery option', () => {
-    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', alignment: 'unknown', accentColor: '#123456' } } }))
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 1, tooSmall: 10, tooLarge: 20, steppedNumber: 4, sliderNumber: 50, alignment: 'unknown', accentColor: '#123456' } } }))
     renderEditor()
 
     const alignment = screen.getByRole('combobox', { name: 'Alignment' })
@@ -230,7 +314,7 @@ describe('FrameKitEditor controls', () => {
   })
 
   it('copies a valid template PNG', async () => {
-    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: '1', tooSmall: '10', tooLarge: '20', accentColor: '#123456' } } }))
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 1, tooSmall: 10, tooLarge: 20, steppedNumber: 4, sliderNumber: 50, accentColor: '#123456' } } }))
     renderEditor()
 
     fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))

@@ -15,6 +15,7 @@ export function useEditorState(slug: string, definition: TemplateBase) {
     }
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [resetVersion, setResetVersion] = useState(0)
 
   useEffect(() => {
     hydratedRef.current = true
@@ -37,10 +38,11 @@ export function useEditorState(slug: string, definition: TemplateBase) {
 
   function clearVariant() {
     setState(resetVariant)
+    setResetVersion((current) => current + 1)
     setErrors({})
   }
 
-  function changeField(key: string, value: string | boolean) {
+  function changeField(key: string, value: string | number | boolean) {
     setState((current) => updateField(current, key, value))
     setErrors((current) => {
       if (!current[key]) return current
@@ -50,5 +52,5 @@ export function useEditorState(slug: string, definition: TemplateBase) {
     })
   }
 
-  return { selectedVariant: state.selectedVariant, userEdits: state.dataByVariant[state.selectedVariant] ?? {}, errors, setErrors, changeVariant, clearVariant, changeField }
+  return { selectedVariant: state.selectedVariant, userEdits: state.dataByVariant[state.selectedVariant] ?? {}, errors, setErrors, changeVariant, clearVariant, changeField, resetVersion }
 }

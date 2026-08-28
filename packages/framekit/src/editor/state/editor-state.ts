@@ -1,8 +1,9 @@
 import type { TemplateBase } from '../../types'
+import { validateNumberValue } from '../../core/validation/data'
 
 export interface EditorState {
   selectedVariant: string
-  dataByVariant: Record<string, Record<string, string | boolean>>
+  dataByVariant: Record<string, Record<string, string | number | boolean>>
 }
 
 export const storageKey = (slug: string) => `framekit:${slug}:v2`
@@ -31,7 +32,9 @@ export function loadPersistedState(slug: string, definition: TemplateBase, stora
         if (!validVariants.has(variant) || !fields || typeof fields !== 'object' || Array.isArray(fields)) continue
         dataByVariant[variant] = Object.fromEntries(Object.entries(fields).filter(([key, value]) => {
           const field = definition.fields[key]
-          return validFieldKeys.has(key) && field !== undefined && typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')
+          if (!validFieldKeys.has(key) || field === undefined) return false
+          if (field.kind === 'number') return validateNumberValue(value, field) === undefined
+          return typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')
         }))
       }
     }
@@ -53,7 +56,7 @@ export function resetVariant(state: EditorState): EditorState {
   return { ...state, dataByVariant }
 }
 
-export function updateField(state: EditorState, key: string, value: string | boolean): EditorState {
+export function updateField(state: EditorState, key: string, value: string | number | boolean): EditorState {
   return {
     ...state,
     dataByVariant: {

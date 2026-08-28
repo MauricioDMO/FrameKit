@@ -1,4 +1,5 @@
 import type { TemplateBase } from '../../types'
+import type { TemplateDataValidationError } from '../../core/validation'
 import { EditorField } from '../fields'
 import type { EditorMessages } from '../types'
 
@@ -6,14 +7,15 @@ interface EditorControlsProps {
   definition: TemplateBase
   messages: EditorMessages
   selectedVariant: string
-  data: Record<string, string | boolean>
+  data: Record<string, string | number | boolean>
   errors: Record<string, string>
   onVariantChange: (variant: string) => void
-  onFieldChange: (key: string, value: string | boolean) => void
+  onFieldChange: (key: string, value: string | number | boolean) => void
+  onFieldValidationError?: (key: string, error?: TemplateDataValidationError) => void
   onImageUpload?: (key: string, file: File, scope: 'common' | 'variant') => Promise<void>
 }
 
-export function EditorControls({ definition, messages, selectedVariant, data, errors, onVariantChange, onFieldChange, onImageUpload }: EditorControlsProps) {
+export function EditorControls({ definition, messages, selectedVariant, data, errors, onVariantChange, onFieldChange, onFieldValidationError, onImageUpload }: EditorControlsProps) {
   return (
     <aside className="studio-editor-scrollbar rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
       <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
@@ -30,12 +32,15 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
         {Object.entries(definition.fields).map(([key, field]) => (
           <div key={key} data-field-key={key}>
             <EditorField
+              key={`${selectedVariant}:${key}`}
               field={{
                 key,
                 type: field.kind,
-                required: field.kind === 'choice' || field.kind === 'boolean' ? false : field.required !== false,
+                required: field.kind === 'choice' || field.kind === 'boolean' ? false : field.kind === 'number' ? true : field.required !== false,
                 min: field.kind === 'number' ? field.min : undefined,
                 max: field.kind === 'number' ? field.max : undefined,
+                step: field.kind === 'number' ? field.step : undefined,
+                control: field.kind === 'number' ? field.control : undefined,
                 minLength: field.kind === 'text' ? field.minLength : undefined,
                 maxLength: field.kind === 'text' ? field.maxLength : undefined,
                 scope: field.kind === 'image' ? field.scope : undefined,
@@ -43,9 +48,10 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
                 label: field.label,
                 placeholder: 'placeholder' in field ? field.placeholder : undefined,
               }}
-              value={data[key] ?? (field.kind === 'boolean' ? false : '')}
+              value={data[key] ?? (field.kind === 'number' ? field.defaultValue : field.kind === 'boolean' ? false : '')}
               onChange={(value) => onFieldChange(key, value)}
               error={errors[key]}
+              onValidationError={(error) => onFieldValidationError?.(key, error)}
               imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError, uploadError: messages.imageUploadError }}
               onImageUpload={field.kind === 'image' && onImageUpload ? (file) => onImageUpload(key, file, field.scope ?? 'variant') : undefined}
             />

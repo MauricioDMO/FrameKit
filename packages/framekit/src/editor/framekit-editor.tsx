@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 
 import { resolveTemplateData } from '../core/resolve-template-data'
 import { validateTemplateData } from '../core/validation'
+import type { TemplateDataValidationError } from '../core/validation'
 import type { ImageFieldScope, InferTemplateData, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '../types'
 import { EditorControls } from './components/editor-controls'
 import { TemplatePreview } from './components/template-preview'
@@ -42,8 +43,20 @@ function readFileAsBase64(file: File): Promise<string> {
 export function FrameKitEditor<Definition extends TemplateBase>({ slug, definition, assets = emptyAssets, messages, sidebarCollapsed = false }: FrameKitEditorProps<Definition>) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
-  const { selectedVariant, userEdits, errors, setErrors, changeVariant, clearVariant, changeField } = useEditorState(slug, definition)
-  const resolvedData = resolveTemplateData(definition, selectedVariant, userEdits as Partial<InferTemplateData<Definition>> & Record<string, string | boolean>, assets)
+  const { selectedVariant, userEdits, errors, setErrors, changeVariant, clearVariant, changeField, resetVersion } = useEditorState(slug, definition)
+  const resolvedData = resolveTemplateData(definition, selectedVariant, userEdits as Partial<InferTemplateData<Definition>> & Record<string, string | number | boolean>, assets)
+
+  function changeFieldValidation(key: string, error?: TemplateDataValidationError) {
+    setErrors((current) => {
+      if (!error) {
+        if (!current[key]) return current
+        const next = { ...current }
+        delete next[key]
+        return next
+      }
+      return { ...current, [key]: translateValidationError(error, messages) }
+    })
+  }
 
   async function uploadImage(key: string, file: File, scope: ImageFieldScope): Promise<void> {
     try {
@@ -74,7 +87,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ slug, definiti
 
     const validationErrors = validateTemplateData(definition, resolvedData)
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(Object.fromEntries(Object.entries(validationErrors).map(([key, error]) => [key, translateValidationError(error, messages)])))
+      setErrors((current) => ({ ...current, ...Object.fromEntries(Object.entries(validationErrors).map(([key, error]) => [key, translateValidationError(error, messages)])) }))
       const firstErrorKey = Object.keys(validationErrors)[0]
       const fieldContainer = Array.from(document.querySelectorAll<HTMLElement>('[data-field-key]')).find((candidate) => candidate.dataset.fieldKey === firstErrorKey)
       fieldContainer?.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select')?.focus()
@@ -114,7 +127,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ slug, definiti
         </div>
       </header>
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
-        <EditorControls definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
+        <EditorControls key={resetVersion} definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onFieldValidationError={changeFieldValidation} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
           <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
             {definition.render({

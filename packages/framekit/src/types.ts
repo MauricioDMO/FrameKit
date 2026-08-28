@@ -21,10 +21,15 @@ export interface ColorFieldDescriptor extends BaseFieldDescriptor {
   kind: 'color'
 }
 
-export interface NumberFieldDescriptor extends BaseFieldDescriptor {
+export interface NumberFieldDescriptor {
   kind: 'number'
+  label: string
+  placeholder?: string
+  defaultValue: number
   min?: number
   max?: number
+  step?: number
+  control?: 'input' | 'slider'
 }
 
 export interface ImageFieldDescriptor extends BaseFieldDescriptor {
@@ -61,7 +66,9 @@ export interface TemplateAssetManifest {
 export type TemplateFields = Record<string, FieldDescriptor>
 
 type InferFieldValue<Field> =
-  Field extends { kind: 'boolean' }
+  Field extends { kind: 'number' }
+    ? number
+    : Field extends { kind: 'boolean' }
     ? boolean
     : Field extends {
         kind: 'choice'

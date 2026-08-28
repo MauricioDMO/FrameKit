@@ -16,9 +16,10 @@ describe('resolveTemplateData', () => {
           defaultValue: '/assets/images/backgrounds/forest.svg',
         }),
         title: field.text({ label: 'Title', defaultValue: 'Default title' }),
+        count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
       },
       content: {
-        aurora: { title: 'Variant title' },
+        aurora: { title: 'Variant title', count: 2 },
       },
       variants: { default: 'aurora' },
       render: () => null,
@@ -26,9 +27,11 @@ describe('resolveTemplateData', () => {
 
     expect(resolveTemplateData(definition, 'aurora', {
       title: 'Edited title',
+      count: 3,
     })).toEqual({
       backgroundImage: '/assets/images/backgrounds/forest.svg',
       title: 'Edited title',
+      count: 3,
     })
   })
 
@@ -78,6 +81,31 @@ describe('resolveTemplateData', () => {
       explicitTrue: true,
       fromContent: false,
     })
+  })
+
+  it('rejects numeric strings at content and edit boundaries', () => {
+    expect(() => defineTemplate({
+      meta: { title: 'Number resolution' },
+      width: 100,
+      height: 100,
+      fields: { count: field.number({ label: 'Count', defaultValue: 1 }) },
+      content: { en: { count: '2' as unknown as number } },
+      variants: { default: 'en' },
+      render: () => null,
+    })).toThrow('content.en.count must be a number')
+
+    const definition = defineTemplate({
+      meta: { title: 'Number edit resolution' },
+      width: 100,
+      height: 100,
+      fields: { count: field.number({ label: 'Count', defaultValue: 1 }) },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(() => resolveTemplateData(definition, 'en', { count: '2' as unknown as number })).toThrow('edits.count must be a number')
+    expect(() => resolveTemplateData(definition, 'en', { count: Infinity })).toThrow('edits.count must be a number')
   })
 
   it('loads a template assembled from an extracted definition base', () => {

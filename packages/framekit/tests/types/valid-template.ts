@@ -22,16 +22,18 @@ export const template = defineTemplate({
       ],
       defaultValue: 'center',
     }),
+    count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100, step: 5 }),
     showLogo: field.boolean({ label: 'Show logo' }),
   },
   content: {
-    moon: { title: 'Oferta', showLogo: true },
-    fjord: { title: 'Offer', showLogo: false },
+    moon: { title: 'Oferta', count: 15, showLogo: true },
+    fjord: { title: 'Offer', count: 20, showLogo: false },
   },
   variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
   render({ data, variant, width, height }) {
     const title: string = data.title
     const alignment: 'left' | 'center' | 'right' = data.alignment
+    const count: number = data.count
     const showLogo: boolean = data.showLogo
     const variantKey: 'moon' | 'fjord' = variant
     const dimension: number = width + height
@@ -41,6 +43,7 @@ export const template = defineTemplate({
 
     void title
     void alignment
+    void count
     void showLogo
     void variantKey
     void dimension
@@ -57,7 +60,7 @@ type Expect<Value extends true> = Value
 
 type DataAssertion = Expect<Equal<
   InferTemplateData<typeof template>,
-  { title: string; accentColor: string; alignment: 'left' | 'center' | 'right'; showLogo: boolean }
+  { title: string; accentColor: string; alignment: 'left' | 'center' | 'right'; count: number; showLogo: boolean }
 >>
 type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['variant'],

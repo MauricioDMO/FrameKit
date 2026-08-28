@@ -10,7 +10,7 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }), enabled: field.boolean({ label: 'Enabled' }) },
+  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }), count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }), enabled: field.boolean({ label: 'Enabled' }) },
   content: { en: {}, fr: {} },
   variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
   render: () => null,
@@ -44,6 +44,12 @@ describe('editor state', () => {
     const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { enabled: 'true' } } }) }
 
     expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: {} } })
+  })
+
+  it('keeps finite numeric edits and discards numeric strings or invalid values', () => {
+    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { count: 5, stringCount: '5', invalidCount: 11 } } }) }
+
+    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: { count: 5 } } })
   })
 
   it('rejects a persisted selected variant that is no longer declared', () => {
