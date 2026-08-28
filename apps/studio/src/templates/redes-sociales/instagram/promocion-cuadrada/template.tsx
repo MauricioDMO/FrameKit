@@ -28,6 +28,7 @@ export default defineTemplate({
       label: 'Imagen de fondo',
       scope: 'common',
     }),
+    imageOpacity: field.number({ label: 'Opacidad de imagen', defaultValue: 55, min: 0, max: 100, step: 5, control: 'slider' }),
     showBackgroundImage: field.boolean({ label: 'Mostrar imagen de fondo', defaultValue: true }),
     accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
@@ -37,12 +38,14 @@ export default defineTemplate({
       title: 'Diseñamos sitios que hacen crecer tu **negocio**',
       description: 'Estrategia, diseño y desarrollo para construir una presencia digital que trabaja a tu favor.',
       website: 'web.mauriciodmo.com',
+      imageOpacity: 55,
     },
     en: {
       eyebrow: 'Digital studio / 2026',
       title: 'We design websites that grow your **business**',
       description: 'Strategy, design, and development to build a digital presence that works for you.',
       website: 'web.mauriciodmo.com',
+      imageOpacity: 55,
     },
   },
   variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
@@ -64,6 +67,7 @@ export default defineTemplate({
             src={data.backgroundImage}
             alt=""
             className="absolute inset-0 size-full object-cover opacity-55"
+            style={{ opacity: data.imageOpacity / 100 }}
           />
         )}
 

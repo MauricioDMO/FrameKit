@@ -16,6 +16,7 @@ export default defineTemplate({
     title: field.text({ label: 'Título', placeholder: 'Diseña imágenes desde React' }),
     description: field.text({ label: 'Descripción' }),
     website: field.text({ label: 'Sitio web' }),
+    opacity: field.number({ label: 'Opacidad', defaultValue: 100, min: 0, max: 100 }),
     accentColor: field.color({ label: 'Color de acento', defaultValue: '#c8f7d9' }),
   },
   content: {
@@ -24,12 +25,14 @@ export default defineTemplate({
       title: 'Diseña imágenes desde **React**',
       description: 'Plantillas editables para crear contenido visual consistente, reutilizable y listo para exportar.',
       website: 'framekit.dev',
+      opacity: 100,
     },
     en: {
       eyebrow: 'NEW / FRAMEKIT',
       title: 'Design images with **React**',
       description: 'Editable templates for consistent, reusable visual content that is ready to export.',
       website: 'framekit.dev',
+      opacity: 100,
     },
   },
   variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
@@ -42,7 +45,7 @@ export default defineTemplate({
     return (
       <article
         className="relative flex overflow-hidden bg-[#10271f] text-[#f5f7ee]"
-        style={{ width, height }}
+        style={{ width, height, opacity: data.opacity / 100 }}
       >
         <div className="absolute top-[-260px] right-[-170px] size-[720px] rounded-full border-[110px] opacity-20" style={{ borderColor: accentColor }} />
         <div className="absolute -bottom-100 left-[-300px] size-[780px] rounded-full border border-white/10" />

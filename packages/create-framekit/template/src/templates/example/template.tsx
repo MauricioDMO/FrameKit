@@ -23,6 +23,8 @@ export default defineTemplate({
       ],
       defaultValue: 'center',
     }),
+    opacity: field.number({ label: 'Opacity', defaultValue: 100, min: 0, max: 100, step: 1 }),
+    scale: field.number({ label: 'Logo scale', defaultValue: 1, min: 0.5, max: 1.5, step: 0.1, control: 'slider' }),
     showLogo: field.boolean({ label: 'Show React logo', defaultValue: true }),
     hero: field.image({ label: 'Hero image', scope: 'common' }),
   },
@@ -30,11 +32,15 @@ export default defineTemplate({
     es: {
       title: 'Tu próxima historia\ncomienza aquí',
       alignment: 'center',
+      opacity: 100,
+      scale: 1,
       showLogo: true,
     },
     en: {
       title: 'Your next story\nstarts here',
       alignment: 'center',
+      opacity: 100,
+      scale: 1,
       showLogo: true,
     },
   },
@@ -42,12 +48,12 @@ export default defineTemplate({
   render({ data, variant, width, height }) {
     return (
       <article
-        style={{ width, height }}
         className="flex flex-col justify-center bg-gradient-to-br from-[#10271f] to-[#39775f] p-[72px] text-[#f5fff8]"
+        style={{ width, height, opacity: data.opacity / 100 }}
       >
         <div className="flex items-center gap-3 text-[#b9f8d2]">
           <IconSparkles className="size-6" stroke={1.8} aria-hidden="true" />
-          {data.showLogo && <SiReact className="size-7" aria-hidden="true" />}
+          {data.showLogo && <SiReact className="size-7" style={{ transform: `scale(${data.scale})` }} aria-hidden="true" />}
           <span className="text-lg tracking-[4px]">{profile.companyName.toUpperCase()} / {variant.toUpperCase()}</span>
         </div>
         <Markdown
