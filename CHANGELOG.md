@@ -31,3 +31,10 @@
   native Studio checkboxes, and `invalid_boolean` validation without string
   coercion. See [plan #7](Docs/Plans/Future/issue-07-boolean-field.md) and
   [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
+- Added the breaking `field.number` contract: required finite numeric defaults,
+  native `input`/`slider` controls (`input` by default and explicit bounds for
+  `slider`), finite ordered bounds, positive finite `step` defaulting to `1`,
+  numeric data without string coercion, and local drafts excluded from render
+  data. Existing string defaults, content values, and overrides must be migrated
+  manually. See [plan #8](Docs/Plans/Future/issue-08-number-field.md) and
+  [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).

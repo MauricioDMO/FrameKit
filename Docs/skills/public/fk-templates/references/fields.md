@@ -4,17 +4,17 @@ Fields describe the values a Studio user may edit. Define them in the template's
 
 ## Shared Options
 
-Every field requires a human-readable `label`. Text, number, color, and image
-fields also accept:
+Every field requires a human-readable `label`. Text, color, and image fields
+also accept:
 
 - `placeholder` — hint text shown by the editor; it is not a value and does not satisfy a required field.
 - `required` — whether an empty value is invalid. It defaults to `true`; use `required: false` for optional content.
-- `defaultValue` — the initial string value when neither the selected variant nor a Studio edit provides one. Boolean fields use a boolean default and fall back to `false`.
+- `defaultValue` — the initial field value when neither the selected variant nor a Studio edit provides one. Boolean fields use a boolean default and fall back to `false`; number fields require a finite numeric default.
 
 Each `content` entry is a field-value-only object: its keys are declared field
-names and values match their field type. String fields, including number fields,
-remain strings; boolean fields use real `true`/`false` values. Do not add an
-entry-level `language` property; it is rejected as an unknown content key. The
+names and values match their field type. String fields remain strings; number
+fields use finite numbers; boolean fields use real `true`/`false` values. Do not
+add an entry-level `language` property; it is rejected as an unknown content key. The
 field name `language` is reserved and cannot be declared in `fields`.
 
 ## Field Kinds
@@ -22,7 +22,7 @@ field name `language` is reserved and cannot be declared in `fields`.
 | Kind | Studio control | Use for | Validation |
 | --- | --- | --- | --- |
 | `field.text` | Multiline textarea | Titles, labels, CTAs, and copy with newlines | Required fields cannot be blank after trimming; optional `minLength` and `maxLength` count the original characters. |
-| `field.number` | Number input | Counts, prices, percentages, bounded values | The trimmed value must be finite and within `min` and `max` when declared. |
+| `field.number` | Native number input or slider | Counts, prices, percentages, bounded values | Requires a finite numeric default; values must be finite and satisfy declared bounds and step. |
 | `field.color` | Color picker and hex input | Editable solid colors | A non-empty value must match `#RRGGBB`; shorthand colors are not accepted. |
 | `field.image` | Resolved image preview and upload control | Template-owned images or root-relative images from `public` | See [Image Fields](./image-fields.md). |
 | `field.choice` | Native select | A closed set of ordered string options | `defaultValue` must match an option; undeclared values return `invalid_choice`. |
@@ -45,10 +45,19 @@ title: field.text({
 
 ### Number
 
-`field.number` uses a browser number control, but `data.count` remains a string. Parse it before arithmetic. `min` and `max` constrain validation as well as the editor control.
+`field.number` requires a finite numeric `defaultValue` and does not accept
+`required`. Its committed values in content, Studio edits, resolved data, and
+render props are finite numbers; numeric strings are rejected without coercion.
+Use the native `input` control by default, or set `control: 'slider'` for a
+native range input. Any supplied `min` and `max` bounds must be finite and
+ordered. Slider fields require explicit `min` and `max` bounds, and display the
+current value. `step` must be finite and positive, defaults to `1`, and follows native
+numeric/range semantics. Values and defaults must satisfy the declared bounds
+and step. While a number input is empty or temporarily malformed, its local
+draft is separate from committed data and is not render data.
 
 ```tsx
-count: field.number({ label: 'Count', min: 0, max: 100, defaultValue: '10' })
+count: field.number({ label: 'Count', min: 0, max: 100, defaultValue: 10 })
 ```
 
 ### Color
@@ -111,5 +120,7 @@ For ordinary fields, Studio resolves values in this order:
 3. The saved edit for that template and variant in browser `localStorage`.
 
 `framekit check` validates definitions and resolved variant data without Studio edits. Export validates the final resolved data before capturing the PNG. Required values are checked after trimming whitespace.
+
+For the breaking number-field contract, see [Future Plan #8](../../../../Plans/Future/issue-08-number-field.md) and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 Image fields have an additional asset-manifest step; see [Image Fields](./image-fields.md). A discovered image asset overrides the default, variant content, or saved edit for that image field.

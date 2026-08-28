@@ -166,3 +166,48 @@ and `framekit build` after updating templates.
 See the [boolean field plan](../../Plans/Future/issue-07-boolean-field.md), the
 [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
+
+## Number Field
+
+Issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8), specified in the
+[number field plan](../../Plans/Future/issue-08-number-field.md), changes the
+contract for `field.number`. This is a breaking adoption change for number
+fields: there is no compatibility alias, numeric-string coercion, or automatic
+migration.
+
+Update every number field as follows:
+
+- replace every string `defaultValue` with a required finite number, such as
+  `defaultValue: 10` instead of `defaultValue: '10'`;
+- remove `required`; number fields are always present because their numeric
+  `defaultValue` is required;
+- replace string values in every `content` variant with finite numbers;
+- replace or remove persisted string overrides before use; overrides must be
+  finite numbers and are not converted automatically;
+- keep supplied `min` and `max` finite and ordered (`min <= max`);
+- use a finite positive `step`, which defaults to `1` and follows native
+  numeric/range semantics;
+- use `control: 'input'` (the default) for a native `<input type="number">`,
+  or `control: 'slider'` for a native `<input type="range">`; slider fields
+  require explicit finite `min` and `max` bounds and display the current value.
+
+Content values, overrides, resolved data, and render props must be finite
+numbers. Numeric strings are rejected without coercion. During an empty or
+temporarily malformed edit, Studio keeps a local draft separate from committed
+numeric data; that draft is not render data and is never passed to `render`.
+
+```tsx
+count: field.number({
+  label: 'Count',
+  defaultValue: 10,
+  min: 0,
+  max: 100,
+})
+```
+
+Run `framekit generate`, `framekit check`, and `framekit build` after updating
+number fields.
+
+See the [number field plan](../../Plans/Future/issue-08-number-field.md), the
+[template contract reference](../reference/template-contract.md#number), and
+the [public API reference](../reference/public-api.md).

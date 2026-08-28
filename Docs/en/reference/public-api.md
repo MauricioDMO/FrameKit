@@ -19,6 +19,16 @@ The choice field contract is defined by [Future Plan #6](../../Plans/Future/issu
 and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
 and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
+The number field contract is defined by [Future Plan #8](../../Plans/Future/issue-08-number-field.md)
+and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+
+`field.number` requires a finite numeric `defaultValue`, does not accept
+`required`, and supports the native `input` control by default or the native
+`slider` control when explicit finite `min` and `max` bounds are supplied. Any
+supplied `min` and `max` bounds must be finite and ordered, and `step` must be
+finite and positive; it defaults to `1` with native numeric/range semantics. Number content, edits,
+resolved data, and render props are finite numbers. Numeric strings are rejected
+without coercion, and an incomplete local editor draft is not render data.
 
 **Runtime exports**
 
@@ -33,7 +43,7 @@ and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; applies defaults -> variant content -> user edits, then image assets                                |
 | `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                             |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| boolean>`; extracts field defaults                                                        |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| number \| boolean>`; extracts field defaults                                          |
 
 **Type exports**
 
@@ -45,7 +55,7 @@ and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
 | `TextFieldDescriptor`         | Descriptor for multiline text fields, including optional `minLength` and `maxLength`                         |
 | `ColorFieldDescriptor`        | Descriptor for color fields                                                                             |
-| `NumberFieldDescriptor`       | Descriptor for number fields                                                                            |
+| `NumberFieldDescriptor`       | Descriptor for number fields with a required finite numeric default, optional finite bounds and step, and native input/slider control                         |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `ChoiceFieldDescriptor`       | Descriptor for ordered closed-set string options and a required default value                          |
 | `BooleanFieldDescriptor`      | Descriptor for binary values with an optional boolean default; Studio uses a native checkbox           |
@@ -56,7 +66,7 @@ and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `TemplateContentEntry`        | Partial field-value record for one content variant                                                  |
 | `TemplateBase`                | Base type for a template containing field definitions                                                   |
 | `TemplateDefinition`          | Complete template definition combining base structure with configuration                                |
-| `TemplateRenderProps`         | Props passed to a template's render function                                                            |
+| `TemplateRenderProps`         | Props passed to a template's render function, including finite numbers for number fields                |
 | `InferTemplateData<T>`        | Utility type that extracts the data shape from a template definition                                    |
 | `TemplateDataValidationError` | Per-field validation error union used by `validateTemplateData`                                        |
 

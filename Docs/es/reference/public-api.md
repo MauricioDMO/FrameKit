@@ -21,6 +21,17 @@ El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/
 y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
 y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
+El contrato del field number está definido por el [Plan Futuro #8](../../Plans/Future/issue-08-number-field.md)
+y el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
+
+`field.number` exige un `defaultValue` numérico finito, no acepta `required` y
+admite el control nativo `input` por defecto o el control nativo `slider` cuando
+se proporcionan límites `min` y `max` finitos explícitos. Cualquier límite
+`min` o `max` proporcionado debe ser finito y estar ordenado, y `step` debe ser
+finito y positivo; su valor predeterminado es `1` con semántica numérica/de rango nativa. El contenido, las
+ediciones, los datos resueltos y las props de renderizado de number son numbers
+finitos. Los strings numéricos se rechazan sin conversión y un draft local
+incompleto del editor no es render data.
 
 **Exportaciones del entorno de ejecución**
 
@@ -35,7 +46,7 @@ y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; aplica valores predeterminados -> contenido de variante -> ediciones y luego assets de imagen |
 | `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                   |
-| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| boolean>`; extrae los valores predeterminados de los campos                                                                       |
+| `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| number \| boolean>`; extrae los valores predeterminados de los campos                                                         |
 
 **Exportaciones de tipos**
 
@@ -47,7 +58,7 @@ y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
 | `TextFieldDescriptor`         | Descriptor para campos de texto multilínea, con `minLength` y `maxLength` opcionales                         |
 | `ColorFieldDescriptor`        | Descriptor para campos de color                                                                                |
-| `NumberFieldDescriptor`       | Descriptor para campos numéricos                                                                               |
+| `NumberFieldDescriptor`       | Descriptor para campos numéricos con default numérico finito obligatorio, límites y step finitos opcionales, y control input/slider nativo                              |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
 | `ChoiceFieldDescriptor`       | Descriptor para opciones string ordenadas de conjunto cerrado y un valor predeterminado obligatorio          |
 | `BooleanFieldDescriptor`      | Descriptor para valores binarios con un valor booleano opcional; Studio usa un checkbox nativo               |
@@ -58,7 +69,7 @@ y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 | `TemplateContentEntry`        | Registro parcial de valores de fields para una variante                                                 |
 | `TemplateBase`                | Tipo base para una plantilla que contiene definiciones de campos                                               |
 | `TemplateDefinition`          | Definición completa de plantilla que combina la estructura base con la configuración                           |
-| `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado de una plantilla                                               |
+| `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado, incluidos numbers finitos para fields number                |
 | `InferTemplateData<T>`        | Tipo utilitario que extrae la forma de los datos a partir de una definición de plantilla                       |
 | `TemplateDataValidationError` | Tipo de error devuelto cuando la validación de datos de una plantilla falla                                    |
 

@@ -56,7 +56,7 @@ Templates define fields using the singular `field` object exported from `@mauric
 
 ### Base Options
 
-Text, number, color, and image fields share a common set of options:
+Text, color, and image fields share a common set of options:
 
 - `label` (string, required): A human-readable name for the field.
 - `placeholder` (string, optional): Placeholder text shown in empty inputs.
@@ -120,15 +120,41 @@ validation. Use a `choice` field when a value needs more than two states.
 
 ### `number`
 
-A numeric input. Accepts the base options plus:
+A numeric field with finite numeric values at every committed data boundary. It
+accepts `label`, an optional `placeholder`, and these number-specific options:
 
-- `min` (number, optional): The minimum acceptable value. Must be a finite number.
-- `max` (number, optional): The maximum acceptable value. Must be a finite number.
+- `defaultValue` (finite number, required): The initial value for the field.
+- `min` (finite number, optional): The minimum acceptable value.
+- `max` (finite number, optional): The maximum acceptable value.
+- `step` (finite positive number, optional, default: `1`): The increment used by
+  the native numeric and range controls.
+- `control` (`'input' | 'slider'`, optional, default: `'input'`): The native
+  editing control to use.
 
-**Important:** Despite being a `number` field, the value stored in template data is always a **string**. The `min` and `max` constraints validate the numeric interpretation of that string.
+Number fields do not accept `required`; their required finite numeric
+`defaultValue` means they are always present. If both bounds are supplied,
+`min` must be less than or equal to `max`. `input` uses a native
+`<input type="number">`. `slider` uses a native `<input type="range">`,
+displays the current value, retains native keyboard behavior, and requires
+explicit finite `min` and `max` bounds. Values and defaults must satisfy the
+declared bounds and `step` using native numeric/range semantics.
+
+Content values, user edits, resolved data, and render props for a number field
+are finite numbers. Numeric strings such as `'10'` are rejected; FrameKit does
+not coerce them. While an input is empty or temporarily malformed, Studio keeps
+that local draft separate from committed numeric data. The draft is not render
+data; the renderer receives only committed finite numbers.
 
 ```typescript
-field.number({ label: 'Count', min: 0, max: 100 })
+count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100 })
+opacity: field.number({
+  label: 'Opacity',
+  defaultValue: 100,
+  min: 0,
+  max: 100,
+  step: 1,
+  control: 'slider',
+})
 ```
 
 ### `color`
@@ -165,23 +191,27 @@ FrameKit creates a template-local asset and that asset takes precedence.
 
 ## Requiredness
 
-Text, number, color, and image fields are **required by default**. Setting
-`required: false` makes one of those fields optional. Choice fields always have
-a valid `defaultValue` and do not accept `required`; boolean fields are always
-valid booleans and do not participate in requiredness.
+Text, color, and image fields are **required by default**. Setting
+`required: false` makes one of those fields optional. Number fields always have
+a required finite numeric `defaultValue` and do not accept `required`. Choice
+fields always have a valid `defaultValue` and do not accept `required`; boolean
+fields are always valid booleans and do not participate in requiredness.
 
-- **Optional fields** (`required: false`): An empty string passes validation.
-- **Required fields** (default): An empty string after trimming whitespace fails validation.
+- For fields that support `required`, an **optional field** (`required: false`)
+  accepts an empty string, while a **required field** (the default) rejects an
+  empty string after trimming whitespace.
 
-Boolean fields use `false` when `defaultValue` is omitted. Other fields use the
-requiredness defaults described above.
+Boolean fields use `false` when `defaultValue` is omitted. Number fields use
+their required finite numeric default; the other fields use the requiredness
+defaults described above.
 
 ## Data Resolution Order
 
 When a template renders, field values are resolved through a specific order. This determines what the `data` object contains inside the `render` function:
 
 1. **Field `defaultValue`**: The field's `defaultValue` option, or `''` for
-   string fields and `false` for boolean fields if not set.
+   string fields and `false` for boolean fields if not set. Number fields always
+   have their required finite numeric default.
 2. **Content variant values**: Values from the template's `content` object for the selected variant.
 3. **User edits**: Values the user has edited in the Studio editor, which override everything else.
 
@@ -213,7 +243,7 @@ const data = resolveTemplateData(definition, variant, edits)
 import { getDefaultValues } from '@mauriciodmo/framekit'
 
 const defaults = getDefaultValues(definition.fields)
-// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' or false }
+// { fieldKey: string or finite number default, or false for boolean fields }
 ```
 
 ### Available Variants
@@ -242,10 +272,14 @@ FrameKit provides two validation functions that check different aspects of a tem
 - `fields.language` is reserved and cannot be used
 - `content` must have at least one entry
 - Every content entry may contain only declared field keys, and values must
-  match their field kind (`string` for string fields and `boolean` for boolean fields)
+  match their field kind (`string` for string fields, finite `number` for number
+  fields, and `boolean` for boolean fields); number values must also satisfy
+  their declared `min`, `max`, and `step`
 - Unsupported top-level properties such as `version` are rejected
 - `render` must be a function
-- Field options must have valid types (e.g., `min`/`max` only on `number` fields, `minLength`/`maxLength` only on `text` fields, finite numbers only)
+- Field options must have valid types and constraints (e.g., `min`/`max` only
+  on `number` fields, `minLength`/`maxLength` only on `text` fields, and finite
+  numbers only)
 
 ```typescript
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
@@ -262,7 +296,8 @@ if (!result.success) {
 
 - Required fields: empty string (after trim) fails
 - `text` fields: non-empty values must satisfy `minLength` and `maxLength`; length is measured before trimming, so spaces and newlines count
-- `number` fields: value must parse to a finite number; must fall within `min`/`max` bounds
+- `number` fields: value must be a finite number, not a numeric string; it must
+  satisfy the declared `min`/`max` bounds and `step` using native numeric/range semantics
 - `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
 - `choice` fields: values must match one of the declared option values
 - `boolean` fields: values must be real booleans; strings are not coerced
@@ -285,6 +320,7 @@ Possible error codes:
 - `invalid_number`: Value is not a finite number
 - `number_too_small`: Value is less than the `min` constraint
 - `number_too_large`: Value is greater than the `max` constraint
+- `invalid_step`: Value does not match the declared `step`
 - `text_too_short`: Value has fewer characters than `minLength`
 - `text_too_long`: Value has more characters than `maxLength`
 - `invalid_color`: Value is not a six-digit hexadecimal color in the form `#RRGGBB`
@@ -338,6 +374,8 @@ The choice field contract is defined by [Future Plan #6](../../Plans/Future/issu
 and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
 and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
+The number field contract is defined by [Future Plan #8](../../Plans/Future/issue-08-number-field.md)
+and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 ---
 

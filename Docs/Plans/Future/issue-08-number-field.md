@@ -104,13 +104,13 @@ adoption.
 
 ## Completion / Definition of Done
 
-- [ ] The implementation and tests link to [issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) and this [plan](./issue-08-number-field.md).
-- [ ] English and Spanish public docs are updated.
-- [ ] `CHANGELOG.md` contains the `Unreleased` entry.
-- [ ] English and Spanish `migration-next` docs cover numeric migration and drafts.
-- [ ] Tests cover descriptor/data validation, editor modes, persistence/preview, and types.
-- [ ] The starter template and generated starter demonstrate input and slider modes.
-- [ ] No generic control abstraction, unit option, numeric-string coercion, or compatibility code is added.
+- [x] The implementation and tests link to [issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) and this [plan](./issue-08-number-field.md).
+- [x] English and Spanish public docs are updated.
+- [x] `CHANGELOG.md` contains the `Unreleased` entry.
+- [x] English and Spanish `migration-next` docs cover numeric migration and drafts.
+- [x] Tests cover descriptor/data validation, editor modes, persistence/preview, and types.
+- [x] The starter template and generated starter demonstrate input and slider modes.
+- [x] No generic control abstraction, unit option, numeric-string coercion, or compatibility code is added.
 
 ## Out of scope
 

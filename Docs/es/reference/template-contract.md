@@ -59,7 +59,7 @@ Las plantillas definen campos usando el objeto singular `field` exportado desde 
 
 ### Opciones Base
 
-Los campos text, number, color e image comparten un conjunto común de opciones:
+Los campos text, color e image comparten un conjunto común de opciones:
 
 - `label` (string, obligatorio): Un nombre legible para el campo.
 - `placeholder` (string, opcional): Texto provisional mostrado en campos vacíos.
@@ -125,15 +125,43 @@ estados.
 
 ### `number`
 
-Un campo numérico. Acepta las opciones base más:
+Un campo numérico con valores numéricos finitos en cada frontera de datos
+confirmados. Acepta `label`, un `placeholder` opcional y estas opciones
+específicas:
 
-- `min` (number, opcional): El valor mínimo aceptable. Debe ser un número finito.
-- `max` (number, opcional): El valor máximo aceptable. Debe ser un número finito.
+- `defaultValue` (number finito, obligatorio): El valor inicial del field.
+- `min` (number finito, opcional): El valor mínimo aceptable.
+- `max` (number finito, opcional): El valor máximo aceptable.
+- `step` (number finito positivo, opcional, valor predeterminado: `1`): El
+  incremento usado por los controles numérico y de rango nativos.
+- `control` (`'input' | 'slider'`, opcional, valor predeterminado: `'input'`): El
+  control nativo de edición que se usará.
 
-**Importante:** A pesar de ser un campo `number`, el valor almacenado en los datos de la plantilla es siempre un **string**. Las restricciones `min` y `max` validan la interpretación numérica de ese string.
+Los fields number no aceptan `required`; su `defaultValue` numérico finito y
+obligatorio significa que siempre están presentes. Si se proporcionan ambos
+límites, `min` debe ser menor o igual que `max`. `input` usa un
+`<input type="number">` nativo. `slider` usa un `<input type="range">` nativo,
+muestra el valor actual, conserva el comportamiento de teclado nativo y exige
+límites `min` y `max` finitos explícitos. Los valores y defaults deben cumplir
+los límites declarados y `step` usando la semántica numérica/de rango nativa.
+
+Los valores de contenido, las ediciones del usuario, los datos resueltos y las
+props de renderizado de un field number son numbers finitos. Los strings
+numéricos como `'10'` se rechazan; FrameKit no los convierte. Mientras un input
+está vacío o es temporalmente incorrecto, Studio mantiene ese draft local
+separado de los datos numéricos confirmados. El draft no es render data; el
+renderizador solo recibe numbers finitos confirmados.
 
 ```typescript
-field.number({ label: 'Count', min: 0, max: 100 })
+count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100 })
+opacity: field.number({
+  label: 'Opacity',
+  defaultValue: 100,
+  min: 0,
+  max: 100,
+  step: 1,
+  control: 'slider',
+})
 ```
 
 ### `color`
@@ -172,24 +200,28 @@ precedencia.
 
 ## Requisito
 
-Los campos text, number, color e image son **requeridos por defecto**.
-Configurar `required: false` hace que uno de esos campos sea opcional. Los
-campos choice siempre tienen un `defaultValue` válido y no aceptan `required`;
-los campos boolean siempre son booleanos válidos y no participan en la
-obligatoriedad.
+Los campos text, color e image son **requeridos por defecto**. Configurar
+`required: false` hace que uno de esos campos sea opcional. Los fields number
+siempre tienen un `defaultValue` numérico finito obligatorio y no aceptan
+`required`. Los campos choice siempre tienen un `defaultValue` válido y no
+aceptan `required`; los campos boolean siempre son booleanos válidos y no
+participan en la obligatoriedad.
 
-- **Campos opcionales** (`required: false`): Una cadena vacía pasa la validación.
-- **Campos requeridos** (por defecto): Una cadena vacía después de eliminar espacios en blanco falla la validación.
+- Para los fields que admiten `required`, un **field opcional** (`required: false`)
+  acepta una cadena vacía, mientras que un **field requerido** (por defecto)
+  rechaza una cadena vacía después de eliminar los espacios en blanco.
 
-Los campos boolean usan `false` cuando se omite `defaultValue`. Los demás fields
-usan los valores de obligatoriedad descritos arriba.
+Los campos boolean usan `false` cuando se omite `defaultValue`. Los fields
+number usan su default numérico finito obligatorio; los demás fields usan los
+valores de obligatoriedad descritos arriba.
 
 ## Orden de Resolución de Datos
 
 Cuando una plantilla se renderiza, los valores de los campos se resuelven a través de un orden específico. Esto determina lo que contiene el objeto `data` dentro de la función `render`:
 
 1. **`defaultValue` del campo**: La opción `defaultValue` del campo, o `''` para
-   fields string y `false` para fields boolean si no está configurada.
+   fields string y `false` para fields boolean si no está configurada. Los fields
+   number siempre tienen su default numérico finito obligatorio.
 2. **Valores de variante de contenido**: Valores del objeto `content` de la plantilla para la variante seleccionada.
 3. **Ediciones del usuario**: Valores que el usuario ha editado en el editor de Studio, que sobrescriben todo lo demás.
 
@@ -221,7 +253,7 @@ const data = resolveTemplateData(definition, variant, edits)
 import { getDefaultValues } from '@mauriciodmo/framekit'
 
 const defaults = getDefaultValues(definition.fields)
-// { fieldKey: definition.fields[fieldKey].defaultValue ?? '' o false }
+// { fieldKey: default string o number finito, o false para fields boolean }
 ```
 
 ### Variantes disponibles
@@ -250,11 +282,14 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 - `fields.language` está reservado y no puede ser usado
 - `content` debe tener al menos una entrada
 - Cada entrada de contenido solo puede contener keys de fields declaradas y cada
-  valor debe coincidir con su tipo de field (`string` para fields string y
-  `boolean` para fields boolean)
+  valor debe coincidir con su tipo de field (`string` para fields string,
+  `number` finito para fields number y `boolean` para fields boolean); los
+  valores number también deben cumplir sus límites `min`, `max` y `step`
 - Las propiedades de nivel superior no soportadas, como `version`, son rechazadas
 - `render` debe ser una función
-- Las opciones de campo deben tener tipos válidos (por ejemplo, `min`/`max` solo en campos `number`, `minLength`/`maxLength` solo en campos `text`, números finitos solamente)
+- Las opciones de campo deben tener tipos y restricciones válidos (por ejemplo,
+  `min`/`max` solo en fields `number`, `minLength`/`maxLength` solo en fields
+  `text`, y números finitos solamente)
 
 ```typescript
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
@@ -271,7 +306,9 @@ if (!result.success) {
 
 - Campos requeridos: una cadena vacía (tras eliminar los espacios en blanco) no supera la validación
 - Campos `text`: los valores no vacíos deben cumplir `minLength` y `maxLength`; la longitud se mide antes de eliminar espacios, por lo que los espacios y saltos de línea cuentan
-- Campos `number`: el valor debe convertirse en un número finito; debe estar dentro de los límites `min`/`max`
+- Fields `number`: el valor debe ser un number finito, no un string numérico;
+  debe cumplir los límites `min`/`max` y `step` declarados usando la semántica
+  numérica/de rango nativa
 - Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 - Campos `choice`: los valores deben coincidir con uno de los valores de opción declarados
 - Campos `boolean`: los valores deben ser booleanos reales; los strings no se convierten
@@ -294,6 +331,7 @@ Códigos de error posibles:
 - `invalid_number`: El valor no es un número finito
 - `number_too_small`: El valor es menor que la restricción `min`
 - `number_too_large`: El valor es mayor que la restricción `max`
+- `invalid_step`: El valor no coincide con el `step` declarado
 - `text_too_short`: El valor tiene menos caracteres que `minLength`
 - `text_too_long`: El valor tiene más caracteres que `maxLength`
 - `invalid_color`: El valor no es un color hexadecimal de seis dígitos con el formato `#RRGGBB`
@@ -347,6 +385,8 @@ El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/
 y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
 y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
+El contrato del field number está definido por el [Plan Futuro #8](../../Plans/Future/issue-08-number-field.md)
+y el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 ---
 

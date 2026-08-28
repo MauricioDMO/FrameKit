@@ -170,3 +170,51 @@ plantillas.
 Consulta el [plan del field boolean](../../Plans/Future/issue-07-boolean-field.md),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
+
+## Campo Number
+
+El issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8), especificado en
+el [plan del field number](../../Plans/Future/issue-08-number-field.md), cambia
+el contrato de `field.number`. Es un cambio incompatible para adoptar fields
+number: no existe alias de compatibilidad, coerción de strings numéricos ni
+migración automática.
+
+Actualiza cada field number de esta forma:
+
+- reemplaza cada `defaultValue` string por un number finito obligatorio, como
+  `defaultValue: 10` en lugar de `defaultValue: '10'`;
+- elimina `required`; los fields number siempre están presentes porque su
+  `defaultValue` numérico es obligatorio;
+- reemplaza por numbers finitos los valores string de cada variante de
+  `content`;
+- reemplaza o elimina los overrides string persistidos antes de usarlos; los
+  overrides deben ser numbers finitos y no se convierten automáticamente;
+- mantén `min` y `max`, cuando se proporcionen, finitos y ordenados (`min <= max`);
+- usa un `step` finito y positivo, cuyo valor predeterminado es `1` y sigue la
+  semántica numérica/de rango nativa;
+- usa `control: 'input'` (el valor predeterminado) para un `<input
+  type="number">` nativo, o `control: 'slider'` para un `<input type="range">`
+  nativo; los fields slider exigen límites `min` y `max` finitos explícitos y
+  muestran el valor actual.
+
+Los valores de contenido, overrides, datos resueltos y props de renderizado deben
+ser numbers finitos. Los strings numéricos se rechazan sin conversión. Durante
+una edición vacía o temporalmente incorrecta, Studio mantiene un draft local
+separado de los datos numéricos confirmados; ese draft no es render data y nunca
+se pasa a `render`.
+
+```tsx
+count: field.number({
+  label: 'Count',
+  defaultValue: 10,
+  min: 0,
+  max: 100,
+})
+```
+
+Ejecuta `framekit generate`, `framekit check` y `framekit build` después de
+actualizar los fields number.
+
+Consulta el [plan del field number](../../Plans/Future/issue-08-number-field.md),
+la [referencia del contrato de plantilla](../reference/template-contract.md#number)
+y la [referencia de la API pública](../reference/public-api.md).

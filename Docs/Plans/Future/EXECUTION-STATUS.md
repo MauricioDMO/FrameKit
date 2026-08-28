@@ -26,7 +26,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 5 | [#5 Semantic Fields](./issue-05-semantic-fields.md) | Campos semánticos | Planned | [x] Completado |
 | 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [x] Completado |
 | 7 | [#7 Boolean Field](./issue-07-boolean-field.md) | Campo booleano | Planned | [x] Completado |
-| 8 | [#8 Number Field](./issue-08-number-field.md) | Campo numérico | Planned | [ ] Pendiente |
+| 8 | [#8 Number Field](./issue-08-number-field.md) | Campo numérico | Planned | [x] Completado |
 | 9 | [#9 Typed Data Pipeline](./issue-09-typed-data-pipeline.md) | Pipeline de datos tipados | Planned | [ ] Pendiente |
 | 10 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [ ] Pendiente |
 | 11 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [ ] Pendiente |
@@ -108,9 +108,21 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Verificaciones ejecutadas: tests raíz (FrameKit 142, Studio 2, scaffolder 19), typecheck, lint y build raíz; `framekit generate`, `framekit check`, typecheck y `next build --webpack` del starter enlazado localmente.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
+### #8 Number Field
+
+- [x] `field.number` implementado con `defaultValue` numérico finito obligatorio, límites ordenados, `step` positivo y controles nativos `input`/`slider`.
+- [x] Valores numéricos preservados como `number` finito en contenido, overrides, resolución, render props, persistencia y editor.
+- [x] Validación estructural y runtime con rechazo de strings numéricos, límites, step y `invalid_step`.
+- [x] Studio mantiene drafts numéricos locales sin contaminar preview, datos confirmados ni persistencia; el slider conserva atributos y comportamiento nativo.
+- [x] Tests de factory, defaults, definición, runtime, resolución, editor, persistencia, preview y tipos; starter canónico actualizado y smoke test generado verificado.
+- [x] Documentación pública EN/ES, guías/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
+- [x] Definition of Done completada.
+- [x] Verificaciones ejecutadas: tests raíz (FrameKit 165, Studio 2, scaffolder 19), typecheck, lint, build, `check:runtime`, `git diff --check`, `framekit generate`, `framekit check`, TypeScript y `framekit build` del starter con el tarball local actual.
+- [ ] Issue de GitHub cerrado por los mantenedores.
+
 ### #8–#9 Field Contracts and Typed Data Pipeline
 
-- [ ] #8 Number Field completado.
+- [x] #8 Number Field completado.
 - [ ] #9 Typed Data Pipeline completado.
 - [ ] Definition of Done completada para cada issue.
 - [ ] Issues de GitHub cerrados por los mantenedores.

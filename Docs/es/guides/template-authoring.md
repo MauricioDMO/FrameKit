@@ -217,6 +217,38 @@ showLogo: field.boolean({
 })
 ```
 
+`field.number` exige un `defaultValue` numérico finito y no acepta `required`.
+Usa el control nativo `input` por defecto o establece `control: 'slider'` para
+un input de rango nativo. Cualquier límite `min` o `max` proporcionado debe ser
+finito y estar ordenado. Los fields slider además exigen límites `min` y `max`
+explícitos, y `step` debe ser finito y positivo; su valor predeterminado es `1`
+con semántica numérica/de rango
+nativa.
+
+Los valores number en el contenido, las ediciones de Studio, los datos resueltos
+y las props de renderizado deben ser numbers finitos. Los strings numéricos como
+`'10'` se rechazan sin conversión. Si un input está vacío o es temporalmente
+incorrecto, su draft local permanece separado de los datos confirmados y nunca
+se pasa a `render`.
+
+```tsx
+count: field.number({
+  label: 'Count',
+  defaultValue: 10,
+  min: 0,
+  max: 100,
+})
+
+opacity: field.number({
+  label: 'Opacity',
+  defaultValue: 100,
+  min: 0,
+  max: 100,
+  step: 1,
+  control: 'slider',
+})
+```
+
 ## Contenido y variantes
 
 Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
@@ -246,9 +278,11 @@ La función `render` recibe únicamente inputs de renderizado:
 
 - `data` — un objeto que contiene todas las claves de field con el tipo definido
   por cada field tras la resolución. Los valores de text, color, image y choice
-  son strings; los valores boolean son booleanos. En Studio, los valores se
-  aplican en este orden: valores predeterminados de los fields, contenido de la
-  variante y, por último, ediciones del usuario.
+  son strings; los valores number son numbers finitos y los boolean son
+  booleanos. En Studio, los valores se aplican en este orden: valores
+  predeterminados de los fields, contenido de la variante y, por último,
+  ediciones del usuario. Los drafts locales incompletos de number no son render
+  data.
 - `assets` — URLs generadas para los assets comunes y por variante de la plantilla.
 - `variant` — la key de la variante actualmente seleccionada, tipada como una unión de todas las keys de contenido.
 - `width` — el ancho de la plantilla como tipo literal.
@@ -291,4 +325,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Plan Futuro #8](../../Plans/Future/issue-08-number-field.md) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8)

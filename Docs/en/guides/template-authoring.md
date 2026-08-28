@@ -216,6 +216,37 @@ showLogo: field.boolean({
 })
 ```
 
+`field.number` requires a finite numeric `defaultValue` and does not accept
+`required`. Use the native `input` control by default, or set
+`control: 'slider'` for a native range input. Any supplied `min` and `max`
+bounds must be finite and ordered. Slider fields additionally require explicit
+`min` and `max` bounds, and `step`
+must be finite and positive; it defaults to `1` with native numeric/range
+semantics.
+
+Number values in content, Studio edits, resolved data, and render props must be
+finite numbers. Numeric strings such as `'10'` are rejected without coercion.
+If an input is empty or temporarily malformed, its local draft stays separate
+from committed data and is never passed to `render`.
+
+```tsx
+count: field.number({
+  label: 'Count',
+  defaultValue: 10,
+  min: 0,
+  max: 100,
+})
+
+opacity: field.number({
+  label: 'Opacity',
+  defaultValue: 100,
+  min: 0,
+  max: 100,
+  step: 1,
+  control: 'slider',
+})
+```
+
 ## Content and Variants
 
 Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
@@ -244,8 +275,9 @@ The `render` function receives only render inputs:
 
 - `data` — an object containing all field keys with the value type defined by
   each field after resolution. Text, color, image, and choice values are strings;
-  boolean values are booleans. In Studio, values are applied in this order:
-  field defaults, variant content, then user edits.
+  number values are finite numbers; boolean values are booleans. In Studio,
+  values are applied in this order: field defaults, variant content, then user
+  edits. Local incomplete number drafts are not render data.
 - `assets` — generated URLs for common and variant template assets.
 - `variant` — the key of the currently selected variant, typed as a union of all content keys.
 - `width` — the template width as a literal type.
@@ -288,4 +320,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [Future Plan #6](../../Plans/Future/issue-06-choice-field.md) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [Future Plan #4](../../Plans/Future/issue-04-content-variants.md) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [Future Plan #6](../../Plans/Future/issue-06-choice-field.md) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [Future Plan #8](../../Plans/Future/issue-08-number-field.md) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8)
