@@ -22,7 +22,7 @@ For every template and content variant, `framekit check` generates the registry,
 
 Common data errors are `required`, `invalid_number`, `number_too_small`, `number_too_large`, `invalid_step`, and `invalid_color`.
 
-For the breaking number-field contract, see [Future Plan #8](../../../../Plans/Future/issue-08-number-field.md) and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+For the breaking number-field contract, see [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 ## Discovery And CLI
 
