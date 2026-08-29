@@ -3,7 +3,7 @@
 - **GitHub issue:** https://github.com/MauricioDMO/FrameKit/issues/14
 - **Status:** Active; GitHub issue state is authoritative.
 - **Release:** No version preselected; document the `Unreleased` contract.
-- **Depends on:** Final implemented behavior from #2–#13.
+- **Depends on:** Final implemented behavior from #2–#8 and #12–#13.
 
 ## Objective
 
@@ -64,9 +64,10 @@ started, existing-project integration, template authoring, Studio, template
 contract, public API, CLI, troubleshooting, repository/testing guidance, brand
 references, and both documentation indexes.
 
-The final text must match #3–#13 for metadata, variants, field factories,
-choice/boolean/number typing, image behavior, resolver results, registry shape,
-automatic generation, Studio persistence, preview, export, and errors.
+The final text must match #3–#8 and #12–#13 for metadata, variants, field
+factories, choice/boolean/number typing, image behavior, typed resolution and
+validation boundaries, registry shape, automatic generation, Studio
+persistence, preview, export, and errors.
 
 ### Rolling migration guides
 
@@ -78,7 +79,7 @@ in this final audit:
 
 Together they describe manual adoption of metadata, variants, localStorage `v2`
 invalidation, singular `field`, textarea removal, choice, boolean, typed
-numbers, the discriminated resolver result, generated registry, and Studio
+numbers, typed resolution and validation, generated registry, and Studio
 integration. Include additive no-migration notes required by the shared gate.
 
 Do not include a target release number, compatibility period, deprecation
@@ -110,14 +111,15 @@ copies; never edit those targets directly or add another sync system.
    and accurate capabilities, requirements, and limitations.
 4. Correct public references and guides in pairs. Remove obsolete teaching of
    plural factories, textarea, locale/language content, string numbers,
-   parallel validation, old registry exports, and persistence `v1`.
-5. Consolidate both rolling guides in implementation order #3–#13, preserving
-   explicit manual steps and additive no-migration notes.
+   discriminated resolver results, old registry exports, and persistence `v1`.
+5. Consolidate both rolling guides in implementation order #3–#8 and #12–#13,
+   preserving explicit manual steps and additive no-migration notes.
 6. Audit accumulated `CHANGELOG.md` `Unreleased` entries against implementation
    issues and migration guides without inventing a release version.
 7. Update canonical `Docs/skills` sources, then run `pnpm sync:skills` once.
 8. Search current docs and skills for rejected APIs and version promises;
-   classify each remaining match as interface locale, historical text, or error.
+   classify each remaining match as a closure decision, interface locale,
+   historical text, or error.
 9. Exercise documented Quick Start and generated starter behavior, then run
    documentation and repository verification.
 10. Link implementation docs, this plan, GitHub issue, changelog, and guides.
@@ -133,7 +135,8 @@ copies; never edit those targets directly or add another sync system.
   link check if one exists; do not add a documentation framework.
 - Search current docs and canonical skills for rejected plural fields,
   textarea, template locale/language, numeric strings, revision/mode,
-  compatibility, and future-version claims; classify historical matches.
+  discriminated resolver results, global last-valid preview, compatibility, and
+  future-version claims; classify historical and closure-decision matches.
 - Run `pnpm sync:skills` and verify sources and generated copies agree.
 - Run `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, and
   `pnpm build`.
@@ -158,5 +161,7 @@ copies; never edit those targets directly or add another sync system.
 - Renaming `migration-next.md` for a release or rewriting historical guides.
 - New APIs, runtime behavior, UI features, languages, or a marketing website.
 - Legacy compatibility, deprecation diagnostics, or automatic source migration.
+- The discriminated resolver and global last-valid-preview design rejected by
+  #9.
 - Implementing server image generation or advanced roadmap features.
 - Defining release gates or package smoke matrices; those belong to #15.

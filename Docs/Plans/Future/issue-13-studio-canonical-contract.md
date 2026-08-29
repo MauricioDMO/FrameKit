@@ -3,7 +3,7 @@
 - **GitHub issue:** https://github.com/MauricioDMO/FrameKit/issues/13
 - **Status:** Active; GitHub issue state is authoritative.
 - **Release:** No version preselected.
-- **Depends on:** #3–#9 and #12.
+- **Depends on:** #3–#8 and #12.
 
 ## Objective
 
@@ -16,13 +16,15 @@ underlying runtime issues or expanding Studio into a free-canvas editor.
 - Studio receives generated entries with a filesystem-derived title and lazy
   loader, then validates the loaded definition before opening the editor.
 - The editor header humanizes the slug instead of reading template metadata.
-- Template content selection is named `locale`, reads entry-level `language`,
-  starts with the first content key, and persists string-only edits under
-  `framekit:<slug>:v1`.
-- Resolution and validation are separate; preview renders raw resolved data and
-  export validates only when invoked.
-- Editor field props and state are string-only. A fixed `fieldComponents` map
-  already selects the component for each semantic kind.
+- Template selection uses canonical variants, starts from
+  `definition.variants.default`, and persists typed per-variant edits under
+  `framekit:<slug>:v2`.
+- Resolution and field-constraint validation are separate; preview renders
+  committed typed resolved data and export validates before producing output.
+- Editor state and callbacks preserve string, number, and boolean values. A
+  fixed `fieldComponents` map selects the native control for each semantic kind.
+- Sidebar navigation currently uses text-only route tabs, spacious tree rows,
+  per-template vertical markers, and a high-contrast selected-template state.
 - Studio interface localization also correctly uses the word `locale`; that
   separate EN/ES concern must remain independent from template variants.
 
@@ -31,9 +33,10 @@ underlying runtime issues or expanding Studio into a free-canvas editor.
 This issue integrates completed contracts rather than defining replacements:
 
 - #4 owns variant naming, default selection, labels, and persistence `v2`.
-- #5–#8 own semantic field descriptors and native controls.
-- #9 owns typed resolution, structured errors, last-valid preview, and the
-  valid-data render/export boundary.
+- #5–#8 own semantic field descriptors, typed content/editor/render values,
+  resolution, field validation, and native controls.
+- #9 is closed as not planned. Its discriminated resolver, replacement error
+  taxonomy, and global last-valid-preview state must not be reintroduced here.
 - #12 owns generated registry summaries, `meta.title` navigation, and the
   reusable registry entry type.
 
@@ -55,6 +58,21 @@ metadata, and provides final Studio integration coverage.
   agree and must not become metadata properties.
 - Do not display or infer revision, status, keywords, order, compatibility
   state, or platform metadata.
+
+### Sidebar navigation presentation
+
+- The templates route tab uses Tabler `IconStack2`; the brand route tab uses
+  Tabler `IconTag`. The existing localized labels remain visible and accessible.
+- The navigation tree uses compact spacing and indentation while preserving its
+  folder hierarchy, expand/collapse behavior, keyboard operation, and visible
+  focus.
+- Vertical guide lines appear only on expanded folder child groups to show
+  folder scope. Template links do not render their own guide lines.
+- The selected template remains clearly identifiable through a subdued
+  background and text treatment rather than the strongest accent fill. It keeps
+  `aria-current="page"`.
+- This is a presentation refinement of the existing tree, not a full-text
+  search, filter, or catalog query feature.
 
 ### Variants and interface language
 
@@ -87,14 +105,16 @@ metadata, and provides final Studio integration coverage.
 
 ### Resolution, preview, and export
 
-- Studio branches only on the discriminated `resolveTemplateData` result from
-  #9. It does not run a parallel public data-validation pass.
-- On success, update the last valid data and render it.
-- On failure, translate `TemplateDataError` codes at the UI boundary, associate
-  errors with controls, and retain the last valid preview.
-- Never call `definition.render` with invalid data.
-- Export and copy use the same valid-data boundary and do not silently export a
-  stale result while the current edit is invalid.
+- Studio consumes the typed data returned directly by `resolveTemplateData`.
+- Preserve explicit rejection of unknown variants, unknown content/edit keys,
+  wrong primitive types, and non-finite numbers. Do not add a second resolver
+  result or error contract.
+- Keep `validateTemplateData` as the field-constraint validation boundary.
+  Translate its errors at the UI boundary and associate them with controls.
+- Number drafts remain inside the number control. Preview and render consume
+  only committed typed values; there is no global last-valid-preview cache.
+- Export and copy validate current committed data, report field errors, and
+  focus the first invalid control before producing output.
 - Preserve existing image common/variant resolution and development upload.
 
 ### Error states
@@ -111,23 +131,27 @@ are no compatibility warnings or legacy diagnostics.
 2. Replace slug-derived selected-template headings with `meta.title`, then add
    conditional functional description, marketing description, and tags using
    existing Studio visual patterns.
-3. Audit editor-only locale/language names and replace them with variant names.
+3. Refine the existing sidebar navigation presentation with `IconStack2` and
+   `IconTag`, compact tree spacing, folder-only scope lines, a subdued selected
+   template state, and preserved keyboard/focus accessibility. Do not add tree
+   search or filtering.
+4. Audit editor-only locale/language names and replace them with variant names.
    Keep `FrameKitLocaleProvider`, interface cookies, and interface message locale
    names unchanged.
-4. Make the variant selector use the declared default, optional labels with key
+5. Make the variant selector use the declared default, optional labels with key
    fallback, generic localized wording, and explicit unknown-variant handling.
-5. Align editor props, state, persistence, reset, and field callbacks with typed
-   #5–#9 values and the exact `framekit:<slug>:v2` key. Keep no `v1` read path.
-6. Extend the existing component map only as needed for the six canonical field
+6. Align editor props, state, persistence, reset, and field callbacks with typed
+   #5–#8 values and the exact `framekit:<slug>:v2` key. Keep no `v1` read path.
+7. Extend the existing component map only as needed for the six canonical field
    kinds and their agreed native controls. Preserve the image upload path.
-7. Replace raw resolve/render and export-time parallel validation with the #9
-   result boundary, localized structured errors, first-invalid-field focus, and
-   last-valid preview handling.
-8. Update centralized English and Spanish Studio messages with equal key
+8. Preserve the direct typed resolver and existing validation boundary while
+   removing remaining string assumptions. Keep localized validation errors and
+   first-invalid-field focus; do not add the rejected #9 contracts.
+9. Update centralized English and Spanish Studio messages with equal key
    coverage and no hard-coded fallback UI text.
-9. Update first-party Studio, starter integration, and focused component/type
+10. Update first-party Studio, starter integration, and focused component/type
    fixtures without editing generated files manually.
-10. Apply the shared Definition of Done, including public docs in both
+11. Apply the shared Definition of Done, including public docs in both
     languages, changelog, rolling migration guides, and issue/plan links.
 
 ## Documentation and migration requirements
@@ -141,20 +165,23 @@ Update at minimum:
 
 Document canonical metadata presentation, generic variants, independence from
 interface language, native controls, typed persistence `v2`, old-state
-invalidation, last-valid preview behavior, and the `meta.title` display source.
+invalidation, local number-draft behavior, the `meta.title` display source, and
+the compact accessible sidebar navigation presentation.
 Do not restate a release version or promise legacy compatibility.
 
 ## Verification
 
 - Test title, both optional descriptions, optional tags, and dimensions from a
   #12 registry entry with no slug-title fallback.
+- Test route-tab labels/icons, compact tree spacing, folder-only scope lines,
+  subdued selected-template styling, keyboard operation, and visible focus.
 - Test declared default selection, optional label fallback, unknown variants,
   selection preservation, and independence from interface locale changes.
 - Integrate textarea, select, checkbox, number input, slider, color, and image
   editing with string/number/boolean values preserved through render.
-- Test that invalid edits never reach `render`, last-valid preview remains,
-  errors are localized and associated, first invalid control can receive focus,
-  and export/copy cannot use invalid current data.
+- Test that incomplete number drafts remain local while preview uses committed
+  numeric data. Verify errors are localized and associated, the first invalid
+  control can receive focus, and export/copy rejects invalid current data.
 - Test selected-variant reset, typed `v2` persistence, and intentional rejection
   of a valid-looking `v1` payload.
 - Test common/variant image display and development upload without regressions.
@@ -171,17 +198,23 @@ Do not restate a release version or promise legacy compatibility.
   aliases or a parallel Studio model.
 - Metadata is presented from `meta`; variants are generic and independent from
   interface localization.
+- Sidebar navigation uses the requested Tabler icons and compact folder-scope
+  presentation without adding search/filter behavior.
 - All six field kinds retain their agreed runtime types and native controls.
-- Invalid data never reaches render/export and the last valid preview remains.
+- Preview consumes committed typed data and export/copy rejects invalid current
+  data without a second resolver contract or global preview cache.
 - Persistence reads only `framekit:<slug>:v2`; image behavior is unchanged.
 - Public docs, migration guides, changelog, generated consumers, tests, and
   links satisfy the shared Definition of Done.
 
 ## Out of scope
 
-- Catalog gallery, search, filters, sorting, thumbnails, or preview caching.
+- Catalog gallery, full-text search, filters, sorting, thumbnails, or preview
+  caching.
 - Undo/redo, per-field/group reset, field grouping, or `ui` metadata.
 - Public/custom field registries, plugin controls, or alternate control styles.
+- A discriminated resolver, replacement error taxonomy, or global
+  last-valid-preview state (see the #9 closure decision).
 - Portable documents, accounts, server persistence, or free-canvas editing.
 - Server image generation, legacy compatibility, automatic migration, or
   release-version selection.

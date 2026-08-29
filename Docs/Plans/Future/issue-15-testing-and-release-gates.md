@@ -3,7 +3,7 @@
 - **GitHub issue:** https://github.com/MauricioDMO/FrameKit/issues/15
 - **Status:** Active; GitHub issue state is authoritative.
 - **Release:** No version preselected; versions are runtime inputs to release checks.
-- **Depends on:** Focused coverage delivered with #2–#14.
+- **Depends on:** Focused coverage delivered with #2–#8 and #12–#14.
 
 ## Objective
 
@@ -20,8 +20,8 @@ validation distinct so none is mistaken for a release-version plan.
   `@mauriciodmo/create-framekit`; it does not exercise the runtime or a generated
   consumer.
 - Unit, type, jsdom component, codegen, CLI, creator, and first-party Studio
-  integration tests exist. Issues #3–#14 own the focused additions required by
-  their contracts.
+  integration tests exist. Issues #3–#8 and #12–#14 own the focused additions
+  required by their contracts.
 - There is no real-browser E2E, production build/start smoke, PNG browser smoke,
   or automated isolated tarball consumer.
 - Tarball installation is documented as a manual external check. CI dry-pack
@@ -73,7 +73,8 @@ browser fixture matrix. The flow must:
 2. confirm canonical metadata;
 3. change variant and edit text, number, choice, boolean, and color;
 4. observe updated preview output;
-5. trigger one invalid edit and confirm the last valid preview/error behavior;
+5. enter an incomplete number draft, confirm its inline error while preview
+   keeps the committed number, then restore a valid value;
 6. export a non-empty PNG and verify its declared dimensions.
 
 Image upload remains covered by focused integration tests unless the E2E can
@@ -125,7 +126,7 @@ remain an explicit maintainer handoff.
 | Focused unit/type/component/integration | Owning issue and PR | Canonical contract and rejection cases |
 | Ubuntu Node 22.13/24 | Every PR | Full repository verification and dry packs |
 | Windows Node 22.13 | Every PR | Paths, both packages, creator, generation, check |
-| Chromium Node 22.13 | Protected CI gate | Studio typed editing, invalid preview, PNG |
+| Chromium Node 22.13 | Protected CI gate | Studio typed editing, local number draft, PNG |
 | Isolated tarballs | Release preparation | Real package contents, generated consumer, build/start |
 | Exact npm versions | After publication, before promotion | Registry install and package compatibility |
 
@@ -138,8 +139,9 @@ registry, duplicate per-error projects, or a second full application fixture.
 
 ## Ordered implementation steps
 
-1. Map existing and planned #2–#14 tests to the final contract and identify only
-   missing cross-layer assertions. Keep ownership links to their execution plans.
+1. Map existing and planned #2–#8 and #12–#14 tests to the final contract and
+   identify only missing cross-layer assertions. Keep ownership links to their
+   execution plans.
 2. Update tests and documentation terminology to canonical metadata, variants,
    fields, typed resolution, registry, Studio, and intentional `v1` invalidation.
 3. Strengthen Windows CI to build both public packages and exercise a generated
@@ -166,7 +168,8 @@ registry, duplicate per-error projects, or a second full application fixture.
 - Type fixtures cover all canonical kinds, content/override types, metadata,
   variants, registry entries, and rejected unsupported properties.
 - Component/integration tests cover native controls, typed persistence, resolver
-  failures, last-valid preview, image behavior, watcher, codegen, and Studio.
+  failures, local number-draft preview, image behavior, watcher, codegen, and
+  Studio.
 - Chromium downloads a non-empty PNG whose header dimensions match the template
   without introducing a PNG parsing dependency.
 - Both real tarballs contain expected files, no workspace references, and work
@@ -194,6 +197,8 @@ registry, duplicate per-error projects, or a second full application fixture.
 - Selecting, publishing, promoting, deprecating, or tagging a package version.
 - A version-specific release workflow; issue #16 is obsolete.
 - Legacy compatibility, deprecation diagnostics, or source migration tests.
+- The discriminated resolver and global last-valid-preview design rejected by
+  #9.
 - Mandatory macOS, Firefox, WebKit, broad visual regression, or large-catalog
   load testing.
 - Exhaustive E2E duplication of focused field and validation tests.

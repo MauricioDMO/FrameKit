@@ -3,7 +3,7 @@
 - **GitHub issue:** https://github.com/MauricioDMO/FrameKit/issues/12
 - **Status:** Active; GitHub issue state is authoritative.
 - **Release:** No version preselected.
-- **Depends on:** #3, #4, and the completed canonical contract through #9.
+- **Depends on:** #3, #4, and the typed field contract completed by #5–#8.
 - **Consumed by:** #13 and future server rendering work.
 
 ## Objective

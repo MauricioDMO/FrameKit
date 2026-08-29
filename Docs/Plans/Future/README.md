@@ -19,31 +19,29 @@ starter” requirement below refers to that template and its generated output.
 
 ## Execution index
 
-1. [#1 — Canonical Template Contract](./issue-01-canonical-template-contract.md)
-   — establish the versionless contract shared by Studio and future server
-   rendering; this is the foundation for the execution sequence below.
-2. [#2 — Runtime Requirements](./issue-02-runtime-requirements.md) — completed
-   baseline.
+1. [#1 — Canonical Template Contract](https://github.com/MauricioDMO/FrameKit/issues/1)
+   — completed foundation for the versionless contract shared by Studio and
+   future server rendering.
+2. [#2 — Runtime Requirements](https://github.com/MauricioDMO/FrameKit/issues/2)
+   — completed baseline.
+3. [#3 — Template Metadata](https://github.com/MauricioDMO/FrameKit/issues/3)
+   — completed canonical metadata contract.
+4. [#4 — Content Variants](https://github.com/MauricioDMO/FrameKit/issues/4)
+   — completed generic variant contract.
+5. [#5 — Semantic Fields](https://github.com/MauricioDMO/FrameKit/issues/5)
+   — completed singular semantic field API.
+6. [#6 — Choice Field](https://github.com/MauricioDMO/FrameKit/issues/6)
+   — completed closed-set choice field.
+7. [#7 — Boolean Field](https://github.com/MauricioDMO/FrameKit/issues/7)
+   — completed boolean field contract.
+8. [#8 — Number Field](https://github.com/MauricioDMO/FrameKit/issues/8)
+   — completed typed number field contract.
 
 ## Active execution order
 
-3. [#3 — Template Metadata](./issue-03-template-metadata.md) — add the exact
-   `meta` contract and update current templates.
-4. [#4 — Content Variants](./issue-04-content-variants.md) — replace the
-   locale/language shape atomically after the canonical contract is in place.
-5. [#5 — Semantic Fields](./issue-05-semantic-fields.md) — make the field API
-   singular and establish the semantic text, color, and image fields.
-6. [#6 — Choice Field](./issue-06-choice-field.md) — add closed-set string
-   values with native select editing.
-7. [#7 — Boolean Field](./issue-07-boolean-field.md) — carry real booleans
-   through content, editing, and rendering.
-8. [#8 — Number Field](./issue-08-number-field.md) — carry finite numbers with
-   explicit bounds and step behavior.
-9. [#9 — Typed Data Pipeline](./issue-09-typed-data-pipeline.md) — unify typed
-   resolution, validation, and the last-valid-preview boundary.
 12. [#12 — Generated Template Registry](./issue-12-generated-template-registry.md)
-    — generate canonical metadata, dimensions, variants, assets, and lazy
-    loaders with automatic development and build lifecycle integration.
+     — generate canonical metadata, dimensions, variants, assets, and lazy
+     loaders with automatic development and build lifecycle integration.
 13. [#13 — Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md)
     — consume the final registry, metadata, variants, typed state, validation,
     persistence, and native controls end to end in Studio.
@@ -54,23 +52,27 @@ starter” requirement below refers to that template and its generated output.
     close cross-layer coverage gaps and define permanent CI, pre-publication
     tarball, and post-publication registry gates without selecting a version.
 
-Issue #3 depends on #1. Issue #4 follows #3 so current templates receive one
-coherent contract update. Issues #5–#8 establish the field contracts consumed by
-#9, which completes the canonical data contract. Issue #12 then generates its
-registry summary, and #13 completes Studio integration. Neither registry nor
-Studio work is pulled into #3 or #4. Issue #14 is the final documentation audit;
-it does not defer the per-issue documentation requirements below. Issue #15 is
-the final versionless verification and distribution gate.
+Issues #1–#8 are completed and their detailed plan files are retained in Git
+history. Issue #12 generates the registry summary, and #13 completes Studio
+integration. Issue #14 is the final documentation audit; it does not defer the
+per-issue documentation requirements below. Issue #15 is the final versionless
+verification and distribution gate.
 
-GitHub issues #10 (compatibility) and #16 (version-specific release) are
-obsolete and excluded from active execution.
+GitHub issues #9–#11 and #16 are closed as not planned and excluded from active
+execution.
 
 ## Closed decision records
 
-- [#10 — Legacy Compatibility](./issue-10-legacy-compatibility.md) — closed as
-  not planned. The canonical contract replaces the current contract directly;
-  no runtime compatibility layer or deprecation window will be added.
-- [#11 — Source Migration Command](./issue-11-source-migration-command.md) —
+- [#9 — Typed Data Pipeline](https://github.com/MauricioDMO/FrameKit/issues/9) —
+  closed as not planned after #5–#8 delivered typed field inference, resolution,
+  validation, editor state, and render data. The remaining
+  discriminated-resolver and global last-valid-preview redesign was rejected
+  without a concrete bug.
+- [#10 — Legacy Compatibility](https://github.com/MauricioDMO/FrameKit/issues/10)
+  — closed as not planned. The canonical contract replaces the current
+  contract directly; no runtime compatibility layer or deprecation window will
+  be added.
+- [#11 — Source Migration Command](https://github.com/MauricioDMO/FrameKit/issues/11) —
   closed as not planned. Contract changes are documented manual source edits;
   no automatic TSX migration command will be added for this transition.
 - [#16 — Version-specific 0.6 beta release](https://github.com/MauricioDMO/FrameKit/issues/16)
@@ -79,9 +81,8 @@ obsolete and excluded from active execution.
 
 ## Shared Definition of Done for active issues
 
-Before closing any active issue—including foundational #1 and each issue in the
-active order #3 -> #4 -> #5 -> #6 -> #7 -> #8 -> #9 -> #12 -> #13 -> #14 ->
-#15—maintainers must complete all of the following:
+Before closing each issue in the active order #12 -> #13 -> #14 -> #15,
+maintainers must complete all of the following:
 
 - code implementation and focused tests;
 - English and Spanish public documentation;

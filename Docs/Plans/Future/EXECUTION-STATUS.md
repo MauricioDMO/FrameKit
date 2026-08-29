@@ -12,30 +12,29 @@ el de GitHub; este documento solo registra el avance local de implementación.
 - Mantén el orden de ejecución indicado en `README.md`.
 - No selecciones una versión de release mientras los mantenedores no la hayan
   definido.
-- Los issues #10 y #11 son decisiones cerradas y no forman parte de la
+- Los issues #9, #10 y #11 son decisiones cerradas y no forman parte de la
   ejecución activa.
 
 ## Orden de ejecución
 
 | Paso | Issue | Plan | Estado del plan | Avance local |
 | ---: | --- | --- | --- | --- |
-| 1 | [#1 Canonical Template Contract](./issue-01-canonical-template-contract.md) | Contrato canónico sin versión | Active | [x] Completado |
-| 2 | [#2 Runtime Requirements](./issue-02-runtime-requirements.md) | Requisitos de runtime | Completed baseline | [x] Completado |
-| 3 | [#3 Template Metadata](./issue-03-template-metadata.md) | Metadata de templates | Active | [x] Completado |
-| 4 | [#4 Content Variants](./issue-04-content-variants.md) | Variantes de contenido | Active | [x] Completado |
-| 5 | [#5 Semantic Fields](./issue-05-semantic-fields.md) | Campos semánticos | Planned | [x] Completado |
-| 6 | [#6 Choice Field](./issue-06-choice-field.md) | Campo de opciones | Planned | [x] Completado |
-| 7 | [#7 Boolean Field](./issue-07-boolean-field.md) | Campo booleano | Planned | [x] Completado |
-| 8 | [#8 Number Field](./issue-08-number-field.md) | Campo numérico | Planned | [x] Completado |
-| 9 | [#9 Typed Data Pipeline](./issue-09-typed-data-pipeline.md) | Pipeline de datos tipados | Planned | [ ] Pendiente |
-| 10 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [ ] Pendiente |
-| 11 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [ ] Pendiente |
-| 12 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [ ] Pendiente |
-| 13 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [ ] Pendiente |
+| 1 | [#1 Canonical Template Contract](https://github.com/MauricioDMO/FrameKit/issues/1) | Contrato canónico sin versión | Completed | [x] Completado |
+| 2 | [#2 Runtime Requirements](https://github.com/MauricioDMO/FrameKit/issues/2) | Requisitos de runtime | Completed baseline | [x] Completado |
+| 3 | [#3 Template Metadata](https://github.com/MauricioDMO/FrameKit/issues/3) | Metadata de templates | Completed | [x] Completado |
+| 4 | [#4 Content Variants](https://github.com/MauricioDMO/FrameKit/issues/4) | Variantes de contenido | Completed | [x] Completado |
+| 5 | [#5 Semantic Fields](https://github.com/MauricioDMO/FrameKit/issues/5) | Campos semánticos | Completed | [x] Completado |
+| 6 | [#6 Choice Field](https://github.com/MauricioDMO/FrameKit/issues/6) | Campo de opciones | Completed | [x] Completado |
+| 7 | [#7 Boolean Field](https://github.com/MauricioDMO/FrameKit/issues/7) | Campo booleano | Completed | [x] Completado |
+| 8 | [#8 Number Field](https://github.com/MauricioDMO/FrameKit/issues/8) | Campo numérico | Completed | [x] Completado |
+| 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [ ] Pendiente |
+| 10 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [ ] Pendiente |
+| 11 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [ ] Pendiente |
+| 12 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [ ] Pendiente |
 
 ## Definition of Done por issue
 
-Usa este checklist al cerrar cada issue activo, incluyendo #1.
+Usa este checklist al cerrar cada issue activo.
 
 - [ ] Implementación de código terminada.
 - [ ] Tests enfocados agregados o actualizados.
@@ -57,7 +56,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Tests y documentación del issue completados.
 - [x] Definition of Done completada.
 - [x] Verificaciones del issue ejecutadas y registradas.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #3 Template Metadata
 
@@ -66,7 +65,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Tests y documentación del issue completados.
 - [x] Definition of Done completada.
 - [x] Verificaciones del issue ejecutadas y registradas.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #4 Content Variants
 
@@ -75,7 +74,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Tests y documentación EN/ES del issue completados.
 - [x] Definition of Done completada: changelog, migraciones rolling, starter generado y enlaces al plan/issue actualizados.
 - [x] Verificaciones ejecutadas: tests de FrameKit (104), tests de Studio (2), tests de scaffolder (19 con timeout operativo de 30 s), typecheck, lint, build, `check:runtime`, `framekit generate` y `framekit check` del starter generado.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #5 Semantic Fields
 
@@ -85,7 +84,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Templates de Studio, starter canónico, documentación pública EN/ES, skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
 - [x] Definition of Done completada.
 - [x] Verificaciones ejecutadas: tests FrameKit (115), typecheck, lint y build del paquete; tests/typecheck/lint de Studio; tests del scaffolder (19 con `--testTimeout=30000`), typecheck y lint; `pnpm check:runtime`; `framekit generate`; `framekit check`; compilación del starter con `next build --webpack`; y checks raíz `pnpm lint`, `pnpm typecheck` y `pnpm build`. El `pnpm test` raíz conserva el timeout Vitest predeterminado de 5 s del scaffolder; la ejecución focalizada con 30 s pasa. El `framekit build` del starter enlazado localmente falla en el prerender de `_global-error` por una invariant de Turbopack/Next, mientras el build webpack equivalente pasa.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #6 Choice Field
 
@@ -95,7 +94,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Tests de factory, definición, runtime, editor y tipos; starter canónico actualizado y salida generada/composición compilada verificada.
 - [x] Documentación pública EN/ES, guías Studio/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
 - [x] Verificaciones ejecutadas: tests FrameKit (129), typecheck, lint y build del paquete; tests/typecheck/lint de Studio; tests del scaffolder (19 con `pnpm exec vitest run --testTimeout=30000`), typecheck y lint; `pnpm check:runtime`; `framekit generate`; `framekit check`; compilación TypeScript y `next build --webpack` del starter; y checks raíz `pnpm lint`, `pnpm typecheck` y `pnpm build`.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #7 Boolean Field
 
@@ -106,7 +105,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Documentación pública EN/ES, guías Studio/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
 - [x] Definition of Done completada.
 - [x] Verificaciones ejecutadas: tests raíz (FrameKit 142, Studio 2, scaffolder 19), typecheck, lint y build raíz; `framekit generate`, `framekit check`, typecheck y `next build --webpack` del starter enlazado localmente.
-- [ ] Issue de GitHub cerrado por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #8 Number Field
 
@@ -118,14 +117,7 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 - [x] Documentación pública EN/ES, guías/skills sincronizadas, changelog, migraciones rolling y enlaces al plan/issue actualizados.
 - [x] Definition of Done completada.
 - [x] Verificaciones ejecutadas: tests raíz (FrameKit 165, Studio 2, scaffolder 19), typecheck, lint, build, `check:runtime`, `git diff --check`, `framekit generate`, `framekit check`, TypeScript y `framekit build` del starter con el tarball local actual.
-- [ ] Issue de GitHub cerrado por los mantenedores.
-
-### #8–#9 Field Contracts and Typed Data Pipeline
-
-- [x] #8 Number Field completado.
-- [ ] #9 Typed Data Pipeline completado.
-- [ ] Definition of Done completada para cada issue.
-- [ ] Issues de GitHub cerrados por los mantenedores.
+- [x] Issue de GitHub cerrado por los mantenedores.
 
 ### #12 Generated Template Registry
 
@@ -162,9 +154,12 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 
 ## Decisiones cerradas
 
-- [#10 Legacy Compatibility](./issue-10-legacy-compatibility.md): cerrado como
+- [#9 Typed Data Pipeline](https://github.com/MauricioDMO/FrameKit/issues/9): cerrado como no
+  planificado, sustituido por el trabajo tipado ya completado en #5–#8; no se
+  agregará el resolver discriminado ni un estado global de último preview válido.
+- [#10 Legacy Compatibility](https://github.com/MauricioDMO/FrameKit/issues/10): cerrado como
   no planificado; no habrá capa de compatibilidad runtime.
-- [#11 Source Migration Command](./issue-11-source-migration-command.md):
+- [#11 Source Migration Command](https://github.com/MauricioDMO/FrameKit/issues/11):
   cerrado como no planificado; la migración será manual.
 - [#16 Version-specific release](https://github.com/MauricioDMO/FrameKit/issues/16):
   cerrado como no planificado; la versión se elegirá durante el release.
@@ -181,3 +176,4 @@ Usa este checklist al cerrar cada issue activo, incluyendo #1.
 | 2026-08-25 | Se completa y verifica localmente el issue #5: API singular `field`, eliminación de `textarea`, texto multilínea con límites, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #6: `field.choice`, select nativo, validación `invalid_choice`, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #7: `field.boolean`, checkbox nativo, validación `invalid_boolean`, persistencia booleana, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
+| 2026-08-28 | Se sincroniza GitHub con el estado local: #1 y #4–#8 se cierran como completadas; #2–#3 ya estaban completadas y #9–#11 permanecen cerradas como no planificadas. | — |
