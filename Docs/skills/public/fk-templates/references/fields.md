@@ -121,6 +121,6 @@ For ordinary fields, Studio resolves values in this order:
 
 `framekit check` validates definitions and resolved variant data without Studio edits. Export validates the final resolved data before capturing the PNG. Required values are checked after trimming whitespace.
 
-For the breaking number-field contract, see [Future Plan #8](../../../../Plans/Future/issue-08-number-field.md) and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+For the breaking number-field contract, see [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 Image fields have an additional asset-manifest step; see [Image Fields](./image-fields.md). A discovered image asset overrides the default, variant content, or saved edit for that image field.
