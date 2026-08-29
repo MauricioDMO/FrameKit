@@ -1,4 +1,4 @@
-import { Maximize2, Minimize2 } from 'lucide-react'
+import { IconMaximize, IconMinimize } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
@@ -109,8 +109,8 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
         <div className="absolute top-0 left-0 shadow-[0_24px_60px_rgba(25,35,30,0.24)]" style={{ width, height, transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`, transformOrigin: 'top left', visibility: viewReady ? 'visible' : 'hidden' }}>{children}</div>
       </div>
       <div className="absolute right-4 bottom-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#24342c]">
-        <button type="button" onClick={showActualSize} aria-label={actualSizeLabel} aria-pressed={viewMode === 'actual'} className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition ${viewMode === 'actual' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><Maximize2 size={14} />100%</button>
-        <button type="button" onClick={fitToView} aria-label={fitToViewLabel} aria-pressed={viewMode === 'fit'} className={`inline-flex items-center gap-1.5 border-l border-black/10 px-3 py-2 text-xs font-bold transition ${viewMode === 'fit' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><Minimize2 size={14} />{fitToViewLabel}</button>
+        <button type="button" onClick={showActualSize} aria-label={actualSizeLabel} aria-pressed={viewMode === 'actual'} className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition ${viewMode === 'actual' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><IconMaximize size={14} />100%</button>
+        <button type="button" onClick={fitToView} aria-label={fitToViewLabel} aria-pressed={viewMode === 'fit'} className={`inline-flex items-center gap-1.5 border-l border-black/10 px-3 py-2 text-xs font-bold transition ${viewMode === 'fit' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><IconMinimize size={14} />{fitToViewLabel}</button>
       </div>
     </section>
   )

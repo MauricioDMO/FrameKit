@@ -54,7 +54,7 @@ pnpm --filter @mauriciodmo/framekit pack
 
 La lista `files` del paquete incluye `bin/`, `dist/`, `README.md` y `LICENSE`.
 
-tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `lucide-react`, `modern-screenshot`, `chokidar`, `tsx`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
+tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `@tabler/icons-react`, `modern-screenshot`, `chokidar`, `tsx`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
 
 Una verificación posterior al build (`check-dist.ts`) escanea recursivamente todos los archivos `.js` emitidos bajo `dist/` en busca de violaciones de frontera de imports, verificando que los imports relativos se resuelvan en archivos dentro del paquete. También comprueba que los targets string de `exports` y `bin` sean rutas `./...` hacia archivos existentes dentro del paquete.
 

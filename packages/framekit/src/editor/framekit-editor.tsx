@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, Download, RotateCcw } from 'lucide-react'
+import { IconCopy, IconDownload, IconRotate } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
@@ -121,9 +121,9 @@ export function FrameKitEditor<Definition extends TemplateBase>({ slug, definiti
           <h1 className="mt-1 text-xl font-black tracking-tight">{slug.split('/').pop()!.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={clearVariant} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><RotateCcw size={15} />{messages.reset}</button>
-          <button type="button" disabled={exporting} onClick={exportPng} className="inline-flex items-center gap-2 rounded-xl bg-[#173d31] px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-[#0f2c23] disabled:cursor-not-allowed disabled:opacity-50"><Download size={15} />{exporting ? messages.generating : messages.downloadPng}</button>
-          <button type="button" disabled={exporting} onClick={copyPng} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><Copy size={15} />{exporting ? messages.generating : messages.copyPng ?? 'Copy PNG'}</button>
+          <button type="button" onClick={clearVariant} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><IconRotate size={15} />{messages.reset}</button>
+          <button type="button" disabled={exporting} onClick={exportPng} className="inline-flex items-center gap-2 rounded-xl bg-[#173d31] px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-[#0f2c23] disabled:cursor-not-allowed disabled:opacity-50"><IconDownload size={15} />{exporting ? messages.generating : messages.downloadPng}</button>
+          <button type="button" disabled={exporting} onClick={copyPng} className="inline-flex items-center gap-2 rounded-xl border border-[#cccec8] bg-white px-3.5 py-2.5 text-sm font-bold text-[#4e5a53] transition hover:bg-[#efeee9] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]"><IconCopy size={15} />{exporting ? messages.generating : messages.copyPng ?? 'Copy PNG'}</button>
         </div>
       </header>
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>

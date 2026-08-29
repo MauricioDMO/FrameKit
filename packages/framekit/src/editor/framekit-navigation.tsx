@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronRight, FileImage, Folder } from 'lucide-react'
+import { IconChevronRight, IconFolder, IconPhoto } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useState } from 'react'
@@ -118,7 +118,7 @@ function NavigationNode({
           className="absolute top-1 bottom-1 w-0.5 rounded-full bg-[#86a998]/45"
           style={{ left: 5 + level * 15 }}
         />
-        <FileImage size={16} className="shrink-0" />
+        <IconPhoto size={16} className="shrink-0" />
         <span className="truncate">{node.title}</span>
       </Link>
     )
@@ -154,11 +154,11 @@ function NavigationFolder({
         className="flex w-full items-center gap-2 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold text-[#d7e2dc] transition hover:bg-white/8"
         style={{ paddingLeft: 12 + level * 15 }}
       >
-        <ChevronRight
+        <IconChevronRight
           size={15}
           className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
         />
-        <Folder size={16} className="shrink-0 text-[#86a998]" />
+        <IconFolder size={16} className="shrink-0 text-[#86a998]" />
         <span className="truncate">{node.title}</span>
       </button>
 
