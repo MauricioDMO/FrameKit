@@ -39,7 +39,7 @@ un alias de compatibilidad ni un comando de migración automático. Las
 refinaciones posteriores de metadata y los cambios futuros de fields se
 rastrean por separado en los planes de ejecución.
 
-Consulta el [plan del contrato canónico](../../Plans/Future/issue-01-canonical-template-contract.md)
+Consulta el [issue del contrato canónico](https://github.com/MauricioDMO/FrameKit/issues/1)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
 
 ## Metadata De La Plantilla
@@ -53,7 +53,7 @@ obligatorio aunque el nombre del directorio ya parezca una etiqueta adecuada
 del catálogo: no existe fallback al slug. Es una actualización de código fuente
 obligatoria para las plantillas existentes, no un cambio aditivo sin migración.
 
-Consulta el [plan de metadata](../../Plans/Future/issue-03-template-metadata.md)
+Consulta el [issue de metadata](https://github.com/MauricioDMO/FrameKit/issues/3)
 y la [referencia del contrato de plantilla](../reference/template-contract.md#metadata-de-la-plantilla).
 
 ## Variantes De Contenido
@@ -75,7 +75,7 @@ alias de compatibilidad ni un comando de migración automático. Ejecuta
 `framekit generate`, `framekit check` y `framekit build` después de actualizar
 las plantillas.
 
-Consulta el [plan de variantes de contenido](../../Plans/Future/issue-04-content-variants.md)
+Consulta el [issue de variantes de contenido](https://github.com/MauricioDMO/FrameKit/issues/4)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
 
 ## Fields Semánticos
@@ -101,7 +101,7 @@ separado `textarea`. Este es un cambio incompatible del código fuente, no un
 cambio aditivo sin migración. Ejecuta `framekit generate`, `framekit check` y
 `framekit build` después de actualizar el starter y las plantillas del proyecto.
 
-Consulta el [plan de fields semánticos](../../Plans/Future/issue-05-semantic-fields.md),
+Consulta el [issue de fields semánticos](https://github.com/MauricioDMO/FrameKit/issues/5),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
 
@@ -132,7 +132,7 @@ contenido y las ediciones deben usar un string declarado. Un valor desconocido
 falla la validación de datos con `{ code: 'invalid_choice' }` en lugar de
 seleccionar la primera opción como fallback.
 
-Consulta el [plan del field choice](../../Plans/Future/issue-06-choice-field.md),
+Consulta el [issue del field choice](https://github.com/MauricioDMO/FrameKit/issues/6),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
 
@@ -167,14 +167,13 @@ adoptarlo requiere la actualización tipada del código fuente anterior. Ejecuta
 `framekit generate`, `framekit check` y `framekit build` después de actualizar las
 plantillas.
 
-Consulta el [plan del field boolean](../../Plans/Future/issue-07-boolean-field.md),
+Consulta el [issue del field boolean](https://github.com/MauricioDMO/FrameKit/issues/7),
 la [referencia del contrato de plantilla](../reference/template-contract.md) y la
 [referencia de la API pública](../reference/public-api.md).
 
 ## Campo Number
 
-El issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8), especificado en
-el [plan del field number](../../Plans/Future/issue-08-number-field.md), cambia
+El issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8) cambia
 el contrato de `field.number`. Es un cambio incompatible para adoptar fields
 number: no existe alias de compatibilidad, coerción de strings numéricos ni
 migración automática.
@@ -215,6 +214,6 @@ count: field.number({
 Ejecuta `framekit generate`, `framekit check` y `framekit build` después de
 actualizar los fields number.
 
-Consulta el [plan del field number](../../Plans/Future/issue-08-number-field.md),
+Consulta el [issue del field number](https://github.com/MauricioDMO/FrameKit/issues/8),
 la [referencia del contrato de plantilla](../reference/template-contract.md#number)
 y la [referencia de la API pública](../reference/public-api.md).

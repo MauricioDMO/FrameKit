@@ -50,8 +50,7 @@ aceptadas. Se rechazan `revision`, `status`, `keywords`, `order` y cualquier otr
 propiedad. Una definición sin un `meta.title` válido falla la validación en lugar
 de derivar un título desde su directorio.
 
-El contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md)
-y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
+El contrato exacto de variantes está definido por el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Tipos de Campos
 
@@ -373,20 +372,13 @@ La interfaz de Studio (etiquetas, botones y mensajes) usa uno de dos idiomas: es
 
 Esta separación significa que las variantes de contenido de la plantilla y el idioma de la interfaz de Studio son preocupaciones independientes.
 
-Este contrato canónico implementa el [Plan Futuro #1](../../Plans/Future/issue-01-canonical-template-contract.md)
-y el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1). El
-contrato exacto de metadata está definido por el [Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md)
-y el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3). El
-contrato exacto de variantes está definido por el [Plan Futuro #4](../../Plans/Future/issue-04-content-variants.md)
-y el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
-El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
-y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
-El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
-y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
-El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
-y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
-El contrato del field number está definido por el [Plan Futuro #8](../../Plans/Future/issue-08-number-field.md)
-y el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
+Este contrato canónico implementa el [issue #1 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/1). El
+contrato exacto de metadata está definido por el [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3). El
+contrato exacto de variantes está definido por el [issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4).
+El contrato semántico de fields está definido por el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
+El contrato del field choice está definido por el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
+El contrato del field boolean está definido por el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
+El contrato del field number está definido por el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 ---
 

@@ -47,8 +47,7 @@ only accepted metadata properties. `revision`, `status`, `keywords`, `order`, an
 other properties are rejected. A definition without a valid `meta.title` fails
 validation instead of deriving a title from its directory name.
 
-The exact variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-content-variants.md)
-and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+The exact variant contract is defined by [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
 
 ## Field Kinds
 
@@ -362,20 +361,13 @@ The Studio interface (labels, buttons, messages) uses one of two languages: Span
 
 This separation means template content variants and Studio UI language are independent concerns.
 
-This canonical contract is implemented by [Future Plan #1](../../Plans/Future/issue-01-canonical-template-contract.md)
-and [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1). The exact
-metadata contract is defined by [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
-and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3). The exact
-variant contract is defined by [Future Plan #4](../../Plans/Future/issue-04-content-variants.md)
-and [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
-The semantic field contract is defined by [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md)
-and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
-The choice field contract is defined by [Future Plan #6](../../Plans/Future/issue-06-choice-field.md)
-and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
-The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
-and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
-The number field contract is defined by [Future Plan #8](../../Plans/Future/issue-08-number-field.md)
-and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+This canonical contract is implemented by [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1). The exact
+metadata contract is defined by [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3). The exact
+variant contract is defined by [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4).
+The semantic field contract is defined by [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
+The choice field contract is defined by [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
+The boolean field contract is defined by [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
+The number field contract is defined by [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 ---
 

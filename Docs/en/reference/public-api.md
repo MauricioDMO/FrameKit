@@ -10,17 +10,13 @@ The canonical definition uses `meta`, `width`, `height`, `fields`, `variants`,
 field-only `content`, and `render({ data, assets, variant, width, height })`.
 `meta` requires a non-empty `title` and accepts only `description`,
 `marketingDescription`, and `tags` in addition. See the [template contract](./template-contract.md)
-for the full shape and its Studio/server-rendering boundary, and [Future Plan #3](../../Plans/Future/issue-03-template-metadata.md)
+for the full shape and its Studio/server-rendering boundary, and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3)
 for the metadata contract.
 
-The semantic field contract is defined by [Future Plan #5](../../Plans/Future/issue-05-semantic-fields.md)
-and [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
-The choice field contract is defined by [Future Plan #6](../../Plans/Future/issue-06-choice-field.md)
-and [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
-The boolean field contract is defined by [Future Plan #7](../../Plans/Future/issue-07-boolean-field.md)
-and [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
-The number field contract is defined by [Future Plan #8](../../Plans/Future/issue-08-number-field.md)
-and [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+The semantic field contract is defined by [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
+The choice field contract is defined by [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
+The boolean field contract is defined by [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
+The number field contract is defined by [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 `field.number` requires a finite numeric `defaultValue`, does not accept
 `required`, and supports the native `input` control by default or the native

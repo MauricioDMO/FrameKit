@@ -38,7 +38,7 @@ This is a breaking template-source change. There is no compatibility alias or
 automatic migration command. The exact metadata refinements and later field
 changes are tracked separately in the future execution plans.
 
-See the [canonical contract plan](../../Plans/Future/issue-01-canonical-template-contract.md)
+See the [canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/1)
 and the [template contract reference](../reference/template-contract.md).
 
 ## Template Metadata
@@ -52,7 +52,7 @@ looks like a suitable catalog label; there is no slug fallback. This is a
 required source update for existing templates, not an additive no-migration
 change.
 
-See the [template metadata plan](../../Plans/Future/issue-03-template-metadata.md)
+See the [template metadata issue](https://github.com/MauricioDMO/FrameKit/issues/3)
 and the [template contract reference](../reference/template-contract.md#template-metadata).
 
 ## Content Variants
@@ -73,7 +73,7 @@ This is a breaking source and persistence change. There is no compatibility alia
 or automatic migration command. Run `framekit generate`, `framekit check`, and
 `framekit build` after updating the templates.
 
-See the [content variants plan](../../Plans/Future/issue-04-content-variants.md)
+See the [content variants issue](https://github.com/MauricioDMO/FrameKit/issues/4)
 and the [template contract reference](../reference/template-contract.md).
 
 ## Semantic Fields
@@ -99,7 +99,7 @@ There is no `fields` compatibility alias, no `field.textarea`, and no separate
 with a no-migration path. Run `framekit generate`, `framekit check`, and
 `framekit build` after updating the starter and project templates.
 
-See the [semantic fields plan](../../Plans/Future/issue-05-semantic-fields.md),
+See the [semantic fields issue](https://github.com/MauricioDMO/FrameKit/issues/5),
 the [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
 
@@ -130,7 +130,7 @@ and edits must use a declared string value. An unknown value fails data
 validation with `{ code: 'invalid_choice' }` instead of selecting the first
 option as a fallback.
 
-See the [choice field plan](../../Plans/Future/issue-06-choice-field.md), the
+See the [choice field issue](https://github.com/MauricioDMO/FrameKit/issues/6), the
 [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
 
@@ -163,14 +163,13 @@ strings. This is an additive field kind for existing templates, but adopting it
 requires the typed source update above. Run `framekit generate`, `framekit check`,
 and `framekit build` after updating templates.
 
-See the [boolean field plan](../../Plans/Future/issue-07-boolean-field.md), the
+See the [boolean field issue](https://github.com/MauricioDMO/FrameKit/issues/7), the
 [template contract reference](../reference/template-contract.md), and the
 [public API reference](../reference/public-api.md).
 
 ## Number Field
 
-Issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8), specified in the
-[number field plan](../../Plans/Future/issue-08-number-field.md), changes the
+Issue [#8](https://github.com/MauricioDMO/FrameKit/issues/8) changes the
 contract for `field.number`. This is a breaking adoption change for number
 fields: there is no compatibility alias, numeric-string coercion, or automatic
 migration.
@@ -208,6 +207,6 @@ count: field.number({
 Run `framekit generate`, `framekit check`, and `framekit build` after updating
 number fields.
 
-See the [number field plan](../../Plans/Future/issue-08-number-field.md), the
+See the [number field issue](https://github.com/MauricioDMO/FrameKit/issues/8), the
 [template contract reference](../reference/template-contract.md#number), and
 the [public API reference](../reference/public-api.md).

@@ -12,17 +12,13 @@ La definición canónica usa `meta`, `width`, `height`, `fields`, `variants`,
 plantilla](./template-contract.md) para conocer la forma completa y su frontera
 entre Studio y el futuro renderizado de servidor. `meta` exige un `title` no
 vacío y solo acepta además `description`, `marketingDescription` y `tags`. El
-[Plan Futuro #3](../../Plans/Future/issue-03-template-metadata.md) define este
+[issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) define este
 contrato de metadata.
 
-El contrato semántico de fields está definido por el [Plan Futuro #5](../../Plans/Future/issue-05-semantic-fields.md)
-y el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
-El contrato del field choice está definido por el [Plan Futuro #6](../../Plans/Future/issue-06-choice-field.md)
-y el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
-El contrato del field boolean está definido por el [Plan Futuro #7](../../Plans/Future/issue-07-boolean-field.md)
-y el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
-El contrato del field number está definido por el [Plan Futuro #8](../../Plans/Future/issue-08-number-field.md)
-y el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
+El contrato semántico de fields está definido por el [issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5).
+El contrato del field choice está definido por el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
+El contrato del field boolean está definido por el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
+El contrato del field number está definido por el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
 
 `field.number` exige un `defaultValue` numérico finito, no acepta `required` y
 admite el control nativo `input` por defecto o el control nativo `slider` cuando
