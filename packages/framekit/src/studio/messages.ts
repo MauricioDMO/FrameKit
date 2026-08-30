@@ -11,13 +11,14 @@ export interface FrameKitStudioMessages {
     settingsLabel: string, themeToggleLabel: string, developedBy: string
     languageNames: Record<FrameKitLocale, string>
   }
-  editor: EditorMessages & { loadingLabel: string, loadError: string, invalidDefinition: string }
+  editor: EditorMessages & { loadingLabel: string, loadError: string, invalidDefinition: string, dataError: string }
   brand: {
-    componentLabel: string, previewLabel: string, descriptionLabel: string, editHint: string, loadingLabel: string
+    componentLabel: string, previewLabel: string, descriptionLabel: string, editHint: string, loadingLabel: string, loadError: string
+    badgeLabel: string, sourceLabel: string
     emptyTitle: string, emptyDescription: string, notFoundTitle: string, notFoundDescription: string
   }
   emptyState: { ready: string, title: string, description: string }
-  notFound: { title: string, description: string, backToEditor: string }
+  notFound: { statusLabel: string, title: string, description: string, backToEditor: string }
 }
 
 export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = {
@@ -44,6 +45,8 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
     editor: {
       templateEditor: 'Editor de plantilla',
       reset: 'Restablecer',
+      metadataLabel: 'Metadata',
+      closeLabel: 'Cerrar',
       generating: 'Generando...',
       downloadPng: 'Descargar PNG',
       copyPng: 'Copiar PNG',
@@ -51,12 +54,17 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       preview: 'Vista previa',
       actualSize: 'Tamaño real',
       fitToView: 'Ajustar',
-      contentVariantLabel: 'Variante de contenido',
+      variantLabel: 'Variante',
+      descriptionLabel: 'Descripción funcional',
+      marketingDescriptionLabel: 'Objetivo de marketing',
+      tagsLabel: 'Tags',
+      colorPickerLabel: 'Seleccionar color',
       exportError: 'No se pudo exportar la plantilla:',
       exportAlert: 'No fue posible generar la imagen.',
       loadingLabel: 'Cargando...',
       loadError: 'Error al cargar la plantilla',
       invalidDefinition: 'La plantilla no es válida',
+      dataError: 'Los datos de la plantilla no son válidos',
       errorRequired: 'Este campo es requerido',
       errorInvalidNumber: 'Ingresa un número válido',
       errorNumberTooSmall: 'El valor debe ser mayor o igual a {min}',
@@ -78,6 +86,9 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       descriptionLabel: 'Descripción',
       editHint: 'Edita la implementación en código y usa este preview para verificar el resultado.',
       loadingLabel: 'Cargando componente...',
+      loadError: 'No se pudo cargar el componente',
+      badgeLabel: 'Marca',
+      sourceLabel: 'component.tsx',
       emptyTitle: 'Selecciona un componente',
       emptyDescription: 'Elige un componente de marca para visualizar su preview y conocer su propósito.',
       notFoundTitle: 'Componente no encontrado',
@@ -89,6 +100,7 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       description: 'Elige un formato en la navegación para editar su contenido y exportarlo como PNG.'
     },
     notFound: {
+      statusLabel: 'Error 404',
       title: 'Plantilla no encontrada',
       description: 'Esta ruta no corresponde a una plantilla disponible en el catálogo.',
       backToEditor: 'Volver al editor'
@@ -117,6 +129,8 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
     editor: {
       templateEditor: 'Template editor',
       reset: 'Reset',
+      metadataLabel: 'Metadata',
+      closeLabel: 'Close',
       generating: 'Generating...',
       downloadPng: 'Download PNG',
       copyPng: 'Copy PNG',
@@ -124,12 +138,17 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       preview: 'Preview',
       actualSize: 'Actual size',
       fitToView: 'Fit to view',
-      contentVariantLabel: 'Content variant',
+      variantLabel: 'Variant',
+      descriptionLabel: 'Functional description',
+      marketingDescriptionLabel: 'Marketing goal',
+      tagsLabel: 'Tags',
+      colorPickerLabel: 'Select color',
       exportError: 'Could not export the template:',
       exportAlert: 'The image could not be generated.',
       loadingLabel: 'Loading...',
       loadError: 'Error loading template',
       invalidDefinition: 'Invalid template',
+      dataError: 'The template data is invalid',
       errorRequired: 'This field is required',
       errorInvalidNumber: 'Enter a valid number',
       errorNumberTooSmall: 'Value must be at least {min}',
@@ -151,6 +170,9 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       descriptionLabel: 'Description',
       editHint: 'Edit the implementation in code and use this preview to verify the result.',
       loadingLabel: 'Loading component...',
+      loadError: 'The component could not be loaded',
+      badgeLabel: 'Brand',
+      sourceLabel: 'component.tsx',
       emptyTitle: 'Select a component',
       emptyDescription: 'Choose a brand component to view its preview and learn its purpose.',
       notFoundTitle: 'Component not found',
@@ -162,6 +184,7 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       description: 'Choose a format from the navigation to edit its content and export it as a PNG.'
     },
     notFound: {
+      statusLabel: 'Error 404',
       title: 'Template not found',
       description: 'This route does not match a template available in the catalog.',
       backToEditor: 'Back to editor'

@@ -1,6 +1,6 @@
 'use client'
 
-import { IconFiles, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMoon, IconPhoto, IconSettings, IconSun } from '@tabler/icons-react'
+import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMoon, IconPhoto, IconSettings, IconStack2, IconSun, IconTag } from '@tabler/icons-react'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import type { ComponentType } from 'react'
@@ -10,7 +10,7 @@ import { validateTemplateDefinition } from '../core/validation'
 import { FrameKitEditor } from '../editor/framekit-editor'
 import { FrameKitNavigationTree } from '../editor/framekit-navigation'
 import { manifestToNavigation } from '../editor/navigation'
-import type { TemplateAssetManifest, TemplateDefinition, TemplateRegistryEntry } from '../types'
+import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 import { FrameKitBrandCatalog } from './brand-catalog'
 import { useFrameKitLocale } from './locale-provider'
 
@@ -33,9 +33,10 @@ type FrameKitStudioProps =
 
 type LoadState =
   | { status: 'loading' }
-  | { status: 'error', message?: string }
+  | { status: 'not-found' }
+  | { status: 'error', kind: 'template' | 'brand' }
   | { status: 'invalid' }
-  | { status: 'ready', kind: 'template', definition: TemplateDefinition, assets: TemplateAssetManifest }
+  | { status: 'ready', kind: 'template', entry: TemplateRegistryEntry, definition: TemplateDefinition }
   | { status: 'ready', kind: 'brand', preview: ComponentType, component: FrameKitStudioBrand }
 
 export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrands }: FrameKitStudioProps) {
@@ -53,23 +54,33 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
     if (!slug) return
 
     let cancelled = false
-    const entry = (isBrand ? brands : templates).find((candidate) => candidate.slug === slug)
-    if (!entry) return setLoadState({ status: 'error' })
+    if (isBrand) {
+      const entry = brands.find((candidate) => candidate.slug === slug)
+      if (!entry) return setLoadState({ status: 'not-found' })
 
-    setLoadState({ status: 'loading' })
-    entry.load().then((module) => {
-      if (cancelled) return
-      if (isBrand) {
-        setLoadState({ status: 'ready', kind: 'brand', preview: module.default as ComponentType, component: entry as FrameKitStudioBrand })
-        return
-      }
+      setLoadState({ status: 'loading' })
+      entry.load().then((module) => {
+        if (!cancelled) setLoadState({ status: 'ready', kind: 'brand', preview: module.default as ComponentType, component: entry })
+      }).catch(() => {
+        if (!cancelled) setLoadState({ status: 'error', kind: 'brand' })
+      })
+    } else {
+      const entry = templates.find((candidate) => candidate.slug === slug)
+      if (!entry) return setLoadState({ status: 'not-found' })
 
-      const result = validateTemplateDefinition(module.default as TemplateDefinition)
-      const template = entry as TemplateRegistryEntry
-      setLoadState(result.success ? { status: 'ready', kind: 'template', definition: result.definition, assets: template.assets } : { status: 'invalid' })
-    }).catch((error: unknown) => {
-      if (!cancelled) setLoadState({ status: 'error', message: String(error) })
-    })
+      setLoadState({ status: 'loading' })
+      entry.load().then((module) => {
+        if (cancelled) return
+        const result = validateTemplateDefinition(module.default as TemplateDefinition)
+        if (!result.success || result.definition.width !== entry.width || result.definition.height !== entry.height) {
+          setLoadState({ status: 'invalid' })
+          return
+        }
+        setLoadState({ status: 'ready', kind: 'template', entry, definition: result.definition })
+      }).catch(() => {
+        if (!cancelled) setLoadState({ status: 'error', kind: 'template' })
+      })
+    }
 
     return () => { cancelled = true }
   }, [slug, isBrand, templates, brands])
@@ -88,10 +99,10 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
   let content: React.ReactNode
   if (!slug) content = <EmptyState isBrand={isBrand} />
   else if (loadState.status === 'loading') content = <LoadingState label={isBrand ? messages.brand.loadingLabel : messages.editor.loadingLabel} />
-  else if (loadState.status === 'ready' && loadState.kind === 'template') content = <FrameKitEditor key={slug} slug={slug} definition={loadState.definition} assets={loadState.assets} messages={messages.editor} sidebarCollapsed={sidebarCollapsed} />
+  else if (loadState.status === 'ready' && loadState.kind === 'template') content = <FrameKitEditor key={slug} template={loadState.entry} definition={loadState.definition} messages={messages.editor} sidebarCollapsed={sidebarCollapsed} />
   else if (loadState.status === 'ready' && loadState.kind === 'brand') content = <FrameKitBrandCatalog title={loadState.component.title} description={loadState.component.description} preview={loadState.preview} messages={messages.brand} />
   else if (loadState.status === 'invalid') content = <MessageState>{messages.editor.invalidDefinition}</MessageState>
-  else if (loadState.message) content = <MessageState>{loadState.message}</MessageState>
+  else if (loadState.status === 'error') content = <MessageState>{loadState.kind === 'brand' ? messages.brand.loadError : messages.editor.loadError}</MessageState>
   else content = <NotFoundState isBrand={isBrand} />
 
   return (
@@ -108,14 +119,15 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
           <>
             <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-[#c8f7d9] text-[#10271f]"><IconFiles size={20} stroke={2.2} /></div>
+                <img src="/assets/logos/framekit-small.svg" alt="FrameKit" className="size-10 rounded-lg dark:hidden" />
+                <img src="/assets/logos/framekit-small-dark.svg" alt="" aria-hidden="true" className="hidden size-10 rounded-lg dark:block" />
                 <div><p className="font-black tracking-[-0.02em]">FrameKit</p><p className="mt-0.5 text-[11px] tracking-[0.16em] text-[#91ae9f] uppercase">{messages.sidebar.workshop}</p></div>
               </div>
               <button type="button" onClick={toggleSidebar} aria-label={messages.sidebar.collapseLabel} title={messages.sidebar.collapseLabel} className="ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[#c8f7d9] transition hover:bg-white/10 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"><IconLayoutSidebarLeftCollapse size={18} /></button>
             </header>
             <div className="grid grid-cols-2 gap-1 border-b border-white/10 p-3">
-              <Link href="/editor" aria-current={!isBrand ? 'page' : undefined} className={`rounded-lg px-2 py-2 text-center text-xs font-bold transition ${!isBrand ? 'bg-[#c8f7d9] text-[#10271f]' : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'}`}>{messages.sidebar.templatesLabel}</Link>
-              <Link href="/brand" aria-current={isBrand ? 'page' : undefined} className={`rounded-lg px-2 py-2 text-center text-xs font-bold transition ${isBrand ? 'bg-[#c8f7d9] text-[#10271f]' : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'}`}>{messages.sidebar.brandsLabel}</Link>
+              <Link href="/editor" aria-current={!isBrand ? 'page' : undefined} className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-center text-xs font-bold transition ${!isBrand ? 'bg-[#c8f7d9] text-[#10271f]' : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'}`}><IconStack2 size={16} aria-hidden="true" />{messages.sidebar.templatesLabel}</Link>
+              <Link href="/brand" aria-current={isBrand ? 'page' : undefined} className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-center text-xs font-bold transition ${isBrand ? 'bg-[#c8f7d9] text-[#10271f]' : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'}`}><IconTag size={16} aria-hidden="true" />{messages.sidebar.brandsLabel}</Link>
             </div>
             <nav aria-label={messages.sidebar.navigationLabel} className="max-h-[38vh] overflow-y-auto p-3 lg:max-h-none lg:min-h-0 lg:flex-1">
               {navigation.length === 0 ? <p className="px-3 py-4 text-sm text-[#91ae9f]">{isBrand ? messages.sidebar.noBrands : messages.sidebar.noTemplates}</p> : <FrameKitNavigationTree nodes={navigation} />}
@@ -153,9 +165,9 @@ function EmptyState({ isBrand }: { isBrand: boolean }) {
 
 function NotFoundState({ isBrand }: { isBrand: boolean }) {
   const { messages } = useFrameKitLocale()
-  return <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen"><div className="max-w-md text-center"><p className="text-xs font-bold tracking-[0.24em] text-[#748078] uppercase">Error 404</p><h1 className="mt-3 text-3xl font-black tracking-tight">{isBrand ? messages.brand.notFoundTitle : messages.notFound.title}</h1><p className="mt-3 leading-7 text-[#657168]">{isBrand ? messages.brand.notFoundDescription : messages.notFound.description}</p><Link href={isBrand ? '/brand' : '/editor'} className="mt-7 inline-block rounded-xl bg-[#173d31] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0f2c23]">{messages.notFound.backToEditor}</Link></div></div>
+  return <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen"><div className="max-w-md text-center"><p className="text-xs font-bold tracking-[0.24em] text-[#748078] uppercase">{messages.notFound.statusLabel}</p><h1 className="mt-3 text-3xl font-black tracking-tight">{isBrand ? messages.brand.notFoundTitle : messages.notFound.title}</h1><p className="mt-3 leading-7 text-[#657168]">{isBrand ? messages.brand.notFoundDescription : messages.notFound.description}</p><Link href={isBrand ? '/brand' : '/editor'} className="mt-7 inline-block rounded-xl bg-[#173d31] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0f2c23]">{messages.notFound.backToEditor}</Link></div></div>
 }
 
 function MessageState({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-[60vh] items-center justify-center p-8 text-[#17221d] dark:text-[#e6eee9]">{children}</div>
+  return <div role="alert" className="flex min-h-[60vh] items-center justify-center p-8 text-[#17221d] dark:text-[#e6eee9]">{children}</div>
 }

@@ -18,7 +18,7 @@ describe('FrameKitBrandCatalog', () => {
         title="Person Quote"
         description="Reusable quote block for a person-led message."
         preview={Preview}
-        messages={{ componentLabel: 'Brand component', previewLabel: 'Component preview', descriptionLabel: 'Description', editHint: 'Edit in code.' }}
+        messages={{ componentLabel: 'Brand component', previewLabel: 'Component preview', descriptionLabel: 'Description', editHint: 'Edit in code.', badgeLabel: 'Brand', sourceLabel: 'component.tsx' }}
       />,
     )
 

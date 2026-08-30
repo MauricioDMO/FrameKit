@@ -16,6 +16,8 @@ export function FrameKitBrandCatalog({
     previewLabel: string
     descriptionLabel: string
     editHint: string
+    badgeLabel: string
+    sourceLabel: string
   }
 }) {
   return (
@@ -25,7 +27,7 @@ export function FrameKitBrandCatalog({
           <p className="text-[10px] font-bold tracking-[0.2em] text-[#4d675a] uppercase dark:text-[#a4b8ac]">{messages.componentLabel}</p>
           <h1 className="mt-1 text-xl font-black tracking-tight">{title}</h1>
         </div>
-        <span className="rounded-full border border-[#d6d5ce] px-3 py-1.5 text-[11px] font-bold tracking-[0.12em] text-[#537568] uppercase dark:border-white/15 dark:text-[#b8c8be]">Brand</span>
+        <span className="rounded-full border border-[#d6d5ce] px-3 py-1.5 text-[11px] font-bold tracking-[0.12em] text-[#537568] uppercase dark:border-white/15 dark:text-[#b8c8be]">{messages.badgeLabel}</span>
       </header>
       <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:p-6">
         <section aria-label={messages.previewLabel} className="relative flex min-h-[28rem] items-center justify-center overflow-auto rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]">
@@ -38,7 +40,7 @@ export function FrameKitBrandCatalog({
           <p className="text-[11px] font-bold tracking-[0.16em] text-[#537568] uppercase dark:text-[#91ae9f]">{messages.descriptionLabel}</p>
           <p className="mt-3 text-[15px] leading-7 text-[#59665f] dark:text-[#b8c8be]">{description}</p>
           <div className="mt-8 border-t border-black/8 pt-5 dark:border-white/10">
-            <p className="text-[11px] font-bold tracking-[0.16em] text-[#537568] uppercase dark:text-[#91ae9f]">component.tsx</p>
+            <p className="text-[11px] font-bold tracking-[0.16em] text-[#537568] uppercase dark:text-[#91ae9f]">{messages.sourceLabel}</p>
             <p className="mt-2 text-sm leading-6 text-[#657168] dark:text-[#a4b8ac]">{messages.editHint}</p>
           </div>
         </aside>
