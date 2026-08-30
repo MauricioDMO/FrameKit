@@ -38,3 +38,8 @@
   `start` remains read-only. Removed the old top-level `title`, `templateManifest`,
   and `templateRegistry` outputs, and expanded template watching to every path
   under `src/templates`. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
+- Completed Studio's direct canonical `TemplateRegistryEntry` integration,
+  metadata presentation, generic variants, typed native controls, localized
+  navigation and errors, and `v2` editor persistence with intentional `v1`
+  invalidation. See [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13)
+  and the [implementation plan](Docs/Plans/Future/issue-13-studio-canonical-contract.md).
