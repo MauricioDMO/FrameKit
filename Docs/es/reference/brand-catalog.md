@@ -5,6 +5,9 @@ metadatos y carga su `preview.tsx` bajo demanda en Studio. Esta referencia
 describe el contrato que implementan el descubrimiento, el codegen y la ruta
 `/brand`.
 
+El contrato de integración de Studio para este comportamiento se sigue en el
+[issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
+
 ## Contrato de descubrimiento
 
 ### Requisitos del escaneo
@@ -143,9 +146,10 @@ el `slug` unido por `/`, por ejemplo `/brand/people/person-quote`.
 - **No encontrado**: si no hay una entrada para el `slug`, la interfaz muestra
   el estado 404 de marca, con el mensaje localizado de componente no
   encontrado y un enlace de vuelta a `/brand`.
-- **Error de carga**: si la promesa de `load` rechaza, se muestra el texto de
-  `String(error)` en el estado de mensaje. El estado `invalid` pertenece a la
-  validación de plantillas, no al preview de marca.
+- **Error de carga**: si la promesa de `load` rechaza, Studio descarta la razón
+  del rechazo y muestra el mensaje localizado de error de carga de marca. No
+  se muestra el `String(error)` sin procesar. El estado `invalid` pertenece a
+  la validación de plantillas, no al preview de marca.
 
 ### `FrameKitBrandCatalog`
 
@@ -161,14 +165,19 @@ El componente interno de catálogo recibe exactamente:
     previewLabel: string
     descriptionLabel: string
     editHint: string
+    badgeLabel: string
+    sourceLabel: string
   }
 }
 ```
 
-Renderiza el título, la etiqueta fija `Brand`, el preview dentro del área de
-vista previa y la descripción en un panel lateral. También muestra
-`component.tsx` y el texto de edición definido por `messages.editHint`. No
-incluye un editor de código ni acciones para modificar el componente.
+Renderiza el título, la etiqueta de marca proporcionada por
+`messages.badgeLabel`, el preview dentro del área de vista previa y la
+descripción en un panel lateral. También muestra la etiqueta de origen
+proporcionada por `messages.sourceLabel`, `component.tsx` y el texto de edición
+definido por `messages.editHint`. Estas etiquetas se obtienen de los mensajes,
+no de texto fijo en el componente. No incluye un editor de código ni acciones
+para modificar el componente.
 
 `FrameKitStudioBrand` sí es un tipo exportado por
 `@mauriciodmo/framekit/studio`; `FrameKitBrandCatalog` no se reexporta desde

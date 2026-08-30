@@ -5,6 +5,8 @@ generates the metadata and loaders that Studio uses at `/brand`. A brand
 component is a code-backed component with a separate preview and a short
 README description.
 
+The Studio integration contract for this behavior is tracked in [issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
+
 ## Directory contract
 
 The scanner recursively visits `src/brand`:
@@ -125,10 +127,31 @@ match in the supplied `brands` array, and builds navigation links using
 - A matching entry renders the brand catalog with its title and description,
   and renders the loaded module's default export as the preview.
 - A slug with no exact match shows the brand not-found state.
-- If the loader rejects, the error string is rendered in the message state.
+- If the loader rejects, Studio discards the rejection reason and renders the
+  localized brand load-error message. It does not render raw `String(error)`.
 
-The catalog displays the metadata description and a code hint naming
-`component.tsx`; it does not edit that file. For brand entries, the loaded
-default export is used as a React component without the template-definition
-validation applied to template entries. The implementation does not establish
-additional prop validation or guarantees for the preview.
+The internal `FrameKitBrandCatalog` component receives exactly:
+
+```ts
+{
+  title: string
+  description: string
+  preview: ComponentType
+  messages: {
+    componentLabel: string
+    previewLabel: string
+    descriptionLabel: string
+    editHint: string
+    badgeLabel: string
+    sourceLabel: string
+  }
+}
+```
+
+It displays the metadata description and a code hint naming `component.tsx`;
+it does not edit that file. The badge and source labels are supplied through
+`messages.badgeLabel` and `messages.sourceLabel`, rather than hardcoded UI
+text. For brand entries, the loaded default export is used as a React
+component without the template-definition validation applied to template
+entries. The implementation does not establish additional prop validation or
+guarantees for the preview.

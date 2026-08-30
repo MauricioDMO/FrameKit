@@ -8,9 +8,9 @@ The root entry point provides the core runtime API for defining, validating, and
 
 The canonical definition uses `meta`, `width`, `height`, `fields`, `variants`,
 field-only `content`, and `render({ data, assets, variant, width, height })`.
-`meta` requires a non-empty `title` and accepts only `description`,
-`marketingDescription`, and `tags` in addition. See the [template contract](./template-contract.md)
-for the full shape and its Studio/server-rendering boundary, and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3)
+`meta` requires a non-empty `title` and may include `description`,
+`marketingDescription`, and `tags`. See the [template contract](./template-contract.md)
+for the full shape, and [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3)
 for the metadata contract.
 
 The semantic field contract is defined by [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5).
@@ -63,7 +63,7 @@ without coercion, and an incomplete local editor draft is not render data.
 | `TemplateBase`                | Base type for a template containing field definitions                                                   |
 | `TemplateDefinition`          | Complete template definition combining base structure with configuration                                |
 | `TemplateRenderProps`         | Props passed to a template's render function, including finite numbers for number fields                |
-| `TemplateRegistryEntry`       | Entry in the generated template registry, with metadata, dimensions, variants, assets, and a dynamic loader |
+| `TemplateRegistryEntry`       | Canonical entry in the generated template registry, with metadata, dimensions, variants, assets, and a dynamic loader |
 | `InferTemplateData<T>`        | Utility type that extracts the data shape from a template definition                                    |
 | `TemplateDataValidationError` | Per-field validation error union used by `validateTemplateData`                                        |
 
@@ -93,16 +93,25 @@ export const templates: TemplateRegistryEntry[] = [
 
 Each entry contains `slug`, `segments`, `meta`, `width`, `height`, `variants`,
 `variantKeys`, `assets`, and the dynamic `load` loader, whose promise resolves
-to a module with the template definition as its default export. The generated
-module has no top-level `title`, `templateManifest`, or `templateRegistry`;
-the template title is `meta.title`. This is project-local generated output,
-not an export of a published package entry point. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
+to a module with the template definition as its default export. The template
+title is `meta.title`. `meta.title` supplies Studio's navigation
+label and selected editor heading; when present, Studio also displays the
+optional `description`, `marketingDescription`, and `tags`. The registry's
+dimensions, variants, asset manifest, and lazy loader are passed through the
+Studio load boundary. This is project-local generated output, not an export of
+a published package entry point. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12)
+and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).
 
 ---
 
 ### `@mauriciodmo/framekit/editor`
 
 Provides the `FrameKitEditor` component and supporting navigation utilities for the in-app editing experience.
+
+`FrameKitEditor` receives the canonical `template: TemplateRegistryEntry` plus
+the loaded `definition` and `messages` (and optional `sidebarCollapsed`). The
+registry entry supplies the editor's `slug` and `assets`; callers do not pass
+separate `slug` or `assets` props.
 
 **Runtime exports**
 
@@ -130,6 +139,33 @@ Provides the `FrameKitEditor` component and supporting navigation utilities for 
 Provides the `FrameKitStudio` component, which combines editor and navigation into a complete studio interface, along with localization utilities.
 
 Its main component accepts `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`.
+`brands` is optional and defaults to an empty catalog.
+`FrameKitStudioTemplate` is `TemplateRegistryEntry`, so the generated `templates`
+array can be passed directly to `FrameKitStudio` without an adapter:
+
+```tsx
+import { templates } from './generated/framekit/templates'
+import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+
+<FrameKitStudio templates={templates} />
+```
+
+Studio starts with `definition.variants.default`. Variant keys are generic content
+keys, not language identifiers; option labels use
+`definition.variants.labels?.[key] ?? key`. The Studio interface locale is an
+independent EN/ES setting and does not select or change a template variant.
+
+The six built-in field controls preserve typed values: text uses a native
+`textarea`, choice a native `select`, boolean a native checkbox, number its
+declared native number or range input, color its color control, and image its
+project-asset control. Strings remain strings, numbers remain finite numbers,
+and booleans remain booleans. Temporary number drafts stay inside the number
+control and are not passed to the template render function.
+
+Editor edits persist per template and variant under `framekit:<slug>:v2`.
+Older state is intentionally invalidated rather than migrated. Preview and render
+use committed typed values; download and copy validate the current committed data
+before producing output and focus the first invalid control.
 
 See the [brand catalog reference](./brand-catalog.md) for the `src/brand`
 discovery contract, generated registries, and `/brand` behavior.
@@ -146,7 +182,7 @@ discovery contract, generated registries, and `/brand` behavior.
 
 | Type                     | Description                                |
 | ------------------------ | ------------------------------------------ |
-| `FrameKitStudioTemplate` | Template type scoped to the studio context |
+| `FrameKitStudioTemplate` | Canonical `TemplateRegistryEntry` type used by Studio |
 | `FrameKitStudioBrand`    | Brand catalog entry with metadata and a preview loader |
 | `FrameKitLocale`         | Locale type used within the studio         |
 | `FrameKitStudioMessages` | Message catalog type for studio UI strings |
@@ -246,4 +282,4 @@ These are peer requirements. The package will emit a warning during installation
 - **Published files**: `bin/`, `dist/`, `README.md`, `LICENSE`
 - **CLI**: `bin/framekit.js` is the entry point for the `framekit` command-line executable
 
-[Español](../../es/reference/public-api.md)
+[Español](../../es/reference/public-api.md) · [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13)

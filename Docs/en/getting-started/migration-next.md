@@ -238,3 +238,56 @@ source template definition contract itself does not gain a compatibility alias.
 See the [generated registry CLI reference](../reference/cli.md#framekit-generate),
 the [public API reference](../reference/public-api.md#generated-template-registry),
 and the [Generated Template Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
+
+## Studio Canonical Contract Integration
+
+Issue [#13](https://github.com/MauricioDMO/FrameKit/issues/13) completes Studio's
+direct integration with the canonical contracts. Existing Studio integrations
+must consume the generated `templates: TemplateRegistryEntry[]` directly. Do
+not create a second Studio registry model or adapt the legacy registry shape.
+When rendering `FrameKitEditor` directly, pass the reusable
+`TemplateRegistryEntry` through its `template` prop and pass the loaded,
+validated definition separately; do not reconstruct an older template prop
+shape.
+
+Update existing consumers as follows:
+
+- Read the display title from `entry.meta.title` in navigation and the editor
+  header; never derive it from the slug. The editor also displays
+  `meta.description`, `meta.marketingDescription`, and `meta.tags` when present,
+  omitting each optional value when absent.
+- Use generic `variant` names in template selection state, actions, props, and
+  callbacks. Start with `definition.variants.default`, render optional labels
+  with a key fallback, and keep the selector label generic (`Variant`). The
+  Studio interface locale (`FrameKitLocale`, EN/ES) is independent: changing
+  interface language must not change the selected template variant.
+- Keep the sidebar navigation compact and accessible: preserve the folder
+  hierarchy, expand/collapse behavior, keyboard operation, visible focus,
+  folder-only scope lines for expanded groups, and subdued selected-template
+  styling with `aria-current="page"`. Do not add search or filtering.
+- Keep the canonical typed controls: text uses a native `<textarea>`, choice a
+  native `<select>`, boolean a native checkbox, number its declared native
+  number or range control, color its existing control, and image its asset
+  control. Preserve string, finite-number, and boolean runtime values; choice
+  values remain declared strings.
+- Persist editor state only under `framekit:<slug>:v2`. The previous `v1`
+  persistence format is intentionally invalidated and discarded, not migrated.
+  Empty or temporarily invalid number input stays as a local control draft; it
+  is not committed editor data and is never passed to `render`.
+- Keep Studio-owned navigation and error UI localized through the centralized
+  Studio messages. Route tabs, sidebar navigation labels, metadata labels,
+  loading and not-found states, definition/data errors, upload errors, export
+  errors, and validation messages use the active interface locale; template
+  titles, metadata values, and variant labels remain source-provided. Validation
+  errors remain associated with their controls, and export/copy focuses the
+  first invalid control before producing output.
+
+This is a versionless breaking integration update; no release version has been
+selected. There is no compatibility alias, automatic migration command, or
+legacy registry adapter. Manually update affected template and editor-consumer
+source, and treat the `v1` persistence invalidation as an intentional manual
+reset where applicable. Regenerate generated files with `framekit generate`
+instead of editing them by hand, then run `framekit check` and `framekit build`.
+
+See the [Studio canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/13)
+and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).

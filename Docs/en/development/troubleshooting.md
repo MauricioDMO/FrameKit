@@ -130,7 +130,7 @@ Open the entry from Studio navigation, or use the exact slash-separated path der
 
 **Cause: the generated loader's dynamic import rejects**
 
-Discovery only checks that `preview.tsx` exists. Studio loads that preview on demand and displays the loader's error string if its dynamic import rejects. This is a runtime error, separate from scanner validation.
+Discovery only checks that `preview.tsx` exists. Studio loads that preview on demand; if the generated loader's dynamic import rejects, Studio suppresses the raw error and renders the localized brand load-error message instead. This is a runtime error, separate from scanner validation.
 
 **Fix: inspect `preview.tsx` and its imports**
 

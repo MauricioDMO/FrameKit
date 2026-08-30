@@ -38,6 +38,14 @@ function. The generated file is disposable; update the source template and run
 the generation workflow instead of editing it. See the [Generated Template
 Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
 
+This generated `templates` array is the canonical input to `FrameKitStudio`; pass
+it directly without an adapter. Studio uses `entry.meta.title` for navigation and
+the selected editor heading, displays `description`, `marketingDescription`, and
+`tags` when present, and reads the entry's dimensions, variants, asset manifest,
+and lazy `load` function. The loaded definition and registry dimensions must
+agree before the editor opens. See the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md)
+and [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
+
 ## Authoring Forms
 
 FrameKit supports two forms for defining templates. Both produce the same end result; pick the form that fits the complexity of your template.
@@ -169,13 +177,13 @@ properties:
 - `title` (required): a non-empty template title.
 - `description` (optional): a functional description of what the template is for.
 - `marketingDescription` (optional): the concrete communication goal, such as presenting a service, explaining prices, highlighting benefits, or motivating an action.
-- `tags` (optional): an array of strings for later catalog use.
+- `tags` (optional): an array of strings shown with the template metadata in Studio.
 
-`meta` does not accept `revision`, `status`, `keywords`, `order`, or any other
-property. There is no slug fallback or compatibility alias: a definition without
-a valid `meta.title` fails validation. The generated registry preserves this
-validated metadata, and Studio navigation reads `entry.meta.title`. Displaying
-the remaining optional metadata belongs to issue #13.
+The generated registry preserves this validated metadata. Studio navigation and
+the selected editor heading read
+`entry.meta.title`; when present, Studio also displays the optional descriptions
+and tags. See [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13)
+for the integrated Studio contract.
 
 ## Field API
 
@@ -193,10 +201,16 @@ fields: {
 }
 ```
 
+Studio provides one built-in control for each of the six field kinds: a native
+`textarea` for text, the current color picker for color, a native number input or
+range input for number, the project-asset control for image, a native `select`
+for choice, and a native checkbox for boolean. Values keep their runtime types:
+strings for text, color, image, and choice; finite numbers for number; and
+booleans for boolean.
+
 `field.text` always renders a native `<textarea>` and preserves newline
 characters. `minLength` and `maxLength` are optional finite non-negative integers;
-`minLength` cannot exceed `maxLength`. There is no `field.textarea` or `fields`
-compatibility alias.
+`minLength` cannot exceed `maxLength`.
 
 `field.choice` renders a native `<select>` for a closed set of string values. Its
 `options` array must be non-empty and ordered, with unique non-empty `value` and
@@ -261,7 +275,7 @@ opacity: field.number({
 
 ## Content and Variants
 
-Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
+Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. Studio initially selects `variants.default`. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
 
 Use `variants.labels` for human-readable option labels. It is optional, and every
 label key must match a content variant key. A missing label falls back to the
@@ -280,6 +294,8 @@ content: {
 ```
 
 In this example, the `variant` type is `'fjord' | 'moon'`, not a global language union.
+Studio's interface locale is an independent EN/ES setting: changing it changes
+UI messages, not the selected template variant.
 
 ## Render Props
 
@@ -296,6 +312,14 @@ The `render` function receives only render inputs:
 - `height` — the template height as a literal type.
 
 The render function is independent of Studio state and browser-only editor APIs. An image field resolves to a browser URL string. Variant fields use `assets/<variant>/<field-key>.*`; common fields use `assets/common/<field-key>.*`. A public image can be referenced with a root-relative value such as `/assets/logos/brand.svg` in `defaultValue` or variant content. Public files are not scanned into the template asset manifest.
+
+In Studio, preview and render consume only committed resolved values. Download and
+copy validate the current committed data before producing output, report field
+errors, and focus the first invalid control. Temporary number drafts remain inside
+the number control and are never passed to `render`.
+
+Studio stores committed edits per template and variant in browser `localStorage` under
+`framekit:<slug>:v2`. Older persisted state is invalidated rather than migrated.
 
 ```tsx
 fields: {
@@ -333,8 +357,8 @@ template; it discovers both templates and brand components, then writes
 
 ## Reserved Keys
 
-The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key. Definitions do not have a version property or an alternate compatibility shape. Metadata accepts only `title`, `description`, `marketingDescription`, and `tags`; unsupported properties are rejected.
+The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key.
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) · [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) · [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12) · [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13) · [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md)

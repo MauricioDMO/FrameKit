@@ -9,9 +9,8 @@ El punto de entrada raíz proporciona la API central de tiempo de ejecución par
 La definición canónica usa `meta`, `width`, `height`, `fields`, `variants`,
 `content` con solo valores de fields y
 `render({ data, assets, variant, width, height })`. Consulta el [contrato de
-plantilla](./template-contract.md) para conocer la forma completa y su frontera
-entre Studio y el futuro renderizado de servidor. `meta` exige un `title` no
-vacío y solo acepta además `description`, `marketingDescription` y `tags`. El
+plantilla](./template-contract.md) para conocer la forma completa. `meta` exige un `title` no
+vacío y puede incluir `description`, `marketingDescription` y `tags`. El
 [issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) define este
 contrato de metadata.
 
@@ -66,7 +65,7 @@ incompleto del editor no es render data.
 | `TemplateBase`                | Tipo base para una plantilla que contiene definiciones de campos                                               |
 | `TemplateDefinition`          | Definición completa de plantilla que combina la estructura base con la configuración                           |
 | `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado, incluidos numbers finitos para fields number                |
-| `TemplateRegistryEntry`       | Entrada del registro generado de plantillas, con metadata, dimensiones, variantes, assets y un loader dinámico |
+| `TemplateRegistryEntry`       | Entrada canónica del registro generado de plantillas, con metadata, dimensiones, variantes, assets y un loader dinámico |
 | `InferTemplateData<T>`        | Tipo utilitario que extrae la forma de los datos a partir de una definición de plantilla                       |
 | `TemplateDataValidationError` | Tipo de error devuelto cuando la validación de datos de una plantilla falla                                    |
 
@@ -97,16 +96,25 @@ export const templates: TemplateRegistryEntry[] = [
 Cada entrada contiene `slug`, `segments`, `meta`, `width`, `height`, `variants`,
 `variantKeys`, `assets` y el loader dinámico `load`, cuya promesa resuelve un
 módulo con la definición de la plantilla como exportación predeterminada. El
-módulo generado no tiene `title`, `templateManifest` ni `templateRegistry` en
-el nivel superior; el título de la plantilla es `meta.title`. Esta salida es
+título de la plantilla es `meta.title`. Esta salida es
 generada localmente en el proyecto, no una exportación de un punto de entrada
-publicado del paquete. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
+publicado del paquete. `meta.title` proporciona la etiqueta de navegación de
+Studio y el encabezado del editor seleccionado; cuando están presentes, Studio
+también muestra `description`, `marketingDescription` y `tags` opcionales. Las
+dimensiones, variantes, manifest de assets y loader lazy del registro atraviesan
+el límite de carga de Studio. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12)
+y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).
 
 ---
 
 ### `@mauriciodmo/framekit/editor`
 
 Proporciona el componente `FrameKitEditor` y las utilidades de navegación asociadas para la experiencia de edición dentro de la aplicación.
+
+`FrameKitEditor` recibe el `template: TemplateRegistryEntry` canónico, además de
+la `definition` cargada y `messages` (y el `sidebarCollapsed` opcional). La entrada
+del registro proporciona el `slug` y los `assets` del editor; los callers no pasan
+props separadas de `slug` ni `assets`.
 
 **Exportaciones del entorno de ejecución**
 
@@ -135,6 +143,35 @@ Proporciona el componente `FrameKitStudio`, que combina el editor y la navegaci�
 
 Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`. `brands` es opcional y, si se omite, se usa un catálogo vacío.
 
+`FrameKitStudioTemplate` es `TemplateRegistryEntry`, por lo que el array generado
+`templates` se puede pasar directamente a `FrameKitStudio`, sin un adaptador:
+
+```tsx
+import { templates } from './generated/framekit/templates'
+import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+
+<FrameKitStudio templates={templates} />
+```
+
+Studio comienza con `definition.variants.default`. Las keys de variante son keys
+genéricas de contenido, no identificadores de idioma; las labels de las opciones
+usan `definition.variants.labels?.[key] ?? key`. El locale de interfaz de Studio es
+una configuración EN/ES independiente y no selecciona ni cambia una variante.
+
+Los seis controles integrados de fields conservan los valores tipados: text usa un
+`textarea` nativo, choice un `select` nativo, boolean un checkbox nativo, number
+su input numérico o de rango nativo declarado, color su control de color e image su
+control de assets del proyecto. Los strings siguen siendo strings, los numbers
+siguen siendo numbers finitos y los booleanos siguen siendo booleanos. Los drafts
+numéricos temporales permanecen dentro del control number y no se pasan a la
+función de renderizado de la plantilla.
+
+Las ediciones del editor se persisten por plantilla y variante bajo
+`framekit:<slug>:v2`. El estado anterior se invalida intencionalmente en lugar de
+migrarse. La vista previa y el renderizado usan valores tipados confirmados; la
+descarga y la copia validan los datos confirmados actuales antes de producir la
+salida y enfocan el primer control inválido.
+
 **Exportaciones del entorno de ejecución**
 
 | Exportación         | Descripción                                                                                            |
@@ -147,7 +184,7 @@ Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[], 
 
 | Tipo                     | Descripción                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
-| `FrameKitStudioTemplate` | Tipo de plantilla limitado al contexto del estudio                |
+| `FrameKitStudioTemplate` | Tipo canónico `TemplateRegistryEntry` usado por Studio |
 | `FrameKitStudioBrand`    | Entrada de catálogo de marca con `slug: string`, `title: string`, `segments: string[]`, `description: string` y `load: () => Promise<{ default: unknown }>` |
 | `FrameKitLocale`         | Tipo de locale utilizado dentro del estudio                       |
 | `FrameKitStudioMessages` | Tipo de catálogo de mensajes para cadenas de interfaz del estudio |
@@ -251,4 +288,4 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 - **Archivos publicados**: `bin/`, `dist/`, `README.md`, `LICENSE`
 - **CLI**: `bin/framekit.js` es el punto de entrada para el ejecutable de línea de comandos `framekit`
 
-[English](../../en/reference/public-api.md)
+[English](../../en/reference/public-api.md) · [Issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13)

@@ -247,3 +247,59 @@ alias de compatibilidad.
 Consulta la [referencia CLI del registro generado](../reference/cli.md#framekit-generate),
 la [referencia de la API pública](../reference/public-api.md#registro-generado-de-plantillas)
 y el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
+
+## Integración Del Contrato Canónico De Studio
+
+El issue [#13](https://github.com/MauricioDMO/FrameKit/issues/13) completa la
+integración directa de Studio con los contratos canónicos. Las integraciones
+existentes de Studio deben consumir directamente el array generado
+`templates: TemplateRegistryEntry[]`. No crees otro modelo de registro para Studio
+ni adaptes la forma antigua del registro. Al renderizar `FrameKitEditor`
+directamente, pasa el `TemplateRegistryEntry` reutilizable en su prop `template`
+y pasa por separado la definición cargada y validada; no reconstruyas una forma
+anterior de esa prop.
+
+Actualiza los consumidores existentes de esta forma:
+
+- Lee el título visible desde `entry.meta.title` en la navegación y en el
+  encabezado del editor; nunca lo derives del slug. El editor también muestra
+  `meta.description`, `meta.marketingDescription` y `meta.tags` cuando están
+  presentes, y omite cada valor opcional cuando falta.
+- Usa nombres genéricos de `variant` en el estado, las acciones, las props y los
+  callbacks de selección. Empieza con `definition.variants.default`, muestra
+  los labels opcionales usando la key como fallback y conserva el label
+  genérico del selector (`Variante`). El locale de interfaz de Studio
+  (`FrameKitLocale`, EN/ES) es independiente: cambiar el idioma de la interfaz
+  no debe cambiar la variante seleccionada.
+- Mantén la navegación lateral compacta y accesible: conserva la jerarquía de
+  carpetas, la expansión/contracción, la operación con teclado, el foco visible,
+  las líneas de alcance solo para grupos de carpetas expandidos y el estilo
+  atenuado de la plantilla seleccionada con `aria-current="page"`. No agregues
+  búsqueda ni filtros.
+- Conserva los controles tipados canónicos: text usa un `<textarea>` nativo,
+  choice un `<select>` nativo, boolean un checkbox nativo, number su control
+  nativo de número o rango declarado, color su control actual e image su control
+  de assets. Conserva los valores runtime como strings, numbers finitos y
+  booleanos; los valores de choice siguen siendo strings declarados.
+- Persiste el estado del editor únicamente bajo `framekit:<slug>:v2`. El formato
+  anterior de persistencia `v1` se invalida y descarta intencionalmente; no se
+  migra. Una entrada number vacía o temporalmente inválida permanece como draft
+  local del control; no entra en los datos confirmados ni se pasa a `render`.
+- Mantén localizados la navegación y la UI de errores propia de Studio mediante
+  sus mensajes centralizados. Las tabs de ruta, labels de navegación lateral y
+  metadata, estados de carga y no encontrado, errores de definición/datos,
+  subida, exportación y validación usan el locale activo de la interfaz; los
+  títulos de plantillas, valores de metadata y labels de variantes provienen del
+  código fuente. Los errores de validación siguen asociados a sus controles y
+  exportar/copiar enfoca el primer control inválido antes de producir la salida.
+
+Este es un cambio de integración incompatible y sin versión; todavía no se ha
+seleccionado una versión de release. No existe alias de compatibilidad, comando
+de migración automático ni adaptador del registro legacy. Actualiza manualmente
+el código fuente afectado de las plantillas y consumidores del editor, y trata
+la invalidación de persistencia `v1` como un reset manual intencional cuando
+corresponda. Regenera los archivos generados con `framekit generate` en lugar de
+editarlos a mano y luego ejecuta `framekit check` y `framekit build`.
+
+Consulta el [issue del contrato canónico de Studio](https://github.com/MauricioDMO/FrameKit/issues/13)
+y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).

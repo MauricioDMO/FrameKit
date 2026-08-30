@@ -41,6 +41,15 @@ assets de la plantilla y una función lazy `load`. El archivo generado es
 descartable: actualiza la plantilla fuente y ejecuta el flujo de generación en
 lugar de editarlo. Consulta el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
 
+El array generado `templates` es la entrada canónica de `FrameKitStudio`; pásalo
+directamente, sin un adaptador. Studio usa `entry.meta.title` para la navegación y
+el encabezado del editor seleccionado, muestra `description`,
+`marketingDescription` y `tags` cuando están presentes, y lee las dimensiones,
+variantes, manifest de assets y función lazy `load` de la entrada. La definición
+cargada y las dimensiones del registro deben coincidir antes de abrir el editor.
+Consulta el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md)
+y el [issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13).
+
 ## Formas de creación
 
 FrameKit soporta dos formas para definir plantillas. Ambas producen el mismo resultado final; elige la forma que se ajuste a la complejidad de tu plantilla.
@@ -172,13 +181,13 @@ exactamente estas propiedades:
 - `title` (obligatorio): un título de plantilla no vacío.
 - `description` (opcional): una descripción funcional del propósito de la plantilla.
 - `marketingDescription` (opcional): el objetivo concreto de comunicación, como presentar un servicio, explicar precios, destacar beneficios o motivar una acción.
-- `tags` (opcional): un array de strings para el uso posterior del catálogo.
+- `tags` (opcional): un array de strings que se muestra con la metadata de la plantilla en Studio.
 
-`meta` no acepta `revision`, `status`, `keywords`, `order` ni ninguna otra
-propiedad. No existe fallback al slug ni alias de compatibilidad: una definición
-sin un `meta.title` válido falla la validación. El registro generado conserva esta
-metadata validada y la navegación de Studio lee `entry.meta.title`. Mostrar el
-resto de la metadata opcional pertenece al issue #13.
+El registro generado conserva esta metadata validada. La navegación de Studio y el
+encabezado del editor seleccionado leen
+`entry.meta.title`; cuando están presentes, Studio también muestra las
+descripciones y tags opcionales. Consulta el [issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13)
+para el contrato integrado de Studio.
 
 ## API De Fields
 
@@ -196,10 +205,16 @@ fields: {
 }
 ```
 
+Studio proporciona un control integrado para cada uno de los seis tipos de field:
+un `textarea` nativo para text, el selector de color actual para color, un input
+numérico o de rango nativo para number, el control de assets del proyecto para
+image, un `select` nativo para choice y un checkbox nativo para boolean. Los
+valores conservan sus tipos de ejecución: strings para text, color, image y
+choice; numbers finitos para number; y booleanos para boolean.
+
 `field.text` siempre renderiza un `<textarea>` nativo y conserva los saltos de
 línea. `minLength` y `maxLength` son enteros finitos no negativos opcionales;
-`minLength` no puede superar a `maxLength`. No existe `field.textarea` ni un alias
-de compatibilidad `fields`.
+`minLength` no puede superar a `maxLength`.
 
 `field.choice` renderiza un `<select>` nativo para un conjunto cerrado de valores
 string. Su array `options` debe ser no vacío y ordenado, con strings `value` y
@@ -266,7 +281,7 @@ opacity: field.number({
 
 ## Contenido y variantes
 
-Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
+Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. Studio selecciona inicialmente `variants.default`. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
 
 Usa `variants.labels` para las labels legibles de las opciones. Es opcional y
 cada key de label debe coincidir con una key de variante de contenido. Si falta
@@ -286,6 +301,8 @@ content: {
 ```
 
 En este ejemplo, el tipo `variant` es `'fjord' | 'moon'`, no una unión global de idiomas.
+El locale de interfaz de Studio es una configuración EN/ES independiente: cambiarlo
+cambia los mensajes de la UI, no la variante seleccionada de la plantilla.
 
 ## Props de renderizado
 
@@ -304,6 +321,16 @@ La función `render` recibe únicamente inputs de renderizado:
 - `height` — la altura de la plantilla como tipo literal.
 
 La función de renderizado es independiente del estado de Studio y de APIs del editor exclusivas del navegador. Un field de imagen resuelve una cadena URL para el navegador. Los fields por variante usan `assets/<variant>/<field-key>.*`; los comunes usan `assets/common/<field-key>.*`. Una imagen pública puede referenciarse con una ruta desde la raíz como `/assets/logos/brand.svg` en `defaultValue` o en el contenido de la variante. Los archivos públicos no se escanean dentro del manifest de assets de la plantilla.
+
+En Studio, la vista previa y el renderizado consumen únicamente valores resueltos
+confirmados. La descarga y la copia validan los datos confirmados actuales antes de
+producir la salida, muestran errores de fields y enfocan el primer control inválido.
+Los drafts numéricos temporales permanecen dentro del control number y nunca se
+pasan a `render`.
+
+Studio guarda las ediciones confirmadas por plantilla y variante en el `localStorage`
+del navegador bajo `framekit:<slug>:v2`. El estado persistido anterior se invalida
+en lugar de migrarse.
 
 ```tsx
 fields: {
@@ -342,8 +369,8 @@ componentes de marca y luego escribe `src/generated/framekit/templates.ts` y
 
 ## Claves reservadas
 
-La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida. Las definiciones no tienen una propiedad de versión ni una forma alternativa de compatibilidad. La metadata solo acepta `title`, `description`, `marketingDescription` y `tags`; las propiedades no soportadas se rechazan.
+La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida.
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8) · [Issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12)
+[English](../../en/guides/template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8) · [Issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12) · [Issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13) · [Plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md)

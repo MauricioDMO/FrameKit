@@ -130,7 +130,7 @@ Abre la entrada desde la navegación de Studio o usa la ruta exacta separada por
 
 **Causa: la importación dinámica del módulo generado rechaza**
 
-El descubrimiento solo comprueba que exista `preview.tsx`. Studio carga ese preview bajo demanda y muestra el texto del error del loader si su importación dinámica rechaza. Es un error de runtime, separado de la validación del escáner.
+El descubrimiento solo comprueba que exista `preview.tsx`. Studio carga ese preview bajo demanda; si la importación dinámica del loader generado rechaza, Studio suprime el error sin procesar y muestra en su lugar el mensaje localizado de error de carga de marca. Es un error de runtime, separado de la validación del escáner.
 
 **Solución: inspecciona `preview.tsx` y sus imports**
 
