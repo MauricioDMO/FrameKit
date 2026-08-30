@@ -55,13 +55,15 @@ Colors are enabled for terminal output and can be disabled with `NO_COLOR=1`.
 
 ## `framekit generate`
 
-Scans `src/templates` for template directories and generates a registry file.
+Scans `src/templates` for template directories and generates the project-local template registry. This command is optional: `dev`, `check`, and `build` generate automatically; `start` does not. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 The scan registers each non-hidden, non-underscore-prefixed directory containing a `template.tsx` file. Subdirectories within a template directory are not traversed; internal components, definitions, and assets are not treated as child templates.
 
 If no templates are found, the command exits with code 1 and prints an error message identifying the empty directory. The output file is written only when its content has changed.
 
-Output is written to `src/generated/framekit/templates.ts` with lazy literal imports. On success, the command prints the number of templates found.
+Output is written to `src/generated/framekit/templates.ts`. The generated module has one runtime export, `templates: TemplateRegistryEntry[]`. Each entry contains `slug`, `segments`, `meta`, `width`, `height`, `variants`, `variantKeys`, `assets`, and `load`; `load` is a dynamic loader for the template definition. There is no top-level `title`, `templateManifest`, or `templateRegistry`; a template title is nested at `meta.title`.
+
+During generation, every discovered `template.tsx` is imported and validated with `tsx`. Import and definition-validation failures report the path to the affected `template.tsx`.
 
 ```sh
 framekit generate
@@ -74,7 +76,7 @@ framekit generate
 
 Validates every template definition and its resolved content across all declared variants.
 
-The command first runs `generate` to ensure the registry is current. It then creates a temporary checker directory inside `.framekit/` and writes a temporary TypeScript file that imports every template via bundled `tsx`. This uses the consumer's own `tsconfig`, so TypeScript imports, TSX syntax, and path aliases resolve the same way they do during development.
+The command first runs `generate`, which imports and validates every template with `tsx`, to ensure the registry is current. It then creates a temporary checker directory inside `.framekit/` and writes a temporary TypeScript file that imports every template via bundled `tsx`. This uses the consumer's own `tsconfig`, so TypeScript imports, TSX syntax, and path aliases resolve the same way they do during development.
 
 For each template, `validateTemplateDefinition` checks the canonical structure of the definition: metadata, dimensions (width and height must be positive finite integers), fields, variants, field-only content, and the render function. For each variant declared in the definition, `resolveTemplateData` resolves the template data with no user edits (empty user data object), and `validateTemplateData` checks the resolved values: required fields are present, number fields respect min/max/step constraints, and color fields use valid hexadecimal values.
 
@@ -103,7 +105,7 @@ Starts a development server with live template registry updates.
 
 Before starting the server, the command runs `generate` to produce the initial registry. It then starts a Next.js dev server with Turbopack and custom HTTP server handling, including WebSocket upgrades for Hot Module Replacement.
 
-The template watcher observes `src/templates` for structural changes only: a new `template.tsx` file, a deleted `template.tsx` file, or a new or deleted directory under `src/templates`. Edits to the content of an existing `template.tsx` do not trigger regeneration; Next HMR handles those automatically. When a structural change is detected, regeneration is debounced by 150ms. Only one generation runs at a time; if a structural change arrives while a generation is in progress, the pending change is picked up by the in-progress generation before it exits.
+The template watcher observes every file and directory under `src/templates`. Additions, edits, and deletions trigger regeneration. Only one generation runs at a time; if a change arrives while a generation is in progress, the pending change is picked up by the in-progress generation before it exits.
 
 FrameKit itself resolves the development server hostname and port from the following environment variables (in priority order):
 
@@ -125,7 +127,7 @@ FRAMEKIT_HOST=0.0.0.0 PORT=4000 framekit dev
 
 Runs validation and then builds the production Next.js application.
 
-The command first runs `framekit check`. If validation fails, the build is aborted and the Next.js build step is never executed. If validation passes, `next build` is run.
+The command first runs `framekit check`, so the registry is generated automatically and all validation runs before the Next.js build. If validation fails, the build is aborted and the Next.js build step is never executed. If validation passes, `next build` is run.
 
 After a successful build, the standalone server output directory is located by searching for a `server.js` file whose sibling `.framekit/next/BUILD_ID` file exists. Exactly one such file must be found; the command fails if zero or multiple candidates are discovered.
 
@@ -144,7 +146,7 @@ framekit build
 
 ## `framekit start`
 
-Starts the production standalone server.
+Starts the production standalone server. It does not generate the template registry.
 
 The command searches for exactly one `server.js` file inside `.framekit/next/standalone/` whose adjacent traced output directory contains a `BUILD_ID` file. If zero or more than one candidate is found, the command fails with an error. FrameKit does not resolve production host or port options here: it launches `server.js` with the parent environment inherited. Next's generated standalone server reads `PORT`, `HOSTNAME`, and `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` and `HOST` are not mapped to `HOSTNAME`.
 
@@ -161,6 +163,7 @@ framekit start
 - All commands operate on `process.cwd()` as the project root.
 - There is no `--help`, `--version`, or configuration file flag.
 - There is no way to specify an alternate templates directory.
+- `generate` is optional; `dev`, `check`, and `build` generate automatically, while `start` does not.
 - Child processes inherit the parent's environment and stdio.
 - Temporary files are cleaned up even on failure.
 

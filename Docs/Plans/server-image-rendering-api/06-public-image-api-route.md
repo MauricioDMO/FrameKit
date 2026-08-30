@@ -143,14 +143,14 @@ Unknown data keys are rejected after the definition is loaded.
 Use generated application imports:
 
 ```typescript
-import { templates, templateRegistry } from '@framekit/generated/templates'
+import { templates } from '@framekit/generated/templates'
 ```
 
 Expected flow:
 
-1. Find the exact registry/manifest entry for assets and metadata.
+1. Find the exact `TemplateRegistryEntry` in `templates` for assets and metadata.
 2. If absent, return `template_not_found` with `404`.
-3. Load the definition through `templateRegistry[slug]`.
+3. Load the definition through `entry.load()`.
 4. Validate its default export with canonical runtime validation.
 5. Treat an invalid project definition or loader failure as `render_failed`, not
    client field error, because the deployed project is broken.

@@ -19,13 +19,12 @@ export function watchTemplates(options: {
     const relativePath = path.relative(root, filePath)
     return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath))
   }
-  const isAssetPath = (filePath: string) => path.relative(templatesDirectory, filePath).split(path.sep).includes('assets')
   const isBrandPath = (filePath: string) => isWithin(brandDirectory, filePath)
   const isTemplatePath = (filePath: string) => isWithin(templatesDirectory, filePath)
 
   function shouldRegenerate(filePath: string): boolean {
     if (isBrandPath(filePath)) return true
-    return isTemplatePath(filePath) && (path.basename(filePath) === 'template.tsx' || isAssetPath(filePath))
+    return isTemplatePath(filePath)
   }
 
   watcher.on('add', (filePath) => { if (shouldRegenerate(filePath)) void options.onStructureChange() })

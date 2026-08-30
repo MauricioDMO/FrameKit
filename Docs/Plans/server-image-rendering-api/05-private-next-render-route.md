@@ -15,7 +15,8 @@ and is not a second public rendering API.
 - [Step 3](./03-temporary-render-jobs.md) `loadRenderRequest`.
 - [Step 4](./04-browser-lifecycle-and-capture.md) token header and marker
   protocol.
-- The existing generated `templateRegistry` and template asset types.
+- The existing generated `templates` registry and `TemplateRegistryEntry` asset
+  types.
 
 ## Deliverables
 
@@ -105,8 +106,8 @@ loading definition
 
 Required behavior:
 
-1. Resolve `templateRegistry[payload.template]`.
-2. If no loader exists, enter error. This should be unreachable after Step 6
+1. Resolve the matching `TemplateRegistryEntry` from `templates` by slug.
+2. If no entry exists, enter error. This should be unreachable after Step 6
    validation but protects against registry changes between the two requests.
 3. Load the module and validate its default export with the canonical definition
    validator.
@@ -201,7 +202,7 @@ normal application so the screenshot represents the actual template.
 The application imports only generated supported aliases:
 
 ```typescript
-import { templateRegistry } from '@framekit/generated/templates'
+import { templates } from '@framekit/generated/templates'
 ```
 
 Do not edit generated `templates.ts` manually. If the existing generated module

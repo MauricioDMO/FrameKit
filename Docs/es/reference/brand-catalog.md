@@ -109,9 +109,9 @@ contenido no cambió.
 - Cualquier `add`, `unlink` o `change` dentro de `src/brand` solicita una
   regeneración.
 - `addDir` y `unlinkDir` dentro de `src/brand` también la solicitan.
-- Para plantillas, el watcher conserva sus reglas propias: los cambios de
-  `template.tsx`, de `assets` y de directorios de plantillas solicitan
-  regeneración.
+- Para plantillas, cualquier archivo o directorio agregado, eliminado o cambiado
+  dentro de `src/templates` solicita regeneración, incluidos helpers privados y
+  archivos importados de metadata o variantes.
 
 El servidor de desarrollo genera una vez antes de iniciar Studio. Después,
 el callback del watcher vuelve a ejecutar `writeTemplateModule`. Si llega otro

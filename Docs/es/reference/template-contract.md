@@ -379,6 +379,7 @@ El contrato semántico de fields está definido por el [issue #5 de GitHub](http
 El contrato del field choice está definido por el [issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6).
 El contrato del field boolean está definido por el [issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7).
 El contrato del field number está definido por el [issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8).
+El contrato del registro generado de plantillas está definido por el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ---
 

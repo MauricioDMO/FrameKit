@@ -118,11 +118,18 @@ Ejecuta `framekit generate` para descubrir cada plantilla en tu proyecto y escri
 pnpm framekit generate
 ```
 
-Este comando escribe `src/generated/framekit/templates.ts` (resuelto mediante el alias `@framekit/generated/*`). El archivo generado exporta un arreglo de solo lectura llamado `templates`. No edites este archivo; se sobrescribe cada vez que ejecutas `framekit generate` o `pnpm framekit dev`.
+Este comando escribe `src/generated/framekit/templates.ts` (resuelto mediante el alias `@framekit/generated/*`). El archivo generado exporta `templates: TemplateRegistryEntry[]`; sus entradas contienen metadata canónica, dimensiones, variantes, assets y loaders lazy. No edites este archivo; el flujo de generación lo sobrescribe.
+
+`pnpm framekit dev`, `pnpm framekit check` y `pnpm framekit build` generan
+automáticamente. `pnpm framekit start` no genera y espera una compilación de
+producción existente.
 
 ## El directorio .framekit
 
-El directorio `src/generated/framekit` es completamente desechable. Es creado o regenerado por `framekit generate` y por `pnpm framekit dev`. Puedes eliminarlo sin problema y se reconstruirá automáticamente.
+El directorio `src/generated/framekit` es completamente desechable. Es creado o
+regenerado por `framekit generate`, `pnpm framekit dev`, `pnpm framekit check` y
+`pnpm framekit build`. Puedes eliminarlo sin problema y se reconstruirá
+automáticamente.
 
 ## Diferencias con la configuración de Studio en monorepo
 

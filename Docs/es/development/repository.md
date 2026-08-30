@@ -73,7 +73,7 @@ Las siguientes rutas se producen durante el desarrollo:
 
 | Ruta                               | Contenido                                                                                       | Estado en git                                                          |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `src/generated/framekit/templates.ts` | Registro de plantillas tipado auto-generado                                                 | **Ignorado** — se regenera con `framekit generate` cuando es necesario |
+| `src/generated/framekit/templates.ts` | Registro canónico de plantillas auto-generado                                                 | **Ignorado** — se regenera con `dev`, `check`, `build` o `framekit generate` |
 | `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone de Studio                    | Ignorado                                                               |
 | `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                               |
 

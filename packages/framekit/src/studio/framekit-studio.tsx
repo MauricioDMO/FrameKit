@@ -10,21 +10,14 @@ import { validateTemplateDefinition } from '../core/validation'
 import { FrameKitEditor } from '../editor/framekit-editor'
 import { FrameKitNavigationTree } from '../editor/framekit-navigation'
 import { manifestToNavigation } from '../editor/navigation'
-import type { TemplateAssetManifest, TemplateDefinition } from '../types'
+import type { TemplateAssetManifest, TemplateDefinition, TemplateRegistryEntry } from '../types'
 import { FrameKitBrandCatalog } from './brand-catalog'
 import { useFrameKitLocale } from './locale-provider'
 
-const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 const emptyTemplates: readonly FrameKitStudioTemplate[] = []
 const emptyBrands: readonly FrameKitStudioBrand[] = []
 
-export interface FrameKitStudioTemplate {
-  slug: string
-  title: string
-  segments: string[]
-  assets?: TemplateAssetManifest
-  load: () => Promise<{ default: TemplateDefinition }>
-}
+export type FrameKitStudioTemplate = TemplateRegistryEntry
 
 export interface FrameKitStudioBrand {
   slug: string
@@ -72,8 +65,8 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
       }
 
       const result = validateTemplateDefinition(module.default as TemplateDefinition)
-      const template = entry as FrameKitStudioTemplate
-      setLoadState(result.success ? { status: 'ready', kind: 'template', definition: result.definition, assets: template.assets ?? emptyAssets } : { status: 'invalid' })
+      const template = entry as TemplateRegistryEntry
+      setLoadState(result.success ? { status: 'ready', kind: 'template', definition: result.definition, assets: template.assets } : { status: 'invalid' })
     }).catch((error: unknown) => {
       if (!cancelled) setLoadState({ status: 'error', message: String(error) })
     })

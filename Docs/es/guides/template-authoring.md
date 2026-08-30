@@ -22,9 +22,24 @@ Las imágenes de una plantilla viven en un directorio `assets` junto a `template
 
 El slug es la ruta desde `src/templates/` hasta el directorio de la plantilla, con los segmentos unidos por barras. Por ejemplo, `src/templates/social-cards/instagram/post` se convierte en `social-cards/instagram/post`.
 
-Los títulos mostrados en el catálogo de Studio actualmente se derivan de los nombres de directorio separando por guiones y poniendo en mayúscula la inicial de cada palabra. Por ejemplo, `social-cards` se convierte en "Social Cards" e `instagram-post` se convierte en "Instagram Post". Este resumen del catálogo es distinto de `meta.title`, que es obligatorio; un `meta.title` ausente o inválido nunca se completa desde el nombre del directorio. Los resúmenes del registro y el consumo de metadata en Studio quedan para los issues [#12](../../Plans/Future/issue-12-generated-template-registry.md) y [#13](../../Plans/Future/issue-13-studio-canonical-contract.md).
+Los títulos de las plantillas mostrados en la navegación de Studio proceden de
+`meta.title`, validado, nunca del nombre del directorio. Un `meta.title` ausente o
+inválido hace fallar la validación en lugar de usar como fallback un slug
+humanizado.
 
-El registro de plantillas generado se ordena alfabéticamente por slug. En la interfaz de Studio, las plantillas y carpetas se ordenan alfabéticamente por sus títulos humanizados.
+El registro de plantillas generado se ordena alfabéticamente por slug. En la
+interfaz de Studio, los elementos de plantilla se ordenan por `meta.title`, y las
+carpetas por segmentos de slug humanizados.
+
+### Registro generado de plantillas
+
+`framekit generate` escribe `src/generated/framekit/templates.ts`. El módulo
+generado solo exporta `templates: TemplateRegistryEntry[]`. Cada entrada contiene
+el `slug` y los `segments` del sistema de archivos, `meta` validada, `width`,
+`height`, `variants`, `variantKeys` en orden de declaración, el manifiesto de
+assets de la plantilla y una función lazy `load`. El archivo generado es
+descartable: actualiza la plantilla fuente y ejecuta el flujo de generación en
+lugar de editarlo. Consulta el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
 
 ## Formas de creación
 
@@ -161,9 +176,9 @@ exactamente estas propiedades:
 
 `meta` no acepta `revision`, `status`, `keywords`, `order` ni ninguna otra
 propiedad. No existe fallback al slug ni alias de compatibilidad: una definición
-sin un `meta.title` válido falla la validación. El registro actual todavía deriva
-su resumen de catálogo del sistema de archivos; el consumo de metadata pertenece
-a los issues #12 y #13.
+sin un `meta.title` válido falla la validación. El registro generado conserva esta
+metadata validada y la navegación de Studio lee `entry.meta.title`. Mostrar el
+resto de la metadata opcional pertenece al issue #13.
 
 ## API De Fields
 
@@ -314,10 +329,16 @@ logo: field.image({
 
 Al ejecutar `framekit dev`, FrameKit observa `src/` en busca de cambios que afectan los registros generados de plantillas y componentes de marca:
 
-- Dentro de `src/templates/`, agregar o eliminar directorios, o agregar, eliminar o modificar un archivo `template.tsx` o un archivo dentro de un directorio `assets`, activa la regeneración. Los cambios en otros archivos de código de la plantilla no activan la regeneración mediante este watcher; HMR de Next.js aún puede actualizar la instancia en ejecución.
+- Dentro de `src/templates/`, cualquier archivo o directorio agregado, eliminado o modificado activa la regeneración. Esto incluye helpers privados y archivos de metadata o variantes importados por una plantilla. Los módulos generados solo se escriben cuando cambia su contenido serializado.
 - Dentro de `src/brand/`, agregar, eliminar o modificar archivos o directorios activa la regeneración. Los componentes de marca se descubren de forma recursiva y cada directorio de componente debe cumplir el contrato de `src/brand` descrito en la guía de [Componentes de marca](./brand-components.md).
 
-Para una regeneración puntual, ejecuta `framekit generate`. El comando compartido de generación requiere al menos una plantilla; descubre tanto las plantillas como los componentes de marca y luego escribe `src/generated/framekit/templates.ts` y `src/generated/framekit/brands.ts`.
+`framekit dev` realiza una generación bloqueante antes de iniciar Next.js.
+`framekit check` y `framekit build` también generan automáticamente; `framekit start`
+usa la salida compilada existente y no genera. Para una regeneración puntual,
+ejecuta `framekit generate`. El comando compartido de generación
+requiere al menos una plantilla; descubre tanto las plantillas como los
+componentes de marca y luego escribe `src/generated/framekit/templates.ts` y
+`src/generated/framekit/brands.ts`.
 
 ## Claves reservadas
 
@@ -325,4 +346,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8)
+[English](../../en/guides/template-authoring.md) · [Español](./template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8) · [Issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12)

@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -15,14 +15,34 @@ import { writeTemplateModule } from './write-template-module'
 const execFileAsync = promisify(execFile)
 const tscCli = fileURLToPath(import.meta.resolve('typescript/bin/tsc'))
 const validTemplateSource = `export default {
-  meta: { title: 'Generated template' },
+  meta: {
+    title: 'Generated template',
+    description: 'A functional description',
+    marketingDescription: 'A marketing description',
+    tags: ['generated', 'test'],
+  },
   width: 1080,
   height: 1080,
   fields: {},
-  content: { en: {} },
-  variants: { default: 'en' },
+  content: { moon: {}, fjord: {} },
+  variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
   render: () => null,
 }`
+
+async function addFrameKitStub(root: string, source = `
+export function validateTemplateDefinition(definition) {
+  return { success: true, definition }
+}
+`): Promise<void> {
+  const framekitPackage = path.join(root, 'node_modules', '@mauriciodmo', 'framekit')
+  await mkdir(framekitPackage, { recursive: true })
+  await writeFile(path.join(framekitPackage, 'package.json'), JSON.stringify({
+    name: '@mauriciodmo/framekit',
+    type: 'module',
+    exports: './index.js',
+  }))
+  await writeFile(path.join(framekitPackage, 'index.js'), source)
+}
 
 describe('findTemplates', () => {
   it('stops at a template and ignores its private auxiliary directories', async () => {
@@ -41,7 +61,6 @@ describe('findTemplates', () => {
       await expect(findTemplates(templatesRoot)).resolves.toEqual([
         {
           slug: 'social/campaign',
-          title: 'Campaign',
           segments: ['social', 'campaign'],
           absolutePath: templateRoot,
         },
@@ -110,23 +129,25 @@ describe('writeTemplateModule', () => {
       const secondTemplate = path.join(templatesRoot, 'marketing', 'email', 'launch')
       await mkdir(path.join(firstTemplate, 'helpers'), { recursive: true })
       await mkdir(path.join(firstTemplate, 'assets', 'common'), { recursive: true })
+      await mkdir(path.join(firstTemplate, 'assets', 'fjord'), { recursive: true })
       await mkdir(path.join(templatesRoot, 'empty', 'category'), { recursive: true })
       await mkdir(secondTemplate, { recursive: true })
       await writeFile(path.join(firstTemplate, 'template.tsx'), validTemplateSource)
       await writeFile(path.join(firstTemplate, 'helpers', 'template.tsx'), '')
       await writeFile(path.join(firstTemplate, 'assets', 'common', 'logo.svg'), '<svg />')
+      await writeFile(path.join(firstTemplate, 'assets', 'fjord', 'card.png'), 'png')
       await writeFile(path.join(secondTemplate, 'template.tsx'), validTemplateSource)
+
+      await addFrameKitStub(root)
 
       await expect(writeTemplateModule({ projectRoot: root })).resolves.toEqual([
         {
           slug: 'marketing/email/launch',
-          title: 'Launch',
           segments: ['marketing', 'email', 'launch'],
           absolutePath: secondTemplate,
         },
         {
           slug: 'social/campaign',
-          title: 'Campaign',
           segments: ['social', 'campaign'],
           absolutePath: firstTemplate,
         },
@@ -134,43 +155,48 @@ describe('writeTemplateModule', () => {
 
       await expect(readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).resolves.toBe(`/* Archivo generado automáticamente. No modificar. */
 
-import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
+import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 
-type TemplateLoader = () => Promise<{
-  default: TemplateDefinition
-}>
-
-export const templates: Array<{
-  slug: string
-  title: string
-  segments: string[]
-  assets: TemplateAssetManifest
-  load: TemplateLoader
-}> = [
+export const templates: TemplateRegistryEntry[] = [
   {
     slug: "marketing/email/launch",
-    title: "Launch",
     segments: ["marketing","email","launch"],
+    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
+    width: 1080,
+    height: 1080,
+    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
+    variantKeys: ["moon","fjord"],
     assets: {"common":{},"variants":{}},
     load: () => import("../../templates/marketing/email/launch/template"),
   },
   {
     slug: "social/campaign",
-    title: "Campaign",
     segments: ["social","campaign"],
-    assets: {"common":{"logo":"/__framekit/templates/social/campaign/common/logo.svg"},"variants":{}},
+    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
+    width: 1080,
+    height: 1080,
+    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
+    variantKeys: ["moon","fjord"],
+    assets: {"common":{"logo":"/__framekit/templates/social/campaign/common/logo.svg"},"variants":{"fjord":{"card":"/__framekit/templates/social/campaign/fjord/card.png"}}},
     load: () => import("../../templates/social/campaign/template"),
   }
 ]
-
-export const templateManifest = templates.map(
-  ({ load: _, assets: __, ...metadata }) => metadata,
-)
-
-export const templateRegistry: Record<string, TemplateLoader> =
-  Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
       await expect(readFile(path.join(root, 'public', '__framekit', 'templates', 'social', 'campaign', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg />')
+      await expect(readFile(path.join(root, 'public', '__framekit', 'templates', 'social', 'campaign', 'fjord', 'card.png'), 'utf8')).resolves.toBe('png')
+
+      const generatedFile = path.join(outputDirectory, 'templates.ts')
+      const generatedStat = await stat(generatedFile)
+      await writeFile(path.join(firstTemplate, 'helpers', 'template.tsx'), 'export const changed = true')
+      await writeTemplateModule({ projectRoot: root })
+      expect((await stat(generatedFile)).mtimeMs).toBe(generatedStat.mtimeMs)
+
+      const generatedSource = await readFile(generatedFile, 'utf8')
+      expect(generatedSource).not.toContain('templateManifest')
+      expect(generatedSource).not.toContain('templateRegistry')
+      expect(generatedSource).not.toContain('fields:')
+      expect(generatedSource).not.toContain('content:')
+      expect(generatedSource).not.toContain('render:')
 
       const framekitPackage = path.join(root, 'node_modules', '@mauriciodmo', 'framekit')
       await mkdir(framekitPackage, { recursive: true })
@@ -183,11 +209,6 @@ export const templateRegistry: Record<string, TemplateLoader> =
         },
       }))
       await writeFile(path.join(framekitPackage, 'index.d.ts'), `
-export interface TemplateAssetManifest {
-  common: Record<string, string>
-  variants: Record<string, Record<string, string>>
-}
-
 export interface TemplateDefinition {
   meta: Record<string, unknown>
   width: number
@@ -197,17 +218,23 @@ export interface TemplateDefinition {
   content: Record<string, Record<string, string>>
   render: (props: unknown) => unknown
 }
-`)
-      await writeFile(path.join(framekitPackage, 'studio.d.ts'), `
-import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
 
-export interface FrameKitStudioTemplate {
+export interface TemplateRegistryEntry {
   slug: string
-  title: string
   segments: string[]
-  assets?: TemplateAssetManifest
+  meta: { title: string; description?: string; marketingDescription?: string; tags?: string[] }
+  width: number
+  height: number
+  variants: { default: string; labels?: Record<string, string> }
+  variantKeys: string[]
+  assets: { common: Record<string, string>; variants: Record<string, Record<string, string>> }
   load: () => Promise<{ default: TemplateDefinition }>
 }
+`)
+      await writeFile(path.join(framekitPackage, 'studio.d.ts'), `
+import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
+
+export type FrameKitStudioTemplate = TemplateRegistryEntry
 
 export declare function FrameKitStudio(props: {
   templates: readonly FrameKitStudioTemplate[]
@@ -233,6 +260,29 @@ FrameKitStudio({ templates })
       }))
 
       await expect(execFileAsync(process.execPath, [tscCli, '--project', path.join(root, 'tsconfig.json')])).resolves.toBeDefined()
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  }, 30_000)
+
+  it.each([
+    ['import', `throw new Error('load failed')`, 'load failed'],
+    ['validation', `export function validateTemplateDefinition() {
+  return { success: false, error: 'definition is invalid' }
+}`, 'definition is invalid'],
+  ])('reports the source path for %s failures', async (_kind, source, message) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-summary-error-'))
+    const templateRoot = path.join(root, 'src', 'templates', 'example')
+
+    try {
+      await mkdir(templateRoot, { recursive: true })
+      await writeFile(path.join(templateRoot, 'template.tsx'), _kind === 'import' ? source : validTemplateSource)
+      await addFrameKitStub(root, _kind === 'import' ? undefined : source)
+
+      await expect(writeTemplateModule({ projectRoot: root })).rejects.toThrow(
+        `${path.join(templateRoot, 'template.tsx')}: ${message}`,
+      )
+      await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'))).rejects.toThrow()
     } finally {
       await rm(root, { recursive: true, force: true })
     }

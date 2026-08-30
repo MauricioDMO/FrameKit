@@ -63,8 +63,40 @@ without coercion, and an incomplete local editor draft is not render data.
 | `TemplateBase`                | Base type for a template containing field definitions                                                   |
 | `TemplateDefinition`          | Complete template definition combining base structure with configuration                                |
 | `TemplateRenderProps`         | Props passed to a template's render function, including finite numbers for number fields                |
+| `TemplateRegistryEntry`       | Entry in the generated template registry, with metadata, dimensions, variants, assets, and a dynamic loader |
 | `InferTemplateData<T>`        | Utility type that extracts the data shape from a template definition                                    |
 | `TemplateDataValidationError` | Per-field validation error union used by `validateTemplateData`                                        |
+
+---
+
+### Generated template registry
+
+The optional `framekit generate` command writes the project-local module
+`src/generated/framekit/templates.ts`. Its only runtime export is
+`templates: TemplateRegistryEntry[]`:
+
+```ts
+export const templates: TemplateRegistryEntry[] = [
+  {
+    slug,
+    segments,
+    meta,
+    width,
+    height,
+    variants,
+    variantKeys,
+    assets,
+    load: () => import("..."),
+  },
+]
+```
+
+Each entry contains `slug`, `segments`, `meta`, `width`, `height`, `variants`,
+`variantKeys`, `assets`, and the dynamic `load` loader, whose promise resolves
+to a module with the template definition as its default export. The generated
+module has no top-level `title`, `templateManifest`, or `templateRegistry`;
+the template title is `meta.title`. This is project-local generated output,
+not an export of a published package entry point. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ---
 
@@ -150,6 +182,7 @@ Advanced server-side utilities for development workflows including dev server sp
 | `createDevServer`      | Spawns a development server instance                      |
 | `findTemplates`        | Scans the filesystem for template modules                 |
 | `findBrandComponents`  | Scans a brand directory for brand component leaves       |
+| `collectTemplateSummaries` | Loads and validates serializable template summaries   |
 | `createTemplateModule` | Generates a template module from a template definition    |
 | `createBrandModule`    | Generates the brand metadata and loader module            |
 | `writeTemplateModule`  | Writes generated template and brand modules to disk       |
@@ -164,6 +197,7 @@ Advanced server-side utilities for development workflows including dev server sp
 | `DevServerOptions`   | Options for creating a dev server              |
 | `DiscoveredTemplate` | Template discovered during filesystem scanning |
 | `DiscoveredBrandComponent` | Brand component discovered during filesystem scanning |
+| `TemplateSummary`    | Serializable template metadata used by codegen |
 | `TemplateWatcher`    | Watcher instance returned by `watchTemplates`  |
 
 ---

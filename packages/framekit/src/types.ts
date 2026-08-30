@@ -147,6 +147,18 @@ export interface TemplateDefinition<
   render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height, Meta, Variants>>): ReactNode
 }
 
+export interface TemplateRegistryEntry {
+  slug: string
+  segments: string[]
+  meta: TemplateMeta
+  width: number
+  height: number
+  variants: TemplateVariants
+  variantKeys: string[]
+  assets: TemplateAssetManifest
+  load: () => Promise<{ default: TemplateDefinition }>
+}
+
 export interface TemplateRenderProps<
   Definition extends TemplateBase = TemplateDefinition,
 > {

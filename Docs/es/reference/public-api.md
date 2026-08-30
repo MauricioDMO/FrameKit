@@ -66,8 +66,41 @@ incompleto del editor no es render data.
 | `TemplateBase`                | Tipo base para una plantilla que contiene definiciones de campos                                               |
 | `TemplateDefinition`          | Definición completa de plantilla que combina la estructura base con la configuración                           |
 | `TemplateRenderProps`         | Propiedades pasadas a la función de renderizado, incluidos numbers finitos para fields number                |
+| `TemplateRegistryEntry`       | Entrada del registro generado de plantillas, con metadata, dimensiones, variantes, assets y un loader dinámico |
 | `InferTemplateData<T>`        | Tipo utilitario que extrae la forma de los datos a partir de una definición de plantilla                       |
 | `TemplateDataValidationError` | Tipo de error devuelto cuando la validación de datos de una plantilla falla                                    |
+
+---
+
+### Registro generado de plantillas
+
+El comando opcional `framekit generate` escribe el módulo local del proyecto
+`src/generated/framekit/templates.ts`. Su única exportación de tiempo de
+ejecución es `templates: TemplateRegistryEntry[]`:
+
+```ts
+export const templates: TemplateRegistryEntry[] = [
+  {
+    slug,
+    segments,
+    meta,
+    width,
+    height,
+    variants,
+    variantKeys,
+    assets,
+    load: () => import("..."),
+  },
+]
+```
+
+Cada entrada contiene `slug`, `segments`, `meta`, `width`, `height`, `variants`,
+`variantKeys`, `assets` y el loader dinámico `load`, cuya promesa resuelve un
+módulo con la definición de la plantilla como exportación predeterminada. El
+módulo generado no tiene `title`, `templateManifest` ni `templateRegistry` en
+el nivel superior; el título de la plantilla es `meta.title`. Esta salida es
+generada localmente en el proyecto, no una exportación de un punto de entrada
+publicado del paquete. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ---
 
@@ -147,6 +180,7 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | `createDevServer`      | Crea una instancia de servidor de desarrollo                                         |
 | `findTemplates`        | Escanea el sistema de archivos en busca de módulos de plantillas                     |
 | `findBrandComponents`  | Descubre recursivamente componentes de marca en un directorio                       |
+| `collectTemplateSummaries` | Carga y valida resúmenes serializables de plantillas                         |
 | `createTemplateModule` | Genera un módulo de plantillas a partir de plantillas descubiertas                   |
 | `createBrandModule`    | Genera un módulo de catálogo de marca a partir de componentes descubiertos           |
 | `writeTemplateModule`  | Escribe en disco los módulos generados de plantillas y de marca                      |
@@ -161,6 +195,7 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | `DevServerOptions`   | Opciones para crear un servidor de desarrollo                    |
 | `DiscoveredTemplate` | Plantilla descubierta durante el escaneo del sistema de archivos |
 | `DiscoveredBrandComponent` | Componente de marca descubierto, con slug, segmentos, ruta absoluta y descripción |
+| `TemplateSummary`    | Metadatos serializables usados por el codegen             |
 | `TemplateWatcher`    | Instancia de vigilancia devuelta por `watchTemplates`            |
 
 Las funciones de codegen escriben el artefacto del proyecto

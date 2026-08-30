@@ -7,27 +7,50 @@ import { pathToFileURL } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { templateRegistry } from '@framekit/generated/templates'
+import { templates } from '@framekit/generated/templates'
 import { validateTemplateDefinition } from '@mauriciodmo/framekit'
 import { writeTemplateModule } from '@mauriciodmo/framekit/dev'
 
 const templateSource = `export default {
-  meta: { title: 'Generated template' },
+  meta: {
+    title: 'Generated template',
+    description: 'A functional description',
+    marketingDescription: 'A marketing description',
+    tags: ['generated', 'test'],
+  },
   width: 120,
   height: 80,
   fields: {},
-  content: { en: {} },
-  variants: { default: 'en' },
+  content: { moon: {}, fjord: {} },
+  variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
   render() { return null },
 }
 `
 
+async function addFrameKitStub(projectRoot: string): Promise<void> {
+  const packageRoot = path.join(projectRoot, 'node_modules', '@mauriciodmo', 'framekit')
+  await mkdir(packageRoot, { recursive: true })
+  await writeFile(path.join(packageRoot, 'package.json'), JSON.stringify({
+    name: '@mauriciodmo/framekit',
+    type: 'module',
+    exports: './index.js',
+  }))
+  await writeFile(path.join(packageRoot, 'index.js'), `
+export function validateTemplateDefinition(definition) {
+  return { success: true, definition }
+}
+`)
+}
+
 describe('template generation integration', () => {
   it('loads the pilot template through the generated loader', async () => {
-    const loader = templateRegistry['redes-sociales/instagram/promocion-cuadrada']
-    expect(loader).toBeTypeOf('function')
+    const entry = templates.find((template) => template.slug === 'redes-sociales/instagram/promocion-cuadrada')
+    expect(entry).toBeDefined()
+    expect(entry).not.toHaveProperty('title')
+    expect(entry?.meta.title).toBe('Promoción cuadrada')
+    expect(entry?.variantKeys).toEqual(['es', 'en'])
 
-    const loaded = await loader()
+    const loaded = await entry!.load()
     expect(validateTemplateDefinition(loaded.default).success).toBe(true)
   })
 
@@ -43,6 +66,7 @@ describe('template generation integration', () => {
       await mkdir(secondTemplate, { recursive: true })
       await writeFile(path.join(firstTemplate, 'template.tsx'), templateSource)
       await writeFile(path.join(secondTemplate, 'template.tsx'), templateSource)
+      await addFrameKitStub(projectRoot)
 
       await writeTemplateModule({ projectRoot })
 
@@ -50,45 +74,38 @@ describe('template generation integration', () => {
 
       expect(await readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).toBe(`/* Archivo generado automáticamente. No modificar. */
 
-import type { TemplateAssetManifest, TemplateDefinition } from '@mauriciodmo/framekit'
+import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 
-type TemplateLoader = () => Promise<{
-  default: TemplateDefinition
-}>
-
-export const templates: Array<{
-  slug: string
-  title: string
-  segments: string[]
-  assets: TemplateAssetManifest
-  load: TemplateLoader
-}> = [
+export const templates: TemplateRegistryEntry[] = [
   {
     slug: "branding/social/square",
-    title: "Square",
     segments: ["branding","social","square"],
+    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
+    width: 120,
+    height: 80,
+    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
+    variantKeys: ["moon","fjord"],
     assets: {"common":{},"variants":{}},
     load: () => import("../../templates/branding/social/square/template"),
   },
   {
     slug: "product/launch",
-    title: "Launch",
     segments: ["product","launch"],
+    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
+    width: 120,
+    height: 80,
+    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
+    variantKeys: ["moon","fjord"],
     assets: {"common":{},"variants":{}},
     load: () => import("../../templates/product/launch/template"),
   }
 ]
-
-export const templateManifest = templates.map(
-  ({ load: _, assets: __, ...metadata }) => metadata,
-)
-
-export const templateRegistry: Record<string, TemplateLoader> =
-  Object.fromEntries(templates.map(({ slug, load }) => [slug, load]))
 `)
 
       for (const slug of ['branding/social/square', 'product/launch']) {
-        const loaded = await generated.templateRegistry[slug]()
+        const entry = generated.templates.find((template: { slug: string }) => template.slug === slug)
+        expect(entry).toBeDefined()
+        const loaded = await entry!.load()
         const validation = validateTemplateDefinition(loaded.default)
         expect(validation.success, slug).toBe(true)
       }

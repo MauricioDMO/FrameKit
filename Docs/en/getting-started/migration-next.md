@@ -210,3 +210,31 @@ number fields.
 See the [number field issue](https://github.com/MauricioDMO/FrameKit/issues/8), the
 [template contract reference](../reference/template-contract.md#number), and
 the [public API reference](../reference/public-api.md).
+
+## Generated Template Registry
+
+Issue [#12](https://github.com/MauricioDMO/FrameKit/issues/12) changes the
+project-local generated template registry. Run `framekit generate` after updating
+the project if you need to regenerate it directly, but normal workflows handle
+this automatically: `dev` generates before starting and watches every added,
+removed, or changed path under `src/templates`; `check` and `build` generate
+before validation/build; `start` does not generate.
+
+The generated module now exports only `templates: TemplateRegistryEntry[]`. Each
+entry contains `slug`, `segments`, validated `meta`, `width`, `height`, `variants`,
+declaration-ordered `variantKeys`, `assets`, and a lazy `load` function. Update
+custom generated-registry consumers as follows:
+
+- replace `entry.title` with `entry.meta.title`;
+- stop importing `templateManifest` or `templateRegistry`;
+- find the entry in `templates` and call its `load()` function when the definition
+  is needed.
+
+Generated files are disposable and are replaced by the generator. Do not edit or
+manually migrate `src/generated/framekit/templates.ts`, and do not retain an
+adapter for the old registry shape. This is a generated-consumer API change; the
+source template definition contract itself does not gain a compatibility alias.
+
+See the [generated registry CLI reference](../reference/cli.md#framekit-generate),
+the [public API reference](../reference/public-api.md#generated-template-registry),
+and the [Generated Template Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).

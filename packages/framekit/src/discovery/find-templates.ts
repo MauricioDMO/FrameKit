@@ -20,13 +20,6 @@ function validateSegment(segment: string, physicalPath: string): void {
   }
 }
 
-function humanizeSegment(segment: string): string {
-  return segment
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
 export async function findTemplates(
   templatesDirectory: string,
   segments: readonly string[] = [],
@@ -46,7 +39,6 @@ export async function findTemplates(
     if (await exists(path.join(directoryPath, 'template.tsx'))) {
       templates.push({
         slug: nextSegments.join('/'),
-        title: humanizeSegment(entry.name),
         segments: nextSegments,
         absolutePath: directoryPath,
       })

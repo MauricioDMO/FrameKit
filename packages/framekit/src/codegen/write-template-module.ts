@@ -6,6 +6,7 @@ import { findBrandComponents } from '../discovery/find-brand-components'
 import { findTemplates } from '../discovery/find-templates'
 import type { DiscoveredTemplate } from '../discovery/types'
 import type { TemplateAssetManifest } from '../types'
+import { collectTemplateSummaries } from './collect-template-summaries'
 import { createBrandModule } from './create-brand-module'
 import { createTemplateModule } from './create-template-module'
 
@@ -64,8 +65,9 @@ export async function writeTemplateModule(options: {
     throw new Error(`No se encontraron plantillas en: ${templatesDirectory}`)
   }
 
+  const summariesBySlug = await collectTemplateSummaries(options.projectRoot, templates)
   const assetsBySlug = await syncTemplateAssets(options.projectRoot, templates)
-  const source = createTemplateModule(templates, { outputDirectory, assetsBySlug })
+  const source = createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })
   const brands = await findBrandComponents(path.join(options.projectRoot, 'src', 'brand'))
   const brandSource = createBrandModule(brands, { outputDirectory })
 

@@ -95,8 +95,8 @@ template model:
   variant content, edits, and finally matching image assets.
 - `packages/framekit/src/dev/asset-upload.ts` already has byte limits, raster
   MIME checks, base64 validation, and signature checks worth reusing.
-- generated `templates.ts` modules expose lazy loaders, asset manifests, and a
-  slug-keyed `templateRegistry`.
+- generated `templates.ts` modules expose canonical summaries, asset manifests,
+  and lazy loaders through the `templates` registry.
 - `packages/create-framekit/template/` is copied into each generated consumer;
   generated files under `src/generated/framekit/` remain disposable output.
 - `packages/create-framekit/template/next.config.ts` uses
@@ -141,7 +141,7 @@ Client
         -> Chromium context                  @mauriciodmo/framekit/server
         -> GET /__framekit/render/<id>        generated application
            -> loadRenderRequest(...)         @mauriciodmo/framekit/server
-           -> generated templateRegistry     generated application
+           -> generated templates registry    generated application
            -> shared TemplateCanvas          @mauriciodmo/framekit/editor
         -> locator.screenshot()              @mauriciodmo/framekit/server
      <- PNG Buffer

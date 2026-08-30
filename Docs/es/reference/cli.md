@@ -55,13 +55,15 @@ Los colores se activan en la salida de terminal y pueden desactivarse con `NO_CO
 
 ## `framekit generate`
 
-Escanea `src/templates` en busca de directorios de plantillas y genera un archivo de registro.
+Escanea `src/templates` en busca de directorios de plantillas y genera el registro de plantillas local del proyecto. Este comando es opcional: `dev`, `check` y `build` generan automáticamente; `start` no genera. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 El escaneo registra cada directorio no oculto y cuyo nombre no comienza por guion bajo que contiene un archivo `template.tsx`. Los subdirectorios dentro de un directorio de plantilla no se recorren; los componentes internos, las definiciones y los recursos no se tratan como plantillas hijas.
 
 Si no se encuentra ninguna plantilla, el comando termina con código 1 e imprime un mensaje de error identificando el directorio vacío. El archivo de salida se escribe únicamente cuando su contenido ha cambiado.
 
-La salida se escribe en `src/generated/framekit/templates.ts` con imports literales diferidos (lazy). En caso de éxito, el comando imprime la cantidad de plantillas encontradas.
+La salida se escribe en `src/generated/framekit/templates.ts`. El módulo generado tiene una única exportación de tiempo de ejecución, `templates: TemplateRegistryEntry[]`. Cada entrada contiene `slug`, `segments`, `meta`, `width`, `height`, `variants`, `variantKeys`, `assets` y `load`; `load` es un loader dinámico para la definición de la plantilla. No existe `title`, `templateManifest` ni `templateRegistry` en el nivel superior; el título de una plantilla está anidado en `meta.title`.
+
+Durante la generación, cada `template.tsx` descubierto se importa y valida con `tsx`. Los fallos de importación y de validación de la definición reportan la ruta del `template.tsx` afectado.
 
 ```sh
 framekit generate
@@ -74,7 +76,7 @@ framekit generate
 
 Valida la definición de cada plantilla y su contenido resuelto en todas las variantes declaradas.
 
-El comando primero ejecuta `generate` para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante el `tsx` incluido. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
+El comando primero ejecuta `generate`, que importa y valida cada plantilla mediante `tsx`, para asegurar que el registro esté actualizado. Luego crea un directorio temporal de comprobación dentro de `.framekit/` y escribe un archivo TypeScript temporal que importa cada plantilla mediante el `tsx` incluido. Esto usa el `tsconfig` del proyecto consumidor, por lo que los imports TypeScript, la sintaxis TSX y los aliases de ruta se resuelven igual que durante el desarrollo.
 
 Para cada plantilla, `validateTemplateDefinition` verifica la estructura canónica de la definición: metadata, dimensiones (el ancho y el alto deben ser enteros positivos finitos), fields, variantes, contenido con solo valores de fields y la función de renderizado. Para cada variante declarada en la definición, `resolveTemplateData` resuelve los datos de la plantilla sin ediciones del usuario (con un objeto de datos de usuario vacío), y `validateTemplateData` verifica los valores resueltos: los fields obligatorios están presentes, los fields numéricos respetan las restricciones de mínimo, máximo y `step`, y los fields de color usan valores hexadecimales válidos.
 
@@ -103,7 +105,7 @@ Inicia un servidor de desarrollo con actualizaciones en vivo del registro de pla
 
 Antes de iniciar el servidor, el comando ejecuta `generate` para producir el registro inicial. Luego inicia un servidor de desarrollo de Next.js con Turbopack y manejo personalizado del servidor HTTP, incluidos los cambios de protocolo de WebSocket para la sustitución de módulos en caliente.
 
-El observador de plantillas monitorea `src/templates` solo para cambios estructurales: un nuevo archivo `template.tsx`, un archivo `template.tsx` eliminado, o un directorio nuevo o eliminado bajo `src/templates`. Las ediciones al contenido de un `template.tsx` existente no activan regeneración; Next HMR gestiona ese contenido automáticamente. Cuando se detecta un cambio estructural, la regeneración se aplaza 150ms (debounce). Solo una generación se ejecuta a la vez; si llega un cambio estructural mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
+El observador de plantillas monitorea todos los archivos y directorios bajo `src/templates`. Las adiciones, ediciones y eliminaciones activan la regeneración. Solo una generación se ejecuta a la vez; si llega un cambio mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
 
 FrameKit resuelve directamente el hostname y el puerto del servidor de desarrollo usando las siguientes variables de entorno (en orden de prioridad):
 
@@ -125,7 +127,7 @@ FRAMEKIT_HOST=0.0.0.0 PORT=4000 framekit dev
 
 Ejecuta la validación y luego construye la aplicación Next.js de producción.
 
-El comando primero ejecuta `framekit check`. Si la validación falla, la construcción se aborta y el paso de build de Next.js nunca se ejecuta. Si la validación pasa, se ejecuta `next build`.
+El comando primero ejecuta `framekit check`, por lo que el registro se genera automáticamente y toda la validación ocurre antes de la construcción de Next.js. Si la validación falla, la construcción se aborta y el paso de build de Next.js nunca se ejecuta. Si la validación pasa, se ejecuta `next build`.
 
 Después de una construcción exitosa, el directorio de salida del servidor standalone se ubica buscando un archivo `server.js` cuyo archivo `.framekit/next/BUILD_ID` hermano exista. Debe encontrarse exactamente uno; el comando falla si se descubren cero o más de un candidato.
 
@@ -144,7 +146,7 @@ framekit build
 
 ## `framekit start`
 
-Inicia el servidor standalone de producción.
+Inicia el servidor standalone de producción. No genera el registro de plantillas.
 
 El comando busca exactamente un archivo `server.js` dentro de `.framekit/next/standalone/` cuya salida trazada adyacente contenga un archivo `BUILD_ID`. Si se encuentran cero o más de un candidato, el comando falla con un error. FrameKit no resuelve aquí opciones de host o puerto de producción: inicia `server.js` con el entorno heredado del proceso padre. El servidor standalone generado por Next lee `PORT`, `HOSTNAME` y `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` y `HOST` no se asignan a `HOSTNAME`.
 
@@ -161,6 +163,7 @@ framekit start
 - Todos los comandos operan sobre `process.cwd()` como raíz del proyecto.
 - No hay flags `--help`, `--version` ni archivo de configuración.
 - No existe forma de especificar un directorio de plantillas alternativo.
+- `generate` es opcional; `dev`, `check` y `build` generan automáticamente, mientras que `start` no genera.
 - Los procesos hijos heredan el entorno y stdio del padre.
 - Los archivos temporales se limpian incluso en caso de fallo.
 

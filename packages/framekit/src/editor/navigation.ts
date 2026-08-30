@@ -1,4 +1,8 @@
-export interface TemplateManifestEntry {
+import type { TemplateRegistryEntry } from '../types'
+
+export type TemplateManifestEntry = Pick<TemplateRegistryEntry, 'slug' | 'segments' | 'meta'>
+
+interface BrandManifestEntry {
   slug: string
   title: string
   segments: string[]
@@ -34,14 +38,15 @@ export function humanizeSegment(name: string): string {
 }
 
 export function manifestToNavigation(
-  manifest: readonly TemplateManifestEntry[],
+  manifest: readonly (TemplateManifestEntry | BrandManifestEntry)[],
   basePath = '/editor',
 ): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
   const root: TemplateNavigationNode[] = []
 
   for (const entry of manifest) {
-    const { slug, title, segments } = entry
+    const { slug, segments } = entry
+    const title = 'meta' in entry ? entry.meta.title : entry.title
 
     for (let i = 1; i <= segments.length; i++) {
       const folderSlug = segments.slice(0, i).join('/')

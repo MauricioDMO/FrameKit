@@ -13,9 +13,10 @@ underlying runtime issues or expanding Studio into a free-canvas editor.
 
 ## Current baseline
 
-- Studio receives generated entries with a filesystem-derived title and lazy
-  loader, then validates the loaded definition before opening the editor.
-- The editor header humanizes the slug instead of reading template metadata.
+- Studio receives generated entries with validated `meta.title` and a lazy loader,
+  then validates the loaded definition before opening the editor.
+- Navigation reads `entry.meta.title`; the editor header still humanizes the slug
+  instead of reading template metadata.
 - Template selection uses canonical variants, starts from
   `definition.variants.default`, and persists typed per-variant edits under
   `framekit:<slug>:v2`.

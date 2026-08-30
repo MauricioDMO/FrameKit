@@ -368,6 +368,7 @@ The semantic field contract is defined by [GitHub issue #5](https://github.com/M
 The choice field contract is defined by [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6).
 The boolean field contract is defined by [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7).
 The number field contract is defined by [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+The generated template registry contract is defined by [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ---
 

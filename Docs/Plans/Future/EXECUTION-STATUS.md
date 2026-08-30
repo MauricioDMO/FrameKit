@@ -27,7 +27,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 6 | [#6 Choice Field](https://github.com/MauricioDMO/FrameKit/issues/6) | Campo de opciones | Completed | [x] Completado |
 | 7 | [#7 Boolean Field](https://github.com/MauricioDMO/FrameKit/issues/7) | Campo booleano | Completed | [x] Completado |
 | 8 | [#8 Number Field](https://github.com/MauricioDMO/FrameKit/issues/8) | Campo numérico | Completed | [x] Completado |
-| 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [ ] Pendiente |
+| 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [x] Completado localmente |
 | 10 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [ ] Pendiente |
 | 11 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [ ] Pendiente |
 | 12 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [ ] Pendiente |
@@ -121,10 +121,11 @@ Usa este checklist al cerrar cada issue activo.
 
 ### #12 Generated Template Registry
 
-- [ ] Registry canónico generado y cargadores lazy implementados.
-- [ ] Regeneración automática de desarrollo y build verificada.
-- [ ] Tests y documentación del issue completados.
-- [ ] Definition of Done completada.
+- [x] Registry canónico generado y cargadores lazy implementados.
+- [x] Regeneración automática de desarrollo y build verificada.
+- [x] Tests y documentación del issue completados.
+- [x] Definition of Done completada.
+- [x] Verificaciones ejecutadas: tests raíz (FrameKit 199, Studio 2, scaffolder 19), typecheck, lint y build raíz; `pnpm check:runtime`; `framekit generate` y `framekit check` de Studio; generación del starter con el runtime local, typecheck y `next build --webpack`; `git diff --check`.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #13 Studio Canonical Contract Integration
@@ -177,3 +178,4 @@ Usa este checklist al cerrar cada issue activo.
 | 2026-08-25 | Se completa y verifica localmente el issue #6: `field.choice`, select nativo, validación `invalid_choice`, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #7: `field.boolean`, checkbox nativo, validación `invalid_boolean`, persistencia booleana, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-28 | Se sincroniza GitHub con el estado local: #1 y #4–#8 se cierran como completadas; #2–#3 ya estaban completadas y #9–#11 permanecen cerradas como no planificadas. | — |
+| 2026-08-29 | Se completa y verifica localmente el issue #12: registry canónico con metadata/dimensiones/variantes/assets y loaders lazy, generación automática, watcher completo de `src/templates`, tests, documentación EN/ES, changelog, migraciones, outputs generados y enlaces; el issue de GitHub permanece abierto. | — |

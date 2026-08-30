@@ -5,10 +5,10 @@ import { describe, expect, it } from 'vitest'
 import { humanizeSegment, manifestToNavigation, type TemplateManifestEntry } from './navigation'
 
 const manifest: TemplateManifestEntry[] = [
-  { slug: 'redes-sociales/instagram/promocion-cuadrada', title: 'Promocion Cuadrada', segments: ['redes-sociales', 'instagram', 'promocion-cuadrada'] },
-  { slug: 'marketing/email/newsletter', title: 'Newsletter', segments: ['marketing', 'email', 'newsletter'] },
-  { slug: 'redes-sociales/facebook/anuncio', title: 'Anuncio', segments: ['redes-sociales', 'facebook', 'anuncio'] },
-  { slug: 'redes-sociales/instagram/otra', title: 'Otra', segments: ['redes-sociales', 'instagram', 'otra'] },
+  { slug: 'redes-sociales/instagram/promocion-cuadrada', meta: { title: 'Promocion Cuadrada' }, segments: ['redes-sociales', 'instagram', 'promocion-cuadrada'] },
+  { slug: 'marketing/email/newsletter', meta: { title: 'Newsletter' }, segments: ['marketing', 'email', 'newsletter'] },
+  { slug: 'redes-sociales/facebook/anuncio', meta: { title: 'Anuncio' }, segments: ['redes-sociales', 'facebook', 'anuncio'] },
+  { slug: 'redes-sociales/instagram/otra', meta: { title: 'Otra' }, segments: ['redes-sociales', 'instagram', 'otra'] },
 ]
 
 describe('manifest navigation', () => {

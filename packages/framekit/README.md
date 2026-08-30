@@ -24,10 +24,13 @@ FrameKit uses the current directory as the application root:
 }
 ```
 
-`generate` discovers `src/templates/**/template.tsx`, scans each template's
-`assets` directory, and writes `src/generated/framekit/templates.ts`.
-`check` validates every template before `build` runs Next.js. Production uses
-Next.js standalone output under `.framekit/next`.
+`generate` discovers `src/templates/**/template.tsx`, validates each definition,
+scans its `assets` directory, and writes `src/generated/framekit/templates.ts`.
+The generated module exports only `templates: TemplateRegistryEntry[]`, with
+validated metadata, dimensions, variants, variant keys, assets, and lazy loaders.
+`dev`, `check`, and `build` generate automatically; `start` uses existing build
+output and does not generate. Production uses Next.js standalone output under
+`.framekit/next`.
 
 ## Inline templates
 

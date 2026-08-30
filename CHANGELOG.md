@@ -8,8 +8,8 @@
   `variants` objects, field-only `content`, typed `variant` render props, shared
   validation, and deterministic data resolution. See [GitHub issue #1](https://github.com/MauricioDMO/FrameKit/issues/1).
 - Updated the Studio templates, generated starter source, public documentation,
-  and focused tests to use the canonical shape. Registry metadata policy remains
-  deferred to issues #12 and #13.
+  and focused tests to use the canonical shape. Registry metadata consumption was
+  tracked separately in issues #12 and #13.
 - Added the exact template metadata contract: required non-empty `meta.title`,
   optional functional and marketing descriptions, optional string tags, and
   rejection of unsupported metadata properties. See [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3).
@@ -32,3 +32,9 @@
   numeric data without string coercion, and local drafts excluded from render
   data. Existing string defaults, content values, and overrides must be migrated
   manually. See [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
+- Added the canonical generated template registry: `templates` entries now carry
+  validated metadata, dimensions, variants, declaration-ordered variant keys,
+  assets, and lazy loaders. `dev`, `check`, and `build` regenerate automatically;
+  `start` remains read-only. Removed the old top-level `title`, `templateManifest`,
+  and `templateRegistry` outputs, and expanded template watching to every path
+  under `src/templates`. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).

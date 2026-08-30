@@ -217,3 +217,33 @@ actualizar los fields number.
 Consulta el [issue del field number](https://github.com/MauricioDMO/FrameKit/issues/8),
 la [referencia del contrato de plantilla](../reference/template-contract.md#number)
 y la [referencia de la API pública](../reference/public-api.md).
+
+## Registro Generado De Plantillas
+
+El issue [#12](https://github.com/MauricioDMO/FrameKit/issues/12) cambia el
+registro de plantillas generado localmente en el proyecto. Ejecuta
+`framekit generate` después de actualizar el proyecto si necesitas regenerarlo de
+forma directa, pero los flujos normales lo hacen automáticamente: `dev` genera
+antes de iniciar y observa cada ruta agregada, eliminada o modificada dentro de
+`src/templates`; `check` y `build` generan antes de validar o compilar; `start` no
+genera.
+
+El módulo generado ahora solo exporta `templates: TemplateRegistryEntry[]`. Cada
+entrada contiene `slug`, `segments`, `meta` validada, `width`, `height`,
+`variants`, `variantKeys` en orden de declaración, `assets` y una función lazy
+`load`. Actualiza los consumidores personalizados del registro generado así:
+
+- reemplaza `entry.title` por `entry.meta.title`;
+- deja de importar `templateManifest` o `templateRegistry`;
+- busca la entrada en `templates` y llama a su función `load()` cuando necesites
+  la definición.
+
+Los archivos generados son descartables y el generador los reemplaza. No edites ni
+migres manualmente `src/generated/framekit/templates.ts`, y no conserves un
+adaptador para la forma antigua del registro. Este es un cambio de la API del
+consumidor generado; el contrato de definición de las plantillas no incorpora un
+alias de compatibilidad.
+
+Consulta la [referencia CLI del registro generado](../reference/cli.md#framekit-generate),
+la [referencia de la API pública](../reference/public-api.md#registro-generado-de-plantillas)
+y el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).

@@ -10,11 +10,13 @@ const mocks = vi.hoisted(() => ({
     close: vi.fn(),
   },
   watcher: { close: vi.fn() },
+  watchTemplates: vi.fn(),
+  writeTemplateModule: vi.fn(),
 }))
 
 vi.mock('next', () => ({ default: vi.fn(() => mocks.app) }))
-vi.mock('../codegen/write-template-module', () => ({ writeTemplateModule: vi.fn(async () => []) }))
-vi.mock('./watch-templates', () => ({ watchTemplates: vi.fn(() => mocks.watcher) }))
+vi.mock('../codegen/write-template-module', () => ({ writeTemplateModule: mocks.writeTemplateModule }))
+vi.mock('./watch-templates', () => ({ watchTemplates: mocks.watchTemplates }))
 
 import { createDevServer } from './create-dev-server'
 
@@ -27,7 +29,17 @@ beforeEach(() => {
   mocks.app.getUpgradeHandler.mockReturnValue(async () => undefined)
   mocks.app.close.mockResolvedValue(undefined)
   mocks.watcher.close.mockResolvedValue(undefined)
+  mocks.watchTemplates.mockReturnValue(mocks.watcher)
+  mocks.writeTemplateModule.mockResolvedValue([])
 })
+
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve!: () => void
+  const promise = new Promise<void>((resolvePromise) => {
+    resolve = resolvePromise
+  })
+  return { promise, resolve }
+}
 
 async function listen(server: Server): Promise<number> {
   await new Promise<void>((resolve, reject) => {
@@ -64,5 +76,38 @@ describe('createDevServer startup cleanup', () => {
     } finally {
       await close(blocker)
     }
+  })
+
+  it('coalesces template changes while generation is running', async () => {
+    let generationCount = 0
+    const secondGenerationStarted = deferred()
+    const thirdGenerationStarted = deferred()
+    const releaseSecondGeneration = deferred()
+
+    mocks.writeTemplateModule.mockImplementation(async () => {
+      generationCount += 1
+      if (generationCount === 2) {
+        secondGenerationStarted.resolve()
+        await releaseSecondGeneration.promise
+      }
+      if (generationCount === 3) thirdGenerationStarted.resolve()
+      return []
+    })
+
+    const server = await createDevServer(options)
+    const watchOptions = mocks.watchTemplates.mock.calls[0]?.[0]
+    if (!watchOptions) throw new Error('Expected watcher options')
+
+    watchOptions.onStructureChange()
+    await secondGenerationStarted.promise
+    watchOptions.onStructureChange()
+    watchOptions.onStructureChange()
+    expect(mocks.writeTemplateModule).toHaveBeenCalledTimes(2)
+
+    releaseSecondGeneration.resolve()
+    await thirdGenerationStarted.promise
+    await server.close()
+
+    expect(mocks.writeTemplateModule).toHaveBeenCalledTimes(3)
   })
 })

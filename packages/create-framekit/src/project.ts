@@ -41,7 +41,10 @@ export async function createProject(
     throw new Error(`The directory already exists: ${target}`)
   }
 
-  await cp(templateDirectory, target, { recursive: true })
+  await cp(templateDirectory, target, {
+    recursive: true,
+    filter: (source) => path.basename(source) !== 'node_modules',
+  })
   await rename(path.join(target, '_gitignore'), path.join(target, '.gitignore'))
 
   if (pm === 'npm') {

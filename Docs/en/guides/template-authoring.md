@@ -22,9 +22,21 @@ Template images belong in an `assets` directory beside `template.tsx`. Put share
 
 The slug is the path from `src/templates/` to the template directory, with segments joined by slashes. Example: `src/templates/social-cards/instagram/post` becomes `social-cards/instagram/post`.
 
-Titles shown in the Studio catalog are currently derived from directory names by splitting on hyphens and capitalizing each word. For example, `social-cards` becomes "Social Cards" and `instagram-post` becomes "Instagram Post". This catalog summary is separate from the required `meta.title`; a missing or invalid `meta.title` is never filled from the directory name. Registry summaries and Studio metadata consumption remain deferred to issues [#12](../../Plans/Future/issue-12-generated-template-registry.md) and [#13](../../Plans/Future/issue-13-studio-canonical-contract.md).
+Titles shown for templates in Studio's navigation come from the validated
+`meta.title`, never from the directory name. A missing or invalid `meta.title`
+fails validation instead of falling back to a humanized slug.
 
-The generated template registry is sorted alphabetically by slug. In the Studio UI, templates and folders are sorted alphabetically by their humanized titles.
+The generated template registry is sorted alphabetically by slug. In the Studio UI, template items are sorted by `meta.title`, while folders are sorted by humanized slug segments.
+
+### Generated Template Registry
+
+`framekit generate` writes `src/generated/framekit/templates.ts`. The generated
+module exports only `templates: TemplateRegistryEntry[]`. Each entry contains the
+filesystem `slug` and `segments`, validated `meta`, `width`, `height`, `variants`,
+declaration-ordered `variantKeys`, the template asset manifest, and a lazy `load`
+function. The generated file is disposable; update the source template and run
+the generation workflow instead of editing it. See the [Generated Template
+Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
 
 ## Authoring Forms
 
@@ -161,9 +173,9 @@ properties:
 
 `meta` does not accept `revision`, `status`, `keywords`, `order`, or any other
 property. There is no slug fallback or compatibility alias: a definition without
-a valid `meta.title` fails validation. The current registry still derives its
-catalog summary from the filesystem; metadata consumption belongs to issues #12
-and #13.
+a valid `meta.title` fails validation. The generated registry preserves this
+validated metadata, and Studio navigation reads `entry.meta.title`. Displaying
+the remaining optional metadata belongs to issue #13.
 
 ## Field API
 
@@ -309,10 +321,15 @@ logo: field.image({
 
 When running `framekit dev`, FrameKit watches `src/` for changes that affect the generated template and brand registries:
 
-- Under `src/templates/`, adding or removing directories, or adding, removing, or changing a `template.tsx` file or a file under an `assets` directory, triggers regeneration. Changes to other template source files do not trigger regeneration through this watcher; Next.js HMR can still update the running instance.
+- Under `src/templates/`, any added, removed, or changed file or directory triggers regeneration. This includes private helpers and metadata or variant files imported by a template. Generated modules are written only when their serialized content changes.
 - Under `src/brand/`, adding, removing, or changing files or directories triggers regeneration. Brand components are discovered recursively, and each component directory must follow the `src/brand` contract described in the [Brand Components](./brand-components.md) guide.
 
-For one-off regeneration, run `framekit generate`. The shared generation command requires at least one template; it discovers both templates and brand components, then writes `src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.
+`framekit dev` performs one blocking generation before starting Next.js.
+`framekit check` and `framekit build` also generate automatically; `framekit start`
+uses existing build output and does not generate. For one-off regeneration, run
+`framekit generate`. The shared generation command requires at least one
+template; it discovers both templates and brand components, then writes
+`src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.
 
 ## Reserved Keys
 
@@ -320,4 +337,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) · [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12)
