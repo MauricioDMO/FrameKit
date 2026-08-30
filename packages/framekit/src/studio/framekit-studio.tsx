@@ -119,8 +119,7 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
           <>
             <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
               <div className="flex min-w-0 items-center gap-3">
-                <img src="/assets/logos/framekit-small.svg" alt="FrameKit" className="size-10 rounded-lg dark:hidden" />
-                <img src="/assets/logos/framekit-small-dark.svg" alt="" aria-hidden="true" className="hidden size-10 rounded-lg dark:block" />
+                <img src="/assets/logos/framekit-small-dark.svg" alt="" aria-hidden="true" className="size-10 rounded-lg" />
                 <div><p className="font-black tracking-[-0.02em]">FrameKit</p><p className="mt-0.5 text-[11px] tracking-[0.16em] text-[#91ae9f] uppercase">{messages.sidebar.workshop}</p></div>
               </div>
               <button type="button" onClick={toggleSidebar} aria-label={messages.sidebar.collapseLabel} title={messages.sidebar.collapseLabel} className="ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[#c8f7d9] transition hover:bg-white/10 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"><IconLayoutSidebarLeftCollapse size={18} /></button>
