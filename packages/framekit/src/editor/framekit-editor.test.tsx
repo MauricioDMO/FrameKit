@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { defineTemplate, field } from '../index'
@@ -10,6 +10,7 @@ import { copyTemplate } from './export-template'
 import { EditorField } from './fields/editor-field'
 import { NumberField } from './fields/components/number-field'
 import type { EditorMessages } from './types'
+import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 
 vi.mock('./export-template', () => ({
   copyTemplate: vi.fn(),
@@ -19,6 +20,8 @@ vi.mock('./export-template', () => ({
 const messages: EditorMessages = {
   templateEditor: 'Editor de plantillas',
   reset: 'Restablecer',
+  metadataLabel: 'Metadata',
+  closeLabel: 'Cerrar',
   generating: 'Generando',
   downloadPng: 'Descargar PNG',
   copyPng: 'Copiar PNG',
@@ -26,9 +29,14 @@ const messages: EditorMessages = {
   preview: 'Vista previa',
   actualSize: 'Tamano real',
   fitToView: 'Ajustar a vista',
-  contentVariantLabel: 'Variante del contenido',
+  variantLabel: 'Variante',
+  descriptionLabel: 'Descripción funcional',
+  marketingDescriptionLabel: 'Objetivo de marketing',
+  tagsLabel: 'Tags',
+  colorPickerLabel: 'Seleccionar color',
   exportError: 'Error de exportacion',
   exportAlert: 'No se pudo exportar',
+  dataError: 'Error de datos de plantilla',
   errorRequired: 'Campo obligatorio',
   errorInvalidNumber: 'Numero invalido',
   errorNumberTooSmall: 'Debe ser al menos {min}',
@@ -47,7 +55,12 @@ const messages: EditorMessages = {
 
 function createDefinition() {
   return defineTemplate({
-    meta: { title: 'Editor test' },
+     meta: {
+       title: 'Editor test',
+       tags: ['framekit', 'introducción', 'react'],
+       description: 'Una introducción visual a FrameKit y su flujo de trabajo.',
+       marketingDescription: 'Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.',
+     },
     width: 100,
     height: 100,
     fields: {
@@ -72,15 +85,30 @@ function createDefinition() {
       optionalColor: field.color({ label: 'Optional color', required: false }),
     },
     content: { en: { title: 'English title' }, fr: { title: 'French title' } },
-    variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
+    variants: { default: 'en', labels: { en: 'English' } },
     render({ data }) {
       return <span>{data.showLogo ? 'logo-on' : 'logo-off'}:{data.invalidNumber}</span>
     },
   })
 }
 
+function createTemplate(definition: TemplateDefinition, meta = definition.meta): TemplateRegistryEntry {
+  return {
+    slug: 'social/campaign',
+    segments: ['social', 'campaign'],
+    meta,
+    width: definition.width,
+    height: definition.height,
+    variants: definition.variants,
+    variantKeys: Object.keys(definition.content),
+    assets: { common: {}, variants: {} },
+    load: async () => ({ default: definition }),
+  }
+}
+
 function renderEditor(sidebarCollapsed = false) {
-  return render(<FrameKitEditor slug="social/campaign" definition={createDefinition()} messages={messages} sidebarCollapsed={sidebarCollapsed} />)
+  const definition = createDefinition()
+  return render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} sidebarCollapsed={sidebarCollapsed} />)
 }
 
 beforeEach(() => localStorage.clear())
@@ -91,6 +119,23 @@ afterEach(() => {
 })
 
 describe('FrameKitEditor controls', () => {
+  it('shows template metadata in a modal and closes it', () => {
+    renderEditor()
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: messages.metadataLabel }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Editor test' })
+    expect(within(dialog).getByText('framekit')).toBeTruthy()
+    expect(within(dialog).getByText('introducción')).toBeTruthy()
+    expect(within(dialog).getByText('react')).toBeTruthy()
+    expect(within(dialog).getByText('Una introducción visual a FrameKit y su flujo de trabajo.')).toBeTruthy()
+    expect(within(dialog).getByText('Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.')).toBeTruthy()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: messages.closeLabel }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('expands the fields column when the studio sidebar is collapsed', () => {
     renderEditor(true)
 
@@ -102,6 +147,17 @@ describe('FrameKitEditor controls', () => {
     renderEditor()
     expect(screen.getByRole('spinbutton', { name: 'Too small' }).getAttribute('min')).toBe('10')
     expect(screen.getByRole('spinbutton', { name: 'Too large' }).getAttribute('max')).toBe('20')
+  })
+
+  it('uses generic variant wording and falls back to the variant key', () => {
+    renderEditor()
+
+    const selector = screen.getAllByRole('combobox')[0]
+    expect(screen.getByText(messages.variantLabel)).toBeTruthy()
+    expect(Array.from((selector as HTMLSelectElement).options).map((option) => [option.value, option.textContent])).toEqual([
+      ['en', 'English'],
+      ['fr', 'fr'],
+    ])
   })
 
   it('keeps malformed input drafts local while committing valid numbers', async () => {
@@ -230,6 +286,22 @@ describe('FrameKitEditor controls', () => {
     expect(onChange).toHaveBeenCalledWith(true)
   })
 
+  it('associates text, color, and image errors with their controls', () => {
+    render(
+      <>
+        <EditorField field={{ key: 'title', type: 'text', required: true, label: 'Title' }} value="" onChange={vi.fn()} error={messages.errorRequired} />
+        <EditorField field={{ key: 'color', type: 'color', required: true, label: 'Color' }} value="#123456" onChange={vi.fn()} error={messages.errorInvalidColor} colorPickerLabel={messages.colorPickerLabel} />
+        <EditorField field={{ key: 'logo', type: 'image', required: true, label: 'Logo' }} value="" onChange={vi.fn()} error={messages.errorRequired} imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError }} onImageUpload={async () => undefined} />
+      </>,
+    )
+
+    expect(screen.getByRole('textbox', { name: 'Title' }).getAttribute('aria-describedby')).toBe('title-error')
+    expect(screen.getByRole('textbox', { name: 'Color' }).getAttribute('aria-describedby')).toBe('color-error')
+    expect(document.getElementById('color-picker')?.getAttribute('aria-describedby')).toBe('color-error')
+    expect(screen.getByLabelText('Logo').getAttribute('aria-describedby')).toBe('logo-error')
+    expect(screen.getAllByText(messages.errorRequired)).toHaveLength(2)
+  })
+
   it('uses the descriptor required flag for HTML and ARIA controls', () => {
     renderEditor()
 
@@ -276,6 +348,16 @@ describe('FrameKitEditor controls', () => {
     const titleInput = screen.getByRole('textbox', { name: 'Title' })
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(document.activeElement).toBe(titleInput)
+  })
+
+  it('focuses the visible color control instead of its hidden picker', () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', accentColor: 'invalid' } } }))
+    renderEditor()
+
+    const colorInput = screen.getByRole('textbox', { name: 'Accent color' })
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+
+    expect(document.activeElement).toBe(colorInput)
   })
 
   it('translates number draft validation errors without replacing committed data', () => {

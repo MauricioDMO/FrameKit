@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { defineTemplate, field } from '../../index'
 
-import { getInitialState, loadPersistedState, resetVariant, selectVariant, updateField } from './editor-state'
+import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, updateField } from './editor-state'
 
 const definition = defineTemplate({
   meta: { title: 'Editor state' },
@@ -32,6 +32,27 @@ describe('editor state', () => {
 
     expect(reset.dataByVariant).toEqual({ en: { title: 'English title' } })
     expect(state.dataByVariant).toEqual({ en: { title: 'English title' }, fr: { title: 'Titre français' } })
+  })
+
+  it('preserves a live variant selection while dropping stale edits', () => {
+    const refreshed = defineTemplate({
+      meta: { title: 'Refreshed editor state' },
+      width: 100,
+      height: 100,
+      fields: { title: field.text({ label: 'Title' }) },
+      content: { en: {}, fr: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+    const state = {
+      selectedVariant: 'fr',
+      dataByVariant: { en: { title: 'Saved', count: 3 }, fr: { title: 'Titre français' }, removed: { title: 'Discarded' } },
+    }
+
+    expect(rebaseState(state, refreshed)).toEqual({
+      selectedVariant: 'fr',
+      dataByVariant: { en: { title: 'Saved' }, fr: { title: 'Titre français' } },
+    })
   })
 
   it('discards malformed persisted variants, fields, and values', () => {

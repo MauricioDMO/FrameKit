@@ -12,6 +12,34 @@ export function getInitialState(definition: TemplateBase): EditorState {
   return { selectedVariant: definition.variants.default, dataByVariant: {} }
 }
 
+function filterFieldData(definition: TemplateBase, fields: Record<string, unknown>): Record<string, string | number | boolean> {
+  const data: Record<string, string | number | boolean> = {}
+  for (const [key, value] of Object.entries(fields)) {
+    const field = definition.fields[key]
+    if (!field) continue
+    if (field.kind === 'number') {
+      if (validateNumberValue(value, field) === undefined) data[key] = value as number
+    } else if (typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')) {
+      data[key] = value as string | boolean
+    }
+  }
+  return data
+}
+
+export function rebaseState(state: EditorState, definition: TemplateBase): EditorState {
+  const validVariants = new Set(Object.keys(definition.content))
+  const dataByVariant: EditorState['dataByVariant'] = {}
+
+  for (const [variant, fields] of Object.entries(state.dataByVariant)) {
+    if (validVariants.has(variant)) dataByVariant[variant] = filterFieldData(definition, fields)
+  }
+
+  return {
+    selectedVariant: validVariants.has(state.selectedVariant) ? state.selectedVariant : definition.variants.default,
+    dataByVariant,
+  }
+}
+
 export function loadPersistedState(slug: string, definition: TemplateBase, storage: Pick<Storage, 'getItem'>): EditorState | null {
   try {
     const stored = storage.getItem(storageKey(slug))
@@ -24,18 +52,12 @@ export function loadPersistedState(slug: string, definition: TemplateBase, stora
     const selectedVariant = parsed.selectedVariant
     if (selectedVariant !== undefined && (typeof selectedVariant !== 'string' || !validVariants.has(selectedVariant))) return null
 
-    const validFieldKeys = new Set(Object.keys(definition.fields))
     const dataByVariant: EditorState['dataByVariant'] = {}
 
     if (parsed.dataByVariant && typeof parsed.dataByVariant === 'object' && !Array.isArray(parsed.dataByVariant)) {
       for (const [variant, fields] of Object.entries(parsed.dataByVariant)) {
         if (!validVariants.has(variant) || !fields || typeof fields !== 'object' || Array.isArray(fields)) continue
-        dataByVariant[variant] = Object.fromEntries(Object.entries(fields).filter(([key, value]) => {
-          const field = definition.fields[key]
-          if (!validFieldKeys.has(key) || field === undefined) return false
-          if (field.kind === 'number') return validateNumberValue(value, field) === undefined
-          return typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')
-        }))
+        dataByVariant[variant] = filterFieldData(definition, fields)
       }
     }
 

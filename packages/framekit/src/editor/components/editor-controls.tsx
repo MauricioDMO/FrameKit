@@ -24,7 +24,7 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
       </div>
       <div className="mt-4 space-y-4">
         <label className="block select-none">
-          <span className="mb-1.5 block select-none text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.contentVariantLabel}</span>
+          <span className="mb-1.5 block select-none text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.variantLabel}</span>
           <select value={selectedVariant} onChange={(event) => onVariantChange(event.target.value)} className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] transition outline-none focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]">
             {Object.keys(definition.content).map((value) => <option key={value} value={value}>{definition.variants.labels?.[value] ?? value}</option>)}
           </select>
@@ -52,7 +52,8 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
               onChange={(value) => onFieldChange(key, value)}
               error={errors[key]}
               onValidationError={(error) => onFieldValidationError?.(key, error)}
-              imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError, uploadError: messages.imageUploadError }}
+              imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError }}
+              colorPickerLabel={messages.colorPickerLabel}
               onImageUpload={field.kind === 'image' && onImageUpload ? (file) => onImageUpload(key, file, field.scope ?? 'variant') : undefined}
             />
           </div>

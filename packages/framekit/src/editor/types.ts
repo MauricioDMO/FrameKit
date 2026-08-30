@@ -4,16 +4,23 @@ import type { ImageFieldScope, TemplateFieldKind } from '../types'
 export interface EditorMessages {
   templateEditor: string
   reset: string
+  metadataLabel: string
+  closeLabel: string
   generating: string
   downloadPng: string
-  copyPng?: string
+  copyPng: string
   content: string
   preview: string
   actualSize: string
   fitToView: string
-  contentVariantLabel: string
+  variantLabel: string
+  descriptionLabel: string
+  marketingDescriptionLabel: string
+  tagsLabel: string
+  colorPickerLabel: string
   exportError: string
   exportAlert: string
+  dataError: string
   errorRequired: string
   errorInvalidNumber: string
   errorNumberTooSmall: string
@@ -50,7 +57,6 @@ export interface ImageFieldLabels {
   select: string
   uploading: string
   loadError: string
-  uploadError: string
 }
 
 export interface EditorFieldProps {
@@ -60,5 +66,6 @@ export interface EditorFieldProps {
   error?: string
   onValidationError?: (error?: TemplateDataValidationError) => void
   imageLabels?: ImageFieldLabels
+  colorPickerLabel?: string
   onImageUpload?: (file: File) => Promise<void>
 }

@@ -33,17 +33,16 @@ export function ImageField({ field, value, error, imageLabels, onImageUpload }: 
           <img src={imageValue} alt="" onError={() => setLoadFailed(true)} className="block max-h-40 w-full object-contain" />
         ) : (
           <div className="flex min-h-24 items-center justify-center px-3 text-xs text-[#657168] dark:text-[#b8c8be]">
-            {loadFailed ? imageLabels?.loadError : field.required ? error : ''}
+            {loadFailed ? imageLabels?.loadError : ''}
           </div>
         )}
       </div>
       {onImageUpload && imageLabels && (
         <label className="inline-flex cursor-pointer select-none items-center rounded-lg border border-[#cccec8] bg-white px-3 py-2 text-xs font-bold text-[#4e5a53] transition hover:bg-[#efeee9] has-disabled:cursor-not-allowed has-disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]">
           {uploading ? imageLabels.uploading : imageLabels.select}
-          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} onChange={handleChange} className="sr-only" />
+          <input id={field.key} name={field.key} type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={error ? `${field.key}-error` : undefined} onChange={handleChange} className="sr-only" />
         </label>
       )}
-      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   )
 }

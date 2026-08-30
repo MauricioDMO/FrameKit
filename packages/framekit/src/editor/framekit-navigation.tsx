@@ -106,18 +106,13 @@ function NavigationNode({
       <Link
         href={node.href}
         aria-current={selected ? 'page' : undefined}
-        className={`relative mb-1 flex items-center gap-2.5 rounded-lg py-2.5 pr-3 text-sm transition ${
+        className={`mb-0.5 flex items-center gap-1 rounded-lg py-1.5 pr-3 text-sm transition focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none ${
           selected
-            ? 'bg-[#c8f7d9] font-bold text-[#10271f]'
+            ? 'bg-white/10 font-bold text-[#f5f7ee]'
             : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'
         }`}
-        style={{ paddingLeft: 12 + level * 15 }}
+        style={{ paddingLeft: 17 + level * 12 }}
       >
-        <span
-          aria-hidden="true"
-          className="absolute top-1 bottom-1 w-0.5 rounded-full bg-[#86a998]/45"
-          style={{ left: 5 + level * 15 }}
-        />
         <IconPhoto size={16} className="shrink-0" />
         <span className="truncate">{node.title}</span>
       </Link>
@@ -146,13 +141,13 @@ function NavigationFolder({
 }) {
 
   return (
-    <div className="mb-1">
+    <div className="mb-0.5">
       <button
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex w-full items-center gap-2 rounded-lg py-2.5 pr-3 text-left text-sm font-semibold text-[#d7e2dc] transition hover:bg-white/8"
-        style={{ paddingLeft: 12 + level * 15 }}
+        className="flex w-full items-center gap-1 rounded-lg py-1.5 pr-3 text-left text-sm font-semibold text-[#d7e2dc] transition hover:bg-white/8 focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none"
+        style={{ paddingLeft: 10 + level * 12 }}
       >
         <IconChevronRight
           size={15}
@@ -167,7 +162,7 @@ function NavigationFolder({
           <span
             aria-hidden="true"
             className="pointer-events-none absolute top-0 bottom-1 w-px bg-[#86a998]/25"
-            style={{ left: 5 + level * 15 }}
+            style={{ left: 17 + level * 12 }}
           />
           {node.children.map((child) => (
             <NavigationNode

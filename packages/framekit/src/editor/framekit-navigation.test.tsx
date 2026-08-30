@@ -10,7 +10,7 @@ vi.mock('next/link', () => ({
 }))
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/editor/catalog/first',
+  usePathname: () => '/editor/catalog/category/first',
 }))
 
 const navigation = {
@@ -75,5 +75,20 @@ describe('FrameKitNavigation', () => {
 
     expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('link', { name: 'First' })).toBeTruthy()
+  })
+
+  it('keeps selected templates subdued and draws scope lines only for folders', () => {
+    render(<FrameKitNavigationTree nodes={[navigation]} />)
+
+    const link = screen.getByRole('link', { name: 'First' })
+    expect(link.getAttribute('aria-current')).toBe('page')
+    expect(link.className).toContain('bg-white/10')
+    expect(link.className).not.toContain('bg-[#c8f7d9]')
+    expect(link.querySelector('span[aria-hidden="true"]')).toBeNull()
+    expect(link.style.paddingLeft).toBe('41px')
+    const scopeLine = document.querySelector('div.relative > span[aria-hidden="true"]')
+    expect(scopeLine).toBeTruthy()
+    expect((scopeLine as HTMLElement).style.left).toBe('17px')
+    expect(screen.getByRole('button', { name: 'Catalog' }).className).toContain('focus:ring-2')
   })
 })

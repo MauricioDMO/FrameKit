@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 import type { TemplateBase } from '../../types'
-import { getInitialState, loadPersistedState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
+import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
 
 export function useEditorState(slug: string, definition: TemplateBase) {
   const hydratedRef = useRef(false)
+  const definitionRef = useRef(definition)
   const [state, setState] = useState(() => {
     if (typeof window === 'undefined') return getInitialState(definition)
 
@@ -16,20 +17,29 @@ export function useEditorState(slug: string, definition: TemplateBase) {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [resetVersion, setResetVersion] = useState(0)
+  const renderedState = definitionRef.current === definition ? state : rebaseState(state, definition)
 
   useEffect(() => {
     hydratedRef.current = true
   }, [])
 
   useEffect(() => {
+    if (definitionRef.current === definition) return
+    definitionRef.current = definition
+    setState((current) => rebaseState(current, definition))
+    setErrors({})
+    setResetVersion((current) => current + 1)
+  }, [definition])
+
+  useEffect(() => {
     if (hydratedRef.current) {
       try {
-        window.localStorage.setItem(storageKey(slug), JSON.stringify(state))
+        window.localStorage.setItem(storageKey(slug), JSON.stringify(renderedState))
       } catch {
         // Storage can be unavailable or full; editing should continue in memory.
       }
     }
-  }, [slug, state])
+  }, [slug, renderedState])
 
   function changeVariant(variant: string) {
     setState((current) => selectVariant(current, variant))
@@ -52,5 +62,5 @@ export function useEditorState(slug: string, definition: TemplateBase) {
     })
   }
 
-  return { selectedVariant: state.selectedVariant, userEdits: state.dataByVariant[state.selectedVariant] ?? {}, errors, setErrors, changeVariant, clearVariant, changeField, resetVersion }
+  return { selectedVariant: renderedState.selectedVariant, userEdits: renderedState.dataByVariant[renderedState.selectedVariant] ?? {}, errors, setErrors, changeVariant, clearVariant, changeField, resetVersion }
 }
