@@ -6,54 +6,53 @@ Make the server renderer a valid public package feature and produce a generated
 consumer Docker image containing the matching Chromium headless shell, required
 system libraries, Next.js standalone server, and no embedded secrets.
 
+The final runtime uses in-memory jobs only; no writable render-job directory or
+persistent volume is required.
+
 ## Depends on
 
-- Steps 1-6 implemented and passing focused tests.
+- Steps 1-6 implemented and passing focused exit gates.
 - Current public package build, creator copy behavior, and standalone production
   build.
-- pnpm `11.14.0` and Node.js `>=22.13.0` repository requirements.
+- Repository Node/pnpm requirements.
 
 ## Deliverables
 
-- Final `@mauriciodmo/framekit/server` export and declarations.
-- One exact compatible `playwright-core` version across package development,
-  canonical template, Studio, and lockfile.
-- No browser download during normal dependency installation.
-- Canonical template `Dockerfile` and `.dockerignore`.
-- Correct Next.js standalone copy/start behavior.
-- Creator tests proving deployment files are copied.
-- Package/tarball checks proving browser binaries and workspace references are
-  not published.
-- One locally runnable production container ready for Step 8 smoke tests.
+- Final `@mauriciodmo/framekit/server` export/declarations.
+- One compatible pinned `playwright-core` version across package development,
+  canonical generated app, Studio, and lockfile.
+- No Chromium download during ordinary dependency installation.
+- Canonical generated `Dockerfile` and `.dockerignore`.
+- Correct standalone copy/start behavior.
+- Creator tests proving deployment/routes are copied.
+- Package/tarball checks proving Chromium binaries/secrets/workspace references
+  are not published.
+- Locally runnable production image ready for Step 8 real-browser smoke.
 
 ## Dependency strategy
 
 ### `@mauriciodmo/framekit`
 
-- Add `playwright-core` as the runtime expected by `./server`.
+- Add `playwright-core` for the `./server` runtime boundary.
 - Keep it external in unbundled tsdown output.
-- Install an exact version in package development so tests/build resolve it.
-- Declare a compatible peer relationship for consumers of `./server`.
-- Mark the peer optional only if existing consumers that never import `./server`
-  must remain installable without Playwright; the generated canonical project
-  still installs it directly.
-- Do not add `playwright` or `@playwright/test` to production dependencies.
+- Pin the version used for package development/tests.
+- Choose dependency/peer-optional packaging so existing consumers that never use
+  `./server` remain supported without browser binaries.
+- Do not add full `playwright` or `@playwright/test` to production dependencies.
+- Ordinary `pnpm install` must not download browser binaries.
 
 ### Generated template and Studio
 
-- Add the exact selected `playwright-core` version as a direct production
-  dependency.
-- Keep the same exact version in both applications and package development.
-- This direct dependency guarantees a root
-  `node_modules/.bin/playwright-core` for Docker commands under pnpm.
-- Update the root lockfile through `pnpm install`.
-
-The browser revision installed by the CLI must come from the exact package in
-the lockfile. Never install a floating Playwright CLI independently in Docker.
+- Install the exact selected `playwright-core` version as a direct production
+  dependency where Docker/browser installation commands require a stable CLI.
+- Keep canonical template, Studio, package development, and lockfile on the same
+  intended version.
+- Browser revision installed in Docker must come from that exact package/lock
+  resolution; never install a floating Playwright CLI separately.
 
 ## Package export and build
 
-Final manifest entry:
+Final manifest shape:
 
 ```json
 {
@@ -65,20 +64,18 @@ Final manifest entry:
 }
 ```
 
-Required build checks:
+Required checks:
 
-- tsdown emits `server.js` and declarations;
+- tsdown emits `server.js` + declarations;
 - all emitted relative imports resolve inside package `dist`;
-- `server.js` retains external `playwright-core` import;
-- root/editor/Studio exports do not reference server output;
-- package `files` continues to publish only intended `bin`, `dist`, docs/license;
-- Chromium binaries, temp files, Docker output, and source tests are absent from
-  the tarball;
-- `check-dist.ts` validates the new manifest targets through its generic scan;
+- server output keeps `playwright-core` external as intended;
+- root/editor/studio exports do not reference server output;
+- package `files` publishes only intended bin/dist/docs/license artifacts;
+- no Chromium binary, Map debug dump, Docker output, test fixture, secret, or
+  repository-local path enters package tarball;
 - public type fixtures compile against package exports, not source aliases.
 
-Update repository instructions that enumerate supported public imports only when
-the implementation is ready to ship.
+Update public import documentation only when implementation is ready to ship.
 
 ## Generated application integration
 
@@ -87,71 +84,67 @@ Add to `packages/create-framekit/template/`:
 ```text
 Dockerfile
 .dockerignore
-src/instrumentation.ts
 src/app/api/v1/images/route.ts
 src/app/__framekit/render/[id]/page.tsx
 src/app/__framekit/render/[id]/render-client.tsx
 ```
 
-The creator already copies the template directory into an independent project.
-Add creator-focused assertions for:
+No browser-shutdown `src/instrumentation.ts` is required by the v1 design.
+
+Creator-focused assertions:
 
 - deployment files copied with exact names;
-- hidden files such as `.dockerignore` preserved;
-- package dependency includes `playwright-core`;
-- no workspace ranges or repository-local paths in generated output;
-- generated project can install, generate, check, and build.
+- hidden `.dockerignore` preserved;
+- generated package includes compatible `playwright-core` dependency;
+- no `workspace:*` ranges/repository-local paths in generated output;
+- generated app can install, generate, check, and build.
 
-Do not hand-edit generated registry files while adding these source routes.
+Do not hand-edit generated registry files while adding routes.
 
 ## Docker stages
 
-Use the supplied `node:22-bookworm-slim` and pnpm multi-stage structure, adapted
-to FrameKit's actual build output.
+Use a pnpm multi-stage build based on `node:22-bookworm-slim`, adapted to the
+actual FrameKit standalone output.
 
 ### Stage 1 - `base`
 
 Responsibilities:
 
 - `FROM node:22-bookworm-slim`;
-- enable Corepack;
-- configure `PNPM_HOME`/`PATH`;
-- set `WORKDIR /app`;
-- install only base certificates/runtime prerequisites needed before specialized
-  stages;
-- remove apt lists in the same layer.
+- Corepack/pnpm setup;
+- `WORKDIR /app`;
+- base CA certificates/runtime prerequisites;
+- apt list cleanup in the same layer.
 
-Do not install Chromium in the base stage because build-only stages do not need
-it.
+Do not install Chromium in generic build stages.
 
 ### Stage 2 - `build-deps`
 
-- Copy `package.json`, `pnpm-lock.yaml`, and `pnpm-workspace.yaml` first.
-- Install all dependencies with `pnpm install --frozen-lockfile` and a BuildKit
-  pnpm-store cache mount.
-- Do not run `playwright install` here.
-- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` may remain explicit, but
-  `playwright-core` itself must not rely on install-time browser downloads.
+- Copy package/lock/workspace metadata first.
+- `pnpm install --frozen-lockfile` with BuildKit cache where practical.
+- Do not run Playwright browser install.
+- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` may be explicit even though
+  `playwright-core` should not auto-download.
 
 ### Stage 3 - `prod-deps`
 
-- Copy the same package/lock/workspace metadata.
-- Run `pnpm install --prod --frozen-lockfile` with cache mount.
-- Preserve root `.bin/playwright-core` for the runner installation commands.
+- Install production dependency graph with frozen lockfile.
+- Preserve the direct `playwright-core` CLI needed by runner browser install if
+  this strategy is retained after real verification.
 
 ### Stage 4 - `builder`
 
-- Start from `build-deps`.
+- Start from full build dependencies.
 - Copy application source.
-- Run only `pnpm build`.
-- Do not run `prisma generate`; FrameKit has no Prisma build step.
-- Assert/document that output is `.framekit/next/standalone`.
-- Rely on `framekit build` to copy `public` and Next static assets beside the
-  standalone server.
+- Run `pnpm build` / canonical FrameKit build command only.
+- Do not add unrelated Prisma/database build steps.
+- Assert standalone output location under `.framekit/next/standalone`.
+- Rely on existing `framekit build` behavior to copy `public` and Next static
+  assets beside the standalone server.
 
 ### Stage 5 - `runner`
 
-Set:
+Initial runtime environment:
 
 ```dockerfile
 ENV NODE_ENV=production
@@ -161,31 +154,26 @@ ENV FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ```
 
-Then:
+Runtime steps:
 
-1. Copy production `node_modules` from `prod-deps` so the CLI exists.
-2. As root, install `tini`.
-3. Run `./node_modules/.bin/playwright-core install-deps chromium`.
-4. Run
-   `./node_modules/.bin/playwright-core install --only-shell chromium`.
-5. Clean apt lists.
-6. Ensure the non-root `node` user can read the installed browser files.
-7. Copy the contents of `/app/.framekit/next/standalone/` from `builder` into
-   `/app`.
-8. Ensure the FrameKit temp directory can be created under normal `/tmp` by
-   `node`; do not grant application write access to source/build directories.
-9. Switch to `USER node`.
-10. Expose `3000`.
-11. Use `ENTRYPOINT ["/usr/bin/tini", "--"]`.
-12. Start `CMD ["node", "server.js"]`.
+1. Make compatible production Node dependencies/Playwright CLI available.
+2. Install `tini` as root.
+3. Run the pinned Playwright CLI to install Chromium system dependencies.
+4. Install only Chromium headless shell if supported by the selected version.
+5. Clean apt metadata.
+6. Ensure browser files are readable by the non-root Node user.
+7. Copy the final standalone server contents from builder into `/app`.
+8. Switch to `USER node`.
+9. Expose `3000`.
+10. Use `ENTRYPOINT ["/usr/bin/tini", "--"]`.
+11. Start `node server.js`.
 
-Do not copy `/app/dist` or `/app/generated`; those are not the generated
-consumer's production server output.
+There is no FrameKit temp render directory to create/chown because jobs live in
+process memory.
 
 ## Dockerfile shape
 
-The final implementation should remain close to this shape, with exact package
-commands verified against the selected Playwright version:
+Planning pseudocode:
 
 ```dockerfile
 # syntax=docker/dockerfile:1.7
@@ -193,10 +181,10 @@ FROM node:22-bookworm-slim AS base
 # corepack, certs, workdir
 
 FROM base AS build-deps
-# full frozen install
+# frozen full install
 
 FROM base AS prod-deps
-# production frozen install
+# frozen production install
 
 FROM build-deps AS builder
 COPY . .
@@ -223,9 +211,11 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "server.js"]
 ```
 
-This is planning pseudocode. The implementation must verify whether Playwright's
-install commands and file ownership require separate layers/permissions for the
-selected version.
+This is planning pseudocode. Verify exact Playwright commands, pnpm standalone
+layout, ownership, and whether copying all production `node_modules` remains
+necessary. Prefer a smaller runner later if a clean real build proves it can
+contain only the standalone traced dependencies plus browser install/runtime
+requirements.
 
 ## `.dockerignore`
 
@@ -250,48 +240,58 @@ public assets, package metadata, lockfile, or required Next configuration.
 
 ## Runtime secrets and configuration
 
-- `FRAMEKIT_API_KEY` is supplied with runtime environment/secrets, never `ARG`
-  or `ENV` containing a real value in the Dockerfile.
+- `FRAMEKIT_API_KEY` is supplied at runtime, never Docker `ARG`/baked secret.
 - `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is supplied at runtime.
-- `FRAMEKIT_INTERNAL_ORIGIN` defaults in the image because it is non-secret and
+- `FRAMEKIT_INTERNAL_ORIGIN` may default in the image because it is non-secret and
   tied to container topology.
-- Never copy `.env` files into the image.
-- Document a minimal `docker run --env-file ...` example using placeholder
-  values, not real secrets.
+- max concurrency/render timeout may be runtime env values.
+- never copy `.env` files into image layers.
+- document `docker run --env-file ...` only with placeholder/example values.
+
+Node.js needs outbound HTTPS access only when a configured allowed remote image
+host is used. Chromium itself is still blocked by application-level browser
+routing from arbitrary external network access.
 
 ## Sandbox and container user
 
-The accepted browser controller uses `--no-sandbox` and
-`--disable-setuid-sandbox`. Mitigate that unavoidable reduction by:
+The initial browser launch uses `--no-sandbox` and
+`--disable-setuid-sandbox`. Do not claim the Chromium sandbox is active.
 
-- running the application as non-root;
-- navigating only to the private loopback route;
-- enforcing remote host allowlists and request interception;
-- keeping container filesystem permissions narrow;
-- applying deployment CPU/memory/process limits outside the image.
+Mitigations:
 
-Do not claim the Chromium sandbox is active.
+- application/browser run as non-root;
+- browser top-level navigation fixed to loopback;
+- browser external network blocked;
+- Node remote-image fetch constrained by exact HTTPS allowlist/redirect policy;
+- narrow filesystem permissions;
+- deployment-level CPU/memory/process limits where appropriate.
 
 ## Standalone verification
 
-The copied standalone server must contain/resolve:
+Final copied server must contain/resolve:
 
 - `server.js`;
-- `.framekit/next/static` in the location expected by configured `distDir`;
-- copied `public` files and generated template assets;
-- server route chunks for public/private endpoints;
-- runtime `playwright-core` JavaScript;
-- access to `/ms-playwright` browser executable;
-- no workspace symlinks that point outside the image.
+- `.framekit/next/static` in expected location;
+- copied `public` and generated template assets;
+- public/private route chunks;
+- `@mauriciodmo/framekit/server` runtime code;
+- `playwright-core` runtime JavaScript;
+- access to matching browser executable under `PLAYWRIGHT_BROWSERS_PATH`;
+- no workspace symlink that points outside the image.
 
-Test server startup with only final-stage contents, not the builder filesystem.
+Critical architecture check:
+
+- public API route/private page in final standalone must share the same process
+  `globalThis` render-job store.
+
+Test startup using only final-stage contents, not builder filesystem.
 
 ## Package manager boundary
 
-The initial Dockerfile is pnpm-specific, matching the supplied baseline and
-repository policy. The generated project must have a `pnpm-lock.yaml` before
-building the image. An npm-specific generated Dockerfile is out of scope; docs
-must state the requirement instead of implying package-manager neutrality.
+The initial generated Dockerfile is pnpm-specific, matching FrameKit repository
+policy. The generated project must have a suitable `pnpm-lock.yaml` before image
+build. Do not imply npm/yarn neutrality until corresponding deployment paths are
+implemented/tested.
 
 ## Expected files
 
@@ -308,45 +308,47 @@ pnpm-lock.yaml
 AGENTS.md
 ```
 
-The exact creator test file follows the existing suite.
-
 ## Implementation sequence
 
-1. Select and pin one `playwright-core` version everywhere.
-2. Run root `pnpm install` and inspect lockfile resolution.
-3. Finalize `./server` export, tsdown entry, externalization, and types.
-4. Add direct app/template dependencies and confirm root CLI resolution.
-5. Add Dockerfile and `.dockerignore` to canonical template.
-6. Add creator-copy assertions for deployment files/dependencies.
-7. Build FrameKit, Studio, and canonical generated consumer.
-8. Build the Docker image with no pre-existing local build output.
-9. Inspect final image startup, user, browser path, static assets, and routes.
-10. Pack both public packages and inspect tarball contents/workspace references.
+1. Select/pin one compatible `playwright-core` version.
+2. Update package/template/Studio dependencies and lockfile.
+3. Finalize `./server` export, tsdown externalization, and types.
+4. Add generated Dockerfile/.dockerignore and route integration copies.
+5. Add creator-copy assertions.
+6. Build FrameKit, Studio, and canonical generated consumer.
+7. Build Docker from a clean context with no pre-existing local build output.
+8. Verify final standalone Map sharing, route assets, user, browser path, and
+   browser launch.
+9. Pack public packages and inspect tarball contents/references.
+10. Optimize runner dependency copying only after the working production shape is
+    proven.
 
 ## Focused tests and checks
 
-- `pnpm install --frozen-lockfile` succeeds after the committed lock update.
-- All workspaces resolve one intended Playwright core version.
-- FrameKit package build emits valid `server` targets.
-- Client entries remain free of server dependencies.
-- Creator copies Dockerfile, `.dockerignore`, routes, and instrumentation.
-- Generated package has no `workspace:*` dependency.
-- `framekit check` and `framekit build` succeed in generated consumer.
-- Docker build does not run Prisma or download full Playwright browser families.
-- Final container runs as `node` under `tini` and starts `server.js`.
-- Chromium headless shell launches from `/ms-playwright`.
-- Public/static/generated assets return `200` from final container.
+- Frozen dependency install succeeds with committed lockfile.
+- All workspaces resolve intended Playwright core version.
+- FrameKit package emits valid `server` targets.
+- Client-capable entries remain free of server dependencies.
+- Creator copies Dockerfile, `.dockerignore`, public/private routes.
+- Generated app contains no workspace-local dependency paths.
+- `framekit check` and production build succeed.
+- Docker build does not run unrelated DB steps or install all browser families.
+- Final container runs non-root Node under `tini`.
+- Chromium headless shell launches from configured browser path.
+- Public/static/generated assets return `200`.
 - API/private routes are present.
-- Tarballs contain no Chromium, temp jobs, Docker build output, secrets, or local
-  paths.
+- Public/private server bundles share process-global job Map.
+- No render-job files/directories are created.
+- Tarballs contain no Chromium, secrets, Docker output, tests, or local paths.
 
 ## Exit gate
 
 Step 7 is complete when:
 
-- the public server export is installable from the packed package;
-- creator output contains all application-owned integration/deployment files;
+- public server export is installable from packed package;
+- creator output contains all application-owned routes/deployment files;
 - a clean Docker build starts the standalone consumer and launches matching
-  Chromium headless shell as non-root;
+  Chromium as non-root;
+- final standalone proves the `globalThis` Map handoff;
 - no secret/browser binary/workspace reference leaks into public tarballs;
 - focused creator/package checks and repository build pass.

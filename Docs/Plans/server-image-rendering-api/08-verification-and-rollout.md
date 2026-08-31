@@ -2,392 +2,405 @@
 
 ## Goal
 
-Prove the feature across pure logic, Next.js integration, real Chromium,
-production Docker, and public package distribution; update public documentation;
-and define a safe additive rollout without introducing a release version in the
-plan.
+Prove the feature across pure logic, Next.js integration, the process-global
+in-memory job handoff, real Chromium, production Docker, and public package
+distribution; update documentation; and define a safe additive rollout.
 
 ## Depends on
 
-- Steps 1-7 completed with their focused exit gates.
+- Steps 1-7 complete with focused exit gates.
 - Built public package tarballs.
 - An isolated creator-generated consumer outside the workspace.
 
 ## Deliverables
 
 - Final focused and repository-wide test results.
-- One real Chromium API smoke in the production container.
-- One isolated tarball/generated-consumer smoke.
-- Security and cleanup verification.
-- English and Spanish public documentation.
-- Changelog and additive migration note.
+- Production proof that Route Handler/private page share the same `globalThis`
+  job store.
+- Real Chromium API smoke in final production container.
+- Isolated tarball/generated-consumer smoke.
+- Remote-image SSRF/token-leak/browser-network verification.
+- Cleanup/resource verification.
+- English/Spanish public documentation.
+- Changelog + additive migration note.
 - Rollout/rollback checklist and known limitations.
 
 ## Verification strategy
 
-Keep four distinct levels. Passing one does not imply the others.
+Keep four distinct levels; passing one does not imply the others.
 
 | Level | Proves | Does not prove |
 |---|---|---|
-| Unit/component | Parsing, security rules, state transitions, cleanup calls, UI markers | Browser binary or production packaging |
-| Next integration | Registry/routes/private page/handler composition | Installed Chromium/system libraries |
-| Docker browser smoke | Real standalone app, Chromium capture, fonts/assets, shutdown | Published npm tarballs |
-| Isolated package smoke | Public package/creator artifacts work outside workspace | Future registry publication/version promotion |
+| Unit/component | Parsing, auth, image fetch policy, Map state, browser state, canvas/markers | Actual Next process layout or browser binary |
+| Next integration | Generated registry/routes and production `globalThis` Map handoff | Installed Chromium/system libraries |
+| Docker browser smoke | Final standalone app, Node remote fetch, Chromium capture, fonts/assets, binary response | Published npm tarballs |
+| Isolated package smoke | Packed FrameKit/creator artifacts work outside monorepo | Future registry publication/version promotion |
 
 ## Focused test inventory
 
-Each owning step adds tests immediately. Step 8 audits that the final inventory
-covers these behaviors without duplicating every case in a browser.
-
 ### Contract/config/auth
 
-- strict env parsing and production failure-closed behavior;
+- strict env parsing and production fail-closed behavior;
 - loopback-only internal origin;
-- exact host allowlist normalization/rejection;
+- exact allowed-image-host parsing;
 - bounded numeric settings;
 - constant-time Bearer contract;
 - stable error-code/status mapping;
-- server export type fixture and client/server boundary.
+- public server export type fixture/client-server boundary.
 
 ### Data/image/canvas
 
 - shared canvas receives exact canonical props;
 - Studio export/copy remains functional;
-- raster signatures and strict base64;
-- data URL, root-relative path, and HTTPS allowlist policy;
-- generated asset manifest is never mutated;
+- raster signatures + strict base64;
+- data URL/root-relative policy;
+- remote HTTPS URL exact-host policy;
+- manual redirect revalidation/count;
+- remote byte/content-type/signature checks;
+- remote URL converted to data URL before browser;
+- generated manifest never mutated;
 - API image override precedence;
-- no duplicate base64 in serialized edits/assets.
+- no duplicate base64 in edits/assets.
 
 ### Temporary jobs
 
-- ID/token entropy format and independence;
-- safe immediate-child paths and owner-only files;
-- strict shape/version/size read;
+- process-global Map shared across independently imported bundles/modules;
+- ID/token entropy/independence;
+- constant-time private token comparison;
+- resolved payload contains no API/public auth secret;
 - wrong-token/missing/expired indistinguishability;
-- idempotent normal cleanup;
-- bounded stale cleanup;
-- concurrent job isolation.
+- idempotent deletion;
+- opportunistic expiry cleanup;
+- concurrent job isolation;
+- no filesystem activity.
 
 ### Browser manager
 
-- one launch for concurrent cold starts;
-- initialization/close/disconnect races;
-- atomic context-capacity limit;
-- all failure paths release/close/delete exactly once;
-- fixed navigation origin and network redirect policy;
+- one Chromium launch for concurrent cold starts;
+- reconnect behavior after browser disconnect;
+- atomic active-render capacity limit;
+- all failure paths release slot/close context/delete job exactly once;
+- fixed loopback navigation origin;
+- external browser requests blocked;
+- private token added only to exact private main document;
+- no token on chunks/assets/other requests;
 - ready/error/font/image wait behavior;
-- timeout cancellation;
+- timeout/request-abort cancellation;
 - PNG signature/root capture;
-- idle/context backstop and graceful shutdown.
+- import creates no idle/watchdog/signal timers.
 
 ### Next routes
 
 - private lookup/header/not-found behavior;
-- registry loader/definition/dimension/variant checks;
+- registry loader/definition dimension/variant mismatch checks;
+- no duplicate resolve/validate pipeline in private client;
 - deterministic loading/ready/error markers;
-- public auth-before-body/registry/browser ordering;
-- bounded body and exact JSON shape;
-- canonical validation before browser;
-- success/error headers and raw PNG response;
+- public auth-before-body/registry/fetch/browser ordering;
+- bounded body/exact JSON shape;
+- remote-image preparation before renderer;
+- canonical resolve/validate once;
+- success/error headers/raw PNG response;
 - request abort propagation;
 - template and first-party Studio adapter parity.
 
 ## Canonical browser fixture
 
-Use one small template rather than a large visual matrix. It must include:
+Use one small template rather than a large visual matrix. It should include:
 
-- fixed known width and height;
-- text visible in output;
-- one packaged common or variant image asset;
-- one image field that can receive a data URL;
-- one image field that can receive an allowlisted HTTPS URL;
-- a font/style path representative of real templates;
-- deterministic colors/layout suitable for basic pixel-presence checks if
-  needed, without snapshot comparison.
+- fixed known width/height;
+- visible text;
+- one packaged local image asset;
+- one image field accepting data URL;
+- one image field accepting allowlisted HTTPS URL (fetched by Node);
+- representative local font/style path;
+- deterministic layout suitable for basic PNG presence/dimension checks without
+  cross-platform snapshots.
 
 Prefer the canonical generated example if it can cover these cases clearly.
-Otherwise add one focused fixture, not a second application.
+Otherwise add one focused fixture, not a second application architecture.
 
 ## Real Docker/Chromium smoke
 
-Build and run the final generated-consumer image. Use runtime secrets and a
-controlled HTTPS image fixture whose certificate is trusted by Chromium in the
-test environment. If CI provisions a private certificate authority, install
-that CA only in the smoke environment; never set production
-`ignoreHTTPSErrors` merely to make the test pass. Avoid an uncontrolled
-third-party CDN that can make the gate flaky.
+Build/run final generated-consumer image with runtime secrets and a controlled
+HTTPS image fixture.
+
+The remote fixture should be under test control so redirect/content-type/size
+behavior can be deterministic. If CI uses a private CA, install that CA only in
+the smoke environment rather than disabling TLS verification globally.
 
 ### Startup checks
 
 1. Container process is `tini` -> non-root Node standalone server.
-2. HTTP readiness succeeds on the public application route.
+2. HTTP readiness succeeds.
 3. Public/generated static template assets return `200`.
-4. Chromium executable is present under `/ms-playwright`.
-5. No browser starts before the first valid render request.
+4. Chromium executable exists under configured browser path.
+5. No browser starts before first valid render request.
+6. No FrameKit temp render-job directory/file exists.
 
 ### API checks
 
-1. Missing token returns `401`.
-2. Wrong token returns `401` with no template detail.
-3. Malformed JSON returns `400` after valid auth.
-4. Unknown template returns `404` after valid auth.
-5. Invalid variant/data returns `400`/`422` before browser capture.
-6. Valid default asset request returns non-empty PNG.
-7. Valid base64 image request returns non-empty PNG containing the intended
-   rendered region.
-8. Valid allowlisted HTTPS image renders.
-9. Non-allowlisted image host returns `422` before remote request.
-10. Concurrent requests above configured capacity receive bounded success plus
-    `503`, never process OOM or an unbounded wait.
-11. A deliberately stalled resource reaches `504` and cleans all resources.
+1. Missing API token -> `401`.
+2. Wrong token -> same `401`, no template detail.
+3. Malformed JSON -> `400` after valid auth.
+4. Unknown template -> `404` after auth.
+5. Invalid variant/data -> `400`/`422` before browser.
+6. Valid default/local asset request -> non-empty PNG.
+7. Valid request data URL -> non-empty PNG.
+8. Valid allowlisted HTTPS image -> Node fetch succeeds and PNG includes it.
+9. Non-allowlisted HTTPS host -> `422` before outbound request.
+10. Controlled redirect to allowed host -> works within redirect bound.
+11. Redirect to loopback/private IP/unallowlisted host -> rejected before target
+    request.
+12. Unsupported remote Content-Type/signature -> `415`.
+13. Remote response over byte bound -> `413` or documented size semantic.
+14. Remote upstream/network failure -> `502 image_fetch_failed`.
+15. Requests above render capacity -> bounded success + `503`, no unbounded wait.
+16. Deliberately stalled render -> `504` and cleanup.
+17. Client abort -> remote fetch/browser work stops without lingering job/context.
+
+### Browser network/token checks
+
+Instrument the controlled environment to prove:
+
+- Chromium never directly requests the external image fixture;
+- Node.js is the component making that HTTPS request;
+- browser requests remain loopback/internal plus expected data/browser-internal
+  resources;
+- private `x-framekit-render-token` appears only on
+  `/__framekit/render/<id>` main document;
+- Next chunks, public assets, generated template assets, API routes, and any
+  blocked external request never receive that token.
+
+Any token leak or external Chromium request outside the documented policy blocks
+release.
 
 ### PNG checks
 
-Without adding a PNG dependency:
+Without adding a decoder solely for this plan:
 
-- verify the eight-byte PNG signature;
-- read IHDR width at byte offset 16 and height at offset 20 as big-endian
-  unsigned integers;
+- verify eight-byte PNG signature;
+- read IHDR width at offset 16 and height at offset 20 as big-endian unsigned
+  integers;
 - compare with definition dimensions;
-- verify buffer length is non-trivial;
-- where practical, inspect a small deterministic pixel/region only with an
-  already-installed capability; do not add a decoder solely for this plan.
+- verify non-trivial buffer length;
+- optionally inspect deterministic region using already-installed capability.
 
-The gate does not promise pixel-identical output across Chromium/platform
-versions.
+Do not promise pixel-identical output across Chromium/platform versions.
 
 ### Cleanup and lifecycle checks
 
-- successful render leaves no matching job file;
-- invalid/timeout/browser-error render leaves no job file;
-- context count returns to zero;
-- idle-close behavior can be unit-tested with fake timers rather than waiting 30
-  minutes in smoke;
-- SIGTERM during/after a render closes Chromium and container exits cleanly;
-- container restart has no persisted render data;
-- logs contain no API key, token, base64, field content, temp path, or signed
+After success, error, timeout, and abort:
+
+- render-job Map returns to zero relevant entries;
+- active render count returns to zero;
+- context is closed;
+- browser may remain open for process reuse;
+- process restart naturally clears job Map/browser state;
+- no render data is persisted to disk;
+- logs contain no API key, private token, base64, field content, or full signed
   remote URL.
+
+## Production Map compatibility smoke
+
+This is a hard architecture gate, not an optional test.
+
+In final standalone/Docker:
+
+1. public route creates a job through the package helper;
+2. Chromium/private page loads it through another bundled route/page module;
+3. payload is visible only with correct token;
+4. deletion in renderer is visible immediately;
+5. two concurrent requests remain isolated;
+6. restarting the Node process clears all jobs.
+
+If this fails, v1 cannot ship with the Map store. Change the store implementation
+behind the same API before release rather than adding per-bundle Maps.
 
 ## Isolated tarball consumer smoke
 
-Follow the repository distribution boundary:
-
 1. Build `@mauriciodmo/framekit` tarball.
-2. Build `@mauriciodmo/create-framekit` tarball.
-3. Create a temporary directory outside the repository.
-4. Install/run the creator tarball to generate a project.
-5. Replace generated registry dependency with the local FrameKit tarball as
-   required by existing distribution instructions.
-6. Install from a clean lockfile with no workspace resolution.
-7. Run `framekit generate` and `framekit check`.
-8. Run the production build.
-9. Build the generated Dockerfile from that isolated project.
-10. Run the real API smoke against that container.
-11. Stop/remove container and temporary consumer.
-12. Assert neither package/tarball/output contains workspace or repository-local
-    paths.
-
-The smoke must use packed artifacts. A passing workspace Studio test cannot
-replace it.
+2. Build creator tarball.
+3. Create a directory outside repository.
+4. Generate a project from creator tarball.
+5. Install local FrameKit tarball as appropriate.
+6. Install dependencies with generated lock/package-manager contract.
+7. Run generation/check/build.
+8. Build/run Docker image.
+9. Configure API key + allowed test image host at runtime.
+10. Exercise local/data/remote image API requests.
+11. Verify output PNG and Map cleanup.
+12. Inspect installed package/tarballs for workspace paths/secrets/browser
+    binaries.
 
 ## Small smoke harness
 
-Prefer one Node standard-library script over a new test framework. It may:
+A small Node script may:
 
-- wait for HTTP readiness with a bounded retry deadline;
-- issue authenticated requests with native `fetch`;
-- write PNG only into its temporary test directory when diagnosis needs it;
-- inspect PNG signature/dimensions with `Buffer`;
-- check expected statuses/codes;
-- terminate child/container processes and clean temp files in `finally`.
+- wait for app readiness;
+- send authenticated JSON request;
+- write raw response bytes to a temp `.png` only inside the test harness;
+- verify headers/signature/IHDR;
+- issue concurrent requests;
+- test 401/422/502/503/504 cases;
+- stop container and report coarse diagnostics.
 
-Do not commit generated PNG artifacts or secrets.
+The application itself must not write rendered PNGs/jobs to disk as part of the
+runtime path.
 
 ## Repository commands
 
-After package manifest changes, first update/install dependencies:
+Use repository-standard commands current at implementation time, including:
 
-```bash
-pnpm install
-```
+- install/lock update;
+- package lint/test/typecheck/build;
+- Studio tests/build;
+- creator tests;
+- canonical generated app check/build;
+- package pack inspection;
+- Docker build/run smoke.
 
-Focused checks:
-
-```bash
-pnpm --filter @mauriciodmo/framekit test
-pnpm --filter @mauriciodmo/framekit typecheck
-pnpm --filter @mauriciodmo/framekit build
-pnpm --filter studio test
-pnpm --filter studio typecheck
-pnpm --filter @mauriciodmo/create-framekit test
-```
-
-Repository checks:
-
-```bash
-pnpm lint
-pnpm test
-pnpm typecheck
-pnpm build
-```
-
-Package checks:
-
-```bash
-pnpm --filter @mauriciodmo/framekit pack
-pnpm --filter @mauriciodmo/create-framekit pack
-```
-
-Then execute the isolated consumer and Docker smoke described above.
+Do not document stale exact command/version strings if repository tooling changes
+before implementation.
 
 ## Performance/resource observations
 
-This release does not set a throughput SLA, but the smoke/manual record should
-capture enough baseline data to catch obvious regressions:
+Record at least:
 
-- cold browser launch duration;
 - warm render duration;
-- output bytes;
-- container memory before browser, during one render, and after context close;
-- behavior at configured concurrency `2`;
-- browser idle close/restart through focused timer tests.
+- cold browser first-render duration;
+- process RSS before browser, after browser launch, and under configured
+  concurrency;
+- output PNG size;
+- remote image fetch duration/bytes;
+- behavior near 12 MB request/8 MB image bounds;
+- size/latency impact of large data URLs passing through the private Next page.
 
-Do not add a benchmark framework or promise production capacity from one CI
-machine. The goal is evidence that limits work and resources return after use.
+These observations are not benchmark promises. They identify whether initial
+limits are sane and whether RSC/client serialization of large resolved payloads
+needs a future redesign.
 
 ## Security review checklist
 
-- Public auth executes before template/data detail.
-- Missing production key fails closed.
-- Internal origin is loopback-only.
-- Caller cannot supply top-level navigation URL.
-- Image hosts use exact matching, no suffix/wildcard bypass.
-- Browser redirects are revalidated.
-- `file:` and private/unexpected network requests are blocked.
-- Base64 MIME and signatures match.
-- Body/image limits are enforced before browser work.
-- Job paths cannot traverse or follow unsafe entries.
-- Job file permissions and expiry are verified on Linux.
-- Private token is not placed in URL/client props/logs.
-- Browser contexts do not share cookies/storage.
-- Capacity is atomic and bounded.
-- Container runs non-root and documents disabled Chromium sandbox.
-- Docker image/tarballs contain no secrets/temp data.
+Release-blocking items:
 
-Any failed trust-boundary item blocks completion even if happy-path PNG output
-works.
+- auth occurs before body/template/fetch work;
+- API key never enters job/browser/page/log;
+- job token never enters URL/client props/log;
+- job token only reaches exact private main document;
+- public/private job failures do not create an ID/token oracle;
+- `globalThis` Map has TTL + guaranteed normal cleanup;
+- no render payload written to filesystem;
+- remote URL requires HTTPS + exact allowlisted hostname;
+- redirects are manually revalidated/bounded;
+- remote IP literals/loopback/private redirects rejected;
+- remote response bytes bounded while streaming;
+- MIME/signature validated;
+- Chromium external network blocked;
+- caller cannot select arbitrary browser page/viewport/HTML;
+- browser context isolated per render;
+- no request secret in error/log;
+- Docker runs application/browser as non-root with sandbox limitation documented.
+
+Any failed trust-boundary item blocks completion even if happy-path PNG works.
 
 ## Documentation rollout
 
-Implementation updates at minimum:
-
 ### English and Spanish
 
-- public API request/response reference;
-- API key and allowed-host configuration;
-- base64/URL/project asset examples;
-- Docker build/run instructions;
-- browser installation and common launch failures;
-- status/error reference;
-- request, image, timeout, and concurrency limits;
-- security warning for allowlisted hosts and disabled Chromium sandbox;
-- explicit long-lived Node/Docker support boundary;
+Document:
+
+- public API request/response;
+- one Bearer API key configuration;
+- exact allowed-image-host configuration;
+- data URL/root-relative/remote URL examples;
+- fact that remote HTTPS images are downloaded by Node and Chromium does not
+  access arbitrary Internet resources;
+- Docker build/run;
+- browser installation/common launch failures;
+- status/error reference including `image_fetch_failed`;
+- request/image/timeout/concurrency limits;
+- one-process-per-container + long-lived Node support boundary;
+- Chromium sandbox limitation;
+- local font/asset recommendation;
 - testing/distribution smoke instructions.
 
 ### Project/template docs
 
+Update:
+
 - generated template README;
-- an environment example containing placeholders only;
-- supported package import list including `./server`;
-- note that the Dockerfile is pnpm-specific initially;
-- note that Studio's current client export remains available.
+- placeholder `.env.example`;
+- supported package imports including `./server`;
+- note that Dockerfile is pnpm-specific initially;
+- note that Studio client export remains available;
+- note that server-rendered templates should package fonts/styles/assets locally
+  rather than relying on remote browser resources.
 
 ### Release records
 
 - root `CHANGELOG.md` under `Unreleased`;
-- English and Spanish rolling migration guides;
-- explicit additive/no-template-source-migration statement unless final code
-  introduces a real source change;
-- link from the eventual GitHub issue to this plan and implementation.
-
-Do not write changelog/migration entries during planning; they are implementation
-deliverables.
+- English/Spanish migration notes;
+- explicit additive API statement;
+- known limitations: one process/store, PNG only, no serverless/Edge, no public
+  async jobs, no Chromium external network.
 
 ## Observability acceptance
 
-Allowed operational logs:
+Operational logs may include only:
 
-- internal correlation/render ID;
+- coarse request/job correlation ID;
 - template slug;
-- coarse phase durations;
-- stable success/error code;
-- active context count;
-- browser start/disconnect/idle close;
-- output byte length.
+- result code;
+- duration;
+- PNG byte length;
+- browser launch/disconnect lifecycle;
+- remote image fetch coarse host/result only if logging policy permits hostname.
 
-Forbidden logs:
-
-- API key or authorization header;
-- private job token;
-- field values or request body;
-- base64 content;
-- full signed remote URLs;
-- temporary JSON or path;
-- browser page HTML containing user values.
-
-A metrics/tracing vendor is out of scope. Structured console logs are sufficient
-initially if they follow these rules.
+Never include API key/token, field data, base64, full URL/query, response bodies,
+or raw Playwright exception in public logs.
 
 ## Rollout sequence
 
-1. Merge only after all focused and repository checks pass.
-2. Build tarballs and isolated consumer before choosing/publishing a version.
-3. Dogfood in `apps/studio` with the API key configured privately.
-4. Deploy one container with conservative concurrency `2` and known image hosts.
-5. Exercise default asset, base64, and allowlisted remote image cases.
-6. Observe memory, latency, cleanup, and error codes.
-7. Expand replicas at the deployment layer if needed; do not increase per-process
-   concurrency without evidence.
-8. Publish/promote packages only through the repository's normal explicit
-   maintainer release process.
-
-No release number or npm dist-tag is selected by this plan.
+1. Merge additive server package internals/exports.
+2. Merge shared canvas/image preparation without changing Studio export.
+3. Merge Map job + browser/private route behind generated integration.
+4. Prove production Map sharing.
+5. Merge public route and Docker support.
+6. Run full isolated package/Docker smoke.
+7. Update docs/changelog/migration notes.
+8. Release only when every final checklist item passes.
 
 ## Rollback
 
-The feature is additive:
+The feature is additive. Rollback may remove/disable the generated public API
+route and Docker documentation while leaving existing Studio/client export
+untouched.
 
-- removing/unsetting `FRAMEKIT_API_KEY` fails the API closed with `503`;
-- existing Studio client-side PNG export remains available;
-- no persisted database/schema rollback exists;
-- temporary files disappear through cleanup/container restart;
-- rollback can redeploy the previous package/container without data migration.
-
-Do not implement an additional feature flag unless deployment cannot safely
-control route availability through configuration.
+Do not migrate existing template data or rewrite generated assets for this
+feature, so rollback should not require data migration.
 
 ## Final acceptance checklist
 
-- [ ] Every prior step exit gate passes.
-- [ ] Unit/component/integration suites cover all listed trust boundaries.
-- [ ] Repository lint, test, typecheck, and build pass.
-- [ ] Both public packages pack cleanly.
-- [ ] Isolated generated consumer installs/builds without workspace paths.
-- [ ] Production Docker image builds from clean context.
-- [ ] Real Chromium returns correct-dimension PNG for normal data.
-- [ ] Project asset, base64, and allowlisted HTTPS image cases pass.
-- [ ] Unauthorized, malformed, blocked-host, capacity, and timeout cases return
-      documented results.
-- [ ] Success/failure/abort leave no job/context leak.
-- [ ] SIGTERM closes browser and container exits cleanly.
-- [ ] Logs and artifacts contain no secrets or request payloads.
-- [ ] English/Spanish docs, changelog, migration note, and import lists are
-      updated.
-- [ ] Existing Studio browser export/copy still works.
+- [ ] Public auth contract works and fails closed.
+- [ ] Exact request parsing/body limits pass.
+- [ ] Local/data/remote image preparation works.
+- [ ] Node remote fetch redirect/size/MIME/signature policy passes.
+- [ ] Chromium makes no unexpected external request.
+- [ ] Private token is scoped to one document request.
+- [ ] Map handoff works in final standalone/Docker.
+- [ ] Map jobs clean up after success/error/abort/timeout.
+- [ ] Canonical resolve/validate runs once before browser.
+- [ ] Private page renders already-resolved data.
+- [ ] Browser capacity/timeout/isolation pass.
+- [ ] Raw PNG headers/signature/dimensions pass.
+- [ ] Studio current export remains functional.
+- [ ] Packed packages work outside workspace.
+- [ ] Docker runs non-root with matching Chromium.
+- [ ] Logs contain no sensitive request data.
+- [ ] English/Spanish docs/changelog/migration notes are current.
 
 ## Exit gate
 
-Step 8 and the complete plan are finished only when all checklist items are
-checked with real command/smoke evidence. A successful unit suite or workspace
-build alone is not sufficient.
+Step 8 is complete when all final acceptance items pass in the supported
+long-lived single-process Node/Docker runtime and public documentation accurately
+states the limitations and security model.

@@ -3,50 +3,54 @@
 - **Status:** Proposed; not yet implemented.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
-- **Target runtime:** Long-lived Node.js process in the generated Docker image.
+- **Target runtime:** One long-lived Node.js process per generated application container.
 - **Primary package:** `@mauriciodmo/framekit`.
 - **Canonical consumer:** `packages/create-framekit/template/`.
 
 ## Purpose of this plan
 
 This directory is the implementation plan for an authenticated API that renders
-a FrameKit template to PNG on the server. A client sends a template slug,
-variant, and partial field data. The server validates the request, stores a
-short-lived render record, opens a private Next.js render page with Chromium,
-captures the exact template canvas through `playwright-core`, deletes the
-temporary data, and returns the PNG in the same HTTP response.
+FrameKit templates to PNG on the server.
 
-The plan is split into ordered phases so each layer can be implemented and
-verified before the next layer depends on it. The phase documents are the source
-of truth for implementation details. This README defines the cross-cutting
-contract and execution order.
+A client sends a template slug, optional variant, and partial field data. The
+public route authenticates the request, validates and resolves the template data,
+materializes request-specific remote images through Node.js, stores the final
+render payload in a short-lived in-memory job, opens a private Next.js render
+page with Chromium, captures the exact template canvas through
+`playwright-core`, deletes the job, and returns the PNG bytes in the same HTTP
+response.
+
+The first implementation intentionally targets one long-lived Node.js process per
+container. Temporary jobs use a `globalThis`-backed `Map`; no filesystem,
+database, Redis, queue, or object storage is required.
+
+The phase documents are the source of truth for implementation details. This
+README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
 Implement the phases in order. A phase is complete only when its focused tests
-and exit gate pass. Do not start Docker or end-to-end work while the package,
-job-store, and browser contracts are still changing.
+and exit gate pass.
 
 | Step | Plan | Main result | Depends on |
 |---:|---|---|---|
-| 1 | [Contracts and server boundary](./01-contracts-and-server-boundary.md) | Stable types, errors, configuration, package boundary, and HTTP contract | Current FrameKit baseline |
-| 2 | [Shared canvas and image inputs](./02-shared-canvas-and-image-inputs.md) | One render canvas plus safe asset/base64/URL normalization | Step 1 |
-| 3 | [Temporary render jobs](./03-temporary-render-jobs.md) | Authenticated, expiring, owner-only filesystem job protocol | Step 1 |
-| 4 | [Browser lifecycle and capture](./04-browser-lifecycle-and-capture.md) | Shared Chromium process, bounded contexts, safe navigation, PNG capture | Steps 1-3 |
-| 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders only the template canvas | Steps 2-4 |
+| 1 | [Contracts and server boundary](./01-contracts-and-server-boundary.md) | Stable types, errors, configuration, package boundary, and auth contract | Current FrameKit baseline |
+| 2 | [Shared canvas and image inputs](./02-shared-canvas-and-image-inputs.md) | One render canvas plus safe local/base64/remote image preparation | Step 1 |
+| 3 | [Temporary render jobs](./03-temporary-render-jobs.md) | Authenticated, expiring `globalThis Map` handoff | Step 1 |
+| 4 | [Browser lifecycle and capture](./04-browser-lifecycle-and-capture.md) | Shared Chromium, bounded contexts, loopback-only browser network, PNG capture | Steps 1-3 |
+| 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders already-resolved data | Steps 2-4 |
 | 6 | [Public image API route](./06-public-image-api-route.md) | Authenticated `POST /api/v1/images` returning PNG or structured JSON errors | Steps 1-5 |
-| 7 | [Packaging and Docker](./07-packaging-and-docker.md) | Public server export, dependencies, starter integration, and production image | Steps 1-6 |
-| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package gates and documentation rollout | Steps 1-7 |
+| 7 | [Packaging and Docker](./07-packaging-and-docker.md) | Public server export, Playwright runtime, starter integration, and production image | Steps 1-6 |
+| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 1-7 |
 
-Each step document contains:
+Each step contains:
 
-- its objective and non-goals;
+- its goal and dependencies;
 - exact implementation responsibilities;
-- expected files and public/internal symbols;
-- ordering within the step;
-- failure and cleanup behavior;
-- focused test cases;
-- an explicit completion gate.
+- expected files and symbols;
+- implementation order;
+- focused tests;
+- an explicit exit gate.
 
 ## Objective
 
@@ -70,7 +74,7 @@ Content-Type: application/json
 }
 ```
 
-A successful response is the generated image itself:
+A successful response is the generated image itself, not JSON and not base64:
 
 ```http
 HTTP/1.1 200 OK
@@ -79,8 +83,9 @@ Content-Disposition: inline; filename="social-instagram-post.png"
 Cache-Control: no-store
 ```
 
-The endpoint does not return a public job ID. The ID exists only to connect the
-original API request with one private render-page request made by Playwright.
+The endpoint does not expose a public render job. The internal job ID and token
+exist only to connect the original API request with the private render-page
+request made by Playwright.
 
 ## Current baseline
 
@@ -89,25 +94,25 @@ template model:
 
 - `packages/framekit/src/editor/framekit-editor.tsx` resolves data and invokes
   `definition.render(...)` inside an exact-size wrapper used by Studio.
-- `packages/framekit/src/editor/export-template.ts` exports PNG entirely in the
-  browser with `modern-screenshot` after `document.fonts.ready`.
+- `packages/framekit/src/editor/export-template.ts` exports PNG in the browser
+  with `modern-screenshot` after `document.fonts.ready`.
 - `packages/framekit/src/core/resolve-template-data.ts` applies defaults,
-  variant content, edits, and finally matching image assets.
-- `packages/framekit/src/dev/asset-upload.ts` already has byte limits, raster
-  MIME checks, base64 validation, and signature checks worth reusing.
-- generated `templates.ts` modules expose canonical summaries, asset manifests,
-  and lazy loaders through the `templates` registry.
-- `packages/create-framekit/template/` is copied into each generated consumer;
-  generated files under `src/generated/framekit/` remain disposable output.
-- `packages/create-framekit/template/next.config.ts` uses
-  `output: 'standalone'` and `.framekit/next`.
-- `packages/framekit/src/cli/production.ts` copies `public` and Next static
-  assets beside the discovered standalone server.
-- the public package currently has no `./server` export, no Playwright runtime,
-  no image API route, and no production Dockerfile.
+  variant content, edits, and matching image assets.
+- `packages/framekit/src/dev/asset-upload.ts` already contains useful byte limits,
+  strict base64 validation, raster MIME checks, and signature checks.
+- generated `templates.ts` modules expose summaries, asset manifests, and lazy
+  loaders through the `templates` registry.
+- `packages/create-framekit/template/` is copied into generated consumers;
+  `src/generated/framekit/` remains generated disposable output.
+- the generated Next.js application already uses `output: 'standalone'` and
+  `.framekit/next`.
+- `framekit build` already copies `public` and Next static assets beside the
+  discovered standalone server.
+- the public package currently has no `./server` export, Playwright runtime,
+  image API route, or production Dockerfile.
 
-The existing Studio `modern-screenshot` flow stays functional. The server API is
-an additive path, not a replacement in the first implementation.
+Studio's existing `modern-screenshot` export remains functional. The server API
+is additive in the first implementation.
 
 ## Accepted architecture
 
@@ -115,187 +120,211 @@ an additive path, not a replacement in the first implementation.
 
 | Concern | Owner | Why |
 |---|---|---|
-| Public request/response types and stable render errors | `@mauriciodmo/framekit/server` | One contract for starter and first-party Studio |
-| Browser singleton and context lifecycle | `@mauriciodmo/framekit/server` | Browser fixes must ship with library updates |
-| Temporary render job protocol | `@mauriciodmo/framekit/server` | API and private route need one safe storage implementation |
-| Image-source validation and normalization | `@mauriciodmo/framekit/server` plus shared raster helper | Avoid divergent security rules |
-| Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Browser and Studio must invoke the same template boundary |
-| Public App Router route | Generated application | Next.js discovers routes from the consumer project |
-| Private render page | Generated application | It must import the consumer-generated template registry |
-| API key and deployment environment | Generated application | Secrets belong to the deployment |
+| Public request types, configuration, auth helpers, and stable render errors | `@mauriciodmo/framekit/server` | One reusable server contract |
+| In-memory render-job store | `@mauriciodmo/framekit/server` | Public route and private page share one implementation |
+| Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` | Browser fixes ship with FrameKit |
+| Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` plus shared raster helper | Browser never needs external network access |
+| Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
+| Public App Router route | Generated application | Next.js routes belong to the consumer |
+| Private render page | Generated application | It imports the consumer-generated template registry |
+| API key and allowed image hosts | Generated application runtime environment | Secrets and deployment policy belong to the application |
 | Dockerfile and `.dockerignore` | Generated application | Container construction is application-owned |
 | First-party integration | `apps/studio` | Dogfood supported public imports and protocol |
 
 ### Package/application split
 
-The library can contain browser and rendering behavior, but it cannot insert App
-Router files into a consuming Next.js application. The generated application
-therefore contains thin adapters:
-
 ```text
 Client
-  -> POST /api/v1/images                     generated application
-     -> request/auth/template validation     generated adapter + server helpers
-     -> renderTemplateImage(...)             @mauriciodmo/framekit/server
-        -> temporary job file                @mauriciodmo/framekit/server
-        -> Chromium context                  @mauriciodmo/framekit/server
-        -> GET /__framekit/render/<id>        generated application
-           -> loadRenderRequest(...)         @mauriciodmo/framekit/server
-           -> generated templates registry    generated application
-           -> shared TemplateCanvas          @mauriciodmo/framekit/editor
-        -> locator.screenshot()              @mauriciodmo/framekit/server
+  -> POST /api/v1/images                       generated application
+     -> auth + request parsing                 generated adapter + server helpers
+     -> load template definition              generated registry
+     -> prepare image inputs                   @mauriciodmo/framekit/server
+        -> data URL validation
+        -> root-relative validation
+        -> allowlisted HTTPS fetch via Node.js
+        -> remote image converted to data URL
+     -> resolveTemplateData(...)               @mauriciodmo/framekit
+     -> validateTemplateData(...)              @mauriciodmo/framekit
+     -> renderTemplateImage(resolvedPayload)   @mauriciodmo/framekit/server
+        -> globalThis Map job                  @mauriciodmo/framekit/server
+        -> shared Chromium context             @mauriciodmo/framekit/server
+        -> GET /__framekit/render/<id>         generated application
+           -> loadRenderRequest(...)           @mauriciodmo/framekit/server
+           -> generated template loader        generated application
+           -> TemplateCanvas                   @mauriciodmo/framekit/editor
+        -> locator.screenshot()                @mauriciodmo/framekit/server
      <- PNG Buffer
-  <- image/png
+  <- image/png bytes
 ```
 
-No generated application may import `packages/framekit/src/*`. All shared
-behavior crosses a supported package export.
+No generated application may import `packages/framekit/src/*`. Shared behavior
+must cross supported package exports.
 
 ## End-to-end lifecycle
 
-1. The public route loads and validates server configuration.
-2. It checks `Authorization` before revealing template or validation details.
-3. It reads the request body with an incremental byte limit.
-4. It validates the exact top-level JSON shape.
+1. The public route loads validated configuration.
+2. It authenticates the Bearer API key before parsing request data or revealing
+   template details.
+3. It reads the JSON body with an encoded byte limit.
+4. It validates the exact top-level request shape.
 5. It finds the template in the generated registry and loads its definition.
-6. It selects the requested variant or `definition.variants.default`.
-7. It validates ordinary field values against the loaded definition.
-8. It validates image data URLs and allowlisted HTTPS image URLs.
-9. It clones the template asset manifest and installs image overrides into that
-   temporary manifest without changing project files.
-10. It resolves and validates the complete render data before browser work.
-11. The server package reserves one render-capacity slot.
-12. It creates a random job ID and independent private token.
-13. It writes the serializable job atomically below the FrameKit temp directory.
-14. It creates a new isolated browser context with the token in an internal
-    request header.
-15. It installs network restrictions before navigation.
-16. Chromium navigates to the fixed loopback private render URL.
-17. The private server page authenticates and loads the temporary job.
-18. The private client component loads the generated template module.
-19. It resolves the job payload through the canonical FrameKit runtime and
-    renders the shared exact-size canvas.
-20. It exposes either a ready marker or a machine-readable error marker.
-21. Playwright waits for the marker, fonts, and image decoding.
-22. Playwright captures only the template element at device scale factor `1`.
-23. The server verifies the PNG signature.
-24. A `finally` path closes the context, releases capacity, and deletes the job.
-25. The public route returns PNG bytes or maps a known failure to stable JSON.
+6. It chooses the requested variant or the declared default.
+7. It prepares request-specific image inputs:
+   - validated raster data URLs remain data URLs;
+   - trusted root-relative project assets remain local URLs;
+   - allowlisted HTTPS images are fetched by Node.js, bounded, signature-checked,
+     and converted to canonical data URLs.
+8. It clones the generated asset manifest and applies request image overrides
+   without changing project files.
+9. It runs the canonical `resolveTemplateData(...)` once.
+10. It runs the canonical template-data validation once.
+11. It creates a final `ResolvedRenderPayload` containing resolved data, prepared
+    assets, variant, and trusted dimensions.
+12. The renderer reserves one process-local render slot.
+13. It creates a random internal job ID and independent private token.
+14. It stores the final payload in a `globalThis`-backed `Map` with a short TTL.
+15. It creates one isolated Chromium `BrowserContext` for the render.
+16. Browser routing blocks external network access and injects the private token
+    only into the exact private document request.
+17. Chromium navigates to the fixed loopback render URL.
+18. The private page authenticates the job ID/token and receives the already
+    resolved payload.
+19. The client render component loads the template definition, checks that the
+    definition still matches the job dimensions/variant, and renders
+    `TemplateCanvas` without resolving the data again.
+20. The page exposes `ready` or `error` state.
+21. Playwright waits for the page load, render state, fonts, and `<img>` decode.
+22. It captures only `[data-framekit-render-root]` at device scale factor `1`.
+23. It verifies the PNG bytes.
+24. `finally` closes the context, deletes the in-memory job, and releases capacity.
+25. The public route returns raw PNG bytes or a stable JSON error.
 
 ## Cross-cutting invariants
 
-These rules apply to every phase and are not implementation suggestions:
-
-- The caller chooses a template slug, not an arbitrary page URL.
-- Chromium's top-level navigation target is always the configured loopback
-  FrameKit route.
-- Authentication happens before template lookup and request-specific errors.
-- Invalid input is rejected before reserving browser capacity whenever possible.
-- Template defaults, variant content, and current common/variant image precedence
-  remain canonical.
-- A request-specific image override never writes into `src/templates` or
-  `public`; it exists only in the temporary render payload.
-- Template code/functions are never serialized to disk.
-- Every request receives a fresh browser context and page.
-- Browser startup may be shared, but page state, cookies, storage, headers, and
-  temporary data are isolated by request.
-- Capacity is bounded; there is no unbounded in-process render queue.
-- Job deletion, context close, and capacity release are idempotent cleanup.
-- Private job IDs and tokens are independent cryptographic values.
-- Private routes return the same not-found behavior for missing, expired, and
-  unauthorized jobs.
-- PNG output is captured at the template's declared CSS dimensions and scale
-  `1`; callers cannot override dimensions or scale initially.
-- Server-only modules never leak through `.`, `./editor`, `./studio`, or other
-  client-compatible exports.
-- API keys, authorization headers, field data, data URLs, private tokens, and
-  full remote URLs are never logged.
-- The implementation target is a long-lived Node.js process, not Edge or
-  serverless execution.
+- The caller chooses a template slug, never an arbitrary page URL or HTML string.
+- Public authentication happens before body parsing, template lookup, or remote
+  image fetching.
+- One shared API key is the initial public auth mechanism.
+- Job ID and private token are generated independently.
+- The private token is sent only to the exact private document request; it is not
+  configured as a global browser/page header.
+- Temporary jobs exist only in process memory and are never written to disk.
+- The job store lives on `globalThis` under a package-specific symbol so separate
+  bundled modules and development reloads share the same process state.
+- One Node.js process per application container is part of the v1 support
+  boundary. Multiprocess/serverless execution requires a different store.
+- Remote user images are fetched by Node.js before browser work.
+- Chromium is not allowed to access arbitrary external HTTP/HTTPS resources.
+- Remote redirects are followed only through the same URL validation policy and
+  a bounded redirect count.
+- Remote response size is enforced while streaming, not only through
+  `Content-Length`.
+- Raster signatures are verified; SVG/HTML/XML and other active documents are
+  not accepted as request image values.
+- Request-specific image overrides never modify generated/project asset files.
+- `resolveTemplateData(...)` and canonical data validation run once in the public
+  route, before browser capacity is consumed.
+- The private page renders the already-resolved payload and does not repeat the
+  canonical resolution pipeline.
+- Invalid input and remote-image failures occur before browser capacity is
+  reserved whenever possible.
+- Every render receives a fresh `BrowserContext`; cookies/storage are never
+  reused across renders.
+- A single Chromium process may be shared for the lifetime of the Node process.
+- The browser has a bounded number of simultaneous render contexts and no
+  in-process wait queue in v1.
+- Success returns binary `image/png`, never a base64 JSON wrapper.
+- Logs never contain API keys, private tokens, request field values, data URLs,
+  or full signed remote URLs.
 
 ## Public HTTP summary
 
-The complete route contract is implemented in
-[Step 6](./06-public-image-api-route.md). The stable summary is:
+### Request
 
-| Property | Required | Meaning |
-|---|---:|---|
-| `template` | Yes | Exact generated-registry slug |
-| `variant` | No | Exact content key; omitted means declared default |
-| `data` | No | Plain object of partial canonical field overrides |
+```typescript
+interface ImageRenderRequest {
+  template: string
+  variant?: string
+  data?: Record<string, unknown>
+}
+```
 
-Unknown properties and unknown field keys fail. The API does not coerce values
-into field runtime types.
+### Success
 
-Initial image sources:
+```http
+200 OK
+Content-Type: image/png
+Content-Length: <bytes>
+Content-Disposition: inline; filename="<safe-template-slug>.png"
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+```
 
-- an existing generated template asset when the API field is omitted;
-- a trusted project root-relative asset in an accepted asset namespace;
-- `data:image/png;base64,...`;
-- `data:image/jpeg;base64,...`;
-- `data:image/webp;base64,...`;
-- `data:image/gif;base64,...`;
-- an `https:` URL whose exact hostname is configured in the allowlist.
+### Failure
 
-Initial output is PNG only.
+```json
+{
+  "error": "invalid_template_data",
+  "message": "Template data is invalid",
+  "fields": {}
+}
+```
+
+Only canonical field-validation errors may include `fields`.
 
 ## Stable error summary
 
-All failures before PNG output return JSON with a stable code and diagnostic
-message. Field validation may add a `fields` object.
-
-| Status | Code | Meaning |
-|---:|---|---|
-| `400` | `invalid_request` | Malformed JSON, exact-shape failure, wrong value type, or invalid variant |
-| `401` | `unauthorized` | Missing or incorrect Bearer token |
-| `404` | `template_not_found` | No exact template slug |
-| `413` | `request_too_large` | Encoded body or decoded image exceeds limits |
-| `415` | `unsupported_image` | Unsupported MIME, base64, or signature |
-| `422` | `invalid_template_data` | Canonical field validation failed |
-| `422` | `image_host_not_allowed` | Remote image host is outside the allowlist |
-| `503` | `api_not_configured` | Required server configuration is missing or invalid |
-| `503` | `render_capacity_exhausted` | No browser-context slot is available |
-| `504` | `render_timeout` | Private rendering did not become capture-ready in time |
-| `500` | `render_failed` | Browser, page, asset, or screenshot failure not caused by client input |
-
-Authentication failures do not reveal whether a template exists. Capacity
-failures include `Retry-After`.
+| Code | HTTP | Meaning |
+|---|---:|---|
+| `invalid_request` | 400 | Malformed JSON, shape, variant, or unsupported input form |
+| `unauthorized` | 401 | Missing or wrong Bearer token |
+| `template_not_found` | 404 | Authenticated request references an unknown template |
+| `request_too_large` | 413 | Request or decoded image exceeds a configured bound |
+| `unsupported_image` | 415 | Raster MIME/signature is unsupported or inconsistent |
+| `invalid_template_data` | 422 | Canonical template field validation failed |
+| `image_host_not_allowed` | 422 | Remote image host is outside the exact allowlist |
+| `image_fetch_failed` | 502 | An allowed remote image could not be fetched safely |
+| `api_not_configured` | 503 | Required server configuration is unavailable |
+| `render_capacity_exhausted` | 503 | Process-local render limit is full |
+| `render_timeout` | 504 | End-to-end render deadline expired |
+| `render_failed` | 500 | Unexpected template/browser/capture failure |
 
 ## Configuration summary
 
-Detailed parsing and ownership are defined in Steps 1, 4, 6, and 7.
+Initial environment surface:
 
-| Variable | Required | Initial behavior |
-|---|---:|---|
-| `FRAMEKIT_API_KEY` | Production | Bearer key for the public endpoint |
-| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | No | Comma-separated exact HTTPS hostnames; empty rejects remote URLs |
-| `FRAMEKIT_INTERNAL_ORIGIN` | Production | Loopback origin, normally `http://127.0.0.1:3000` |
-| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | No | Positive bounded integer, default `2` |
-| `FRAMEKIT_RENDER_TIMEOUT_MS` | No | Positive bounded integer, default `30000` |
-| `FRAMEKIT_BROWSER_HEADLESS` | No | Defaults to `true`; production rejects `false` |
-| `FRAMEKIT_BROWSER_SLOW_MO_MS` | No | Defaults to `0`; local diagnosis only |
+```text
+FRAMEKIT_API_KEY
+FRAMEKIT_INTERNAL_ORIGIN
+FRAMEKIT_ALLOWED_IMAGE_HOSTS
+FRAMEKIT_MAX_CONCURRENT_RENDERS
+FRAMEKIT_RENDER_TIMEOUT_MS
+```
 
-Production accepts only a loopback internal origin. Secrets are injected at
-runtime and never baked into Docker layers.
+Rules:
+
+- `FRAMEKIT_API_KEY` is required in production.
+- `FRAMEKIT_INTERNAL_ORIGIN` is loopback-only, normally
+  `http://127.0.0.1:3000` in Docker.
+- `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is a comma-separated exact-host allowlist used
+  only by the Node.js remote-image fetcher.
+- an empty host allowlist disables remote HTTPS image overrides.
+- production Chromium is always headless in v1.
 
 ## Initial resource limits
 
-- 12 MB maximum encoded request body;
-- 8 MB maximum decoded bytes per base64 image;
-- two concurrent render contexts per Node.js process;
-- 30 seconds end-to-end per render;
-- 15 minutes before a leaked context is force-closed as a backstop;
-- 30 minutes before an idle browser is closed;
-- two minutes before an unconsumed temporary job expires;
+- 12 MB maximum encoded public request body;
+- 8 MB maximum decoded bytes per request-specific image;
+- two simultaneous render contexts per Node.js process;
+- 30 seconds end-to-end render deadline;
+- two-minute in-memory job TTL as a cleanup backstop;
+- bounded remote redirects, initially 3;
 - one PNG at declared template dimensions and device scale factor `1`.
 
-The HTTP body limit is enforced while streaming, not only through
-`Content-Length`. The request timeout is independent from context and browser
-idle cleanup.
+The job store is expected to remain tiny because jobs are created only for active
+renders and deleted in `finally`.
 
 ## Target file map
-
-The phase plans may refine names while preserving these boundaries.
 
 ```text
 packages/framekit/src/
@@ -307,78 +336,91 @@ packages/framekit/src/
     image-input.ts
     render-image.ts
     render-job.ts
-  editor/components/template-canvas.tsx
+    request-body.ts
+  shared/
+    raster-image.ts
+  editor/components/
+    template-canvas.tsx
 
 packages/create-framekit/template/
   Dockerfile
   .dockerignore
-  src/instrumentation.ts
   src/app/api/v1/images/route.ts
   src/app/__framekit/render/[id]/page.tsx
   src/app/__framekit/render/[id]/render-client.tsx
 
 apps/studio/
-  src/instrumentation.ts
   src/app/api/v1/images/route.ts
   src/app/__framekit/render/[id]/page.tsx
   src/app/__framekit/render/[id]/render-client.tsx
 ```
 
-Focused test files live beside their owning modules. Generated files under
+Focused tests live beside their owning modules. Generated files under
 `src/generated/framekit/` are regenerated, never hand-edited.
 
 ## Execution rules
 
-- Keep changes in the smallest owning layer; route adapters must not duplicate
-  browser or job-store logic.
-- Complete focused tests with each step instead of deferring all tests to Step 8.
-- Do not add Redis, a database, object storage, or a queue to make the temporary
-  protocol more generic.
-- Do not expose browser/context primitives publicly unless a concrete consumer
-  requires them.
-- Do not add output options before the synchronous PNG contract works in the
-  isolated generated consumer.
-- After any `package.json` change, run root `pnpm install` and then `pnpm build`.
-- Build `@mauriciodmo/framekit` before Studio or generated-consumer verification.
-- Validate public tarballs and a consumer outside the workspace before calling
-  the plan complete.
+- Keep changes in the smallest owning layer.
+- Route adapters must not duplicate browser, image-fetch, or job-store logic.
+- Use `globalThis + Symbol.for(...)` for both render-job and browser process state.
+- Keep the render-job API storage-agnostic enough that a future Redis/filesystem
+  implementation can replace the `Map` without changing public/private routes.
+- Complete focused tests with each step instead of deferring them to Step 8.
+- After Step 5, run a production Next.js build/start smoke proving that the public
+  route and private page see the same global job store before continuing.
+- Do not add a database, Redis, queue, public job endpoint, or object storage to
+  the first implementation.
+- Do not allow Chromium external network access to support remote image fields;
+  Node.js owns those fetches.
+- Do not add output formats/options before synchronous PNG works in an isolated
+  generated consumer.
+- After package manifest changes, update the lockfile and run package/repository
+  build checks.
+- Validate packed packages and a consumer outside the workspace before calling
+  the feature complete.
 
 ## Global completion criteria
 
-The overall feature is complete when:
+The feature is complete when:
 
 - an authenticated request renders any valid generated-registry template and
   returns PNG bytes in one response;
-- omitted fields preserve existing defaults, content, and image assets;
-- validated base64 images and exact-host allowlisted HTTPS images render;
-- invalid and unauthorized requests do not consume browser capacity;
-- private render data is inaccessible without both job ID and private token;
-- temporary data is owner-only, expiring, and deleted on success and failure;
-- browser startup is shared, contexts are isolated and bounded, and shutdown is
-  graceful;
-- Playwright cannot navigate to a caller-provided page or unexpected host;
-- the Docker image installs only Chromium headless shell and runs the standalone
-  server as non-root under `tini`;
-- package tarballs work in an isolated creator-generated project through build,
-  start, API request, and browser capture;
-- Studio's current browser download/copy behavior remains functional;
-- English/Spanish docs, package exports, migration note, changelog, and
-  repository instructions match the shipped behavior;
-- every phase exit gate in this directory is checked.
+- omitted fields preserve existing defaults/content/assets;
+- valid base64 and allowed HTTPS image overrides render correctly;
+- allowed HTTPS images are fetched by Node.js and Chromium performs no external
+  request for them;
+- invalid/unauthorized requests do not consume browser capacity;
+- remote image failures occur before browser capture;
+- private job data is inaccessible without both ID and token;
+- route/page modules share one `globalThis` job store in production standalone;
+- successful, failed, aborted, and timed-out renders remove their Map job;
+- browser startup is shared and render contexts are isolated/bounded;
+- Chromium top-level navigation is fixed to the loopback render page and all
+  unexpected external browser requests are blocked;
+- the private token is never sent to assets, API routes, or remote hosts;
+- final Docker runs standalone Next.js and matching Chromium as non-root under
+  `tini`;
+- package tarballs work in an isolated creator-generated project;
+- Studio's existing browser export/copy behavior still works;
+- English/Spanish docs, changelog, migration notes, and package exports match the
+  shipped behavior;
+- every phase exit gate passes.
 
 ## Out of scope
 
-- asynchronous public jobs, polling, callbacks, or queues;
-- Redis, database persistence, Prisma, object storage, or generated-image URLs;
-- multiple API keys, accounts, key records, per-client quotas, or billing;
-- public unauthenticated rendering;
-- arbitrary URL screenshotting, scraping, crawling, or client-provided HTML;
-- wildcard host allowlists or automatic trust of arbitrary HTTPS destinations;
-- SVG data URLs or other active uploaded documents;
-- JPEG, WebP, PDF, scale/DPI, quality, crop, or transparency output controls;
-- Firefox, WebKit, or browser selection;
-- replacing `modern-screenshot` in Studio's current export path;
-- serverless or Edge support;
-- shared temporary storage across containers;
-- an npm-specific production Dockerfile in the first implementation;
-- pixel-perfect cross-platform visual regression testing.
+- public asynchronous jobs, polling, callbacks, queues, or webhooks;
+- Redis, database persistence, filesystem render jobs, object storage, or
+  generated-image URLs;
+- multiple Node.js application processes sharing one render store;
+- serverless/Edge deployment;
+- multiple API keys, accounts, scopes, quotas, billing, or public rendering;
+- arbitrary URL screenshotting, scraping, crawling, caller HTML, or caller CSS;
+- browser access to arbitrary external resources;
+- remote fonts/stylesheets in templates; package them with the application for
+  the initial server-rendering path;
+- wildcard image-host allowlists or IP-literal remote images;
+- SVG or other active uploaded/request image documents;
+- JPEG/WebP/PDF output, scale/DPI, quality, crop, or transparency controls;
+- Firefox/WebKit/browser selection;
+- replacing Studio's current `modern-screenshot` export;
+- pixel-identical cross-platform visual regression guarantees.

@@ -2,32 +2,32 @@
 
 ## Goal
 
-Add the application-owned private page that receives a temporary job through the
-server package, loads the consumer's generated template module, and exposes one
-exact-size render root for Playwright.
+Add the application-owned private page that authenticates an in-memory render
+job, loads the consumer-generated template module, and renders the already
+resolved payload through one exact-size `TemplateCanvas`.
 
-This route is internal plumbing. It is not authenticated with the public API key
-and is not a second public rendering API.
+The private route is internal plumbing. It is not authenticated with the public
+API key and is not a second public rendering API.
 
 ## Depends on
 
 - [Step 2](./02-shared-canvas-and-image-inputs.md) `TemplateCanvas`.
-- [Step 3](./03-temporary-render-jobs.md) `loadRenderRequest`.
-- [Step 4](./04-browser-lifecycle-and-capture.md) token header and marker
-  protocol.
-- The existing generated `templates` registry and `TemplateRegistryEntry` asset
-  types.
+- [Step 3](./03-temporary-render-jobs.md) `loadRenderRequest` Map protocol.
+- [Step 4](./04-browser-lifecycle-and-capture.md) exact private token header and DOM
+  marker protocol.
+- Existing generated `templates` registry and `TemplateRegistryEntry` loaders.
 
 ## Deliverables
 
 - Private dynamic route in the canonical generated application.
-- Server page that authenticates and loads the temporary record.
-- Client component that loads the template definition and renders the shared
-  canvas.
-- Stable loading/ready/error DOM-state protocol for Playwright.
-- Node startup integration for browser shutdown handlers.
+- Server page that reads ID/header and loads the process-global job.
+- Client component that loads the template definition and renders already
+  resolved data/assets.
+- Stable loading/ready/error DOM markers for Playwright.
 - Equivalent thin integration in `apps/studio`.
-- Focused server/component tests without a real browser.
+- Focused component/Next tests without real Chromium.
+- A production Next build/start smoke proving Route Handler and page share the
+  same `globalThis` store before Step 6 proceeds.
 
 ## Route location
 
@@ -36,21 +36,19 @@ src/app/__framekit/render/[id]/page.tsx
 src/app/__framekit/render/[id]/render-client.tsx
 ```
 
-The reserved `__framekit` namespace aligns with existing generated template
-assets and the development asset endpoint. Do not place this page under the
-public `/api/v1` namespace.
+The reserved `__framekit` namespace aligns with existing generated assets/dev
+endpoints. Do not place this page under public `/api/v1`.
 
-The route must be:
+Route requirements:
 
 - Node.js runtime only;
 - dynamic for every request;
-- `no-store`/non-cacheable;
-- excluded from public navigation and sitemap behavior;
-- inaccessible without a valid temporary ID and private header;
-- free of route-level static generation.
+- non-cacheable/no-store;
+- excluded from navigation/sitemap behavior;
+- inaccessible without valid job ID + private token;
+- no route-level static generation.
 
-Use the current Next.js App Router signatures at implementation time; do not
-copy a stale `params` signature from an older Next release.
+Use the installed Next.js App Router signatures at implementation time.
 
 ## Server page responsibilities
 
@@ -60,71 +58,72 @@ The server page performs only the secure handoff:
 2. Read exactly one `x-framekit-render-token` request header.
 3. Call `loadRenderRequest(id, token)` from
    `@mauriciodmo/framekit/server`.
-4. Treat malformed ID, missing header, missing job, wrong token, expired job,
-   unsupported version, and malformed stored record as the same not-found state.
-5. Pass only the returned serializable payload to `RenderClient`.
-6. Set response metadata/headers that prevent indexing and caching where the
-   App Router boundary permits it.
+4. Treat malformed ID, missing header, missing job, wrong token, and expired job
+   as the same not-found state.
+5. Pass only the returned `ResolvedRenderPayload` to `RenderClient`.
+6. Apply no-store/no-index metadata/headers where the App Router boundary permits.
 
-It does not:
+It does **not**:
 
 - compare `FRAMEKIT_API_KEY`;
-- parse public request JSON;
-- create or delete jobs;
-- launch a browser;
-- import template source by a filesystem path;
-- render Studio controls;
-- expose the token to the client component;
-- reveal why a private lookup failed.
+- parse public JSON;
+- fetch remote images;
+- create/delete jobs;
+- launch Chromium;
+- import template source by filesystem path;
+- resolve defaults/content/assets again;
+- run canonical template-data validation again;
+- expose token/job timestamps to the client component;
+- reveal why private lookup failed.
 
-The temporary job reader validates the token before returning data, so an
-external request that guesses an ID cannot receive base64 or field content.
+The job reader validates the token before returning payload data.
 
 ## Client render component
 
-The client component owns the lazy module boundary because the generated
-registry already exposes lazy template loaders used by Studio.
+The generated registry already exposes lazy template loaders used by Studio, so
+the private client component may reuse that boundary.
 
 Input:
 
 ```typescript
 interface RenderClientProps {
-  payload: NormalizedRenderPayload
+  payload: ResolvedRenderPayload
 }
 ```
 
-State machine:
+Simplified state:
 
 ```text
-loading definition
-  -> validating definition
-  -> resolving job data
-  -> validating resolved data
+loading template
+  -> checking definition identity
   -> ready
-  -> error (from any failed stage)
+  -> error
 ```
 
 Required behavior:
 
-1. Resolve the matching `TemplateRegistryEntry` from `templates` by slug.
-2. If no entry exists, enter error. This should be unreachable after Step 6
-   validation but protects against registry changes between the two requests.
-3. Load the module and validate its default export with the canonical definition
-   validator.
-4. Confirm definition width/height still equal the validated job dimensions.
-5. Confirm the variant remains defined.
-6. Resolve payload edits plus temporary assets through `resolveTemplateData`.
-7. Run the canonical data validation boundary used by the current runtime.
-8. Render `TemplateCanvas` with exact resolved values.
-9. Mark the state ready only after React has committed the canvas root.
+1. Resolve `TemplateRegistryEntry` from `templates` by exact slug.
+2. Load the module and validate its default export using the current canonical
+   definition validator.
+3. Confirm definition width/height still equal payload dimensions.
+4. Confirm `payload.variant` still exists in the current definition.
+5. Render `TemplateCanvas` using exactly:
+   - loaded definition;
+   - `payload.data`;
+   - `payload.assets`;
+   - `payload.variant`.
+6. Mark ready only after React has committed the canvas root.
 
-If the canonical data pipeline becomes a single discriminated resolver before
-implementation, use that current source of truth instead of reintroducing the
-older parallel resolver/validator sequence.
+Do **not** call `resolveTemplateData` or `validateTemplateData` here. Those ran
+once in the authenticated public route before browser work.
+
+The definition/dimension/variant checks exist only to detect a source/HMR rebuild
+between public validation and private rendering. They are not a second data
+pipeline.
 
 ## DOM protocol
 
-The private page needs stable machine-readable state, not localized UI text.
+Use stable machine-readable state, not localized UI text.
 
 ### Loading
 
@@ -142,7 +141,7 @@ No capture root exists yet.
 </main>
 ```
 
-Exactly one root exists. The root comes from `TemplateCanvas`.
+Exactly one render root exists and it comes from `TemplateCanvas`.
 
 ### Error
 
@@ -153,158 +152,159 @@ Exactly one root exists. The root comes from `TemplateCanvas`.
 ></main>
 ```
 
-The browser reads the stable coarse error marker. Do not render field values,
-stack traces, tokens, URLs, or raw thrown messages into the page.
-
-Suggested internal marker values:
+Keep marker values coarse, for example:
 
 - `template_not_found`;
 - `template_load_failed`;
 - `invalid_definition`;
 - `job_definition_mismatch`;
-- `invalid_render_data`;
 - `render_component_failed`.
 
-These are internal diagnostics, not necessarily public API error codes.
+Do not render field values, data URLs, URLs, stack traces, tokens, or thrown
+messages into the page.
+
+These are internal browser diagnostics, not necessarily public API codes.
 
 ## React commit and readiness
 
-Setting ready in the same render that creates the canvas is acceptable only if
-Playwright's next action observes the committed DOM. A small effect after the
-definition/data are ready provides a clear commit boundary.
+Use a small client effect/state transition after the template/data are ready so
+Playwright observes a committed canvas before seeing `ready`.
 
-The component does not wait for fonts or `<img>` decoding. Step 4 performs those
-checks against the committed root because it has the final browser-level view of
-resource success and timeout.
+The component does not wait for fonts or `<img>` decode. Step 4 performs those
+browser-level checks after the committed root exists.
 
-Do not use arbitrary sleeps in the component or browser.
+Do not use arbitrary sleeps.
 
 ## Styling and layout isolation
 
-The route inherits the consumer's root layout and global CSS because templates
-depend on the same styles as Studio. Prevent inherited application chrome from
-affecting capture:
+The private route inherits the consumer's root layout/global CSS because
+FrameKit templates need the same Tailwind/styles/font environment as Studio.
+
+Prevent application chrome from affecting capture:
 
 - render no Studio shell/navigation;
-- reset body/page margin for the private route if global CSS does not already do
-  so;
-- keep canvas at its declared dimensions without preview scaling;
-- do not add shadow, border, overflow clipping, theme background, or centering to
-  the capture root;
+- reset body/page margin if global styles add one;
+- keep canvas at declared dimensions without preview scaling;
+- do not add capture-root border/shadow/background/centering/overflow effects;
 - status containers may exist outside the capture root;
-- Playwright captures the root locator, never the whole page.
+- Playwright captures only the root locator.
 
-The private page must use the same font and static asset environment as the
-normal application so the screenshot represents the actual template.
+Remote fonts/stylesheets are not part of the v1 server-render contract. Templates
+used by the API should package required fonts/styles/assets with the application
+so Chromium can load them over loopback.
 
 ## Registry integration
 
-The application imports only generated supported aliases:
+Application code imports only the supported generated alias:
 
 ```typescript
 import { templates } from '@framekit/generated/templates'
 ```
 
-Do not edit generated `templates.ts` manually. If the existing generated module
-cannot be safely consumed by both Studio and the private route, update codegen
-once and regenerate the canonical template/Studio outputs.
+Do not edit generated `templates.ts` manually.
 
-The private component receives the temporary asset manifest from the job. It
-does not use the generated entry's original assets after normalization, except
-through the cloned payload created by Step 6.
+If the generated registry cannot be safely consumed by both Studio/private page,
+update codegen once and regenerate consumers.
+
+The private component uses `payload.assets`, not the original registry assets,
+because request image overrides were prepared and cloned in Step 2.
 
 ## Handling application rebuilds and HMR
 
-During development, the public API request and private page can span a module
-reload:
+The public API request and private page can span a development module reload.
 
-- the filesystem job survives module replacement;
-- the job reader does not depend on an in-memory map;
-- the generated registry loaded by the private page is current;
-- a mismatch between validated dimensions/variant and the reloaded definition
-  becomes an explicit error rather than capturing a different layout;
-- browser singleton state remains global/HMR-safe from Step 4.
+Expected behavior:
 
-This makes development behavior deterministic without promising render success
-across a source edit occurring in the middle of a request.
+- job store lives under `globalThis` and survives module replacement in the same
+  Node process;
+- generated registry loaded by the private page is current;
+- changed definition dimensions/variant cause a coarse mismatch error rather
+  than silently capturing a different layout;
+- already-resolved data is not reprocessed against the changed definition;
+- browser singleton also remains process-global.
 
-## Shutdown startup integration
+The implementation does not promise a successful render across arbitrary source
+edits during an active request; it promises safe failure.
 
-Add the application startup boundary required by Step 4, expected at:
+## Production `globalThis` compatibility gate
 
-```text
-src/instrumentation.ts
-```
+Using the Map is an explicit architecture choice, so prove it before building the
+public route on top of it.
 
-Requirements:
+After this step, run a real production Next.js build/start (preferably the
+standalone server if available) with a test-only route flow:
 
-- register only in the Node.js runtime;
-- dynamically import the server entry if needed to keep non-Node bundles clean;
-- call `registerBrowserShutdownHandlers()` once;
-- do not launch Chromium during registration;
-- do not register in Edge runtime;
-- mirror the thin integration in `apps/studio`.
+1. create an in-memory job from one server route/module;
+2. request the private page through normal HTTP;
+3. confirm the private page can read that same job through
+   `loadRenderRequest(...)`;
+4. repeat for two concurrent jobs;
+5. confirm deletion is visible to both modules.
 
-Validate the exact Next.js instrumentation contract against the installed Next
-version during implementation.
+If this fails because the runtime uses separate Node processes/isolate globals,
+do not paper over it with duplicate Maps. Replace only the store implementation
+before Step 6. The v1 support target remains one Node process.
 
 ## Error and response behavior
 
-- Private authentication/storage failure returns not found, not JSON API errors.
-- The client error state returns a page that Playwright can inspect; it does not
-  need to change HTTP status after streaming/hydration.
+- Private auth/job failure returns not-found rather than public JSON API errors.
+- Client-side template load/mismatch creates a coarse DOM error marker.
 - The page is never cached.
-- The route must not echo request data in metadata, title, body, or console logs.
-- Browser-side errors may log a coarse code and internal render ID only.
+- The route never echoes render payload values in metadata/title/body/logs.
+- Browser-side logs, if any, use only coarse code + internal job ID.
 
 ## Expected files
 
 ```text
 packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
 packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
-packages/create-framekit/template/src/instrumentation.ts
 apps/studio/src/app/__framekit/render/[id]/page.tsx
 apps/studio/src/app/__framekit/render/[id]/render-client.tsx
-apps/studio/src/instrumentation.ts
 ```
 
-If duplication exceeds thin imports/registry wiring, move behavior into the
-supported package instead of creating a template utility and Studio copy.
+No `src/instrumentation.ts` is required solely for browser shutdown in v1.
+
+If canonical-template/Studio duplication exceeds thin registry imports/wiring,
+move the shared behavior into a supported package helper rather than maintaining
+two implementations.
 
 ## Implementation sequence
 
-1. Add the private server page in the canonical template.
+1. Add private server page in canonical template.
 2. Wire ID/header lookup to `loadRenderRequest` and uniform not-found handling.
-3. Add `RenderClient` with explicit load/validate/resolve/render states.
-4. Add loading/ready/error DOM markers.
-5. Render the shared `TemplateCanvas` without Studio chrome.
-6. Add Node-only instrumentation shutdown registration.
-7. Add focused page/component tests.
-8. Mirror the same thin integration in first-party Studio.
-9. Run template generation/build rather than editing generated registries.
+3. Add `RenderClient` with template-load/definition-check/ready/error states.
+4. Render shared `TemplateCanvas` directly from `ResolvedRenderPayload`.
+5. Add stable DOM markers and styling isolation.
+6. Add focused page/component tests.
+7. Mirror the thin integration in first-party Studio.
+8. Run generation/build instead of hand-editing generated registries.
+9. Run the production global-Map compatibility smoke.
 
 ## Focused tests
 
-- Missing, malformed, expired, and wrong-token jobs produce the same not-found
-  server result.
-- A valid job passes payload without token/timestamps to the client.
+- Missing/malformed/expired/wrong-token jobs produce the same not-found server
+  result.
+- Valid job passes resolved payload without token/timestamps.
 - Loading state has no capture root.
-- Valid loader/definition/data produces one ready marker and one root.
-- Unknown loader, rejected import, invalid definition, dimension mismatch,
-  missing variant, and invalid data produce error markers.
-- Marker content does not contain field values, base64, token, or stack trace.
-- Shared canvas receives exact payload assets and resolved data.
-- Route output is dynamic/non-cacheable.
-- Instrumentation registers shutdown only for Node and does not launch browser.
+- Valid loader/definition/payload produces one ready marker/root.
+- Unknown loader, rejected import, invalid definition, dimension mismatch, and
+  missing variant produce coarse error state.
+- Private client never calls `resolveTemplateData` or canonical validation.
+- Shared canvas receives exact resolved data/assets/variant/dimensions.
+- Marker output contains no field values/base64/token/full URL/stack trace.
+- Route is dynamic/non-cacheable.
 - Canonical template and Studio build with generated registries.
+- Real production Next server proves route/page share one global job store.
 
 ## Exit gate
 
 Step 5 is complete when:
 
-- a test-created valid temporary job can be rendered by the private page to one
-  exact-size ready canvas without Chromium;
-- all private lookup failures are indistinguishable externally;
-- the page uses generated registry and supported package imports only;
-- the application startup boundary registers graceful browser cleanup;
-- template and Studio tests/typecheck/build pass.
+- a valid Map job renders to one exact-size ready canvas without Chromium in
+  component tests;
+- all private lookup failures are externally indistinguishable;
+- private page renders already-resolved data without a duplicate data pipeline;
+- generated registry and supported package imports are used exclusively;
+- production Next build/start proves the `globalThis` Map handoff works across
+  route/page bundles in the supported runtime;
+- template/Studio tests, typecheck, and build pass.
