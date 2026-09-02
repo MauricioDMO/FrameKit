@@ -12,7 +12,7 @@ FrameKit is a template-based image editor for React and Next.js. Define the artw
 
 Social posts, campaign cards, and other recurring graphics often turn into a loop of duplicated layouts, copy-pasted files, and manual corrections. FrameKit gives teams one typed source of truth for the visual design and a focused editing surface for content variants.
 
-The result is a repeatable workflow: developers own the template and its constraints; content editors change text, colors, URLs, and variants in Studio; the browser exports the finished PNG without rebuilding the design by hand.
+The result is a repeatable workflow: developers own the template and its constraints; content editors change text, colors, image assets, and variants in Studio; the browser exports the finished PNG without rebuilding the design by hand.
 
 ## Studio
 
@@ -30,11 +30,11 @@ cd my-project
 pnpm dev
 ```
 
-The creator copies a working Next.js project, asks whether to install dependencies, generates the template registry, and can initialize Git. Use `-y` to accept all prompts or `-n` to reject them; without a name in either mode, it creates the `framekit` directory. The development server opens FrameKit Studio with `pnpm dev`.
+The creator copies a working Next.js project, asks whether to install dependencies, and can initialize Git. When dependencies are installed, it generates the template registry; if you skip installation, install the dependencies and run `pnpm framekit generate` (or `npm exec -- framekit generate`) before starting Studio. Use `-y` to accept all prompts or `-n` to reject them; without a name in either mode, it creates the `framekit` directory. The development server opens FrameKit Studio with `pnpm dev`.
 
 ## A rendered template
 
-A template defines its dimensions, editable fields, content variants, and React renderer. The following example renders a social card with localized content and Markdown text:
+A template defines its dimensions, editable fields, content variants, and React renderer. The following example renders a social card with variant content and Markdown text:
 
 ```tsx
 import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
@@ -80,7 +80,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 
 - Beta software: APIs and generated project details may change between releases.
 - Export currently supports PNG only. There is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
-- Studio stores text and field references in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
+- Studio stores editor changes in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.
 - The Studio interface is localized to English and Spanish. Template content can define its own variant keys.
 - The package is ESM-only and does not provide CommonJS exports.

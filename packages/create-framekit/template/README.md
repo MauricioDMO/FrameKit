@@ -7,8 +7,12 @@ pnpm dev
 Templates live in `src/templates`. A directory containing `template.tsx`
 appears automatically in the Studio editor.
 
-FrameKit projects require Node.js `>=22.13.0`. Use pnpm `>=11.14.0` or npm 10
-or later to install dependencies.
+If dependencies were not installed when the project was created, run
+`pnpm install` first. `pnpm dev` generates the template registry before starting
+Studio. To regenerate it explicitly, run `pnpm framekit generate`.
+
+FrameKit projects require Node.js `>=22.13.0`. Use pnpm `>=11.14.0` or npm to
+install dependencies.
 
 Shared public company information can live in `src/profile.ts`. The file is
 intentionally flexible and can export any clear structure; template authors
@@ -32,6 +36,7 @@ For complex layouts, see the extracted definition pattern with
 ## Available commands
 
 - `pnpm dev` — start the development server
+- `pnpm framekit generate` — regenerate the template registry
 - `pnpm check` — validate all templates
 - `pnpm build` — validate and build for production
 - `pnpm start` — start the production server

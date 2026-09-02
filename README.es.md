@@ -12,7 +12,7 @@ FrameKit es un editor de imágenes basado en plantillas para React y Next.js. De
 
 Las publicaciones sociales, tarjetas de campaña y otros gráficos recurrentes suelen convertirse en una cadena de diseños duplicados, archivos copiados y correcciones manuales. FrameKit ofrece una única fuente de verdad tipada para el diseño y una superficie de edición enfocada en las variantes de contenido.
 
-El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores y variantes en Studio; el navegador exporta el PNG final sin rehacer el diseño.
+El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores, assets de imagen y variantes en Studio; el navegador exporta el PNG final sin rehacer el diseño.
 
 ## Studio
 
@@ -30,11 +30,11 @@ cd my-project
 pnpm dev
 ```
 
-El creador copia un proyecto Next.js funcional, pregunta si debe instalar las dependencias, genera el registro de plantillas y puede inicializar Git. Usa `-y` para aceptar todas las preguntas o `-n` para rechazarlas; sin nombre en estos modos, crea la carpeta `framekit`. El servidor de desarrollo abre FrameKit Studio con `pnpm dev`.
+El creador copia un proyecto Next.js funcional, pregunta si debe instalar las dependencias y puede inicializar Git. Cuando se instalan las dependencias, genera el registro de plantillas; si omites la instalación, instala las dependencias y ejecuta `pnpm framekit generate` (o `npm exec -- framekit generate`) antes de iniciar Studio. Usa `-y` para aceptar todas las preguntas o `-n` para rechazarlas; sin nombre en estos modos, crea la carpeta `framekit`. El servidor de desarrollo abre FrameKit Studio con `pnpm dev`.
 
 ## Ejemplo de una plantilla renderizada
 
-Una plantilla define sus dimensiones, campos editables, variantes de contenido y renderizador React. Este ejemplo renderiza una tarjeta social con contenido localizado y texto Markdown:
+Una plantilla define sus dimensiones, campos editables, variantes de contenido y renderizador React. Este ejemplo renderiza una tarjeta social con contenido por variante y texto Markdown:
 
 ```tsx
 import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
@@ -80,7 +80,7 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 
 - Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
 - La exportación actual solo admite PNG. No hay renderizado del lado del servidor, exportación a GIF/video, otros formatos, control de escala ni DPI.
-- Studio guarda los cambios de contenido en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
+- Studio guarda las ediciones en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
 - La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.
 - El paquete solo publica módulos ESM; no ofrece exports CommonJS.

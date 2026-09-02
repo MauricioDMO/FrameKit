@@ -7,7 +7,7 @@ Markdown rendering, and reusable editor components for React and Next.js.
 
 - Node.js `>=22.13.0`
 - pnpm `>=11.14.0` when using pnpm
-- npm 10 or later when using npm
+- npm is supported; the package manifest declares no npm engine version
 
 ## CLI
 
@@ -53,22 +53,26 @@ export default defineTemplate({
     title: field.text({ label: 'Title', required: true }),
   },
   content: {
-    en: { title: 'Offer' },
+    square: { title: 'Offer' },
   },
-  variants: { default: 'en', labels: { en: 'English' } },
+  variants: { default: 'square', labels: { square: 'Square' } },
   render({ data, variant, width, height }) {
     return <article style={{ width, height }}>{data.title} ({variant})</article>
   },
 })
 ```
 
-Each template owns its variant keys through `content`. FrameKit does not limit
-or import the application's interface language. Content entries contain only
-declared field values, and unknown keys are rejected.
+Each template owns its variant keys through `content`; keys are arbitrary
+strings and do not have to be locales. FrameKit does not limit or import the
+application's interface language, and no locale field is required. Content
+entries contain only declared field values, and unknown keys are rejected.
 
 Variant field values can be omitted. Resolution applies field defaults, variant
-content, and user edits in that order before required values are
-validated.
+content, and user edits in that order. Call `validateTemplateData()` on the
+resolved data to validate required values and other runtime constraints; for
+choice fields, undeclared values produce `invalid_choice`. When loading
+persisted editor state, stale choice overrides are filtered before resolution,
+so the variant content or field default remains in effect.
 
 ## Extracted artwork
 
@@ -90,8 +94,8 @@ export const templateBase = defineTemplateBase({
   width: 1200,
   height: 800,
   fields: { title: field.text({ label: 'Title' }) },
-  content: { en: { title: 'Offer' } },
-  variants: { default: 'en', labels: { en: 'English' } },
+  content: { square: { title: 'Offer' } },
+  variants: { default: 'square', labels: { square: 'Square' } },
 })
 ```
 
@@ -117,8 +121,9 @@ export default defineTemplate({ ...templateBase, render: Artwork })
 Only `template.tsx` is discovered by the registry scanner. Neighboring modules,
 components, and assets remain private to that template directory.
 
-Use `field.choice()` for ordered closed-set string selects; its `defaultValue`
-must match an option and undeclared values return `invalid_choice`. Use
+Use `field.choice()` for ordered closed-set string selects. Its `defaultValue`
+must match an option; definition validation rejects mismatches, while
+`validateTemplateData()` reports undeclared values as `invalid_choice`. Use
 `field.boolean()` for real boolean values; its omitted default is `false` and
 Studio renders a native checkbox. Use `field.image()` for images. Variant files use the field key as their
 filename under `assets/<variant>`; shared files live under `assets/common`.

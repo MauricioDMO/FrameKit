@@ -43,3 +43,14 @@
   navigation and errors, and `v2` editor persistence with intentional `v1`
   invalidation. See [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13)
   and the [implementation plan](Docs/Plans/Future/issue-13-studio-canonical-contract.md).
+- Corrected persisted choice handling: a stale choice override is discarded
+  without discarding valid sibling overrides, and current content or field
+  defaults provide the fallback. The editor reads only the `v2` persistence key;
+  no `v1` compatibility is promised. See [GitHub issue #17](https://github.com/MauricioDMO/FrameKit/issues/17).
+- Added versionless verification gates for the current repository: full Ubuntu
+  checks on Node.js `22.13.0` and `24`, focused Windows generated-consumer
+  checks on Node.js `22.13.0`, and one Chromium Studio critical path. Release
+  tarball and npm checks take versions supplied during release preparation; no
+  release version is selected here. See [GitHub issue #15](https://github.com/MauricioDMO/FrameKit/issues/15).
+- Consolidated the English and Spanish rolling migration guides and marked the
+  `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).
