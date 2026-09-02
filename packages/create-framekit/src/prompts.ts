@@ -2,14 +2,6 @@ import { createInterface } from 'node:readline/promises'
 
 import { bold, cyan, dim } from './terminal.js'
 
-export interface CliOptions {
-  projectName: string
-  packageManager: PackageManager
-  installDependencies: boolean
-  runApproveBuilds: boolean
-  initGit: boolean
-}
-
 export type PackageManager = 'pnpm' | 'npm'
 
 async function ask(label: string, hint?: string): Promise<string> {

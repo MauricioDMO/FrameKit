@@ -8,10 +8,6 @@ export function detectPackageManager(): PackageManager | null {
   return null
 }
 
-export function packageManagerCommand(pm: PackageManager): string {
-  return process.platform === 'win32' && pm === 'pnpm' ? 'pnpm.cmd' : pm
-}
-
 export function packageManagerBin(pm: PackageManager): string {
   if (pm === 'pnpm') {
     return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
