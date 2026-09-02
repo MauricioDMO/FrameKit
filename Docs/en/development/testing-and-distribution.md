@@ -4,10 +4,16 @@
 
 FrameKit uses Vitest as the test runner across all workspaces. The following commands are available from the repository root:
 
+From a fresh checkout, build `@mauriciodmo/framekit` before `pnpm test`,
+`pnpm typecheck`, or the focused Studio test; Studio's scripts invoke the
+FrameKit CLI from the built package. The CI lane builds the public packages
+before those checks.
+
 - `pnpm test` — runs Vitest in all workspaces that define a `test` script
 - `pnpm --filter @mauriciodmo/framekit test` — runs unit tests for the core package; tests execute in a Node environment, with jsdom enabled for editor tests that require DOM or localStorage
 - `pnpm --filter studio test` — runs integration tests for the Studio application; `framekit generate` is called as a precondition step before Vitest runs
 - `pnpm --filter @mauriciodmo/create-framekit test` — runs unit tests for the CLI package
+- `pnpm test:e2e` — runs the single Chromium critical-path test; install the browser first with `pnpm exec playwright install chromium`
 - `pnpm typecheck` — runs `tsc --noEmit` across all packages and additionally type-checks the type fixture suite (positive and negative template cases)
 - `pnpm lint` — runs ESLint across all workspaces
 - `pnpm build` — full rebuild of all workspaces; the core package is built first, then all dependent workspaces
@@ -28,19 +34,35 @@ The following areas are covered by the test suite:
 
 **CLI:** Argument parsing and error paths, check gating a Next.js build, and discovery of standalone template directories.
 
+**Browser E2E:** One Playwright Chromium flow opens the generated
+`redes-sociales/instagram/promocion-cuadrada` registry entry, verifies its
+metadata and dimensions, switches variants, edits text/number/choice/boolean/
+color fields, checks that an incomplete number draft does not replace the
+committed preview value, and exports a PNG with the declared dimensions.
+
 **Type-level fixtures:** Both positive cases (valid templates that must type-check) and negative cases (invalid templates that must produce a `tsc` error, using `@ts-expect-error`) run as part of `pnpm typecheck`.
 
 ## What Is Not Tested
 
 The test suite does not cover:
 
-- **Browser end-to-end tests** — there are no Playwright or Cypress tests; the Studio integration tests cover generation and build but do not drive a browser.
-- **Visual regression** — no PNG pixel or dimension comparison tests exist.
-- **Full Studio flow** — navigating to a page, editing a field, switching variant, resetting, and exporting the result is not covered as a single automated flow.
-- **Production build and start** — successful execution of `next build` followed by `next start` is not verified inside unit or integration tests.
-- **Asset copying** — public directory and static file copying are not directly unit-tested.
-- **Other operating systems** — Windows and macOS are not verified, so this documentation does not claim a complete cross-platform support guarantee.
+- **Visual regression** — the Chromium E2E validates the PNG signature and header dimensions, but no PNG pixel or visual snapshot comparison tests exist.
+- **Browser matrix** — only Chromium's critical path is covered; Firefox, WebKit, visual snapshots, clipboard export, and image upload are not required gates.
+- **Production build and start as one smoke** — CI runs production builds, but does not start the generated standalone server; the isolated tarball smoke below covers the build-and-start sequence manually, not Vitest or the Chromium PR lane.
+- **Production standalone asset copying** — copying the consumer's public directory and Next static files into the standalone output is not directly unit-tested; template asset discovery and copying are covered by codegen tests.
+- **Other operating systems** — Windows has a focused CI consumer smoke, but this documentation does not claim broad Windows or macOS support.
 - **Watcher behavior** — signal propagation, file watching under load, and watcher edge cases are outside the current test scope.
+
+## Permanent CI Gates
+
+- Ubuntu runs the full repository checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`.
+- Windows runs the focused discovery, codegen, creator, typecheck, package, and generated-consumer checks on Node.js `22.13.0`.
+- Ubuntu runs the one Chromium E2E on Node.js `22.13.0`; the lane installs Chromium and starts Studio with `pnpm dev`.
+
+The Windows creator smoke uses `create-framekit <directory> -n`, installs the
+generated project's dependencies, and runs `framekit generate` and
+`framekit check`. It does not claim production-build or browser coverage on
+Windows.
 
 ## Distribution and Packaging
 
@@ -72,16 +94,216 @@ When a user runs `create-framekit`, the `template/` directory is copied from the
 
 ## Tarball Smoke Test (Manual)
 
-To validate both tarballs before any publish step:
+Run this version-independent sequence from a Bash shell. The two package
+tarballs are built in a temporary directory, and every consumer project is
+created outside the repository. Do not run the consumer commands from the
+FrameKit checkout.
 
-1. Create an isolated consumer project outside the FrameKit repository.
-2. Install the FrameKit tarball into it: `pnpm add <path-to-framekit-tgz>`.
-3. Run `pnpm check` and `pnpm build` in the consumer project and confirm both succeed.
-4. Install the `create-framekit` tarball and run `create-framekit <new-directory>` from a path outside the repository.
-5. Inside the generated project, substitute the FrameKit workspace dependency with the local tarball, then run `pnpm install`, `pnpm check`, and `pnpm build`.
-6. Confirm that `src/generated/framekit/templates.ts` is generated and gitignored, and that neither tarball left any reference to the original workspace.
+```bash
+set -eu
 
-Both tarballs must install and generate without errors before any publish attempt.
+REPO_ROOT="$PWD"
+SMOKE_DIR="$(mktemp -d)"
+trap 'rm -rf "$SMOKE_DIR"' EXIT
+
+pnpm --filter @mauriciodmo/framekit build
+pnpm --filter @mauriciodmo/create-framekit build
+pnpm --filter @mauriciodmo/framekit pack --pack-destination "$SMOKE_DIR"
+pnpm --filter @mauriciodmo/create-framekit pack --pack-destination "$SMOKE_DIR"
+
+CORE_TGZ="$(find "$SMOKE_DIR" -maxdepth 1 -name 'mauriciodmo-framekit-*.tgz' -print -quit)"
+CREATOR_TGZ="$(find "$SMOKE_DIR" -maxdepth 1 -name 'mauriciodmo-create-framekit-*.tgz' -print -quit)"
+test -n "$CORE_TGZ" && test -n "$CREATOR_TGZ"
+
+# Package boundaries: expected files exist and source/tests/secrets do not ship.
+tar -tzf "$CORE_TGZ" | rg -q '^package/bin/framekit\.js$'
+tar -tzf "$CORE_TGZ" | rg -q '^package/dist/index\.js$'
+tar -tzf "$CORE_TGZ" | rg -q '^package/dist/styles\.css$'
+tar -tzf "$CREATOR_TGZ" | rg -q '^package/dist/cli\.js$'
+tar -tzf "$CREATOR_TGZ" | rg -q '^package/template/package\.json$'
+for archive in "$CORE_TGZ" "$CREATOR_TGZ"; do
+  if tar -tzf "$archive" | rg -q '(^|/)tests?/|(^|/)node_modules/|(^|/)\.env'; then
+    printf 'Unexpected test, dependency, or secret file in %s\n' "$archive" >&2
+    exit 1
+  fi
+done
+
+# Neither archive may retain workspace metadata, local links, or an absolute checkout path.
+mkdir "$SMOKE_DIR/inspect-core" "$SMOKE_DIR/inspect-creator"
+tar -xzf "$CORE_TGZ" -C "$SMOKE_DIR/inspect-core"
+tar -xzf "$CREATOR_TGZ" -C "$SMOKE_DIR/inspect-creator"
+for directory in "$SMOKE_DIR/inspect-core/package" "$SMOKE_DIR/inspect-creator/package"; do
+  if rg -n --hidden -e 'workspace:' -e 'link:' -e 'file:\.\.' "$directory" || rg -n --hidden -F "$REPO_ROOT" "$directory"; then
+    printf 'Workspace reference found in %s\n' "$directory" >&2
+    exit 1
+  fi
+done
+
+# Install the creator in a separate runner and scaffold a project non-interactively.
+mkdir "$SMOKE_DIR/runner"
+cd "$SMOKE_DIR/runner"
+npm init -y
+npm install "$CREATOR_TGZ"
+npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
+
+# Replace the generated registry dependency with the core tarball, then use the generated project's package manager.
+cd "$SMOKE_DIR/consumer"
+node --input-type=module - "$CORE_TGZ" <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+
+const [tarball] = process.argv.slice(2)
+const packagePath = path.resolve('package.json')
+const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
+packageJson.dependencies['@mauriciodmo/framekit'] = `file:${path.resolve(tarball)}`
+await writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)
+NODE
+npm install
+npx --no-install framekit generate
+npx --no-install framekit check
+npx --no-install framekit build
+test -f src/generated/framekit/templates.ts
+rg -q '^src/generated/framekit$' .gitignore
+
+# Start the standalone server, poll a Studio route over HTTP, and let the trap clean it up.
+PORT=4317
+HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" 2>/dev/null || true; wait "$SERVER_PID" 2>/dev/null || true; rm -rf "$SMOKE_DIR"' EXIT
+node --input-type=module - "$PORT" <<'NODE'
+const port = process.argv[2]
+const deadline = Date.now() + 30_000
+
+while (Date.now() < deadline) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+    if (response.ok) process.exit(0)
+  } catch {
+    // The standalone server may still be starting.
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250))
+}
+
+console.error(`Studio was not ready on port ${port}`)
+process.exit(1)
+NODE
+```
+
+The smoke passes only when both real tarballs have the expected contents, no
+`workspace:`, local-link, or checkout-path references, and the creator-generated consumer
+completes generation, check, production build, standalone start, and HTTP
+readiness. The exact npm registry smoke after publication remains a separate
+maintainer handoff with package specs supplied at release time; see [Post-publication npm registry smoke](#post-publication-npm-registry-smoke-manual-before-promotion).
+
+## Post-publication npm registry smoke (manual, before promotion)
+
+Run this only after the packages are available on npm. It is a separate gate
+from the pre-publication tarball smoke: it cannot prevent the initial upload,
+but a failure blocks promotion to the intended dist-tag. Never publish or
+change a dist-tag as part of this check.
+
+Supply these release-time inputs. Both package specs must be exact registry
+specs, not ranges; the dist-tag is checked separately:
+
+```bash
+set -eu
+
+: "${CORE_SPEC:?Set the exact @mauriciodmo/framekit npm spec}"
+: "${CREATOR_SPEC:?Set the exact @mauriciodmo/create-framekit npm spec}"
+: "${EXPECTED_DIST_TAG:?Set the intended npm dist-tag}"
+
+CORE_VERSION="$(npm view "$CORE_SPEC" version)"
+CREATOR_VERSION="$(npm view "$CREATOR_SPEC" version)"
+test "$CORE_SPEC" = "@mauriciodmo/framekit@$CORE_VERSION"
+test "$CREATOR_SPEC" = "@mauriciodmo/create-framekit@$CREATOR_VERSION"
+
+# Check the intended dist-tag independently of the consumer smoke.
+test "$(npm view @mauriciodmo/framekit "dist-tags.$EXPECTED_DIST_TAG")" = "$CORE_VERSION"
+test "$(npm view @mauriciodmo/create-framekit "dist-tags.$EXPECTED_DIST_TAG")" = "$CREATOR_VERSION"
+
+SMOKE_DIR="$(mktemp -d)"
+SERVER_PID=""
+cleanup() {
+  if test -n "$SERVER_PID"; then
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+  fi
+  rm -rf "$SMOKE_DIR"
+}
+trap cleanup EXIT
+
+# The runner and consumer are outside the FrameKit checkout.
+mkdir "$SMOKE_DIR/runner"
+cd "$SMOKE_DIR/runner"
+npm init -y >/dev/null
+npm install "$CREATOR_SPEC" "$CORE_SPEC"
+test -x node_modules/.bin/create-framekit
+test -x node_modules/.bin/framekit
+test -f node_modules/@mauriciodmo/create-framekit/dist/cli.js
+test -f node_modules/@mauriciodmo/framekit/bin/framekit.js
+node --input-type=module <<'NODE'
+for (const specifier of [
+  '@mauriciodmo/framekit',
+  '@mauriciodmo/framekit/editor',
+  '@mauriciodmo/framekit/studio',
+  '@mauriciodmo/framekit/studio/root',
+  '@mauriciodmo/framekit/dev',
+  '@mauriciodmo/framekit/styles.css',
+]) console.log(specifier, import.meta.resolve(specifier))
+NODE
+
+npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
+cd "$SMOKE_DIR/consumer"
+CORE_VERSION="$CORE_VERSION" node --input-type=module <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises'
+
+const packagePath = 'package.json'
+const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
+const declared = packageJson.dependencies?.['@mauriciodmo/framekit']
+if (typeof declared !== 'string' || declared.length === 0) throw new Error('Creator template has no FrameKit dependency')
+console.log(`Creator template FrameKit dependency: ${declared}`)
+packageJson.dependencies['@mauriciodmo/framekit'] = process.env.CORE_VERSION
+await writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)
+NODE
+npm install
+CORE_VERSION="$CORE_VERSION" node --input-type=module <<'NODE'
+import { readFile } from 'node:fs/promises'
+
+const installed = JSON.parse(await readFile('node_modules/@mauriciodmo/framekit/package.json', 'utf8'))
+if (installed.version !== process.env.CORE_VERSION) throw new Error(`Unexpected FrameKit version: ${installed.version}`)
+NODE
+npx --no-install framekit generate
+npx --no-install framekit check
+npx --no-install framekit build
+test -f src/generated/framekit/templates.ts
+
+PORT=4318
+HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+SERVER_PID=$!
+node --input-type=module - "$PORT" <<'NODE'
+const port = process.argv[2]
+const deadline = Date.now() + 30_000
+
+while (Date.now() < deadline) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+    if (response.ok) process.exit(0)
+  } catch {
+    // The standalone server may still be starting.
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250))
+}
+
+console.error(`Studio was not ready on port ${port}`)
+process.exit(1)
+NODE
+```
+
+Record the result before cleanup: `CORE_SPEC`, `CREATOR_SPEC`, resolved
+versions, `EXPECTED_DIST_TAG`, registry, Node/npm versions, timestamp, PASS or
+FAIL, and the relevant command output or start log. The creator's declared
+FrameKit version/range and the installed exact core version belong in that
+record. Do not treat a successful upload as a successful registry gate.
 
 ---
 

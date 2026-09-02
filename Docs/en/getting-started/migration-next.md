@@ -1,13 +1,26 @@
 # Rolling Migration Guide
 
-This guide records the next versionless migration work. No release version has
-been selected yet.
+This is the current rolling guide for adopting the implemented versionless
+contract. It intentionally does not select a package release version. For the
+older 0.7.0-to-0.8.0 release path, see the [historical migration
+guide](./migration-v0.8.0.md).
+
+## Current prerequisites and scope
+
+- Use Node.js `>=22.13.0` and pnpm `>=11.14.0`, as required by the current
+  workspace and public package manifests. The public runtime's peer ranges are
+  Next.js `>=16 <17` and React/React DOM `>=19 <20`.
+- This guide does not require an alpha, future, or otherwise preselected package
+  version. Release version selection is a separate maintainer step.
+- The canonical runtime and Studio behavior described here is implemented. A
+  server image-generation API and other future roadmap work are not part of
+  this contract.
 
 ## Canonical Template Contract
 
 Issue [#1](https://github.com/MauricioDMO/FrameKit/issues/1) establishes one
-template shape for Studio and the future server-rendering boundary. Update each
-template definition to include:
+template shape for the runtime and Studio. Update each template definition to
+include:
 
 ```tsx
 import { defineTemplate, field } from '@mauriciodmo/framekit'
@@ -17,13 +30,17 @@ export default defineTemplate({
   width: 1200,
   height: 630,
   fields: { title: field.text({ label: 'Title' }) },
-  variants: { default: 'en', labels: { en: 'English' } },
-  content: { en: { title: 'Hello' } },
+  variants: { default: 'square', labels: { square: 'Square' } },
+  content: { square: { title: 'Hello' } },
   render({ data, assets, variant, width, height }) {
     return <article style={{ width, height }}>{data.title}</article>
   },
 })
 ```
+
+The name `locale` and the entry-level `language` property mentioned below refer
+only to older template-source APIs. They are not current template properties;
+replace them during migration.
 
 Required source changes:
 
@@ -35,8 +52,8 @@ Required source changes:
 - run `framekit generate`, `framekit check`, and `framekit build`.
 
 This is a breaking template-source change. There is no compatibility alias or
-automatic migration command. The exact metadata refinements and later field
-changes are tracked separately in the future execution plans.
+automatic migration command. The metadata and field changes below are part of
+the same current contract.
 
 See the [canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/1)
 and the [template contract reference](../reference/template-contract.md).
@@ -58,19 +75,26 @@ and the [template contract reference](../reference/template-contract.md#template
 ## Content Variants
 
 Issue [#4](https://github.com/MauricioDMO/FrameKit/issues/4) replaces the
-locale-shaped template content contract with explicit variants. Update existing
-template and editor consumers as follows:
+locale-shaped template content contract with explicit variants. The old
+locale-shaped terminology is historical migration context only: a variant is a
+generic, arbitrary string content key, not a language. Keys such as `square`,
+`campaign-a`, or `en` are all valid when declared in `content`.
+
+Update existing template and editor consumers as follows:
 
 - keep field-only `content` entries and remove any entry-level `language` metadata;
 - require `variants.default` to name an existing content key;
 - keep `variants.labels` optional, and make every label key name an existing content key;
 - reject `variants.mode`, other unsupported variant properties, unknown labels, unknown defaults, and requested variants that are not defined;
 - rename `getLocales` to `getVariants` with no compatibility alias;
-- rename editor content state and actions from locale names to variant names;
+- rename editor content state and actions from old locale names to variant
+  names;
 - change editor persistence from `framekit:<slug>:v1` to `framekit:<slug>:v2`; old `v1` state is discarded, not migrated.
 
 This is a breaking source and persistence change. There is no compatibility alias
-or automatic migration command. Run `framekit generate`, `framekit check`, and
+or automatic migration command. The Studio interface locale (`FrameKitLocale`,
+EN/ES) is separate from template variants; changing interface language does not
+change the selected variant. Run `framekit generate`, `framekit check`, and
 `framekit build` after updating the templates.
 
 See the [content variants issue](https://github.com/MauricioDMO/FrameKit/issues/4)
@@ -79,8 +103,10 @@ and the [template contract reference](../reference/template-contract.md).
 ## Semantic Fields
 
 Issue [#5](https://github.com/MauricioDMO/FrameKit/issues/5) makes the field
-factory API singular and removes the duplicate textarea kind. Update template
-source as follows:
+factory API singular and removes the duplicate textarea kind. References to
+the old plural `fields` factory namespace and `fields.textarea` below are
+historical migration context only. The current API is `field.*`; the template
+definition property is still named `fields`. Update template source as follows:
 
 - change the root import from `fields` to `field`;
 - keep the template definition property named `fields`;
@@ -217,8 +243,9 @@ Issue [#12](https://github.com/MauricioDMO/FrameKit/issues/12) changes the
 project-local generated template registry. Run `framekit generate` after updating
 the project if you need to regenerate it directly, but normal workflows handle
 this automatically: `dev` generates before starting and watches every added,
-removed, or changed path under `src/templates`; `check` and `build` generate
-before validation/build; `start` does not generate.
+removed, or changed path under `src/templates` and `src/brand`; `check` and
+`build` generate before validation/build; `start` does not generate. Changes
+under `src/brand` also regenerate the project-local brand module.
 
 The generated module now exports only `templates: TemplateRegistryEntry[]`. Each
 entry contains `slug`, `segments`, validated `meta`, `width`, `height`, `variants`,
@@ -235,9 +262,30 @@ manually migrate `src/generated/framekit/templates.ts`, and do not retain an
 adapter for the old registry shape. This is a generated-consumer API change; the
 source template definition contract itself does not gain a compatibility alias.
 
+Generation reports the count in English, for example `FrameKit: 1 template` or
+`FrameKit: 3 templates`. In `dev`, the initial generation and later regeneration
+use the same output format.
+
 See the [generated registry CLI reference](../reference/cli.md#framekit-generate),
 the [public API reference](../reference/public-api.md#generated-template-registry),
 and the [Generated Template Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
+
+## Persisted Choice Values
+
+The current persisted-value contract for `field.choice` discards a saved choice
+override when it no longer matches the declared options. It discards only that
+override: valid sibling overrides in the same or another valid variant survive.
+Resolution then uses the current variant content, or the field's current
+default when that content does not provide a value. This behavior is tracked in
+[issue #17](https://github.com/MauricioDMO/FrameKit/issues/17).
+
+The editor reads only `framekit:<slug>:v2`. It does not read or migrate
+`framekit:<slug>:v1`, and no v1 compatibility is promised. Other stale or
+wrongly typed persisted field values are filtered the same way; valid values
+are not discarded merely because a sibling value is stale.
+
+This is a persistence hardening change, not a release-version migration. No
+source migration command is added.
 
 ## Studio Canonical Contract Integration
 
@@ -271,9 +319,11 @@ Update existing consumers as follows:
   control. Preserve string, finite-number, and boolean runtime values; choice
   values remain declared strings.
 - Persist editor state only under `framekit:<slug>:v2`. The previous `v1`
-  persistence format is intentionally invalidated and discarded, not migrated.
-  Empty or temporarily invalid number input stays as a local control draft; it
-  is not committed editor data and is never passed to `render`.
+  persistence format is intentionally invalidated and discarded, not migrated;
+  no v1 compatibility is promised. Stale choice overrides are discarded while
+  valid sibling overrides survive, after which current content/default fallback
+  applies. Empty or temporarily invalid number input stays as a local control
+  draft; it is not committed editor data and is never passed to `render`.
 - Keep Studio-owned navigation and error UI localized through the centralized
   Studio messages. Route tabs, sidebar navigation labels, metadata labels,
   loading and not-found states, definition/data errors, upload errors, export
@@ -291,3 +341,16 @@ instead of editing them by hand, then run `framekit check` and `framekit build`.
 
 See the [Studio canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/13)
 and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).
+
+## Verification and release status
+
+Issue [#15](https://github.com/MauricioDMO/FrameKit/issues/15) records the
+versionless verification gates. The repository CI defines full checks on
+Ubuntu with Node.js `22.13.0` and `24`, a focused generated-consumer smoke on
+Windows with Node.js `22.13.0`, and one Chromium Studio critical path. These
+checks do not claim broad browser, macOS, or visual-regression coverage.
+
+The pre-publication tarball and post-publication npm checks take package
+versions supplied during release preparation. They do not select a release
+version here. The verification work changes no persisted user data and needs
+no additional migration.

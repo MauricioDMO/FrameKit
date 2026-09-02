@@ -4,10 +4,16 @@
 
 FrameKit utiliza Vitest como entorno de pruebas en todos los workspaces. Los siguientes comandos están disponibles desde la raíz del repositorio:
 
+Desde un checkout nuevo, construye primero `@mauriciodmo/framekit` antes de
+ejecutar `pnpm test`, `pnpm typecheck` o la prueba focalizada de Studio; los
+scripts de Studio invocan el CLI de FrameKit desde el paquete construido. El
+lane de CI construye los paquetes públicos antes de esos checks.
+
 - `pnpm test` — ejecuta Vitest en todos los workspaces que definen un script `test`
 - `pnpm --filter @mauriciodmo/framekit test` — ejecuta las pruebas unitarias del paquete central; las pruebas se ejecutan en entorno Node, con jsdom habilitado para las pruebas del editor que requieren DOM o localStorage
 - `pnpm --filter studio test` — ejecuta pruebas de integración para la aplicación Studio; `framekit generate` se llama como paso previo antes de que Vitest se ejecute
 - `pnpm --filter @mauriciodmo/create-framekit test` — ejecuta pruebas unitarias para el paquete CLI
+- `pnpm test:e2e` — ejecuta la única prueba crítica en Chromium; primero instala el navegador con `pnpm exec playwright install chromium`
 - `pnpm typecheck` — ejecuta `tsc --noEmit` en todos los paquetes y adicionalmente verifica el conjunto de fixtures de tipos (casos positivos y negativos de plantillas)
 - `pnpm lint` — ejecuta ESLint en todos los workspaces
 - `pnpm build` — reconstruye todos los workspaces completamente; el paquete central se construye primero, luego todos los workspaces dependientes
@@ -28,19 +34,35 @@ Las siguientes áreas están cubiertas por el conjunto de pruebas:
 
 **CLI:** Análisis de argumentos y rutas de error, verificación que activa el build de Next.js y descubrimiento de directorios de plantillas independientes.
 
+**E2E de navegador:** Un único flujo de Playwright en Chromium abre la entrada
+del registro generado `redes-sociales/instagram/promocion-cuadrada`, verifica su
+metadata y dimensiones, cambia variantes, edita campos de texto/número/opciones/
+booleano/color, comprueba que un borrador numérico incompleto no sustituye el
+valor confirmado del preview y exporta un PNG con las dimensiones declaradas.
+
 **Fixtures de tipos:** Tanto casos positivos (plantillas válidas que deben verificar tipos) como casos negativos (plantillas inválidas que deben producir un error de `tsc`, usando `@ts-expect-error`) se ejecutan como parte de `pnpm typecheck`.
 
 ## Qué no se prueba
 
 El conjunto de pruebas no cubre:
 
-- **Pruebas de extremo a extremo en navegador** — no existen pruebas de Playwright ni Cypress; las pruebas de integración de Studio cubren la generación y el build, pero no automatizan un navegador.
-- **Regresión visual** — no existen pruebas de comparación de píxeles PNG ni de dimensiones.
-- **Flujo completo de Studio** — navegar a una página, editar un field, cambiar de variante, hacer reset y exportar el resultado no está cubierto como un flujo automatizado único.
-- **Build y arranque en producción** — la ejecución correcta de `next build` seguida de `next start` no se verifica en las pruebas unitarias ni de integración.
-- **Copia de assets** — la copia del directorio public y archivos estáticos no tiene pruebas unitarias directas.
-- **Otros sistemas operativos** — Windows y macOS no se verifican, por lo que esta documentación no garantiza una compatibilidad completa entre plataformas.
+- **Regresión visual** — el E2E de Chromium valida la firma PNG y las dimensiones de su cabecera, pero no existen pruebas de comparación de píxeles PNG ni snapshots visuales.
+- **Matriz de navegadores** — solo se cubre el flujo crítico de Chromium; Firefox, WebKit, snapshots visuales, exportación al portapapeles y carga de imágenes no son gates requeridos.
+- **Build y arranque de producción como un único smoke** — CI ejecuta builds de producción, pero no arranca el servidor standalone generado; el smoke aislado de tarballs de abajo cubre manualmente la secuencia de build y arranque, no Vitest ni el lane PR de Chromium.
+- **Copia de assets del standalone de producción** — la copia del directorio public del consumidor y de los archivos estáticos de Next en la salida standalone no tiene pruebas unitarias directas; las pruebas de codegen sí cubren el descubrimiento y la copia de assets de plantillas.
+- **Otros sistemas operativos** — Windows tiene un smoke focalizado de consumidor en CI, pero esta documentación no garantiza soporte amplio de Windows ni macOS.
 - **Comportamiento del watcher** — la propagación de señales, vigilancia de archivos bajo carga y casos extremos del watcher están fuera del alcance actual de las pruebas.
+
+## Gates permanentes de CI
+
+- Ubuntu ejecuta las verificaciones completas del repositorio en Node.js `22.13.0` y `24` con pnpm `11.14.0`.
+- Windows ejecuta las verificaciones focalizadas de discovery, codegen, creator, typecheck, paquetes y consumidor generado en Node.js `22.13.0`.
+- Ubuntu ejecuta el único E2E de Chromium en Node.js `22.13.0`; el lane instala Chromium e inicia Studio con `pnpm dev`.
+
+El smoke de creator en Windows usa `create-framekit <directorio> -n`, instala las
+dependencias del proyecto generado y ejecuta `framekit generate` y
+`framekit check`. No afirma cobertura de build de producción ni de navegador en
+Windows.
 
 ## Distribución y empaquetado
 
@@ -72,16 +94,219 @@ Cuando un usuario ejecuta `create-framekit`, el directorio `template/` se copia 
 
 ## Prueba de humo del tarball (manual)
 
-Para validar ambos tarballs antes de cualquier paso de publicación:
+Ejecuta esta secuencia versionless desde una shell Bash. Los dos tarballs se
+construyen en un directorio temporal y cada consumidor se crea fuera del
+repositorio. No ejecutes los comandos del consumidor desde el checkout de
+FrameKit.
 
-1. Crear un proyecto consumidor aislado fuera del repositorio de FrameKit.
-2. Instalar el tarball de FrameKit en el: `pnpm add <ruta-al-tgz-de-framekit>`.
-3. Ejecutar `pnpm check` y `pnpm build` en el proyecto consumidor y confirmar que ambos finalizan correctamente.
-4. Instalar el tarball de `create-framekit` y ejecutar `create-framekit <nuevo-directorio>` desde una ruta fuera del repositorio.
-5. Dentro del proyecto generado, sustituir la dependencia de FrameKit del workspace por el tarball local, luego ejecutar `pnpm install`, `pnpm check` y `pnpm build`.
-6. Confirmar que `src/generated/framekit/templates.ts` se genera y está en gitignore, y que ninguno de los dos tarballs dejó ninguna referencia al workspace original.
+```bash
+set -eu
 
-Ambos tarballs deben instalarse y generar sin errores antes de cualquier intento de publicación.
+REPO_ROOT="$PWD"
+SMOKE_DIR="$(mktemp -d)"
+trap 'rm -rf "$SMOKE_DIR"' EXIT
+
+pnpm --filter @mauriciodmo/framekit build
+pnpm --filter @mauriciodmo/create-framekit build
+pnpm --filter @mauriciodmo/framekit pack --pack-destination "$SMOKE_DIR"
+pnpm --filter @mauriciodmo/create-framekit pack --pack-destination "$SMOKE_DIR"
+
+CORE_TGZ="$(find "$SMOKE_DIR" -maxdepth 1 -name 'mauriciodmo-framekit-*.tgz' -print -quit)"
+CREATOR_TGZ="$(find "$SMOKE_DIR" -maxdepth 1 -name 'mauriciodmo-create-framekit-*.tgz' -print -quit)"
+test -n "$CORE_TGZ" && test -n "$CREATOR_TGZ"
+
+# Límites del paquete: existen los archivos esperados y no se publican fuentes/tests/secrets.
+tar -tzf "$CORE_TGZ" | rg -q '^package/bin/framekit\.js$'
+tar -tzf "$CORE_TGZ" | rg -q '^package/dist/index\.js$'
+tar -tzf "$CORE_TGZ" | rg -q '^package/dist/styles\.css$'
+tar -tzf "$CREATOR_TGZ" | rg -q '^package/dist/cli\.js$'
+tar -tzf "$CREATOR_TGZ" | rg -q '^package/template/package\.json$'
+for archive in "$CORE_TGZ" "$CREATOR_TGZ"; do
+  if tar -tzf "$archive" | rg -q '(^|/)tests?/|(^|/)node_modules/|(^|/)\.env'; then
+    printf 'Archivo inesperado de tests, dependencia o secreto en %s\n' "$archive" >&2
+    exit 1
+  fi
+done
+
+# Ningún archivo conserva metadata workspace, links locales ni la ruta absoluta del checkout.
+mkdir "$SMOKE_DIR/inspect-core" "$SMOKE_DIR/inspect-creator"
+tar -xzf "$CORE_TGZ" -C "$SMOKE_DIR/inspect-core"
+tar -xzf "$CREATOR_TGZ" -C "$SMOKE_DIR/inspect-creator"
+for directory in "$SMOKE_DIR/inspect-core/package" "$SMOKE_DIR/inspect-creator/package"; do
+  if rg -n --hidden -e 'workspace:' -e 'link:' -e 'file:\.\.' "$directory" || rg -n --hidden -F "$REPO_ROOT" "$directory"; then
+    printf 'Referencia al workspace encontrada en %s\n' "$directory" >&2
+    exit 1
+  fi
+done
+
+# Instala el creator en un runner separado y crea un proyecto sin interacción.
+mkdir "$SMOKE_DIR/runner"
+cd "$SMOKE_DIR/runner"
+npm init -y
+npm install "$CREATOR_TGZ"
+npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
+
+# Sustituye la dependencia generada por el tarball del core y usa el gestor de paquetes del proyecto generado.
+cd "$SMOKE_DIR/consumer"
+node --input-type=module - "$CORE_TGZ" <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+
+const [tarball] = process.argv.slice(2)
+const packagePath = path.resolve('package.json')
+const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
+packageJson.dependencies['@mauriciodmo/framekit'] = `file:${path.resolve(tarball)}`
+await writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)
+NODE
+npm install
+npx --no-install framekit generate
+npx --no-install framekit check
+npx --no-install framekit build
+test -f src/generated/framekit/templates.ts
+rg -q '^src/generated/framekit$' .gitignore
+
+# Inicia el servidor standalone, consulta un route de Studio por HTTP y limpia con el trap.
+PORT=4317
+HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" 2>/dev/null || true; wait "$SERVER_PID" 2>/dev/null || true; rm -rf "$SMOKE_DIR"' EXIT
+node --input-type=module - "$PORT" <<'NODE'
+const port = process.argv[2]
+const deadline = Date.now() + 30_000
+
+while (Date.now() < deadline) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+    if (response.ok) process.exit(0)
+  } catch {
+    // El servidor standalone todavía puede estar iniciando.
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250))
+}
+
+console.error(`Studio no estuvo listo en el puerto ${port}`)
+process.exit(1)
+NODE
+```
+
+El smoke solo pasa cuando ambos tarballs reales tienen el contenido esperado,
+no contienen `workspace:`, links locales ni rutas del checkout, y el consumidor generado por
+el creator completa generation, check, build de producción, arranque standalone
+y readiness HTTP. El smoke exacto contra npm después de publicar permanece como
+handoff separado con las especificaciones de paquetes suministradas durante el
+release; consulta el [smoke del registro npm después de publicar](#smoke-del-registro-npm-después-de-publicar-manual-antes-de-promocionar).
+
+## Smoke del registro npm después de publicar (manual, antes de promocionar)
+
+Ejecuta esto solo cuando los paquetes ya estén disponibles en npm. Es una puerta
+separada del smoke de tarballs previo a publicar: no puede impedir la carga
+inicial, pero un fallo bloquea la promoción al dist-tag previsto. Nunca publiques
+ni cambies un dist-tag como parte de esta comprobación.
+
+Proporciona estas entradas durante el release. Ambas especificaciones deben ser
+especificaciones exactas del registro, no rangos; el dist-tag se comprueba por
+separado:
+
+```bash
+set -eu
+
+: "${CORE_SPEC:?Define la especificación npm exacta de @mauriciodmo/framekit}"
+: "${CREATOR_SPEC:?Define la especificación npm exacta de @mauriciodmo/create-framekit}"
+: "${EXPECTED_DIST_TAG:?Define el dist-tag npm previsto}"
+
+CORE_VERSION="$(npm view "$CORE_SPEC" version)"
+CREATOR_VERSION="$(npm view "$CREATOR_SPEC" version)"
+test "$CORE_SPEC" = "@mauriciodmo/framekit@$CORE_VERSION"
+test "$CREATOR_SPEC" = "@mauriciodmo/create-framekit@$CREATOR_VERSION"
+
+# Comprueba el dist-tag previsto de forma independiente del smoke del consumidor.
+test "$(npm view @mauriciodmo/framekit "dist-tags.$EXPECTED_DIST_TAG")" = "$CORE_VERSION"
+test "$(npm view @mauriciodmo/create-framekit "dist-tags.$EXPECTED_DIST_TAG")" = "$CREATOR_VERSION"
+
+SMOKE_DIR="$(mktemp -d)"
+SERVER_PID=""
+cleanup() {
+  if test -n "$SERVER_PID"; then
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+  fi
+  rm -rf "$SMOKE_DIR"
+}
+trap cleanup EXIT
+
+# El runner y el consumidor están fuera del checkout de FrameKit.
+mkdir "$SMOKE_DIR/runner"
+cd "$SMOKE_DIR/runner"
+npm init -y >/dev/null
+npm install "$CREATOR_SPEC" "$CORE_SPEC"
+test -x node_modules/.bin/create-framekit
+test -x node_modules/.bin/framekit
+test -f node_modules/@mauriciodmo/create-framekit/dist/cli.js
+test -f node_modules/@mauriciodmo/framekit/bin/framekit.js
+node --input-type=module <<'NODE'
+for (const specifier of [
+  '@mauriciodmo/framekit',
+  '@mauriciodmo/framekit/editor',
+  '@mauriciodmo/framekit/studio',
+  '@mauriciodmo/framekit/studio/root',
+  '@mauriciodmo/framekit/dev',
+  '@mauriciodmo/framekit/styles.css',
+]) console.log(specifier, import.meta.resolve(specifier))
+NODE
+
+npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
+cd "$SMOKE_DIR/consumer"
+CORE_VERSION="$CORE_VERSION" node --input-type=module <<'NODE'
+import { readFile, writeFile } from 'node:fs/promises'
+
+const packagePath = 'package.json'
+const packageJson = JSON.parse(await readFile(packagePath, 'utf8'))
+const declared = packageJson.dependencies?.['@mauriciodmo/framekit']
+if (typeof declared !== 'string' || declared.length === 0) throw new Error('La plantilla del creator no tiene dependencia de FrameKit')
+console.log(`Dependencia de FrameKit declarada por la plantilla del creator: ${declared}`)
+packageJson.dependencies['@mauriciodmo/framekit'] = process.env.CORE_VERSION
+await writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)
+NODE
+npm install
+CORE_VERSION="$CORE_VERSION" node --input-type=module <<'NODE'
+import { readFile } from 'node:fs/promises'
+
+const installed = JSON.parse(await readFile('node_modules/@mauriciodmo/framekit/package.json', 'utf8'))
+if (installed.version !== process.env.CORE_VERSION) throw new Error(`Versión inesperada de FrameKit: ${installed.version}`)
+NODE
+npx --no-install framekit generate
+npx --no-install framekit check
+npx --no-install framekit build
+test -f src/generated/framekit/templates.ts
+
+PORT=4318
+HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+SERVER_PID=$!
+node --input-type=module - "$PORT" <<'NODE'
+const port = process.argv[2]
+const deadline = Date.now() + 30_000
+
+while (Date.now() < deadline) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+    if (response.ok) process.exit(0)
+  } catch {
+    // El servidor standalone todavía puede estar iniciando.
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250))
+}
+
+console.error(`Studio no estuvo listo en el puerto ${port}`)
+process.exit(1)
+NODE
+```
+
+Registra el resultado antes de la limpieza: `CORE_SPEC`, `CREATOR_SPEC`, las
+versiones resueltas, `EXPECTED_DIST_TAG`, el registro, las versiones de Node/npm,
+la marca de tiempo, PASS o FAIL y la salida relevante o el log de arranque. El
+rango/versión de FrameKit declarado por el creator y la versión exacta del core
+instalado deben constar en ese registro. Una carga exitosa no equivale a una
+puerta de registro exitosa.
 
 ---
 

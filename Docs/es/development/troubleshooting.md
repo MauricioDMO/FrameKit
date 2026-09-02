@@ -12,9 +12,9 @@ FrameKit descubre las plantillas escaneando el directorio `src/templates`. Si el
 
 Si el directorio no contiene directorios de plantillas, `framekit generate` no encuentra nada que registrar. Añade al menos un directorio de plantilla con un archivo `template.tsx` dentro. Si `src/templates` no existe, la generación falla con un error del sistema de archivos `ENOENT`; primero crea el directorio.
 
-**Causa: los directorios de plantillas no siguen kebab-case**
+**Causa: los segmentos de ruta de plantilla no siguen kebab-case**
 
-Cada directorio dentro de `src/templates` debe seguir el patrón `^[a-z0-9]+(?:-[a-z0-9]+)*$` — letras minúsculas, números y guiones simples entre segmentos. Un directorio llamado `MyTemplate`, `my_template` o `template.v1` hará que `framekit generate` falle con un error de segmento inválido.
+Cada directorio alcanzable dentro de `src/templates` debe seguir el patrón `^[a-z0-9]+(?:-[a-z0-9]+)*$` — letras minúsculas, números y guiones simples entre segmentos. Un directorio llamado `MyTemplate`, `my_template` o `template.v1` hará que `framekit generate` falle con un error de segmento inválido.
 
 **Causa: los directorios que comienzan con `_` o `.` se ignoran**
 
@@ -22,7 +22,7 @@ FrameKit omite cualquier directorio cuyo nombre empiece por `_` o `.`. Estos se 
 
 **Causa: falta el archivo `template.tsx` dentro del directorio**
 
-Cada directorio de plantilla debe contener un archivo `template.tsx`. Los directorios sin este archivo se tratan como carpetas de categoría y FrameKit desciende en ellos buscando un `template.tsx` más abajo, pero un directorio sin `template.tsx` en ningún nivel no aporta nada al catálogo.
+Cada directorio hoja de plantilla debe contener un archivo `template.tsx`. Un directorio sin este archivo se trata como una carpeta de categoría y FrameKit desciende en él buscando un `template.tsx` más abajo; un directorio sin `template.tsx` en ningún nivel no aporta nada al catálogo.
 
 **Solución: ejecuta `framekit generate`**
 
@@ -210,13 +210,13 @@ Instala `python`, `make` y una cadena de herramientas de C++ (como `build-essent
 
 ## El puerto de `framekit dev` ya está en uso
 
-**Causa: otro proceso ocupa el puerto**
+**Causa: otro proceso ocupa el puerto solicitado**
 
-El puerto por defecto es `3000`. Si algo más ya está escuchando en ese puerto, `framekit dev` termina con un error.
+El puerto por defecto es `3000`. Si algo más ya está escuchando en el puerto solicitado, `framekit dev` prueba el siguiente puerto. Termina con un error si no encuentra un puerto utilizable antes de `65535`.
 
 **Solución: establece un puerto diferente**
 
-Usa la variable de entorno `PORT` para elegir un puerto disponible:
+Usa la variable de entorno `PORT` para elegir el primer puerto que probará FrameKit:
 
 ```
 PORT=3001 framekit dev
@@ -236,25 +236,53 @@ FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 
 `framekit build` ejecuta `framekit check` antes de compilar. La validación detecta problemas estructurales en las definiciones de las plantillas, incluyendo:
 
-- dimensiones inválidas (ancho o alto que no sean enteros positivos)
-- campos requeridos faltantes
-- sin entradas de contenido para una variante
-- un objeto `meta` o `variants` ausente o mal formado
-- una variante predeterminada que no está declarada en `content`
-- un campo llamado `language` (esta clave está reservada)
-- una key de contenido que no está declarada en `fields`
+- dimensiones inválidas (ancho o alto que no sean enteros positivos y finitos)
+- un objeto `meta`, `fields`, `variants` o `content` ausente o mal formado
+- propiedades desconocidas de nivel superior, metadata, variantes o contenido
+- tipos de field o propiedades y restricciones específicas del field inválidos
+- opciones o valores predeterminados de choice inválidos, valores predeterminados, límites o steps numéricos inválidos, o límites de longitud de texto inválidos
+- una variante predeterminada o una etiqueta de variante que no está declarada en `content`
+- un field llamado `language` (esta clave está reservada)
+- valores de contenido con el tipo incorrecto o restricciones numéricas inválidas
+- un `render` ausente o que no sea una función
 
-La comprobación produce una salida de errores estructurada por plantilla, por variante y por field, nombrando el archivo exacto y la regla que falló.
+Los errores de definición identifican el `template.tsx` y la regla afectada. Los errores de datos resueltos identifican la plantilla, la variante y el field que falló.
+
+La comprobación de datos resueltos también informa de valores requeridos vacíos, colores o choices inválidos, valores que no sean booleanos, texto fuera de sus límites de longitud y valores numéricos inválidos (incluidos los que incumplen los límites o el `step`).
 
 **Solución: ejecuta `framekit check` para ver los errores detallados**
 
-Ejecuta el comando check directamente para ver todos los errores de validación sin hacer una compilación completa:
+Ejecuta el comando check directamente para ver los errores de validación sin hacer una compilación completa:
 
 ```
 framekit check
 ```
 
-**Nota:** `framekit check` no verifica que una plantilla se renderice correctamente ni que la exportación PNG funcione. Solo comprueba la estructura de la definición y la forma de los datos.
+**Nota:** `framekit check` no verifica que una plantilla se renderice correctamente ni que la exportación PNG funcione. Solo comprueba la estructura de la definición y la forma de los datos resueltos.
+
+---
+
+## Studio pierde ediciones o muestra un valor antiguo
+
+Studio guarda las ediciones del usuario en el `localStorage` del navegador, bajo la clave exacta `framekit:<slug>:v2`, agrupadas por variante de contenido. Solo lee esta clave `v2`; el estado `v1` no se lee ni se migra, y no se promete compatibilidad con `v1`.
+
+**Causa: el estado persistido está obsoleto o mal formado**
+
+Al cargar una sesión, Studio omite variantes y fields desconocidos, valores numéricos inválidos (incluidos los no finitos, fuera de rango o que no coinciden con el step) y choices que no están entre las opciones actuales. Conserva las ediciones válidas de los demás fields. Un JSON inválido, un payload que no sea un objeto o un `selectedVariant` persistido inválido hace que Studio empiece con los valores predeterminados de la definición actual. Los errores de almacenamiento se ignoran para que la edición pueda continuar en memoria.
+
+**Solución: inspecciona o elimina la entrada `v2` actual**
+
+Revisa el almacenamiento del navegador para `framekit:<slug>:v2`, o elimina esa clave exacta y recarga para restablecer la sesión. El botón Restablecer elimina las ediciones solo de la variante seleccionada; cambiar de variante no elimina las ediciones de las demás variantes.
+
+**Nota:** un borrador numérico incompleto o inválido permanece local al input y no se confirma en el estado del editor, los datos de la vista previa ni la persistencia. Corrige el valor o cambia/restablece la variante.
+
+---
+
+## Gates de verificación del repositorio
+
+Los gates permanentes del repositorio son versionless: no seleccionan una versión de release. Ubuntu ejecuta las comprobaciones completas con Node.js `22.13.0` y `24` y pnpm `11.14.0`, incluyendo `pnpm check:runtime`, lint, tests, comprobación de tipos, builds y comprobaciones dry de los paquetes. Windows ejecuta comprobaciones focalizadas del consumidor generado con Node.js `22.13.0`: tests de discovery/codegen, tests del creator, comprobación de tipos, empaquetado, `framekit generate` y `framekit check`. Ubuntu también ejecuta un único flujo crítico de Studio con Chromium y Node.js `22.13.0` mediante `pnpm test:e2e`.
+
+Estos gates no sustituyen la verificación del release. Los smokes reales de tarballs y del registro npm usan versiones de paquetes proporcionadas durante la preparación del release; los gates versionless del repositorio no codifican ninguna versión de release.
 
 ---
 
@@ -262,7 +290,7 @@ framekit check
 
 **Causa: no existe una build de producción**
 
-`framekit start` necesita la salida de `framekit build`, que produce un servidor Node.js standalone dentro de `.framekit/next`. Si no has ejecutado `framekit build`, el servidor no puede iniciarse.
+`framekit start` necesita la salida de `framekit build`, que produce un servidor Node.js standalone dentro de `.framekit/next`. Si no has ejecutado `framekit build`, el servidor no puede iniciarse. A diferencia de `dev`, `check` y `build`, `start` no regenera ni valida las plantillas: solo localiza e inicia el servidor standalone existente.
 
 **Solución: ejecuta `framekit build` primero**
 
@@ -275,9 +303,9 @@ framekit start
 
 En estructuras de monorepo anidadas, `framekit start` puede encontrar más de un `server.js` dentro del directorio de salida standalone. Resuelve la ambigüedad buscando un archivo `BUILD_ID` en un directorio `.framekit/next` junto a cada `server.js`.
 
-**Solución: asegúrate de tener una única salida de `next build`**
+**Solución: asegúrate de tener una única salida standalone coincidente**
 
-`framekit build` copia los assets estáticos de `.framekit/next/static` a la salida standalone. Ejecuta `framekit build` desde una única compilación de Next.js (no varias), y evita directorios `.next` o `standalone` anidados que puedan confundir la búsqueda.
+`framekit build` copia los assets estáticos de `.framekit/next/static` a la salida standalone. Ejecuta `framekit build` desde una única compilación de Next.js (no varias) y evita salidas standalone anidadas que contengan otro `server.js` con un `.framekit/next/BUILD_ID` adyacente, ya que podrían crear varios candidatos coincidentes.
 
 **Nota:** FrameKit identifica el servidor correcto buscando un archivo `BUILD_ID` en la ubicación esperada junto a cada candidato `server.js`.
 
@@ -289,7 +317,7 @@ El otro fallo de inicio en producción se reporta con código `1` y el mensaje l
 
 **Causa: errores de validación de datos**
 
-La exportación requiere que todos los datos de la plantilla sean válidos. Campos requeridos vacíos, URLs inválidas y números fuera del rango declarado causan fallos de validación que impiden que la exportación produzca una imagen utilizable.
+La exportación requiere que todos los datos de la plantilla sean válidos. Los campos requeridos vacíos, los colores o choices inválidos, los valores que no sean booleanos, el texto fuera de los límites de longitud declarados y los números fuera de su rango finito o `step` declarado causan fallos de validación que impiden que la exportación produzca una imagen utilizable.
 
 **Causa: las fuentes aún no se han cargado**
 
@@ -305,23 +333,19 @@ La exportación PNG usa `modern-screenshot` (que depende de DOM y canvas). Algun
 
 **Nota:** La exportación es enteramente del lado del navegador; no hay renderizado del lado del servidor.
 
-**Nota:** Esta es una función en alpha. Aún no hay opciones de formato o escala — solo PNG, a las dimensiones declaradas en la definición de la plantilla, a escala 1.
+**Nota:** La exportación actual no ofrece opciones de formato ni escala: solo PNG, a las dimensiones declaradas en la definición de la plantilla, a escala 1.
 
 ---
 
-## Los cambios en archivos generados no se reflejan en dev
+## Los cambios en plantillas no se reflejan en dev
 
-**Causa: editar contenido de plantilla existente depende de Next HMR, no de la regeneración del registro**
+**Causa: la generación o HMR no se completó**
 
-Los cambios en el contenido dentro de un archivo `template.tsx` existente son detectados por Hot Module Replacement de Next.js, no por el watcher de FrameKit. El watcher solo responde a cambios estructurales.
+El watcher observa cada archivo y directorio bajo `src/templates`. Las adiciones, ediciones y eliminaciones activan la regeneración del registro; Hot Module Replacement de Next.js también puede actualizar una vista previa de plantilla ya cargada. Si un cambio no se refleja, revisa el terminal de `framekit dev` en busca de un error de generación o HMR.
 
-**Causa: el registro solo se regenera para archivos o directorios de `template.tsx` NUEVOS o ELIMINADOS**
+**Solución: regenera o reinicia `framekit dev`**
 
-El watcher desencadena la regeneración del registro cuando se añade o elimina un `template.tsx`, o cuando se añade o elimina un directorio bajo `src/templates`. Editar el cuerpo de un `template.tsx` existente no regenera el catálogo.
-
-**Solución: reinicia `framekit dev` si los cambios estructurales no desencadenan la regeneración**
-
-Si añades o eliminas un directorio de plantilla o archivo `template.tsx` y el catálogo no se actualiza, reinicia `framekit dev`.
+Ejecuta `framekit generate` para actualizar manualmente el registro. Si el servidor de desarrollo aún no refleja un cambio de origen, reinicia `framekit dev`.
 
 ---
 
@@ -347,7 +371,7 @@ $env:VAR="value"; pnpm dev
 
 Como alternativa, establece la variable de forma permanente mediante `setx` o a través de la UI de Variables de Entorno de Windows.
 
-**Nota:** `create-framekit` selecciona `pnpm.cmd` en Windows, pero el flujo completo en Windows no está cubierto por CI ni por la suite automatizada actual.
+**Nota:** `create-framekit` selecciona `pnpm.cmd` en Windows. CI cubre un flujo focalizado de consumidor generado en Windows (discovery/codegen, creator, comprobación de tipos, empaquetado, `generate` y `check`), no todo el flujo de producción ni el de navegador.
 
 ---
 

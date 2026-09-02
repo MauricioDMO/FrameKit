@@ -8,6 +8,11 @@ runtime a `@mauriciodmo/framekit@0.8.0`.
 Está dirigida a proyectos FrameKit existentes, proyectos generados por
 `create-framekit`, autores de plantillas y consumidores de la API pública.
 
+> **Registro histórico:** este archivo documenta únicamente la ruta publicada de
+> 0.7.0 a 0.8.0. Sus versiones fijadas de paquetes y ejemplos de CLI son
+> históricos y no constituyen la guía rolling actual. Para el contrato
+> implementado sin versión, usa la [Guía de Migración Rolling](./migration-next.md).
+
 ## Lista rápida de migración
 
 ### Obligatorio

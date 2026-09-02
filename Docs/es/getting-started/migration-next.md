@@ -1,13 +1,26 @@
 # Guía de Migración Rolling
 
-Esta guía registra el siguiente trabajo de migración sin versión. Todavía no se
-ha seleccionado una versión de release.
+Esta es la guía rolling actual para adoptar el contrato implementado sin
+versión. Intencionalmente no selecciona una versión de release del paquete.
+Para la ruta de release anterior de 0.7.0 a 0.8.0, consulta la [guía de
+migración histórica](./migration-v0.8.0.md).
+
+## Prerrequisitos y alcance actuales
+
+- Usa Node.js `>=22.13.0` y pnpm `>=11.14.0`, como exigen los manifests
+  actuales del workspace y de los paquetes públicos. Los rangos actuales de
+  peers del runtime público son Next.js `>=16 <17` y React/React DOM `>=19 <20`.
+- Esta guía no exige una versión alpha, futura ni preseleccionada del paquete.
+  La selección de versión de release es un paso separado de los maintainers.
+- El comportamiento canónico de runtime y Studio descrito aquí está
+  implementado. Una API de generación de imágenes en servidor y otro trabajo
+  futuro del roadmap no forman parte de este contrato.
 
 ## Contrato Canónico De Plantillas
 
 El issue [#1](https://github.com/MauricioDMO/FrameKit/issues/1) establece una
-única forma de plantilla para Studio y la futura frontera de renderizado de
-servidor. Actualiza cada definición para incluir:
+única forma de plantilla para el runtime y Studio. Actualiza cada definición
+para incluir:
 
 ```tsx
 import { defineTemplate, field } from '@mauriciodmo/framekit'
@@ -17,13 +30,17 @@ export default defineTemplate({
   width: 1200,
   height: 630,
   fields: { title: field.text({ label: 'Título' }) },
-  variants: { default: 'en', labels: { en: 'English' } },
-  content: { en: { title: 'Hola' } },
+  variants: { default: 'square', labels: { square: 'Square' } },
+  content: { square: { title: 'Hola' } },
   render({ data, assets, variant, width, height }) {
     return <article style={{ width, height }}>{data.title}</article>
   },
 })
 ```
+
+El nombre `locale` y la propiedad `language` de nivel de entrada que aparecen
+abajo se refieren únicamente a APIs antiguas del código fuente de las
+plantillas. No son propiedades actuales; reemplázalos durante la migración.
 
 Cambios requeridos en el código fuente:
 
@@ -35,9 +52,8 @@ Cambios requeridos en el código fuente:
 - ejecuta `framekit generate`, `framekit check` y `framekit build`.
 
 Este es un cambio incompatible en el código fuente de las plantillas. No existe
-un alias de compatibilidad ni un comando de migración automático. Las
-refinaciones posteriores de metadata y los cambios futuros de fields se
-rastrean por separado en los planes de ejecución.
+un alias de compatibilidad ni un comando de migración automático. Los cambios
+de metadata y fields que siguen forman parte del mismo contrato actual.
 
 Consulta el [issue del contrato canónico](https://github.com/MauricioDMO/FrameKit/issues/1)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
@@ -60,6 +76,10 @@ y la [referencia del contrato de plantilla](../reference/template-contract.md#me
 
 El issue [#4](https://github.com/MauricioDMO/FrameKit/issues/4) reemplaza el
 contrato de contenido de plantillas basado en locale por variantes explícitas.
+La terminología basada en locale es solo contexto histórico de migración: una
+variante es una key genérica y arbitraria de `content`, no un idioma. Son
+válidas keys como `square`, `campaign-a` o `en` cuando se declaran en `content`.
+
 Actualiza las plantillas y consumidores del editor existentes de esta forma:
 
 - conserva entradas de `content` que solo contengan valores de fields y elimina cualquier metadata `language` de nivel de entrada;
@@ -67,13 +87,16 @@ Actualiza las plantillas y consumidores del editor existentes de esta forma:
 - deja `variants.labels` como opcional y exige que cada key de label nombre una key de contenido existente;
 - rechaza `variants.mode`, otras propiedades de variante no soportadas, labels desconocidas, defaults desconocidos y variantes solicitadas que no estén definidas;
 - cambia `getLocales` por `getVariants` sin alias de compatibilidad;
-- cambia los nombres de estado y acciones del contenido del editor de locale a variante;
+- cambia los nombres de estado y acciones del contenido del editor de los
+  antiguos nombres de locale a variante;
 - cambia la persistencia del editor de `framekit:<slug>:v1` a `framekit:<slug>:v2`; el estado antiguo `v1` se descarta, no se migra.
 
 Este es un cambio incompatible de código fuente y persistencia. No existe un
-alias de compatibilidad ni un comando de migración automático. Ejecuta
-`framekit generate`, `framekit check` y `framekit build` después de actualizar
-las plantillas.
+alias de compatibilidad ni un comando de migración automático. El locale de la
+interfaz de Studio (`FrameKitLocale`, EN/ES) es independiente de las variantes
+de plantilla; cambiar el idioma de la interfaz no cambia la variante
+seleccionada. Ejecuta `framekit generate`, `framekit check` y `framekit build`
+después de actualizar las plantillas.
 
 Consulta el [issue de variantes de contenido](https://github.com/MauricioDMO/FrameKit/issues/4)
 y la [referencia del contrato de plantilla](../reference/template-contract.md).
@@ -81,8 +104,11 @@ y la [referencia del contrato de plantilla](../reference/template-contract.md).
 ## Fields Semánticos
 
 El issue [#5](https://github.com/MauricioDMO/FrameKit/issues/5) hace singular la
-API de fábricas de fields y elimina el kind duplicado de textarea. Actualiza el
-código fuente de las plantillas así:
+API de fábricas de fields y elimina el kind duplicado de textarea. Las
+referencias al namespace plural antiguo `fields` y a `fields.textarea` que
+siguen son solo contexto histórico de migración. La API actual es `field.*`; la
+propiedad de la definición sigue llamándose `fields`. Actualiza el código
+fuente de las plantillas así:
 
 - cambia el import raíz de `fields` a `field`;
 - conserva la propiedad `fields` dentro de la definición de la plantilla;
@@ -225,8 +251,9 @@ registro de plantillas generado localmente en el proyecto. Ejecuta
 `framekit generate` después de actualizar el proyecto si necesitas regenerarlo de
 forma directa, pero los flujos normales lo hacen automáticamente: `dev` genera
 antes de iniciar y observa cada ruta agregada, eliminada o modificada dentro de
-`src/templates`; `check` y `build` generan antes de validar o compilar; `start` no
-genera.
+`src/templates` y `src/brand`; `check` y `build` generan antes de validar o
+compilar; `start` no genera. Los cambios bajo `src/brand` también regeneran el
+módulo de marcas local al proyecto.
 
 El módulo generado ahora solo exporta `templates: TemplateRegistryEntry[]`. Cada
 entrada contiene `slug`, `segments`, `meta` validada, `width`, `height`,
@@ -244,9 +271,31 @@ adaptador para la forma antigua del registro. Este es un cambio de la API del
 consumidor generado; el contrato de definición de las plantillas no incorpora un
 alias de compatibilidad.
 
+La generación informa el conteo en inglés, por ejemplo `FrameKit: 1 template` o
+`FrameKit: 3 templates`. En `dev`, la generación inicial y las regeneraciones
+posteriores usan el mismo formato.
+
 Consulta la [referencia CLI del registro generado](../reference/cli.md#framekit-generate),
 la [referencia de la API pública](../reference/public-api.md#registro-generado-de-plantillas)
 y el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
+
+## Valores Choice Persistidos
+
+El contrato actual de valores persistidos para `field.choice` descarta un
+override choice guardado cuando ya no coincide con las opciones declaradas.
+Descarta solo ese override: los overrides hermanos válidos de la misma variante
+o de otra variante válida sobreviven. La resolución usa entonces el contenido
+actual de la variante o el default actual del field cuando ese contenido no
+proporciona un valor. Este comportamiento se rastrea en el [issue
+#17](https://github.com/MauricioDMO/FrameKit/issues/17).
+
+El editor solo lee `framekit:<slug>:v2`. No lee ni migra
+`framekit:<slug>:v1`, y no se promete compatibilidad con v1. Los demás valores
+persistidos obsoletos o con tipo incorrecto se filtran de la misma forma; los
+valores válidos no se descartan solo porque un valor hermano esté obsoleto.
+
+Este es un ajuste de robustez de persistencia, no una migración de versión de
+release. No se agrega un comando de migración de código fuente.
 
 ## Integración Del Contrato Canónico De Studio
 
@@ -283,8 +332,11 @@ Actualiza los consumidores existentes de esta forma:
   booleanos; los valores de choice siguen siendo strings declarados.
 - Persiste el estado del editor únicamente bajo `framekit:<slug>:v2`. El formato
   anterior de persistencia `v1` se invalida y descarta intencionalmente; no se
-  migra. Una entrada number vacía o temporalmente inválida permanece como draft
-  local del control; no entra en los datos confirmados ni se pasa a `render`.
+  migra ni se promete compatibilidad con v1. Los overrides choice obsoletos se
+  descartan mientras sobreviven los overrides hermanos válidos, y después se
+  aplican los fallbacks del contenido/default actual. Una entrada number vacía o
+  temporalmente inválida permanece como draft local del control; no entra en los
+  datos confirmados ni se pasa a `render`.
 - Mantén localizados la navegación y la UI de errores propia de Studio mediante
   sus mensajes centralizados. Las tabs de ruta, labels de navegación lateral y
   metadata, estados de carga y no encontrado, errores de definición/datos,
@@ -303,3 +355,17 @@ editarlos a mano y luego ejecuta `framekit check` y `framekit build`.
 
 Consulta el [issue del contrato canónico de Studio](https://github.com/MauricioDMO/FrameKit/issues/13)
 y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).
+
+## Estado de verificación y release
+
+El issue [#15](https://github.com/MauricioDMO/FrameKit/issues/15) registra los
+gates de verificación sin versión. El CI del repositorio define verificaciones
+completas en Ubuntu con Node.js `22.13.0` y `24`, un smoke focalizado de
+consumidor generado en Windows con Node.js `22.13.0` y un único recorrido
+crítico de Studio en Chromium. Estos checks no garantizan una matriz amplia de
+navegadores, macOS ni regresión visual.
+
+Los checks de tarballs antes de publicar y de npm después de publicar reciben
+las versiones durante la preparación del release. No seleccionan una versión
+en esta guía. El trabajo de verificación no cambia datos persistidos del usuario
+y no requiere migración adicional.

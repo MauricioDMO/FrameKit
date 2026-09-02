@@ -1,11 +1,13 @@
 # Template Contract
 
-This document describes the versionless template contract: the field system, variant data handling, render boundary, and validation rules shared by Studio and future server rendering.
+This document describes the versionless template contract: the field system, variant data handling, render boundary, and validation rules used by the current browser-based Studio.
 
 ## Canonical Definition
 
-Every template uses one public shape. `meta` is an exact metadata object, and
-`variants.default` selects one of the field-only `content` entries.
+Every template uses one public shape. `meta` and `variants` are required;
+`meta` is an exact metadata object, and `variants.default` selects one of the
+field-only `content` entries. `variants.default` is a required non-empty string;
+`labels` is optional and maps content keys to non-empty display labels.
 
 ```tsx
 import { defineTemplate, field } from '@mauriciodmo/framekit'
@@ -35,8 +37,18 @@ export default defineTemplate({
 ```
 
 The definition has no version property or editor-only alternate shape. `render`
-receives only `data`, `assets`, `variant`, `width`, and `height`, so the same
-definition can cross a future server-rendering boundary.
+receives only `data`, `assets`, `variant`, `width`, and `height`. Studio invokes
+it in the browser; server-side frame rendering is not currently implemented.
+
+The `render` props are typed from the definition:
+
+- `data` is inferred from `fields`: text, color, and image values are strings;
+  number values are numbers; boolean values are booleans; and choice values are
+  the union of the declared option values.
+- `assets` is a `TemplateAssetManifest` with `common` and variant-keyed asset
+  maps.
+- `variant` is one of the keys in `content`.
+- `width` and `height` retain the definition's numeric types.
 
 ## Template Metadata
 
@@ -81,8 +93,8 @@ field.text({ label: 'Description', placeholder: 'Write something...', minLength:
 A closed-set string field edited with a native `<select>`. `options` must be a
 non-empty ordered array of objects with unique, non-empty string `value` and
 `label` properties. `defaultValue` is required and must match one of the option
-values. Choice fields do not accept `required` or `control`, and values are not
-trimmed or coerced.
+values. Choice fields do not accept `required`, `control`, or `step`, and values
+are not trimmed or coerced.
 
 ```typescript
 field.choice({
@@ -96,8 +108,10 @@ field.choice({
 })
 ```
 
-Content and edits must use one of the declared option values. An unknown value
-returns `{ code: 'invalid_choice' }` during data validation.
+Content and edits should use one of the declared option values. The typed
+`field.choice` builder infers that option-value union; at runtime,
+`validateTemplateData` reports an undeclared value as
+`{ code: 'invalid_choice' }`.
 
 ### `boolean`
 
@@ -140,9 +154,11 @@ declared bounds and `step` using native numeric/range semantics.
 
 Content values, user edits, resolved data, and render props for a number field
 are finite numbers. Numeric strings such as `'10'` are rejected; FrameKit does
-not coerce them. While an input is empty or temporarily malformed, Studio keeps
-that local draft separate from committed numeric data. The draft is not render
-data; the renderer receives only committed finite numbers.
+not coerce them. Definition validation checks numeric content against the
+declared constraints, and `validateTemplateData` checks resolved data. While an
+input is empty or temporarily malformed, Studio keeps that local draft separate
+from committed numeric data. The draft is not render data; the renderer
+receives only committed finite numbers.
 
 ```typescript
 count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100 })
@@ -214,11 +230,14 @@ When a template renders, field values are resolved through a specific order. Thi
 2. **Content variant values**: Values from the template's `content` object for the selected variant.
 3. **User edits**: Values the user has edited in the Studio editor, which override everything else.
 
-For image fields, a matching variant asset takes precedence, followed by a
-matching common asset. If no project asset exists, the normal default, variant,
+For variant-scoped image fields, a matching variant asset takes precedence,
+followed by a matching common asset. Common-scoped image fields use the matching
+common asset. If no applicable project asset exists, the normal default, variant,
 and user-edit resolution is used.
 
-This means user edits take precedence over variant content, which takes precedence over field defaults.
+For fields without an applicable project asset, user edits take precedence over
+variant content, which takes precedence over field defaults. An applicable image
+asset overrides those resolved values for its image field.
 
 ### Resolving Data Programmatically
 
@@ -256,6 +275,10 @@ const variants = getVariants(definition) // e.g., ['en', 'es']
 ```
 
 These keys are arbitrary strings chosen by the template author. They are not restricted to language codes like `en` or `es`.
+
+Studio stores editor overrides by variant in `localStorage` under
+`framekit:<slug>:v2`. The loader reads only this current key; it does not read
+or migrate `v1` state, and no `v1` compatibility is promised.
 
 ## Validation
 
@@ -297,7 +320,7 @@ if (!result.success) {
 - `text` fields: non-empty values must satisfy `minLength` and `maxLength`; length is measured before trimming, so spaces and newlines count
 - `number` fields: value must be a finite number, not a numeric string; it must
   satisfy the declared `min`/`max` bounds and `step` using native numeric/range semantics
-- `color` fields: non-empty values must be six-digit hexadecimal colors in the form `#RRGGBB`
+- `color` fields: non-empty values, after trimming, must be six-digit hexadecimal colors in the form `#RRGGBB`
 - `choice` fields: values must match one of the declared option values
 - `boolean` fields: values must be real booleans; strings are not coerced
 

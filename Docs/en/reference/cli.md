@@ -6,7 +6,7 @@
 framekit <generate|check|dev|build|start>
 ```
 
-All commands use `process.cwd()` as the project root. There is no `--help`, `--version`, or configuration file flag. There is no way to specify an alternate templates directory; FrameKit always scans `src/templates`.
+All `framekit` commands use `process.cwd()` as the project root and reject extra positional arguments or options. There is no `--help`, `--version`, or configuration file flag. There is no way to specify an alternate templates directory; FrameKit always scans `src/templates`.
 
 ---
 
@@ -18,7 +18,7 @@ All commands use `process.cwd()` as the project root. There is no `--help`, `--v
 create-framekit [project-directory] [-y|-n]
 ```
 
-The CLI copies the starter template into a new directory, optionally installs dependencies, generates the template catalog, and optionally initializes Git. It refuses to overwrite an existing directory, including an empty one.
+The CLI copies the starter template into a new directory, optionally installs dependencies, and—when installation is selected and succeeds—generates the template catalog. It can also optionally initialize Git. It refuses to overwrite an existing directory, including an empty one.
 
 Without `-y` or `-n`, when no project directory is provided, it asks for one. It detects `pnpm` or `npm` from the environment and asks you to choose when detection is unavailable. The remaining prompts are:
 
@@ -37,8 +37,8 @@ create-framekit update-skills [project-directory]
 ```
 
 ```sh
-pnpm dlx @mauriciodmo/create-framekit@0.8.2 update-skills
-npm exec --yes @mauriciodmo/create-framekit@0.8.2 -- update-skills ./my-framekit
+pnpm dlx @mauriciodmo/create-framekit update-skills
+npm exec --yes @mauriciodmo/create-framekit -- update-skills ./my-framekit
 ```
 
 If no project directory is provided, it defaults to `.` (the current working directory). The command copies the official skills shipped by the installed `create-framekit` package, replacing the official skill directories. It also removes the known legacy directories: `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation`. Other or custom skill directories are preserved. The command does not update application files.
@@ -61,13 +61,15 @@ The scan registers each non-hidden, non-underscore-prefixed directory containing
 
 If no templates are found, the command exits with code 1 and prints an error message identifying the empty directory. The output file is written only when its content has changed.
 
-Output is written to `src/generated/framekit/templates.ts`. The generated module has one runtime export, `templates: TemplateRegistryEntry[]`. Each entry contains `slug`, `segments`, `meta`, `width`, `height`, `variants`, `variantKeys`, `assets`, and `load`; `load` is a dynamic loader for the template definition. There is no top-level `title`, `templateManifest`, or `templateRegistry`; a template title is nested at `meta.title`.
+Output is written to `src/generated/framekit/templates.ts`. The generated module has one runtime export, `templates: TemplateRegistryEntry[]`. Each entry includes `slug`, `segments`, validated `meta` data, `width` and `height`, `variants`, declaration-ordered `variantKeys`, an `assets` manifest, and a lazy `load` function for the template definition. A template title is available as `meta.title`; there are no top-level `title`, `templateManifest`, or `templateRegistry` outputs. Generation also writes `src/generated/framekit/brands.ts` for the optional brand catalog. This source-side generated output is distinct from `.framekit/next`, which is the Next.js build output configured by `distDir`.
+
+Assets are read from `assets/common` and `assets/<variant>`. Supported image files are copied to `public/__framekit/templates/<slug>/...`, and the manifest URLs point to those copied files. Non-hidden asset subdirectories, invalid names, and duplicate keys are rejected; regenerating removes the previous generated asset tree first.
 
 During generation, every discovered `template.tsx` is imported and validated with `tsx`. Import and definition-validation failures report the path to the affected `template.tsx`.
 
 ```sh
 framekit generate
-# FrameKit: 3 plantilla(s)
+# FrameKit: 3 templates
 ```
 
 ---
@@ -105,7 +107,7 @@ Starts a development server with live template registry updates.
 
 Before starting the server, the command runs `generate` to produce the initial registry. It then starts a Next.js dev server with Turbopack and custom HTTP server handling, including WebSocket upgrades for Hot Module Replacement.
 
-The template watcher observes every file and directory under `src/templates`. Additions, edits, and deletions trigger regeneration. Only one generation runs at a time; if a change arrives while a generation is in progress, the pending change is picked up by the in-progress generation before it exits.
+The template watcher observes every file and directory under `src/templates`. Additions, edits, and deletions trigger regeneration. Changes to any path under `src/brand` trigger regeneration as well; other paths under `src` do not. Only one generation runs at a time; if a change arrives while a generation is in progress, the pending change is picked up by the in-progress generation before it exits.
 
 FrameKit itself resolves the development server hostname and port from the following environment variables (in priority order):
 
@@ -129,7 +131,7 @@ Runs validation and then builds the production Next.js application.
 
 The command first runs `framekit check`, so the registry is generated automatically and all validation runs before the Next.js build. If validation fails, the build is aborted and the Next.js build step is never executed. If validation passes, `next build` is run.
 
-After a successful build, the standalone server output directory is located by searching for a `server.js` file whose sibling `.framekit/next/BUILD_ID` file exists. Exactly one such file must be found; the command fails if zero or multiple candidates are discovered.
+After a successful build, the standalone server output directory is located by searching for a `server.js` file whose adjacent traced output contains `.framekit/next/BUILD_ID`. Exactly one such file must be found; the command fails if zero or multiple candidates are discovered.
 
 Once the standalone server is located, the following assets are copied beside it:
 
@@ -148,7 +150,7 @@ framekit build
 
 Starts the production standalone server. It does not generate the template registry.
 
-The command searches for exactly one `server.js` file inside `.framekit/next/standalone/` whose adjacent traced output directory contains a `BUILD_ID` file. If zero or more than one candidate is found, the command fails with an error. FrameKit does not resolve production host or port options here: it launches `server.js` with the parent environment inherited. Next's generated standalone server reads `PORT`, `HOSTNAME`, and `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` and `HOST` are not mapped to `HOSTNAME`.
+The command searches for exactly one `server.js` file inside `.framekit/next/standalone/` whose adjacent traced output directory contains a `BUILD_ID` file. If zero or more than one candidate is found, the command fails with an error. FrameKit does not resolve production host or port options here: it launches `server.js` with the parent environment inherited. Next's generated standalone server reads `PORT`, `HOSTNAME`, and `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` and `HOST` are not mapped to `HOSTNAME`. `start` itself does not generate or copy registry output; it only locates and launches the existing standalone server.
 
 The standalone server is launched as a child process with an inherited environment. Exit codes and signals are propagated to the parent process.
 
@@ -166,5 +168,11 @@ framekit start
 - `generate` is optional; `dev`, `check`, and `build` generate automatically, while `start` does not.
 - Child processes inherit the parent's environment and stdio.
 - Temporary files are cleaned up even on failure.
+
+## Operational verification gates
+
+The permanent repository gates are versionless: Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`; Windows runs focused generated-consumer checks on Node.js `22.13.0`; and Ubuntu runs one Chromium Studio critical path on Node.js `22.13.0`. The corresponding repository commands include `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e`, and dry package inspection with `pnpm --filter <package> pack --dry-run`.
+
+Distribution checks are separate. During release preparation, maintainers choose package versions and run the real tarball smoke in an isolated consumer; after publication, exact npm package specs and the intended dist-tag are supplied to a separate registry smoke before promotion. No release version is selected or encoded by the versionless repository gates. See [Testing and Distribution](../development/testing-and-distribution.md) for the reproducible sequences.
 
 [English](./cli.md) | [Español](../../es/reference/cli.md)

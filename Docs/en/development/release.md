@@ -16,6 +16,8 @@ pnpm check:runtime
 2. Run the release gate:
 
    ```sh
+   pnpm --filter @mauriciodmo/framekit build
+   pnpm --filter @mauriciodmo/create-framekit build
    pnpm lint
    pnpm test
    pnpm typecheck
@@ -41,16 +43,32 @@ pnpm check:runtime
 
 ## Publish
 
-Publishing is a manual handoff. The assistant must not run `publish` or `git push`. Check the npm session and give the user the commands for each changed package. If both packages are being released, publish FrameKit first because the CLI's generated project depends on it:
+Publishing is a manual handoff. The assistant must not run `publish` or `git push`.
+Check the npm session and give the user the commands for each changed package.
+To keep the post-publication registry gate before final promotion, publish with
+a release-time tag that is not the final promotion tag; this guide does not
+select that tag or any package version. If both packages are being released,
+publish FrameKit first because the CLI's generated project depends on it:
 
 ```sh
 npm whoami
+: "${PUBLISH_TAG:?Set the release-time npm dist-tag}"
 # Include only the packages changed in this release.
-pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
-pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
+pnpm --filter @mauriciodmo/framekit publish --access public --tag "$PUBLISH_TAG"
+pnpm --filter @mauriciodmo/create-framekit publish --access public --tag "$PUBLISH_TAG"
 ```
 
-For a prerelease, replace `latest` with the appropriate channel, such as `alpha`. Do not add `--otp` to the command. If npm requests an OTP, enter it directly in your interactive terminal.
+Do not add `--otp` to the command. If npm requests an OTP, enter it directly
+in your interactive terminal. After the packages are available, run the
+[post-publication npm registry smoke](testing-and-distribution.md#post-publication-npm-registry-smoke-manual-before-promotion)
+with exact `CORE_SPEC`, `CREATOR_SPEC`, and `EXPECTED_DIST_TAG` values supplied
+during release preparation. A failure blocks promotion, not the initial upload;
+record the resolved versions and runtime as described by that check.
+
+After the smoke passes, the user may promote each released package to its final
+dist-tag with `npm dist-tag add <package>@<resolved-version> <final-dist-tag>`.
+Use only the packages released in this handoff and the versions returned by the
+registry smoke.
 
 After the publish commands finish successfully, give the user this push command; do not run it automatically:
 

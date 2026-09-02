@@ -104,7 +104,7 @@ Use this guide to determine where a given piece of code or file should live:
 
 **Files shipped in npm tarballs** — `README.md` and `LICENSE` inside `packages/framekit/` and `packages/create-framekit/` are included in published packages via the `files` field in each `package.json`.
 
-**Historical engineering records** — Documents in `Docs/Plans/framekit-alpha/` capture design decisions and migration history. They are not user-facing documentation and are not synced with current implementation details.
+**Historical engineering records** — [`Docs/Plans/`](../../Plans/README.md) is the current index of execution plans. Older alpha planning material is retained only as a historical engineering record; it does not indicate a current alpha release or status.
 
 ## Development workflow
 

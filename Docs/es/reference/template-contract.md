@@ -1,12 +1,14 @@
 # Contrato de plantilla
 
-Este documento describe el contrato de plantilla sin versión: el sistema de campos, el manejo de datos por variante, la frontera de renderizado y las reglas de validación compartidas por Studio y un futuro renderizador de servidor.
+Este documento describe el contrato de plantilla sin versión: el sistema de campos, el manejo de datos por variante, la frontera de renderizado y las reglas de validación usadas por el Studio actual en el navegador.
 
 ## Definición canónica
 
-Cada plantilla usa una única forma pública. `meta` es un objeto exacto de
-metadata y `variants.default` selecciona una de las entradas de `content`, que
-solo contienen valores de fields.
+Cada plantilla usa una única forma pública. `meta` y `variants` son obligatorios;
+`meta` es un objeto exacto de metadata y `variants.default` selecciona una de
+las entradas de `content`, que solo contienen valores de fields.
+`variants.default` es un string no vacío obligatorio; `labels` es opcional y
+asocia keys de contenido con etiquetas visibles no vacías.
 
 ```tsx
 import { defineTemplate, field } from '@mauriciodmo/framekit'
@@ -37,8 +39,18 @@ export default defineTemplate({
 
 La definición no tiene propiedad de versión ni una forma alternativa exclusiva
 del editor. `render` recibe únicamente `data`, `assets`, `variant`, `width` y
-`height`, por lo que la misma definición puede cruzar una futura frontera de
-renderizado de servidor.
+`height`. Studio la ejecuta en el navegador; el renderizado de frames del lado
+del servidor no está implementado actualmente.
+
+Las props de `render` se tipan a partir de la definición:
+
+- `data` se infiere de `fields`: los valores de text, color e image son strings;
+  los de number son numbers; los de boolean son booleanos; y los de choice son
+  la unión de los valores de opción declarados.
+- `assets` es un `TemplateAssetManifest` con mapas de assets `common` y por
+  clave de variante.
+- `variant` es una de las claves de `content`.
+- `width` y `height` conservan los tipos numéricos de la definición.
 
 ## Metadata De La Plantilla
 
@@ -84,8 +96,8 @@ field.text({ label: 'Description', placeholder: 'Write something...', minLength:
 Un campo de strings de conjunto cerrado que se edita con un `<select>` nativo.
 `options` debe ser un array ordenado no vacío de objetos con propiedades `value`
 y `label` string no vacías y valores únicos. `defaultValue` es obligatorio y
-debe coincidir con uno de los valores. Los campos choice no aceptan `required` ni
-`control`, y sus valores no se recortan ni convierten.
+debe coincidir con uno de los valores. Los campos choice no aceptan `required`,
+`control` ni `step`, y sus valores no se recortan ni convierten.
 
 ```typescript
 field.choice({
@@ -99,8 +111,10 @@ field.choice({
 })
 ```
 
-El contenido y las ediciones deben usar uno de los valores declarados. Un valor
-desconocido devuelve `{ code: 'invalid_choice' }` durante la validación de datos.
+El contenido y las ediciones deberían usar uno de los valores declarados. El
+builder tipado `field.choice` infiere esa unión de valores de opciones; en
+runtime, `validateTemplateData` informa un valor no declarado como
+`{ code: 'invalid_choice' }`.
 
 ### `boolean`
 
@@ -146,10 +160,12 @@ los límites declarados y `step` usando la semántica numérica/de rango nativa.
 
 Los valores de contenido, las ediciones del usuario, los datos resueltos y las
 props de renderizado de un field number son numbers finitos. Los strings
-numéricos como `'10'` se rechazan; FrameKit no los convierte. Mientras un input
-está vacío o es temporalmente incorrecto, Studio mantiene ese draft local
-separado de los datos numéricos confirmados. El draft no es render data; el
-renderizador solo recibe numbers finitos confirmados.
+numéricos como `'10'` se rechazan; FrameKit no los convierte. La validación de
+definiciones comprueba el contenido numérico contra las restricciones declaradas
+y `validateTemplateData` comprueba los datos resueltos. Mientras un input está
+vacío o es temporalmente incorrecto, Studio mantiene ese draft local separado de
+los datos numéricos confirmados. El draft no es render data; el renderizador solo
+recibe numbers finitos confirmados.
 
 ```typescript
 count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100 })
@@ -224,11 +240,16 @@ Cuando una plantilla se renderiza, los valores de los campos se resuelven a trav
 2. **Valores de variante de contenido**: Valores del objeto `content` de la plantilla para la variante seleccionada.
 3. **Ediciones del usuario**: Valores que el usuario ha editado en el editor de Studio, que sobrescriben todo lo demás.
 
-Para campos de imagen, un asset de la variante tiene prioridad, seguido por un
-asset común. Si no existe un asset del proyecto, se usa la resolución normal de
-valor predeterminado, contenido y edición del usuario.
+Para los fields de imagen con alcance variant, un asset de la variante tiene
+prioridad, seguido por un asset común. Los fields de imagen con alcance common
+usan el asset común correspondiente. Si no existe un asset aplicable del
+proyecto, se usa la resolución normal de valor predeterminado, contenido y
+edición del usuario.
 
-Esto significa que las ediciones del usuario tienen precedencia sobre el contenido de la variante, que tiene precedencia sobre los valores por defecto de los campos.
+Para los fields sin un asset aplicable del proyecto, las ediciones del usuario
+prevalecen sobre el contenido de la variante, que prevalece sobre los valores
+predeterminados de los fields. Un asset de imagen aplicable sobrescribe esos
+valores resueltos para su field de imagen.
 
 ### Resolución programática de datos
 
@@ -266,6 +287,10 @@ const variants = getVariants(definition) // por ejemplo, ['en', 'es']
 ```
 
 Estas claves son strings arbitrarios elegidos por el autor de la plantilla. No están restringidos a códigos de idioma como `en` o `es`.
+
+Studio guarda las ediciones del usuario por variante en `localStorage` bajo
+`framekit:<slug>:v2`. El cargador solo lee esta key actual; no lee ni migra el
+estado `v1`, y no se promete compatibilidad con `v1`.
 
 ## Validación
 
@@ -308,7 +333,7 @@ if (!result.success) {
 - Fields `number`: el valor debe ser un number finito, no un string numérico;
   debe cumplir los límites `min`/`max` y `step` declarados usando la semántica
   numérica/de rango nativa
-- Campos `color`: los valores no vacíos deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
+- Campos `color`: los valores no vacíos, después de eliminar espacios, deben ser colores hexadecimales de seis dígitos con el formato `#RRGGBB`
 - Campos `choice`: los valores deben coincidir con uno de los valores de opción declarados
 - Campos `boolean`: los valores deben ser booleanos reales; los strings no se convierten
 

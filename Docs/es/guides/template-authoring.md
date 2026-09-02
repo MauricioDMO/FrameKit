@@ -199,6 +199,7 @@ fields: {
   title: field.text({
     label: 'Título',
     placeholder: 'Escribe un título',
+    defaultValue: 'Tu título',
     minLength: 1,
     maxLength: 80,
   }),
@@ -212,15 +213,20 @@ image, un `select` nativo para choice y un checkbox nativo para boolean. Los
 valores conservan sus tipos de ejecución: strings para text, color, image y
 choice; numbers finitos para number; y booleanos para boolean.
 
-`field.text` siempre renderiza un `<textarea>` nativo y conserva los saltos de
-línea. `minLength` y `maxLength` son enteros finitos no negativos opcionales;
-`minLength` no puede superar a `maxLength`.
+En Studio, un field `text` renderiza un `<textarea>` nativo y conserva los
+saltos de línea. `defaultValue` es un string opcional y se resuelve como `''`
+cuando se omite. El text es obligatorio por defecto; usa `required: false` para
+permitir valores vacíos. `minLength` y `maxLength` son enteros finitos no
+negativos opcionales; la validación de la definición exige que `minLength` no
+supere a `maxLength`, y la validación de datos aplica esos límites al valor de
+text.
 
-`field.choice` renderiza un `<select>` nativo para un conjunto cerrado de valores
-string. Su array `options` debe ser no vacío y ordenado, con strings `value` y
+En Studio, un field `choice` renderiza un `<select>` nativo para un conjunto
+cerrado de valores string. Su array `options` debe ser no vacío y ordenado, con strings `value` y
 `label` no vacíos y valores únicos. `defaultValue` es obligatorio y debe
 coincidir con uno de esos valores. Los campos choice no aceptan `required` ni
-`control`, y un valor no declarado falla la validación con `invalid_choice`.
+`control`. La validación de datos devuelve `invalid_choice` cuando un valor
+resuelto no está declarado en `options`.
 
 ```tsx
 alignment: field.choice({
@@ -234,7 +240,7 @@ alignment: field.choice({
 })
 ```
 
-`field.boolean` renderiza un checkbox nativo para un valor binario. Solo acepta
+En Studio, un field `boolean` renderiza un checkbox nativo para un valor binario. Solo acepta
 `label` y un `defaultValue` booleano opcional; si se omite, el valor
 predeterminado es `false`. El contenido, las ediciones y los datos de render de
 un field boolean permanecen como booleanos, sin convertir `'true'` ni `'false'`.
@@ -257,9 +263,10 @@ nativa.
 
 Los valores number en el contenido, las ediciones de Studio, los datos resueltos
 y las props de renderizado deben ser numbers finitos. Los strings numéricos como
-`'10'` se rechazan sin conversión. Si un input está vacío o es temporalmente
-incorrecto, su draft local permanece separado de los datos confirmados y nunca
-se pasa a `render`.
+`'10'` se rechazan sin conversión. La validación de definiciones y datos también
+aplica los límites y el step declarados. Si un input está vacío o es
+temporalmente incorrecto, su draft local permanece separado de los datos
+confirmados y nunca se pasa a `render`.
 
 ```tsx
 count: field.number({
@@ -281,7 +288,7 @@ opacity: field.number({
 
 ## Contenido y variantes
 
-Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue` si se declaró; de lo contrario, permanecen vacíos. Studio selecciona inicialmente `variants.default`. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
+Las claves de variante son cadenas arbitrarias. No están restringidas a etiquetas de idioma: puedes usar cualquier identificador que tenga sentido para tu plantilla, como `en`, `es`, `moon`, `fjord` o `variant-a`. Cada entrada puede incluir valores para cualquiera de los fields definidos en la plantilla. Los fields que no estén presentes en una variante comienzan con su `defaultValue`; los fields string sin uno usan `''` y los fields boolean sin uno usan `false`. Los fields number siempre exigen un default numérico finito. Studio selecciona inicialmente `variants.default`. La precedencia completa durante el renderizado está documentada en [Orden de resolución de datos](../reference/template-contract.md#data-resolution-order): valores predeterminados -> contenido de la variante -> ediciones del usuario.
 
 Usa `variants.labels` para las labels legibles de las opciones. Es opcional y
 cada key de label debe coincidir con una key de variante de contenido. Si falta

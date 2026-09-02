@@ -195,6 +195,7 @@ fields: {
   title: field.text({
     label: 'Title',
     placeholder: 'Write a title',
+    defaultValue: 'Your title',
     minLength: 1,
     maxLength: 80,
   }),
@@ -208,15 +209,18 @@ for choice, and a native checkbox for boolean. Values keep their runtime types:
 strings for text, color, image, and choice; finite numbers for number; and
 booleans for boolean.
 
-`field.text` always renders a native `<textarea>` and preserves newline
-characters. `minLength` and `maxLength` are optional finite non-negative integers;
-`minLength` cannot exceed `maxLength`.
+In Studio, a `text` field renders a native `<textarea>` and preserves newline
+characters. `defaultValue` is an optional string and resolves to `''` when it is
+omitted. Text is required by default; set `required: false` to allow empty
+values. `minLength` and `maxLength` are optional finite non-negative integers;
+definition validation requires `minLength` not to exceed `maxLength`, and data
+validation applies those limits to the text value.
 
-`field.choice` renders a native `<select>` for a closed set of string values. Its
+In Studio, a `choice` field renders a native `<select>` for a closed set of string values. Its
 `options` array must be non-empty and ordered, with unique non-empty `value` and
 `label` strings. `defaultValue` is required and must match one of those values.
-Choice fields do not accept `required` or `control`, and an undeclared value
-fails validation with `invalid_choice`.
+Choice fields do not accept `required` or `control`. Data validation reports
+`invalid_choice` when a resolved value is not declared in `options`.
 
 ```tsx
 alignment: field.choice({
@@ -230,7 +234,7 @@ alignment: field.choice({
 })
 ```
 
-`field.boolean` renders a native checkbox for a binary value. It accepts only a
+In Studio, a `boolean` field renders a native checkbox for a binary value. It accepts only a
 `label` and an optional boolean `defaultValue`; the default is `false` when it
 is omitted. Boolean content, edits, and render data stay boolean, with no
 coercion from `'true'` or `'false'`. Use `field.choice` for tri-state values.
@@ -252,8 +256,9 @@ semantics.
 
 Number values in content, Studio edits, resolved data, and render props must be
 finite numbers. Numeric strings such as `'10'` are rejected without coercion.
-If an input is empty or temporarily malformed, its local draft stays separate
-from committed data and is never passed to `render`.
+Definition and data validation also apply the declared bounds and step. If an
+input is empty or temporarily malformed, its local draft stays separate from
+committed data and is never passed to `render`.
 
 ```tsx
 count: field.number({
@@ -275,7 +280,7 @@ opacity: field.number({
 
 ## Content and Variants
 
-Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue` if declared, otherwise remain empty. Studio initially selects `variants.default`. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
+Variant keys are arbitrary strings. They are not restricted to language tags — you can use any identifier that makes sense for your template, such as `en`, `es`, `moon`, `fjord`, or `variant-a`. Each entry may include values for any fields defined in the template. Fields not present in a variant start with their `defaultValue`; string fields without one use `''`, and boolean fields without one use `false`. Number fields always require a finite numeric default. Studio initially selects `variants.default`. The complete render-time precedence is documented in [Data Resolution Order](../reference/template-contract.md#data-resolution-order): defaults -> variant content -> user edits.
 
 Use `variants.labels` for human-readable option labels. It is optional, and every
 label key must match a content variant key. A missing label falls back to the

@@ -17,6 +17,8 @@ pnpm check:runtime
 2. Ejecuta la puerta de lanzamiento:
 
    ```sh
+   pnpm --filter @mauriciodmo/framekit build
+   pnpm --filter @mauriciodmo/create-framekit build
    pnpm lint
    pnpm test
    pnpm typecheck
@@ -42,16 +44,34 @@ pnpm check:runtime
 
 ## Publicar
 
-La publicación se entrega manualmente. El asistente no debe ejecutar `publish` ni `git push`. Verifica la sesión de npm y entrega al usuario los comandos para cada paquete modificado. Si se publican ambos paquetes, publica primero FrameKit, ya que el proyecto generado por el CLI depende de él:
+La publicación se entrega manualmente. El asistente no debe ejecutar `publish` ni
+`git push`. Verifica la sesión de npm y entrega al usuario los comandos para cada
+paquete modificado. Para mantener la puerta del registro después de publicar y
+antes de la promoción final, publica con un dist-tag elegido durante la
+preparación que no sea el tag final de promoción; esta guía no selecciona ese
+tag ni ninguna versión de paquete. Si se publican ambos paquetes, publica
+primero FrameKit, ya que el proyecto generado por el CLI depende de él:
 
 ```sh
 npm whoami
+: "${PUBLISH_TAG:?Define el dist-tag npm del release}"
 # Incluye solo los paquetes modificados en esta versión.
-pnpm --filter @mauriciodmo/framekit publish --access public --tag latest
-pnpm --filter @mauriciodmo/create-framekit publish --access public --tag latest
+pnpm --filter @mauriciodmo/framekit publish --access public --tag "$PUBLISH_TAG"
+pnpm --filter @mauriciodmo/create-framekit publish --access public --tag "$PUBLISH_TAG"
 ```
 
-Para una versión previa, sustituye `latest` por el canal correspondiente, por ejemplo `alpha`. No añadas `--otp` al comando. Si npm solicita un OTP, introdúcelo directamente en tu terminal interactiva.
+No añadas `--otp` al comando. Si npm solicita un OTP, introdúcelo directamente
+en tu terminal interactiva. Cuando los paquetes estén disponibles, ejecuta el
+[smoke del registro npm después de publicar](testing-and-distribution.md#smoke-del-registro-npm-después-de-publicar-manual-antes-de-promocionar)
+con valores exactos de `CORE_SPEC`, `CREATOR_SPEC` y `EXPECTED_DIST_TAG`
+suministrados durante la preparación del release. Un fallo bloquea la
+promoción, no la carga inicial; registra las versiones resueltas y el runtime
+como indica esa comprobación.
+
+Después de que el smoke pase, el usuario puede promocionar cada paquete
+publicado a su dist-tag final con `npm dist-tag add <paquete>@<versión-resuelta>
+<dist-tag-final>`. Usa únicamente los paquetes publicados en este handoff y las
+versiones devueltas por el smoke del registro.
 
 Cuando los comandos de publicación terminen correctamente, entrega al usuario este comando para publicar el commit y los tags; no lo ejecutes automáticamente:
 

@@ -12,9 +12,9 @@ FrameKit discovers templates by scanning the `src/templates` directory. If the c
 
 If the directory contains no template directories, `framekit generate` finds nothing to register. Add at least one template directory with a `template.tsx` file inside. If `src/templates` does not exist, generation instead fails with a filesystem `ENOENT` error; create the directory first.
 
-**Cause: template directories not matching kebab-case**
+**Cause: reachable template path segments not matching kebab-case**
 
-Every directory inside `src/templates` must follow the pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$` — lowercase letters, numbers, and single hyphens between segments. A directory named `MyTemplate`, `my_template`, or `template.v1` causes `framekit generate` to fail with an invalid-segment error.
+Every reachable directory inside `src/templates` must follow the pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$` — lowercase letters, numbers, and single hyphens between segments. A directory named `MyTemplate`, `my_template`, or `template.v1` causes `framekit generate` to fail with an invalid-segment error.
 
 **Cause: directories starting with `_` or `.` are ignored**
 
@@ -22,7 +22,7 @@ FrameKit skips any directory whose name begins with `_` or `.`. These are treate
 
 **Cause: `template.tsx` file missing inside directory**
 
-Each template directory must contain a `template.tsx` file. Directories without this file are treated as category folders and FrameKit descends into them looking for a `template.tsx` deeper down, but a directory with no `template.tsx` at any depth contributes nothing to the catalog.
+Each template leaf directory must contain a `template.tsx` file. A directory without this file is treated as a category folder and FrameKit descends into it looking for a `template.tsx` deeper down; a directory with no `template.tsx` at any depth contributes nothing to the catalog.
 
 **Fix: run `framekit generate`**
 
@@ -210,13 +210,13 @@ Install `python`, `make`, and a C++ toolchain (like `build-essential` on Debian/
 
 ## `framekit dev` port already in use
 
-**Cause: another process occupying the port**
+**Cause: another process occupying the requested port**
 
-The default port is `3000`. If something else is already listening on that port, `framekit dev` exits with an error.
+The default port is `3000`. If something else is already listening on the requested port, `framekit dev` tries the next port. It exits with an error if no usable port is found before `65535`.
 
 **Fix: set a different port**
 
-Use the `PORT` environment variable to pick an available port:
+Use the `PORT` environment variable to choose the first port FrameKit tries:
 
 ```
 PORT=3001 framekit dev
@@ -236,25 +236,53 @@ FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 
 `framekit build` runs `framekit check` before building. Validation catches structural problems in your template definitions, including:
 
-- invalid dimensions (width or height not positive integers)
-- missing required fields
-- no content entries for a variant
-- a missing or malformed `meta` or `variants` object
-- a default variant that is not declared in `content`
+- invalid dimensions (width or height not positive finite integers)
+- a missing or malformed `meta`, `fields`, `variants`, or `content` object
+- unknown top-level, metadata, variant, or content properties
+- invalid field kinds or field-specific properties and constraints
+- invalid choice options or defaults, number defaults/bounds/steps, or text length limits
+- a default variant or variant label that is not declared in `content`
 - a field named `language` (this key is reserved)
-- a content key that is not declared in `fields`
+- content values with the wrong type or invalid number constraints
+- a missing or non-function `render`
 
-The check produces per-template, per-variant, and per-field structured error output naming the exact file and rule that failed.
+Definition errors identify the affected `template.tsx` and rule. Resolved-data errors identify the template, variant, and field that failed.
+
+The resolved-data pass also reports empty required values, invalid colors or choices, non-boolean values, text outside its length limits, and invalid number values (including bounds or step violations).
 
 **Fix: run `framekit check` for detailed errors**
 
-Run the check command directly to see all validation errors without running a full build:
+Run the check command directly to see validation errors without running a full build:
 
 ```
 framekit check
 ```
 
-**Note:** `framekit check` does not verify that a template renders correctly or that PNG export works. It only checks the definition structure and data shape.
+**Note:** `framekit check` does not verify that a template renders correctly or that PNG export works. It only checks the definition structure and resolved data shape.
+
+---
+
+## Studio edits disappear or show an old value
+
+Studio stores editor overrides in browser `localStorage` under the exact key `framekit:<slug>:v2`, grouped by content variant. It reads only this `v2` key; `v1` state is not read or migrated, and no `v1` compatibility is promised.
+
+**Cause: persisted state is stale or malformed**
+
+When loading a session, Studio ignores unknown variants and fields, invalid number values (including non-finite, out-of-bounds, or step-mismatched values), and choice values that are not in the current options. Valid sibling overrides are preserved. Invalid JSON, a non-object payload, or an invalid persisted `selectedVariant` causes Studio to start from the current definition's defaults. Storage errors are ignored so editing can continue in memory.
+
+**Fix: inspect or clear the current `v2` entry**
+
+Check the browser's storage for `framekit:<slug>:v2`, or remove that exact key and reload to reset the session. The Reset button removes overrides only for the selected variant; switching variants does not remove overrides belonging to other variants.
+
+**Note:** an incomplete or invalid number draft remains local to its input and is not committed to editor state, preview data, or persistence. Correct the value or switch/reset the variant.
+
+---
+
+## Repository verification gates
+
+The permanent repository gates are versionless: they do not select a release version. Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`, including `pnpm check:runtime`, lint, tests, type-checking, builds, and package dry-run checks. Windows runs focused generated-consumer checks on Node.js `22.13.0`: discovery/codegen tests, creator tests, type-checking, packaging, `framekit generate`, and `framekit check`. Ubuntu also runs one Chromium Studio critical path on Node.js `22.13.0` with `pnpm test:e2e`.
+
+These gates do not replace release verification. Real tarball and npm registry smokes use package versions supplied during release preparation; no release version is encoded in the repository gates.
 
 ---
 
@@ -262,7 +290,7 @@ framekit check
 
 **Cause: no production build exists**
 
-`framekit start` needs the output of `framekit build`, which produces a standalone Node.js server inside `.framekit/next`. If you have not run `framekit build`, the server cannot start.
+`framekit start` needs the output of `framekit build`, which produces a standalone Node.js server inside `.framekit/next`. If you have not run `framekit build`, the server cannot start. Unlike `dev`, `check`, and `build`, `start` does not regenerate or validate templates; it only locates and launches the existing standalone server.
 
 **Fix: run `framekit build` first**
 
@@ -275,9 +303,9 @@ framekit start
 
 In nested monorepo structures, `framekit start` may find more than one `server.js` inside the standalone output directory. It resolves ambiguity by looking for a `BUILD_ID` file in a `.framekit/next` directory next to each `server.js`.
 
-**Fix: ensure a single `next build` output**
+**Fix: ensure a single matching standalone output**
 
-`framekit build` copies static assets from `.framekit/next/static` to the standalone output. Run `framekit build` from a single Next.js build (not multiple), and avoid nested `.next` or `standalone` directories that could confuse the search.
+`framekit build` copies static assets from `.framekit/next/static` to the standalone output. Run `framekit build` from a single Next.js build (not multiple), and avoid nested standalone outputs containing another `server.js` with an adjacent `.framekit/next/BUILD_ID`, which could create multiple matching candidates.
 
 **Note:** FrameKit identifies the correct server by searching for a `BUILD_ID` file at the expected location next to each `server.js` candidate.
 
@@ -289,7 +317,7 @@ The other production-start failure is reported with exit code `1` and the litera
 
 **Cause: data validation errors**
 
-Export requires all template data to be valid. Empty required fields, invalid URLs, and numbers outside the declared range all cause validation failures that prevent export from producing a usable image.
+Export requires all template data to be valid. Empty required fields, invalid colors or choices, non-boolean values, text outside its declared length limits, and numbers outside their declared finite range or step cause validation failures that prevent export from producing a usable image.
 
 **Cause: fonts not loaded yet**
 
@@ -305,23 +333,19 @@ PNG export uses `modern-screenshot` (which relies on DOM and canvas). Some envir
 
 **Note:** Export is entirely browser-side; there is no server-side rendering involved.
 
-**Note:** This is an alpha feature. There are no format or scale options yet — PNG only, at the dimensions declared in the template definition, at scale 1.
+**Note:** The current export supports no format or scale options — PNG only, at the dimensions declared in the template definition, at scale 1.
 
 ---
 
-## Generated file changes not reflected in dev
+## Template changes not reflected in dev
 
-**Cause: editing existing template content relies on Next HMR, not registry regeneration**
+**Cause: generation or HMR did not complete**
 
-Changes to the content inside an existing `template.tsx` file are picked up by Next.js Hot Module Replacement, not by the FrameKit watcher. The watcher only responds to structural changes.
+The watcher observes every file and directory under `src/templates`. Additions, edits, and deletions trigger registry regeneration; Next.js Hot Module Replacement can also update an already loaded template preview. If a change is not reflected, inspect the `framekit dev` terminal for a generation or HMR error.
 
-**Cause: registry only regenerates for NEW/REMOVED `template.tsx` files or directories**
+**Fix: regenerate or restart `framekit dev`**
 
-The watcher triggers registry regeneration when a `template.tsx` is added or removed, or when a directory is added or removed under `src/templates`. Editing the body of an existing `template.tsx` does not regenerate the catalog.
-
-**Fix: restart `framekit dev` if structural changes do not trigger regeneration**
-
-If you add or remove a template directory or `template.tsx` file and the catalog does not update, restart `framekit dev`.
+Run `framekit generate` to refresh the registry manually. If the development server still does not reflect a source change, restart `framekit dev`.
 
 ---
 
@@ -347,7 +371,7 @@ $env:VAR="value"; pnpm dev
 
 Alternatively, set the variable permanently via `setx` or through the Windows Environment Variables UI.
 
-**Note:** `create-framekit` selects `pnpm.cmd` on Windows, but the full Windows flow is not covered by CI or the current automated test suite.
+**Note:** `create-framekit` selects `pnpm.cmd` on Windows. CI covers a focused Windows generated-consumer path (discovery/codegen, creator, type-checking, packaging, `generate`, and `check`), not the full production or browser flow.
 
 ---
 

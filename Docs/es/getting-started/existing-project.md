@@ -1,17 +1,13 @@
 # Integrar en un proyecto Next.js existente
 
-## Versión alfa
-
-FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún no están publicados en npm. Esta documentación se actualizará una vez confirmada la publicación.
-
 ## Requisitos previos
 
 - Node.js 22.13.0 o posterior.
-- pnpm 11.14.0 o posterior, o npm 10.x o posterior.
-- Next.js 16 o posterior.
-- React 19 o posterior.
+- pnpm 11.14.0 o posterior cuando uses pnpm. El manifiesto del paquete no declara un rango de engine para npm.
+- Next.js `>=16 <17`.
+- React y React DOM `>=19 <20`.
 
-Los comandos siguientes usan pnpm. El runtime y la CLI de FrameKit no requieren pnpm por sí mismos; usa los comandos equivalentes del gestor de paquetes de tu proyecto.
+Los comandos siguientes usan pnpm. El creador y la CLI de FrameKit también admiten comandos npm; usa los comandos equivalentes del gestor de paquetes de tu proyecto.
 
 ## Instalar el paquete
 
@@ -36,7 +32,7 @@ const nextConfig: NextConfig = {
 export default nextConfig
 ```
 
-El modo de salida `standalone` produce una compilación de producción autocontenida. El directorio `.framekit/next` es donde FrameKit coloca los archivos generados durante el desarrollo y la compilación.
+El modo de salida `standalone` produce una compilación de producción autocontenida. `.framekit/next` es la salida de build de Next.js; es independiente del registro generado en el código fuente bajo `src/generated/framekit`.
 
 ## Configurar TypeScript
 
@@ -118,18 +114,20 @@ Ejecuta `framekit generate` para descubrir cada plantilla en tu proyecto y escri
 pnpm framekit generate
 ```
 
-Este comando escribe `src/generated/framekit/templates.ts` (resuelto mediante el alias `@framekit/generated/*`). El archivo generado exporta `templates: TemplateRegistryEntry[]`; sus entradas contienen metadata canónica, dimensiones, variantes, assets y loaders lazy. No edites este archivo; el flujo de generación lo sobrescribe.
+Este comando escribe `src/generated/framekit/templates.ts` (resuelto mediante el alias `@framekit/generated/*`). El archivo generado exporta `templates: TemplateRegistryEntry[]`; sus entradas contienen `slug`, `segments`, metadata `meta` validada, dimensiones, variantes, `variantKeys` en el orden de declaración, un manifiesto `assets` y funciones `load` lazy. No edites este archivo; el flujo de generación lo sobrescribe.
 
 `pnpm framekit dev`, `pnpm framekit check` y `pnpm framekit build` generan
 automáticamente. `pnpm framekit start` no genera y espera una compilación de
 producción existente.
 
-## El directorio .framekit
+## Registro generado y salida de build
 
-El directorio `src/generated/framekit` es completamente desechable. Es creado o
-regenerado por `framekit generate`, `pnpm framekit dev`, `pnpm framekit check` y
-`pnpm framekit build`. Puedes eliminarlo sin problema y se reconstruirá
-automáticamente.
+El directorio `src/generated/framekit` contiene el registro desechable generado
+en el código fuente. Es creado o regenerado por `framekit generate`, `pnpm framekit
+dev`, `pnpm framekit check` y `pnpm framekit build`. Puedes eliminarlo sin problema
+y se reconstruirá automáticamente. El directorio `.framekit/next` es independiente:
+es la salida de build de Next.js producida por el `distDir` configurado, no el
+registro de plantillas.
 
 ## Diferencias con la configuración de Studio en monorepo
 

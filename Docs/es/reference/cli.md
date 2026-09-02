@@ -6,7 +6,7 @@
 framekit <generate|check|dev|build|start>
 ```
 
-Todos los comandos usan `process.cwd()` como raíz del proyecto. No hay flags `--help`, `--version` ni archivo de configuración. No existe forma de especificar un directorio de plantillas alternativo; FrameKit siempre explora `src/templates`.
+Todos los comandos `framekit` usan `process.cwd()` como raíz del proyecto y rechazan argumentos posicionales u opciones adicionales. No hay flags `--help`, `--version` ni archivo de configuración. No existe forma de especificar un directorio de plantillas alternativo; FrameKit siempre explora `src/templates`.
 
 ---
 
@@ -18,7 +18,7 @@ Todos los comandos usan `process.cwd()` como raíz del proyecto. No hay flags `-
 create-framekit [directorio-del-proyecto] [-y|-n]
 ```
 
-La CLI copia la plantilla inicial a un directorio nuevo, instala dependencias opcionalmente, genera el catálogo de plantillas y puede inicializar Git. No sobrescribe un directorio existente, aunque esté vacío.
+La CLI copia la plantilla inicial a un directorio nuevo, instala dependencias opcionalmente y, cuando se selecciona la instalación y termina correctamente, genera el catálogo de plantillas. También puede inicializar Git opcionalmente. No sobrescribe un directorio existente, aunque esté vacío.
 
 Sin `-y` ni `-n`, si no proporcionas el directorio, lo solicita. Detecta `pnpm` o `npm` desde el entorno y te pide elegir cuando no puede detectarlos. Las preguntas restantes son:
 
@@ -37,8 +37,8 @@ create-framekit update-skills [directorio-del-proyecto]
 ```
 
 ```sh
-pnpm dlx @mauriciodmo/create-framekit@0.8.2 update-skills
-npm exec --yes @mauriciodmo/create-framekit@0.8.2 -- update-skills ./my-framekit
+pnpm dlx @mauriciodmo/create-framekit update-skills
+npm exec --yes @mauriciodmo/create-framekit -- update-skills ./my-framekit
 ```
 
 Si no se proporciona un directorio del proyecto, el valor predeterminado es `.` (el directorio de trabajo actual). El comando copia las skills oficiales incluidas en el paquete `create-framekit` instalado y reemplaza los directorios de skills oficiales. También elimina los directorios heredados conocidos: `framekit-project-setup`, `framekit-studio-usage` y `framekit-template-creation`. Los demás directorios de skills, incluidos los personalizados, se conservan. El comando no actualiza los archivos de la aplicación.
@@ -61,13 +61,15 @@ El escaneo registra cada directorio no oculto y cuyo nombre no comienza por guio
 
 Si no se encuentra ninguna plantilla, el comando termina con código 1 e imprime un mensaje de error identificando el directorio vacío. El archivo de salida se escribe únicamente cuando su contenido ha cambiado.
 
-La salida se escribe en `src/generated/framekit/templates.ts`. El módulo generado tiene una única exportación de tiempo de ejecución, `templates: TemplateRegistryEntry[]`. Cada entrada contiene `slug`, `segments`, `meta`, `width`, `height`, `variants`, `variantKeys`, `assets` y `load`; `load` es un loader dinámico para la definición de la plantilla. No existe `title`, `templateManifest` ni `templateRegistry` en el nivel superior; el título de una plantilla está anidado en `meta.title`.
+La salida se escribe en `src/generated/framekit/templates.ts`. El módulo generado tiene una única exportación de tiempo de ejecución, `templates: TemplateRegistryEntry[]`. Cada entrada incluye `slug`, `segments`, metadata `meta` validada, `width` y `height`, `variants`, `variantKeys` en el orden de declaración, un manifiesto `assets` y una función `load` lazy para la definición de la plantilla. El título de una plantilla está disponible como `meta.title`; no existen las salidas superiores `title`, `templateManifest` ni `templateRegistry`. La generación también escribe `src/generated/framekit/brands.ts` para el catálogo opcional de marcas. Esta salida generada en el código fuente es distinta de `.framekit/next`, que es la salida de build de Next.js configurada mediante `distDir`.
+
+Los assets se leen desde `assets/common` y `assets/<variant>`. Los archivos de imagen compatibles se copian a `public/__framekit/templates/<slug>/...`, y las URL del manifiesto apuntan a esos archivos copiados. Se rechazan los subdirectorios de assets no ocultos, los nombres inválidos y las claves duplicadas; cada regeneración elimina primero el árbol de assets generado anterior.
 
 Durante la generación, cada `template.tsx` descubierto se importa y valida con `tsx`. Los fallos de importación y de validación de la definición reportan la ruta del `template.tsx` afectado.
 
 ```sh
 framekit generate
-# FrameKit: 3 plantilla(s)
+# FrameKit: 3 templates
 ```
 
 ---
@@ -105,7 +107,7 @@ Inicia un servidor de desarrollo con actualizaciones en vivo del registro de pla
 
 Antes de iniciar el servidor, el comando ejecuta `generate` para producir el registro inicial. Luego inicia un servidor de desarrollo de Next.js con Turbopack y manejo personalizado del servidor HTTP, incluidos los cambios de protocolo de WebSocket para la sustitución de módulos en caliente.
 
-El observador de plantillas monitorea todos los archivos y directorios bajo `src/templates`. Las adiciones, ediciones y eliminaciones activan la regeneración. Solo una generación se ejecuta a la vez; si llega un cambio mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
+El observador de plantillas monitorea todos los archivos y directorios bajo `src/templates`. Las adiciones, ediciones y eliminaciones activan la regeneración. Los cambios en cualquier ruta bajo `src/brand` también activan la regeneración; las demás rutas bajo `src` no lo hacen. Solo una generación se ejecuta a la vez; si llega un cambio mientras una generación está en curso, el cambio pendiente es recogido por la generación en curso antes de terminar.
 
 FrameKit resuelve directamente el hostname y el puerto del servidor de desarrollo usando las siguientes variables de entorno (en orden de prioridad):
 
@@ -129,7 +131,7 @@ Ejecuta la validación y luego construye la aplicación Next.js de producción.
 
 El comando primero ejecuta `framekit check`, por lo que el registro se genera automáticamente y toda la validación ocurre antes de la construcción de Next.js. Si la validación falla, la construcción se aborta y el paso de build de Next.js nunca se ejecuta. Si la validación pasa, se ejecuta `next build`.
 
-Después de una construcción exitosa, el directorio de salida del servidor standalone se ubica buscando un archivo `server.js` cuyo archivo `.framekit/next/BUILD_ID` hermano exista. Debe encontrarse exactamente uno; el comando falla si se descubren cero o más de un candidato.
+Después de una construcción exitosa, el directorio de salida del servidor standalone se ubica buscando un archivo `server.js` cuya salida trazada adyacente contenga `.framekit/next/BUILD_ID`. Debe encontrarse exactamente uno; el comando falla si se descubren cero o más de un candidato.
 
 Una vez localizado el servidor standalone, los siguientes activos se copian junto a él:
 
@@ -148,7 +150,7 @@ framekit build
 
 Inicia el servidor standalone de producción. No genera el registro de plantillas.
 
-El comando busca exactamente un archivo `server.js` dentro de `.framekit/next/standalone/` cuya salida trazada adyacente contenga un archivo `BUILD_ID`. Si se encuentran cero o más de un candidato, el comando falla con un error. FrameKit no resuelve aquí opciones de host o puerto de producción: inicia `server.js` con el entorno heredado del proceso padre. El servidor standalone generado por Next lee `PORT`, `HOSTNAME` y `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` y `HOST` no se asignan a `HOSTNAME`.
+El comando busca exactamente un archivo `server.js` dentro de `.framekit/next/standalone/` cuya salida trazada adyacente contenga un archivo `BUILD_ID`. Si se encuentran cero o más de un candidato, el comando falla con un error. FrameKit no resuelve aquí opciones de host o puerto de producción: inicia `server.js` con el entorno heredado del proceso padre. El servidor standalone generado por Next lee `PORT`, `HOSTNAME` y `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` y `HOST` no se asignan a `HOSTNAME`. `start` no genera ni copia la salida del registro; solo localiza e inicia el servidor standalone existente.
 
 El servidor standalone se lanza como proceso hijo con el entorno heredado. Los códigos de salida y las señales se propagan al proceso padre.
 
@@ -166,5 +168,11 @@ framekit start
 - `generate` es opcional; `dev`, `check` y `build` generan automáticamente, mientras que `start` no genera.
 - Los procesos hijos heredan el entorno y stdio del padre.
 - Los archivos temporales se limpian incluso en caso de fallo.
+
+## Gates operativos de verificación
+
+Los gates permanentes del repositorio son versionless: Ubuntu ejecuta las comprobaciones completas en Node.js `22.13.0` y `24` con pnpm `11.14.0`; Windows ejecuta comprobaciones focalizadas del consumidor generado en Node.js `22.13.0`; y Ubuntu ejecuta un único flujo crítico de Studio en Chromium con Node.js `22.13.0`. Los comandos correspondientes del repositorio incluyen `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e` y la inspección dry de paquetes con `pnpm --filter <package> pack --dry-run`.
+
+Las comprobaciones de distribución están separadas. Durante la preparación del release, los maintainers eligen las versiones de los paquetes y ejecutan el smoke de tarballs reales en un consumidor aislado; después de publicar, se proporcionan especificaciones npm exactas y el dist-tag previsto para un smoke de registro separado antes de promocionar. Los gates versionless del repositorio no seleccionan ni codifican una versión de release. Consulta [Pruebas y Distribución](../development/testing-and-distribution.md) para las secuencias reproducibles.
 
 [English](../../en/reference/cli.md) | [Español](./cli.md)

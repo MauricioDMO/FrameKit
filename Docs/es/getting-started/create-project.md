@@ -1,20 +1,16 @@
 # Crear un proyecto
 
-## Versión alfa
-
-FrameKit se encuentra actualmente en estado alfa/prerelease. Los paquetes aún no están publicados en npm. Esta documentación se actualizará una vez confirmada la publicación.
-
 ## Requisitos previos
 
 - Node.js 22.13.0 o posterior.
-- pnpm 11.14.0 o posterior, **o** npm 10.x o posterior.
+- pnpm 11.14.0 o posterior cuando uses pnpm. El manifiesto del paquete no declara un rango de engine para npm; el creador admite npm para instalar proyectos generados.
 
 El creador comprueba la versión de Node.js antes de crear el proyecto y la
 versión de pnpm antes de instalar dependencias con pnpm.
 
 ## Crear el proyecto
 
-Una vez que `@mauriciodmo/create-framekit` esté publicado en npm, ejecuta:
+Ejecuta:
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit mi-proyecto
@@ -70,21 +66,19 @@ pnpm dev
 
 Studio se abre en [http://localhost:3000](http://localhost:3000). La ruta raíz `/` redirige a `/editor`.
 
-El proyecto generado incluye una plantilla de ejemplo bilingüe visible inmediatamente en el editor.
+El proyecto generado incluye una plantilla de ejemplo bilingüe. Después de
+instalar las dependencias y generar el registro, estará visible en el editor.
 
 ## Validar y construir
 
 Usa los siguientes comandos para trabajar con el proyecto:
 
+- `pnpm dev` — regenera el registro de plantillas antes de iniciar Studio y observa todas las rutas bajo `src/templates` para detectar cambios.
 - `pnpm check` — regenera el catálogo de plantillas y valida todas las definiciones y variantes de contenido.
-- `pnpm build` — crea una compilación optimizada para producción.
-- `pnpm start` — inicia el servidor de producción.
+- `pnpm build` — regenera y valida el registro mediante `framekit check`, y luego crea una compilación optimizada para producción.
+- `pnpm start` — inicia el servidor de producción sin regenerar el registro.
 
 El proyecto generado no incluye scripts de `test`, `lint` ni `typecheck`.
-
-## Advertencias
-
-- `pnpm dlx` solo funciona después de que `@mauriciodmo/create-framekit` y `@mauriciodmo/framekit` estén publicados en npm.
 
 ---
 

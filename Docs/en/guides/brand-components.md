@@ -37,7 +37,7 @@ These are the rules enforced by brand discovery, not just naming advice:
 - Every traversed, non-hidden directory segment must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. Use lowercase letters, numbers, and hyphens only.
 - Directories beginning with `.` or `_` are skipped.
 - A directory containing `component.tsx` is a leaf component. Its `preview.tsx` and `README.md` must also exist; child directories are not scanned below that leaf.
-- A leaf README must contain a non-empty prose paragraph. That paragraph becomes the catalog description. Headings, list items, and fenced-code lines are skipped by the description reader, and basic Markdown punctuation is stripped.
+- A leaf README must contain a non-empty prose paragraph. That paragraph becomes the catalog description. Blank lines and lines beginning with headings, list markers, or fence delimiters end the paragraph and are not included; basic Markdown punctuation is stripped.
 
 Parent READMEs, the semantic names of directories, the component's prop types, and the fact that a preview actually reuses the component are not separately validated by discovery. They remain part of the authoring contract. The generated Studio loader expects `preview.tsx` to provide a default React component; the current loader casts the default export rather than validating its shape.
 

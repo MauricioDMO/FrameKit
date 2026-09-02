@@ -104,7 +104,7 @@ Usa esta guía para determinar dónde debe vivir un determinado archivo o pieza 
 
 **Archivos incluidos en los tarballs de npm** — `README.md` y `LICENSE` dentro de `packages/framekit/` y `packages/create-framekit/` se incluyen en los paquetes publicados mediante el campo `files` en cada `package.json`.
 
-**Registros históricos de ingeniería** — Los documentos en `Docs/Plans/framekit-alpha/` capturan decisiones de diseño e historial de migración. No son documentación para usuarios y no están sincronizados con los detalles de implementación actuales.
+**Registros históricos de ingeniería** — [`Docs/Plans/`](../../Plans/README.md) es el índice actual de los planes de ejecución. El material antiguo de planificación alpha se conserva únicamente como registro histórico de ingeniería; no indica una versión ni un estado alpha actual.
 
 ## Flujo de desarrollo
 

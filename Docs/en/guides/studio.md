@@ -1,6 +1,6 @@
 # Studio
 
-Studio is the visual workspace for FrameKit. It lets you navigate a template catalog, edit content for any supported variant, preview results, and export final PNG images. It also provides a brand catalog for viewing reusable brand-component previews. Both flows run in the browser. For templates, Studio consumes the generated `TemplateRegistryEntry`; its validated metadata and lazy loader are the catalog contract.
+Studio is the visual workspace for FrameKit. It lets you navigate a template catalog, edit content for any supported variant, preview results, and export final PNG images. It also provides a brand catalog for viewing reusable brand-component previews. Both flows run in the browser. For templates, pass the generated `templates` array directly to Studio: each `TemplateRegistryEntry` supplies the slug, path segments, `meta`, dimensions, variants, declaration-ordered `variantKeys`, assets, and lazy `load` function. Studio loads and validates the definition and rejects a registry dimension mismatch; do not create a parallel registry or derive a title from the slug.
 
 ## Navigation
 
@@ -11,6 +11,8 @@ Templates are organized in a compact sidebar derived from each registry entry's 
 Within each folder, items are sorted alphabetically by title. Folder names are humanized from their slug segments (e.g., `instagram-post` becomes "Instagram Post").
 
 Selecting a template navigates to `/editor/<slug>`. Navigation uses `entry.meta.title` for the template item and the selected editor heading; Studio never derives either display title from the slug. Folders are compact, collapsible, and start expanded. Their expansion state is persisted in the browser. Folder-only vertical scope lines appear beside expanded folder child groups, not beside template links. Route tabs use Tabler `IconStack2` for Templates and `IconTag` for Brand. The selected route/template and keyboard focus remain accessible through `aria-current="page"`, `aria-expanded`, and visible focus styles. This tree is navigation only; it has no search or filter behavior.
+
+When a template provides a description, marketing description, or tags, the editor shows a **Metadata** button. It opens an accessible dialog with the template title, localized labels for the optional descriptions, and the tags.
 
 ### Brand catalog
 
@@ -30,30 +32,30 @@ Studio distinguishes between two separate language concerns:
 
 **Interface language** controls the language of Studio's own labels, buttons, and messages. It is limited to `en` (English) or `es` (Spanish). It is independent from template variants: changing it does not change the selected variant. Changing it updates the React state, the `lang` attribute on the `<html>` element, and stores a one-year `locale` cookie.
 
-Interface language is resolved in this order: the `locale` cookie → the `Accept-Language` header → if the header starts with `en` use English → otherwise fall back to Spanish.
+Interface language is resolved from the `locale` cookie when present; otherwise it uses the `Accept-Language` header. Values that start with `en` select English; all other values select Spanish.
 
 ## Field editing
 
-Each of the six field kinds has a fixed control selected from the field definition:
+Each of the six field kinds has its own control; the text, number, choice, boolean, and color controls use native browser form controls:
 
 - `text` uses a multiline textarea and stores a string.
-- `number` uses its declared native number input or range slider and stores a finite number.
-- `choice` uses a native select and stores its declared string option.
-- `boolean` uses a native checkbox and stores `true` or `false`.
-- `color` uses the color picker and stores a string.
-- `image` uses the project-asset preview/upload control and stores an asset source string when resolved.
+- `number` uses a native number input by default, or a native range slider when `control: 'slider'`; it stores a finite number. Slider definitions must declare `min` and `max`.
+- `choice` uses a native select and stores one of its declared string options.
+- `boolean` uses a native checkbox presented as a switch and stores the real boolean `true` or `false` (an omitted boolean default is `false`).
+- `color` uses a native color picker together with a hexadecimal text input and stores a string.
+- `image` displays the resolved asset source and can show an upload control when Studio provides an upload callback.
 
 Number input drafts are local to the number control. An incomplete draft, such as an empty value, does not enter committed editor data, so the preview continues to use the last committed numeric value. Preview and render consume only resolved, committed typed data; they do not use a global last-valid-preview cache.
 
-Required fields are validated when you attempt to export or copy. Optional fields pass validation when left empty.
+Export and Copy PNG validate the resolved data. Number values must be finite, within `min`/`max` when declared, and aligned to `step` (which defaults to `1`). Required text, color, and image fields reject empty values; those fields accept an empty value when `required: false`. Text length and color format are also checked. Choices must be declared option strings, and booleans must be real booleans; these controls are not validated by coercing strings.
 
-Number fields respect their declared `min`, `max`, and `step` constraints. Image fields can preview template assets or root-relative images served from `public/assets`; development Studio also provides the project upload path. Choice fields keep the declared option order and reject values outside the option set with `invalid_choice`; boolean fields reject string substitutes with `invalid_boolean`.
+Number fields respect their declared `min`, `max`, and `step` constraints. Choice fields keep the declared option order and reject values outside the option set with `invalid_choice`; boolean fields reject string substitutes with `invalid_boolean`.
 
 ## Persistence
 
-All edits are stored in the browser's `localStorage` under the exact key `framekit:<slug>:v2`. Each template slug has its own isolated storage entry, and data is also isolated per variant within that entry. Studio reads no `v1` state and performs no v1 migration.
+Committed field edits and the selected variant are stored in the browser's `localStorage` under the exact key `framekit:<slug>:v2`. Each template slug has its own isolated storage entry, and data is also isolated per variant within that entry. Studio reads no `v1` state and performs no v1 migration; no v1 compatibility is promised.
 
-Malformed stored JSON or a top-level stored value that is not an object, or a stored selected variant that is not valid for the definition, is discarded safely and the editor starts fresh. Stale or malformed variant entries, unknown fields, wrong-typed values, and invalid persisted number values are ignored. During a live definition refresh, state is rebased to the refreshed definition: recognized variants and fields with accepted runtime types are kept, stale data is removed, and the selected variant is preserved when valid or reset to `definition.variants.default` otherwise. Persistence is browser-local; it does not provide server sync, accounts, or collaboration.
+Malformed stored JSON or a top-level stored value that is not an object, or a stored selected variant that is not valid for the definition, is discarded safely and the editor starts fresh. Stale or malformed variant entries, unknown fields, wrong-typed values, and invalid persisted number values are ignored. Choice overrides in persisted and rebased state are kept only while their values match a currently declared option; stale choices are discarded individually, so valid sibling-field edits survive, and resolution falls back to the current variant's content value or, when that content omits the field, the field default. During a live definition refresh, state is rebased to the refreshed definition: recognized variants and fields with accepted runtime types are kept, stale data is removed, and the selected variant is preserved when valid or reset to `definition.variants.default` otherwise. Persistence is browser-local; it does not provide server sync, accounts, or collaboration.
 
 ## Reset
 
@@ -61,7 +63,7 @@ The Reset button removes edits only for the currently selected variant of the cu
 
 ## Preview and zoom
 
-The preview area shows the template at its declared dimensions using resolved, committed data. On load, it scales to fit the available space, capped at 100% so the full template is always visible. The minimum scale is 10%.
+The preview area shows the template at its declared dimensions using resolved, committed data. On load, it scales to fit the available space, capped at 100%; if fitting would require going below 10%, it stops at 10%. The minimum scale is 10%.
 
 Zoom is controlled by holding **Ctrl** and scrolling the mouse wheel. The zoom centers on the pointer position. The zoom range is 10% to 400%.
 
@@ -75,7 +77,7 @@ The Export and Copy PNG buttons validate the current resolved, committed data be
 
 Export then downloads a PNG file in the browser. The filename uses the template slug with `/` replaced by `-` (e.g., `social/instagram/post` becomes `social-instagram-post.png`). Copy PNG places the captured image on the clipboard instead of downloading it.
 
-Export runs entirely in the browser. There is no server-side rendering, no format options, and no scale or DPI controls in the alpha release.
+Export runs entirely in the browser. There is no server-side rendering, no format options, and no scale or DPI controls in the current release.
 
 ## Theme
 
@@ -92,7 +94,7 @@ Studio displays different states depending on what is happening:
 - **Invalid** — only a template definition can enter this state: it failed runtime validation and cannot be edited. The brand preview is not passed through template-definition validation.
 - **Load error** — an entry's loader rejected, such as after a failed dynamic import. Raw loader errors are not exposed; Studio shows the localized template or brand load-error message.
 - **Data error** — the loaded template's resolved data is invalid, for example because of an unknown variant or field key or a wrong typed value. Studio shows its localized data-error message.
-- **Upload error** — a development image upload failed. The affected field receives the localized upload-error message.
+- **Upload error** — an image upload callback failed. The affected field receives the localized upload-error message.
 - **Export error** — PNG capture or clipboard copying failed after validation. Studio reports the localized export alert; validation failures remain associated with their fields instead.
 - **Not found** — the URL does not match an exact slug in the active catalog. Studio shows a localized visual 404 and a link back to `/editor` or `/brand`; this is not an HTTP 404.
 

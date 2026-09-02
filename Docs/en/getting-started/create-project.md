@@ -1,20 +1,16 @@
 # Create a Project
 
-## Alpha release
-
-FrameKit is currently in alpha/prerelease status. The packages are not yet published to npm. This documentation will be updated once publication is confirmed.
-
 ## Prerequisites
 
 - Node.js 22.13.0 or later.
-- pnpm 11.14.0 or later, **or** npm 10.x or later.
+- pnpm 11.14.0 or later when using pnpm. The package manifest does not declare an npm engine range; the creator supports npm for installing generated projects.
 
 The creator checks the Node.js version before creating the project and checks
 the pnpm version before installing with pnpm.
 
 ## Create the project
 
-Once `@mauriciodmo/create-framekit` is published to npm, run:
+Run:
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
@@ -70,21 +66,19 @@ pnpm dev
 
 Studio opens at [http://localhost:3000](http://localhost:3000). The root path `/` redirects to `/editor`.
 
-The generated project includes one bilingual example template visible immediately in the editor.
+The generated project includes one bilingual example template. After dependencies
+are installed and the registry is generated, it is visible in the editor.
 
 ## Validate and build
 
 Use the following commands to work with the project:
 
+- `pnpm dev` — regenerates the template registry before starting Studio and watches every path under `src/templates` for changes.
 - `pnpm check` — regenerates the template catalog and validates all definitions and content variants.
-- `pnpm build` — creates a production-optimized build.
-- `pnpm start` — starts the production server.
+- `pnpm build` — regenerates and validates the registry through `framekit check`, then creates a production-optimized build.
+- `pnpm start` — starts the production server without regenerating the registry.
 
 The generated project does not include `test`, `lint`, or `typecheck` scripts.
-
-## Warnings
-
-- `pnpm dlx` only works after `@mauriciodmo/create-framekit` and `@mauriciodmo/framekit` are published to npm.
 
 ---
 

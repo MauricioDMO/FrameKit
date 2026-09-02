@@ -38,7 +38,7 @@ without coercion, and an incomplete local editor draft is not render data.
 | `validateTemplateData`       | Validates template data against a template definition                                                                                                                          |
 | `validateTemplateDefinition` | Validates the structural integrity of a template definition                                                                                                                    |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; applies defaults -> variant content -> user edits, then image assets                                |
-| `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; returns the content variant keys of `definition.content`                                                             |
+| `getVariants`                | `getVariants(definition: TemplateBase): string[]`; returns the content variant keys of `definition.content`                                                                     |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| number \| boolean>`; extracts field defaults                                          |
 
 **Type exports**
@@ -47,14 +47,14 @@ without coercion, and an incomplete local editor draft is not render data.
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
 | `TemplateFieldKind`           | Discriminant union type for field kinds: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"` \| `"boolean"`       |
 | `ImageFieldScope`             | Scope for image assets: `"common"` \| `"variant"`                                                   |
-| `BaseFieldDescriptor`         | Base shape shared by all field descriptors                                                              |
+| `BaseFieldDescriptor`         | Base shape shared by text, color, and image field descriptors                                           |
 | `FieldDescriptor`             | Full field descriptor union across all field kinds                                                      |
 | `TextFieldDescriptor`         | Descriptor for multiline text fields, including optional `minLength` and `maxLength`                         |
 | `ColorFieldDescriptor`        | Descriptor for color fields                                                                             |
 | `NumberFieldDescriptor`       | Descriptor for number fields with a required finite numeric default, optional finite bounds and step, and native input/slider control                         |
 | `ImageFieldDescriptor`        | Descriptor for project-backed image fields                                                             |
 | `ChoiceFieldDescriptor`       | Descriptor for ordered closed-set string options and a required default value                          |
-| `BooleanFieldDescriptor`      | Descriptor for binary values with an optional boolean default; Studio uses a native checkbox           |
+| `BooleanFieldDescriptor`      | Descriptor for binary values with an optional boolean default (`false` when omitted); Studio uses a native checkbox |
 | `TemplateAssetManifest`       | Generated common and variant asset URL maps                                                            |
 | `TemplateMeta`                | Exact metadata object with required `title` and optional `description`, `marketingDescription`, and `tags` |
 | `TemplateVariants`             | Default content variant and optional display labels                                                  |
@@ -91,16 +91,27 @@ export const templates: TemplateRegistryEntry[] = [
 ]
 ```
 
-Each entry contains `slug`, `segments`, `meta`, `width`, `height`, `variants`,
-`variantKeys`, `assets`, and the dynamic `load` loader, whose promise resolves
-to a module with the template definition as its default export. The template
-title is `meta.title`. `meta.title` supplies Studio's navigation
+Each entry contains `slug`, `segments`, validated `meta`, `width`, `height`,
+`variants`, declaration-ordered `variantKeys`, `assets`, and the dynamic `load`
+loader, whose promise resolves to a module with the template definition as its
+default export. The template title is `meta.title`; there is no top-level
+`title` field. `meta.title` supplies Studio's navigation
 label and selected editor heading; when present, Studio also displays the
 optional `description`, `marketingDescription`, and `tags`. The registry's
 dimensions, variants, asset manifest, and lazy loader are passed through the
 Studio load boundary. This is project-local generated output, not an export of
 a published package entry point. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12)
 and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).
+
+`framekit generate` is the explicit one-off regeneration command; it writes
+`src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.
+`framekit dev` generates them initially and
+regenerates them when paths under `src/templates` or `src/brand` change.
+`framekit check` generates first, then validates every definition and the data
+resolved for each content variant with its discovered assets. `framekit build`
+runs `check` before the production build and copies the standalone public and
+Next static assets on success. `framekit start` does not generate; it requires a
+production standalone build and starts its server.
 
 ---
 
@@ -120,14 +131,13 @@ separate `slug` or `assets` props.
 | `FrameKitEditor`       | React component that renders the template editing interface   |
 | `FrameKitNavigation`   | React component that renders the template navigation tree     |
 | `humanizeSegment`      | Converts a path segment into a human-readable label           |
-| `manifestToNavigation` | Converts a template manifest into a navigation tree structure |
+| `manifestToNavigation` | Converts template or brand registry entries into a navigation tree structure |
 
 **Type exports**
 
 | Type                       | Description                                         |
 | -------------------------- | --------------------------------------------------- |
 | `EditorMessages`           | Message catalog type for editor UI strings          |
-| `TemplateManifestEntry`    | Entry in a template manifest                        |
 | `TemplateNavigationFolder` | Navigation node representing a folder               |
 | `TemplateNavigationItem`   | Navigation node representing a single template item |
 | `TemplateNavigationNode`   | Union type covering all navigation node types       |
@@ -138,10 +148,12 @@ separate `slug` or `assets` props.
 
 Provides the `FrameKitStudio` component, which combines editor and navigation into a complete studio interface, along with localization utilities.
 
-Its main component accepts `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`.
-`brands` is optional and defaults to an empty catalog.
-`FrameKitStudioTemplate` is `TemplateRegistryEntry`, so the generated `templates`
-array can be passed directly to `FrameKitStudio` without an adapter:
+Its main component accepts either `{ templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[] }` or
+`{ templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[] }`;
+at least one catalog is required, and an omitted catalog defaults to an empty
+array.
+The generated `templates` array can be passed directly to `FrameKitStudio`
+without an adapter:
 
 ```tsx
 import { templates } from './generated/framekit/templates'
@@ -182,8 +194,7 @@ discovery contract, generated registries, and `/brand` behavior.
 
 | Type                     | Description                                |
 | ------------------------ | ------------------------------------------ |
-| `FrameKitStudioTemplate` | Canonical `TemplateRegistryEntry` type used by Studio |
-| `FrameKitStudioBrand`    | Brand catalog entry with metadata and a preview loader |
+| `FrameKitStudioBrand`    | Brand catalog entry with `slug`, `title`, `segments`, `description`, and a preview loader |
 | `FrameKitLocale`         | Locale type used within the studio         |
 | `FrameKitStudioMessages` | Message catalog type for studio UI strings |
 
@@ -203,7 +214,7 @@ generated output, not exports of the `@mauriciodmo/framekit` package.
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `FrameKitStudioRoot` | Server component that bootstraps the studio; must be used in server components or layouts only. Do not import in client-side code. |
 
-Signature: `FrameKitStudioRoot({ children }: { children: React.ReactNode })`. It emits the complete `<html>`, `<head>`, and `<body>` shell, so a root layout using it must not nest another document shell.
+Signature: `FrameKitStudioRoot({ children, htmlClassName? }: { children: React.ReactNode, htmlClassName?: string })`. It emits the complete `<html>`, `<head>`, and `<body>` shell, so a root layout using it must not nest another document shell.
 
 ---
 
@@ -219,7 +230,7 @@ Advanced server-side utilities for development workflows including dev server sp
 | `findTemplates`        | Scans the filesystem for template modules                 |
 | `findBrandComponents`  | Scans a brand directory for brand component leaves       |
 | `collectTemplateSummaries` | Loads and validates serializable template summaries   |
-| `createTemplateModule` | Generates a template module from a template definition    |
+| `createTemplateModule` | Generates the template registry module source from discovered templates |
 | `createBrandModule`    | Generates the brand metadata and loader module            |
 | `writeTemplateModule`  | Writes generated template and brand modules to disk       |
 | `watchTemplates`       | Watches template and brand paths for changes and triggers callbacks |
@@ -235,6 +246,14 @@ Advanced server-side utilities for development workflows including dev server sp
 | `DiscoveredBrandComponent` | Brand component discovered during filesystem scanning |
 | `TemplateSummary`    | Serializable template metadata used by codegen |
 | `TemplateWatcher`    | Watcher instance returned by `watchTemplates`  |
+
+`createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })`
+returns the source for the generated template registry. It uses each discovered
+template's `slug` and `segments`, the supplied summary and asset manifest (or an
+empty manifest), and a lazy loader for the template module; it throws if a
+template has no corresponding summary. `writeTemplateModule` discovers the
+templates and brands, gathers summaries and assets, writes both generated
+modules, and synchronizes template assets under `public/__framekit/templates`.
 
 ---
 

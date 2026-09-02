@@ -103,7 +103,7 @@ Extrae a `src/brand/` una decisión visual o un patrón de comunicación que ten
 
 Las dos plantillas actuales importan `BrandHero` desde `@/brand/communication/hero/component` y lo rodean con composiciones diferentes:
 
-- `framekit/que-es-framekit/template.tsx` define una salida de `1440 × 1440`, el fondo verde, las formas decorativas, el encabezado, las tarjetas de ejemplo, el pie y los campos `eyebrow`, `title`, `description`, `website` y `accentColor`.
+- `framekit/que-es-framekit/template.tsx` define una salida de `1440 × 1440`, el fondo verde, las formas decorativas, el encabezado, las tarjetas de ejemplo, el pie y los campos `eyebrow`, `title`, `description`, `website`, `opacity` y `accentColor`.
 - `redes-sociales/instagram/promocion-cuadrada/template.tsx` también define `1440 × 1440`, pero añade `backgroundImage`, overlay, una cabecera de Silver Wolf, una composición específica de esa plantilla y una CTA localizada (`Hablemos`/`Let's talk`).
 
 En ambas, la plantilla resuelve `data`, decide el fallback del color (`#c8f7d9` en la primera y `#b9f8d2` en la segunda) y pasa los valores a `BrandHero`. El componente compartido no conoce variantes, fields, Instagram, dimensiones de exportación, fondos, logos, etiquetas de plataforma ni CTA. La documentación de authoring de plantillas explica la resolución de datos y variantes en [Creación de plantillas](./template-authoring.md).

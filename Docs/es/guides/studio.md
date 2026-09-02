@@ -1,6 +1,6 @@
 # Studio
 
-Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales. También ofrece un catálogo para consultar previews de componentes de marca reutilizables. Ambos flujos se ejecutan en el navegador. Para las plantillas, Studio consume el `TemplateRegistryEntry` generado; sus metadatos validados y su loader diferido son el contrato del catálogo.
+Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catálogo de plantillas, editar contenido en cualquier variante admitida, obtener una vista previa de los resultados y exportar imágenes PNG finales. También ofrece un catálogo para consultar previews de componentes de marca reutilizables. Ambos flujos se ejecutan en el navegador. Para las plantillas, pasa directamente a Studio el array `templates` generado: cada `TemplateRegistryEntry` proporciona el slug, los segmentos de ruta, `meta`, las dimensiones, las variantes, las `variantKeys` en orden de declaración, los assets y la función `load` diferida. Studio carga y valida la definición y rechaza una discrepancia de dimensiones del registro; no crees un registro paralelo ni derives el título desde el slug.
 
 ## Navegación
 
@@ -11,6 +11,8 @@ Las plantillas se organizan en una barra lateral compacta a partir de los `segme
 Dentro de cada carpeta, los elementos se ordenan alfabéticamente por título. Los nombres de las carpetas se humanizan a partir de los segmentos de sus slugs (por ejemplo, `instagram-post` se convierte en "Instagram Post").
 
 Al seleccionar una plantilla se navega a `/editor/<slug>`. La navegación usa `entry.meta.title` para el elemento de plantilla y para el encabezado del editor seleccionado; Studio nunca deriva esos títulos visibles del slug. Las carpetas son compactas, se pueden expandir y colapsar, comienzan expandidas y su estado de expansión se guarda en el navegador. Las líneas verticales de alcance, solo de carpetas, aparecen junto a los grupos de hijos de carpetas expandidas, no junto a los enlaces de plantilla. Las pestañas de ruta usan Tabler `IconStack2` para Plantillas y `IconTag` para Marca. La ruta y la plantilla seleccionadas, así como el foco del teclado, mantienen la accesibilidad mediante `aria-current="page"`, `aria-expanded` y estilos de foco visibles. Este árbol solo sirve para navegar; no tiene búsqueda ni filtros.
+
+Cuando una plantilla proporciona una descripción, una descripción de marketing o tags, el editor muestra un botón **Metadata**. Abre un diálogo accesible con el título de la plantilla, etiquetas localizadas para las descripciones opcionales y los tags.
 
 ### Catálogo de marca
 
@@ -30,30 +32,30 @@ La **variante** (etiquetada como "Variante" en la interfaz) se refiere a qué en
 
 El **idioma de la interfaz** controla el idioma de las etiquetas, botones y mensajes propios de Studio. Está limitado a `en` (inglés) o `es` (español). Es independiente de las variantes de plantilla: cambiarlo no cambia la variante seleccionada. Al cambiarlo se actualiza el estado de React, el atributo `lang` del elemento `<html>` y se guarda una cookie `locale` con vigencia de un año.
 
-El idioma de la interfaz se resuelve en este orden: la cookie `locale` → la cabecera `Accept-Language` → si la cabecera comienza con `en` se usa inglés → de lo contrario se recurre al español como alternativa.
+El idioma de la interfaz se resuelve desde la cookie `locale` cuando existe; de lo contrario usa la cabecera `Accept-Language`. Los valores que comienzan por `en` seleccionan inglés; todos los demás seleccionan español.
 
 ## Edición de campos
 
-Cada uno de los seis tipos de field tiene un control fijo, elegido a partir de la definición:
+Cada uno de los seis tipos de field tiene su propio control; los controles text, number, choice, boolean y color usan controles de formulario nativos del navegador:
 
 - `text` usa un textarea multilínea y almacena un string.
-- `number` usa el input numérico o el slider de rango nativo declarado y almacena un número finito.
-- `choice` usa un select nativo y almacena su opción string declarada.
-- `boolean` usa un checkbox nativo y almacena `true` o `false`.
-- `color` usa el selector de color y almacena un string.
-- `image` usa el control de preview/upload de assets del proyecto y almacena un string de origen del asset cuando se resuelve.
+- `number` usa un input numérico nativo por defecto, o un slider de rango nativo cuando `control: 'slider'`; almacena un número finito. Las definiciones con slider deben declarar `min` y `max`.
+- `choice` usa un select nativo y almacena una de sus opciones string declaradas.
+- `boolean` usa un checkbox nativo presentado como switch y almacena el booleano real `true` o `false` (si se omite el default de booleano, es `false`).
+- `color` usa un selector de color nativo junto con un input de texto hexadecimal y almacena un string.
+- `image` muestra el origen del asset resuelto y puede mostrar un control de upload cuando Studio proporciona un callback de upload.
 
 Los borradores del input numérico son locales al control numérico. Un borrador incompleto, como un valor vacío, no entra en los datos confirmados del editor, por lo que el preview sigue usando el último valor numérico confirmado. El preview y el render solo consumen datos tipados resueltos y confirmados; no usan una caché global del último preview válido.
 
-Los campos obligatorios se validan al intentar exportar o copiar. Los campos opcionales pasan la validación cuando se dejan vacíos.
+Exportar y Copiar PNG validan los datos resueltos. Los números deben ser finitos, estar dentro de `min`/`max` cuando se declaren y respetar `step` (que por defecto es `1`). Los fields text, color e image obligatorios rechazan valores vacíos; esos fields aceptan un valor vacío cuando `required: false`. También se comprueban la longitud del texto y el formato del color. Las choices deben ser strings de opciones declaradas y los booleanos deben ser booleanos reales; estos controles no validan convirtiendo strings.
 
-Los campos numéricos respetan sus restricciones declaradas `min`, `max` y `step`. Los campos de imagen pueden previsualizar assets de la plantilla o imágenes desde `public/assets` mediante rutas desde la raíz; Studio en desarrollo también ofrece la ruta de upload del proyecto. Los campos choice conservan el orden declarado y rechazan valores fuera del conjunto con `invalid_choice`; los campos boolean rechazan strings equivalentes con `invalid_boolean`.
+Los campos numéricos respetan sus restricciones declaradas `min`, `max` y `step`. Los campos choice conservan el orden declarado y rechazan valores fuera del conjunto con `invalid_choice`; los campos boolean rechazan strings equivalentes con `invalid_boolean`.
 
 ## Persistencia
 
-Todas las ediciones se almacenan en `localStorage` del navegador bajo la clave exacta `framekit:<slug>:v2`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por variante dentro de esa entrada. Studio no lee el estado `v1` ni realiza una migración desde v1.
+Las ediciones de fields confirmadas y la variante seleccionada se almacenan en `localStorage` del navegador bajo la clave exacta `framekit:<slug>:v2`. Cada slug de plantilla tiene su propia entrada de almacenamiento aislada, y los datos también están aislados por variante dentro de esa entrada. Studio no lee el estado `v1` ni realiza una migración desde v1; no se promete compatibilidad con v1.
 
-El JSON almacenado con formato incorrecto, un valor almacenado de nivel superior que no sea un objeto o una variante seleccionada que no sea válida para la definición se descartan de forma segura y el editor comienza desde cero. Las entradas de variante obsoletas o malformadas, los fields desconocidos, los valores con tipos incorrectos y los números persistidos inválidos se ignoran. Durante una actualización en vivo de la definición, el estado se reajusta a la definición actualizada: se conservan las variantes reconocidas y los fields con tipos de ejecución aceptados, se elimina la información obsoleta y la variante seleccionada se conserva si sigue siendo válida o se restablece a `definition.variants.default` en caso contrario. La persistencia es local al navegador; no ofrece sincronización con servidor, cuentas ni colaboración.
+El JSON almacenado con formato incorrecto, un valor almacenado de nivel superior que no sea un objeto o una variante seleccionada que no sea válida para la definición se descartan de forma segura y el editor comienza desde cero. Las entradas de variante obsoletas o malformadas, los fields desconocidos, los valores con tipos incorrectos y los números persistidos inválidos se ignoran. Las sobrescrituras de choice en el estado persistido o reajustado solo se conservan mientras sus valores coincidan con una opción declarada actualmente; las choices obsoletas se descartan individualmente, por lo que sobreviven las ediciones válidas de fields hermanos, y al resolver se recurre al valor del contenido de la variante actual o, si ese contenido omite el field, al valor predeterminado del field. Durante una actualización en vivo de la definición, el estado se reajusta a la definición actualizada: se conservan las variantes reconocidas y los fields con tipos de ejecución aceptados, se elimina la información obsoleta y la variante seleccionada se conserva si sigue siendo válida o se restablece a `definition.variants.default` en caso contrario. La persistencia es local al navegador; no ofrece sincronización con servidor, cuentas ni colaboración.
 
 ## Restablecer
 
@@ -61,7 +63,7 @@ El botón Restablecer elimina las ediciones solo para la variante actualmente se
 
 ## Vista previa y zoom
 
-El área de vista previa muestra la plantilla en sus dimensiones declaradas usando datos resueltos y confirmados. Al cargarse, se escala para adaptarse al espacio disponible, con un tope del 100% para que la plantilla completa siempre sea visible. La escala mínima es del 10%.
+El área de vista previa muestra la plantilla en sus dimensiones declaradas usando datos resueltos y confirmados. Al cargarse, se escala para adaptarse al espacio disponible, con un tope del 100%; si para ajustarse tendría que bajar del 10%, se detiene en el 10%. La escala mínima es del 10%.
 
 El zoom se controla manteniendo **Ctrl** y girando la rueda del ratón. El zoom se centra en la posición del puntero. El rango de zoom es del 10% al 400%.
 
@@ -75,7 +77,7 @@ Los botones Exportar y Copiar PNG validan los datos resueltos y confirmados actu
 
 Exportar descarga un archivo PNG en el navegador. El nombre del archivo usa el slug de la plantilla con `/` reemplazado por `-` (por ejemplo, `social/instagram/post` se convierte en `social-instagram-post.png`). Copiar PNG coloca la imagen capturada en el portapapeles en lugar de descargarla.
 
-La exportación se ejecuta íntegramente en el navegador. No hay renderizado en el servidor, ni opciones de formato, ni controles de escala o DPI en la versión alfa.
+La exportación se ejecuta íntegramente en el navegador. No hay renderizado en el servidor, ni opciones de formato, ni controles de escala o DPI en la versión actual.
 
 ## Tema
 
@@ -92,7 +94,7 @@ Studio muestra diferentes estados según lo que esté ocurriendo:
 - **Inválido** — solo una definición de plantilla puede entrar en este estado: falló la validación en tiempo de ejecución y no se puede editar. El preview de marca no pasa por la validación de definiciones de plantilla.
 - **Error de carga** — el loader de una entrada rechazó la carga, por ejemplo tras fallar una importación dinámica. Los errores sin procesar del loader no se exponen; Studio muestra el mensaje localizado de error de carga de plantilla o de marca.
 - **Error de datos** — los datos resueltos de la plantilla cargada no son válidos, por ejemplo por una variante o key de field desconocida o por un valor con el tipo incorrecto. Studio muestra su mensaje localizado de error de datos.
-- **Error de upload** — falló un upload de imagen en Studio de desarrollo. El field afectado recibe el mensaje localizado de error de upload.
+- **Error de upload** — falló un callback de upload de imagen. El field afectado recibe el mensaje localizado de error de upload.
 - **Error de exportación** — falló la captura PNG o la copia al portapapeles después de la validación. Studio muestra la alerta localizada de exportación; los fallos de validación siguen asociados a sus fields.
 - **No encontrado** — la URL no coincide exactamente con un slug del catálogo activo. Studio muestra un 404 visual localizado y un enlace de vuelta a `/editor` o `/brand`; no es un error HTTP 404.
 

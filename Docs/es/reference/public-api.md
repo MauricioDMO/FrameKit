@@ -40,7 +40,7 @@ incompleto del editor no es render data.
 | `validateTemplateData`       | Valida los datos de una plantilla contra su definición                                                                                                                                                                          |
 | `validateTemplateDefinition` | Valida la integridad estructural de una definición de plantilla                                                                                                                                                                 |
 | `resolveTemplateData`        | `resolveTemplateData(definition, variant, edits, assets?)`; aplica valores predeterminados -> contenido de variante -> ediciones y luego assets de imagen |
-| `getVariants`                | `getVariants(definition: TemplateDefinition): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                   |
+| `getVariants`                | `getVariants(definition: TemplateBase): string[]`; devuelve las keys de variante de `definition.content`                                                                                                                           |
 | `getDefaultValues`           | `getDefaultValues(fields: Record<string, FieldDescriptor>): Record<string, string \| number \| boolean>`; extrae los valores predeterminados de los campos                                                         |
 
 **Exportaciones de tipos**
@@ -49,14 +49,14 @@ incompleto del editor no es render data.
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `TemplateFieldKind`           | Tipo de unión discriminada para tipos de campo: `"text"` \| `"color"` \| `"number"` \| `"image"` \| `"choice"` \| `"boolean"`       |
 | `ImageFieldScope`             | Alcance de un campo de imagen: `"common"` \| `"variant"`                                                        |
-| `BaseFieldDescriptor`         | Forma base compartida por todos los descriptores de campo                                                      |
+| `BaseFieldDescriptor`         | Forma base compartida por los descriptores de fields text, color e image                                  |
 | `FieldDescriptor`             | Unión de descriptores de campo completa para todos los tipos de campo                                          |
 | `TextFieldDescriptor`         | Descriptor para campos de texto multilínea, con `minLength` y `maxLength` opcionales                         |
 | `ColorFieldDescriptor`        | Descriptor para campos de color                                                                                |
 | `NumberFieldDescriptor`       | Descriptor para campos numéricos con default numérico finito obligatorio, límites y step finitos opcionales, y control input/slider nativo                              |
 | `ImageFieldDescriptor`        | Descriptor para campos de imagen respaldados por el proyecto                                                  |
 | `ChoiceFieldDescriptor`       | Descriptor para opciones string ordenadas de conjunto cerrado y un valor predeterminado obligatorio          |
-| `BooleanFieldDescriptor`      | Descriptor para valores binarios con un valor booleano opcional; Studio usa un checkbox nativo               |
+| `BooleanFieldDescriptor`      | Descriptor para valores binarios con un default booleano opcional (`false` si se omite); Studio usa un checkbox nativo |
 | `TemplateAssetManifest`       | Mapas generados de URLs de assets comunes y por variante                                                      |
 | `TemplateMeta`                | Objeto exacto de metadata con `title` obligatorio y `description`, `marketingDescription` y `tags` opcionales |
 | `TemplateVariants`             | Variante de contenido predeterminada y labels de visualización opcionales                                  |
@@ -93,10 +93,11 @@ export const templates: TemplateRegistryEntry[] = [
 ]
 ```
 
-Cada entrada contiene `slug`, `segments`, `meta`, `width`, `height`, `variants`,
-`variantKeys`, `assets` y el loader dinámico `load`, cuya promesa resuelve un
-módulo con la definición de la plantilla como exportación predeterminada. El
-título de la plantilla es `meta.title`. Esta salida es
+Cada entrada contiene `slug`, `segments`, metadata `meta` validada, `width`,
+`height`, `variants`, `variantKeys` en el orden de declaración, `assets` y el
+loader dinámico `load`, cuya promesa resuelve un módulo con la definición de la
+plantilla como exportación predeterminada. El título de la plantilla es
+`meta.title`; no existe un campo `title` en el nivel superior. Esta salida es
 generada localmente en el proyecto, no una exportación de un punto de entrada
 publicado del paquete. `meta.title` proporciona la etiqueta de navegación de
 Studio y el encabezado del editor seleccionado; cuando están presentes, Studio
@@ -104,6 +105,16 @@ también muestra `description`, `marketingDescription` y `tags` opcionales. Las
 dimensiones, variantes, manifest de assets y loader lazy del registro atraviesan
 el límite de carga de Studio. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12)
 y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).
+
+`framekit generate` es el comando explícito de regeneración puntual; escribe
+`src/generated/framekit/templates.ts` y `src/generated/framekit/brands.ts`.
+`framekit dev` los genera inicialmente y los
+regenera cuando cambian rutas bajo `src/templates` o `src/brand`. `framekit
+check` genera primero, luego valida cada definición y los datos resueltos para
+cada variante de contenido con sus assets descubiertos. `framekit build`
+ejecuta `check` antes del build de producción y, si tiene éxito, copia los
+assets públicos y estáticos de Next al build standalone. `framekit start` no
+genera; requiere un build standalone de producción y arranca su servidor.
 
 ---
 
@@ -123,14 +134,13 @@ props separadas de `slug` ni `assets`.
 | `FrameKitEditor`       | Componente React que renderiza la interfaz de edición de plantillas            |
 | `FrameKitNavigation`   | Componente React que renderiza el árbol de navegación de plantillas            |
 | `humanizeSegment`      | Convierte un segmento de ruta en una etiqueta legible                          |
-| `manifestToNavigation` | Convierte un manifiesto de plantillas en una estructura de árbol de navegación |
+| `manifestToNavigation` | Convierte entradas de registro de plantillas o marcas en una estructura de árbol de navegación |
 
 **Exportaciones de tipos**
 
 | Tipo                       | Descripción                                                           |
 | -------------------------- | --------------------------------------------------------------------- |
 | `EditorMessages`           | Tipo de catálogo de mensajes para cadenas de interfaz del editor      |
-| `TemplateManifestEntry`    | Entrada en un manifiesto de plantillas                                |
 | `TemplateNavigationFolder` | Nodo de navegación que representa una carpeta                         |
 | `TemplateNavigationItem`   | Nodo de navegación que representa un elemento de plantilla individual |
 | `TemplateNavigationNode`   | Tipo de unión que cubre todos los tipos de nodos de navegación        |
@@ -141,10 +151,13 @@ props separadas de `slug` ni `assets`.
 
 Proporciona el componente `FrameKitStudio`, que combina el editor y la navegación en una interfaz de estudio completa, junto con utilidades de localización.
 
-Su componente principal recibe `{ templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }`. `brands` es opcional y, si se omite, se usa un catálogo vacío.
+Su componente principal recibe `{ templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[] }` o
+`{ templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[] }`;
+se requiere al menos un catálogo y el catálogo omitido se reemplaza por un
+array vacío.
 
-`FrameKitStudioTemplate` es `TemplateRegistryEntry`, por lo que el array generado
-`templates` se puede pasar directamente a `FrameKitStudio`, sin un adaptador:
+El array generado `templates` se puede pasar directamente a `FrameKitStudio`, sin
+un adaptador:
 
 ```tsx
 import { templates } from './generated/framekit/templates'
@@ -184,13 +197,14 @@ salida y enfocan el primer control inválido.
 
 | Tipo                     | Descripción                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
-| `FrameKitStudioTemplate` | Tipo canónico `TemplateRegistryEntry` usado por Studio |
 | `FrameKitStudioBrand`    | Entrada de catálogo de marca con `slug: string`, `title: string`, `segments: string[]`, `description: string` y `load: () => Promise<{ default: unknown }>` |
 | `FrameKitLocale`         | Tipo de locale utilizado dentro del estudio                       |
 | `FrameKitStudioMessages` | Tipo de catálogo de mensajes para cadenas de interfaz del estudio |
 
 `FrameKitBrandCatalog` es un componente interno y no se exporta desde este
-punto de entrada; no forma parte de la API pública.
+punto de entrada ni desde una ruta de exportación del paquete; no forma parte
+de la API pública. Los valores generados `brands`, `brandManifest` y
+`brandRegistry` del proyecto tampoco son exportaciones del paquete.
 
 ---
 
@@ -202,7 +216,7 @@ punto de entrada; no forma parte de la API pública.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `FrameKitStudioRoot` | Componente de servidor que inicia el estudio; debe usarse únicamente en componentes de servidor o layouts. No importar en código del lado del cliente. |
 
-Firma: `FrameKitStudioRoot({ children }: { children: React.ReactNode })`. Emite el shell completo `<html>`, `<head>` y `<body>`, por lo que un layout raíz que lo use no debe anidar otro shell de documento.
+Firma: `FrameKitStudioRoot({ children, htmlClassName? }: { children: React.ReactNode, htmlClassName?: string })`. Emite el shell completo `<html>`, `<head>` y `<body>`, por lo que un layout raíz que lo use no debe anidar otro shell de documento.
 
 ---
 
@@ -218,7 +232,7 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | `findTemplates`        | Escanea el sistema de archivos en busca de módulos de plantillas                     |
 | `findBrandComponents`  | Descubre recursivamente componentes de marca en un directorio                       |
 | `collectTemplateSummaries` | Carga y valida resúmenes serializables de plantillas                         |
-| `createTemplateModule` | Genera un módulo de plantillas a partir de plantillas descubiertas                   |
+| `createTemplateModule` | Genera el código fuente del módulo de registro a partir de plantillas descubiertas |
 | `createBrandModule`    | Genera un módulo de catálogo de marca a partir de componentes descubiertos           |
 | `writeTemplateModule`  | Escribe en disco los módulos generados de plantillas y de marca                      |
 | `watchTemplates`       | Observa plantillas, assets y `src/brand` en busca de cambios y ejecuta callbacks     |
@@ -234,6 +248,15 @@ Utilidades avanzadas del lado del servidor para flujos de trabajo de desarrollo,
 | `DiscoveredBrandComponent` | Componente de marca descubierto, con slug, segmentos, ruta absoluta y descripción |
 | `TemplateSummary`    | Metadatos serializables usados por el codegen             |
 | `TemplateWatcher`    | Instancia de vigilancia devuelta por `watchTemplates`            |
+
+`createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })`
+devuelve el código fuente del registro generado de plantillas. Usa el `slug` y
+los `segments` de cada plantilla descubierta, el resumen y el manifest de assets
+proporcionados (o un manifest vacío) y un loader lazy para el módulo de la
+plantilla; lanza un error si falta el resumen de una plantilla.
+`writeTemplateModule` descubre las plantillas y marcas, recopila resúmenes y
+assets, escribe ambos módulos generados y sincroniza los assets de plantillas
+en `public/__framekit/templates`.
 
 Las funciones de codegen escriben el artefacto del proyecto
 `src/generated/framekit/brands.ts`, que contiene `brands`, `brandManifest` y
