@@ -14,10 +14,8 @@ import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 import { FrameKitBrandCatalog } from './brand-catalog'
 import { useFrameKitLocale } from './locale-provider'
 
-const emptyTemplates: readonly FrameKitStudioTemplate[] = []
+const emptyTemplates: readonly TemplateRegistryEntry[] = []
 const emptyBrands: readonly FrameKitStudioBrand[] = []
-
-export type FrameKitStudioTemplate = TemplateRegistryEntry
 
 export interface FrameKitStudioBrand {
   slug: string
@@ -28,8 +26,8 @@ export interface FrameKitStudioBrand {
 }
 
 type FrameKitStudioProps =
-  | { templates: readonly FrameKitStudioTemplate[], brands?: readonly FrameKitStudioBrand[] }
-  | { templates?: readonly FrameKitStudioTemplate[], brands: readonly FrameKitStudioBrand[] }
+  | { templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[] }
+  | { templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[] }
 
 type LoadState =
   | { status: 'loading' }
