@@ -24,5 +24,9 @@
 ## Development Diagnostics
 
 - `framekit dev` port conflict: set `PORT` to an available integer from 1 through 65535. Use `FRAMEKIT_HOST` or `HOST` for the bind address.
-- Structural template changes should regenerate the registry; edits within an existing `template.tsx` rely on Next HMR. Restart `framekit dev` if structural changes do not update the catalog.
-- If TypeScript cannot resolve `@framekit/generated/templates`, map `@framekit/*` to `.framekit/*` in `tsconfig.json`.
+- `framekit dev` watches every file and directory under `src/templates` and
+  `src/brand`; additions, edits, and deletions trigger registry regeneration.
+  Next HMR can also update an already loaded template preview. If a change is
+  not reflected, inspect the terminal for a generation or HMR error.
+- If TypeScript cannot resolve `@framekit/generated/templates`, map
+  `@framekit/generated/*` to `src/generated/framekit/*` in `tsconfig.json`.

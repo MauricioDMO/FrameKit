@@ -24,7 +24,8 @@ Studio resolves typed string, finite-number, and boolean values for the
 selected arbitrary variant. In the content or edits being resolved, an unknown
 variant, unknown field key, wrong primitive type, or non-finite number produces
 a localized data error rather than a silent fallback. Persisted edits use
-`framekit:<slug>:v2`; v1 is not migrated. Malformed top-level state is
+`framekit:<slug>:v2`; v1 is not read or migrated, and no v1 compatibility is
+promised. Malformed top-level state is
 discarded, while stale variants/fields, malformed variant entries, wrong-typed
 values, and invalid persisted numbers are ignored. A definition refresh
 rebases retained data to the new definition and preserves the selected variant

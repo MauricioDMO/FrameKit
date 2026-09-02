@@ -119,7 +119,12 @@ For ordinary fields, Studio resolves values in this order:
 2. The selected variant's content entry.
 3. The saved edit for that template and variant in browser `localStorage`.
 
-`framekit check` validates definitions and resolved variant data without Studio edits. Export validates the final resolved data before capturing the PNG. Required values are checked after trimming whitespace.
+Studio persists only recognized variants, fields, and runtime values. A saved
+choice value that is no longer declared is discarded, so the variant content or
+field default remains available. `framekit check` validates definitions and
+resolved variant data without Studio edits. Export validates the final resolved
+data before capturing the PNG. Required values are checked after trimming
+whitespace.
 
 For the breaking number-field contract, see [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 

@@ -7,6 +7,9 @@ failures.
 For repository-specific issues, also check:
 
 - Unstyled editor: import `@mauriciodmo/framekit/styles.css` in global CSS or the layout.
-- Unresolved generated import: map `@framekit/*` to `.framekit/*` in `tsconfig.json`.
-- Missing structural changes: regenerate and restart `framekit dev`.
+- Unresolved generated import: map `@framekit/generated/*` to
+  `src/generated/framekit/*` in `tsconfig.json`.
+- Missing structural changes: inspect the `framekit dev` terminal for generation
+  or HMR errors; the watcher regenerates for changes under `src/templates` and
+  `src/brand`.
 - PNG failures: validate data, fonts, cross-origin images, and browser canvas support.

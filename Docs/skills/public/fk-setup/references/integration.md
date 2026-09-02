@@ -71,4 +71,9 @@ export default function HomePage() {
 }
 ```
 
-Run `pnpm framekit generate`. It writes `src/generated/framekit/templates.ts`; generation and `framekit dev` recreate it. The `.framekit/` directory is also disposable.
+Run `pnpm framekit generate`. It writes the source-side registry to
+`src/generated/framekit/templates.ts`; its entries contain `slug`, `segments`,
+validated metadata, dimensions, variants, declaration-ordered variant keys,
+assets, and lazy `load` functions. Generation, `framekit dev`, `framekit check`,
+and `framekit build` recreate it; `framekit start` does not. This registry is separate from
+`.framekit/next/`, which is Next.js build output.

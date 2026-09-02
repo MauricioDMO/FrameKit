@@ -20,7 +20,9 @@ For every template and content variant, `framekit check` generates the registry,
   data; only committed finite numeric data is validated for rendering.
 - Non-empty colors must match `#RRGGBB`.
 
-Common data errors are `required`, `invalid_number`, `number_too_small`, `number_too_large`, `invalid_step`, and `invalid_color`.
+Common data errors are `required`, `invalid_number`, `number_too_small`,
+`number_too_large`, `invalid_step`, `text_too_short`, `text_too_long`,
+`invalid_color`, `invalid_choice`, and `invalid_boolean`.
 
 For the breaking number-field contract, see [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8).
 

@@ -27,9 +27,15 @@ pnpm build
 
 ## Generated Outputs
 
-Treat `src/generated/framekit/templates.ts`, `.framekit/next/`, and `packages/framekit/dist/` as disposable ignored output. Run `framekit generate` before commands that import the registry.
+Treat `src/generated/framekit/templates.ts`, `.framekit/next/`, and `packages/framekit/dist/` as disposable ignored output. The generated `templates` registry contains canonical summaries and lazy loaders. `framekit dev`, `framekit check`, and `framekit build` generate it automatically; use `framekit generate` for a one-off regeneration before direct registry imports. Do not maintain a parallel registry or adapter.
 
 The public package contract exposes only `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, and `./styles.css`; do not treat `packages/framekit/src/*` imports as supported consumer imports.
+
+## Skills
+
+Edit internal skill sources only under `Docs/skills/`. Run `pnpm sync:skills` to
+refresh the synchronized `.agents/skills/` copies; do not edit those copies
+directly.
 
 ## Verify Changes
 

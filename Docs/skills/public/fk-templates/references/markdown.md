@@ -1,6 +1,6 @@
 # FrameKit Markdown
 
-`Markdown` is a small, escaped formatter for editable copy. It is a render component, not a field kind: `text` and `textarea` values remain plain strings until the template passes them to `Markdown`.
+`Markdown` is a small, escaped formatter for editable copy. It is a render component, not a field kind: `text` values remain plain strings until the template passes them to `Markdown`.
 
 ```tsx
 import { Markdown } from '@mauriciodmo/framekit'
