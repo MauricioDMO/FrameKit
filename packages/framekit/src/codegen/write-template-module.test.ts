@@ -234,10 +234,8 @@ export interface TemplateRegistryEntry {
       await writeFile(path.join(framekitPackage, 'studio.d.ts'), `
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 
-export type FrameKitStudioTemplate = TemplateRegistryEntry
-
 export declare function FrameKitStudio(props: {
-  templates: readonly FrameKitStudioTemplate[]
+  templates: readonly TemplateRegistryEntry[]
 }): unknown
 `)
       await writeFile(path.join(root, 'src', 'consumer.ts'), `
