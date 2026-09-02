@@ -1,24 +1,8 @@
-import { access, readdir } from 'node:fs/promises'
+import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 
+import { exists, validateSegment } from './helpers'
 import type { DiscoveredTemplate } from './types'
-
-const segmentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-
-async function exists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath)
-    return true
-  } catch {
-    return false
-  }
-}
-
-function validateSegment(segment: string, physicalPath: string): void {
-  if (!segmentPattern.test(segment)) {
-    throw new Error(`Segmento inválido '${segment}' en ruta física: ${physicalPath}`)
-  }
-}
 
 export async function findTemplates(
   templatesDirectory: string,
