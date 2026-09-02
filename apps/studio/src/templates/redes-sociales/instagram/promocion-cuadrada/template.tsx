@@ -28,7 +28,7 @@ export default defineTemplate({
       label: 'Imagen de fondo',
       scope: 'common',
     }),
-    imageOpacity: field.number({ label: 'Opacidad de imagen', defaultValue: 55, min: 0, max: 100, step: 5, control: 'slider' }),
+    imageOpacity: field.number({ label: 'Opacidad de imagen', defaultValue: 55, min: 0, max: 100, step: 5 }),
     showBackgroundImage: field.boolean({ label: 'Mostrar imagen de fondo', defaultValue: true }),
     accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
   },
