@@ -55,7 +55,51 @@ jobs:
           node-version: 22.13.0
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Build FrameKit
+        run: pnpm --filter @mauriciodmo/framekit build
       - name: Build creator
         run: pnpm --filter @mauriciodmo/create-framekit build
+      - name: Run discovery and codegen tests
+        run: pnpm --filter @mauriciodmo/framekit exec vitest run src/discovery src/codegen
+      - name: Run creator tests
+        run: pnpm --filter @mauriciodmo/create-framekit exec vitest run --testTimeout=30000
+      - name: Type-check workspace
+        run: pnpm typecheck
+      - name: Create consumer project
+        run: node packages/create-framekit/dist/cli.js windows-consumer -n
+      - name: Use locally built FrameKit package
+        run: |
+          pnpm --filter @mauriciodmo/framekit pack --pack-destination windows-consumer
+          node -e "const fs = require('fs'); const path = require('path'); const directory = 'windows-consumer'; const archive = fs.readdirSync(directory).find((name) => name.startsWith('mauriciodmo-framekit-') && name.endsWith('.tgz')); if (!archive) throw new Error('FrameKit tarball not found'); const packagePath = path.join(directory, 'package.json'); const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8')); packageJson.dependencies['@mauriciodmo/framekit'] = 'file:./' + archive; fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');"
+      - name: Install consumer dependencies
+        working-directory: windows-consumer
+        run: pnpm install
+      - name: Generate consumer registry
+        working-directory: windows-consumer
+        run: pnpm exec framekit generate
+      - name: Check consumer templates
+        working-directory: windows-consumer
+        run: pnpm exec framekit check
+      - name: Verify FrameKit package on Windows
+        run: pnpm --filter @mauriciodmo/framekit pack --dry-run
       - name: Verify creator package on Windows
         run: pnpm --filter @mauriciodmo/create-framekit pack --dry-run
+
+  chromium-e2e:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.14.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.13.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run Chromium E2E
+        run: pnpm test:e2e
