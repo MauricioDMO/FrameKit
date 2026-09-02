@@ -382,17 +382,16 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText(messages.errorTextTooShort.replace('{minLength}', '2'))).toBeTruthy()
   })
 
-  it('renders accessible choice errors without selecting a recovery option', () => {
+  it('discards stale persisted choices without losing sibling edits', () => {
     localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 1, tooSmall: 10, tooLarge: 20, steppedNumber: 4, sliderNumber: 50, alignment: 'unknown', accentColor: '#123456' } } }))
     renderEditor()
 
     const alignment = screen.getByRole('combobox', { name: 'Alignment' })
-    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
 
-    expect(screen.getByText(messages.errorInvalidChoice)).toBeTruthy()
-    expect(alignment.getAttribute('aria-invalid')).toBe('true')
-    expect(alignment.getAttribute('aria-describedby')).toBe('alignment-error')
-    expect((alignment as HTMLSelectElement).value).toBe('unknown')
+    expect(screen.queryByText(messages.errorInvalidChoice)).toBeNull()
+    expect(alignment.getAttribute('aria-invalid')).toBe('false')
+    expect((alignment as HTMLSelectElement).value).toBe('center')
+    expect(screen.getByText('logo-on:1')).toBeTruthy()
   })
 
   it('copies a valid template PNG', async () => {

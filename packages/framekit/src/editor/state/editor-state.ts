@@ -19,6 +19,8 @@ function filterFieldData(definition: TemplateBase, fields: Record<string, unknow
     if (!field) continue
     if (field.kind === 'number') {
       if (validateNumberValue(value, field) === undefined) data[key] = value as number
+    } else if (field.kind === 'choice') {
+      if (field.options.some((option) => option.value === value)) data[key] = value as string
     } else if (typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')) {
       data[key] = value as string | boolean
     }

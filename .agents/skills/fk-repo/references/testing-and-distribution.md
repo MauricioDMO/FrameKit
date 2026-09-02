@@ -9,6 +9,7 @@ pnpm test
 pnpm --filter @mauriciodmo/framekit test
 pnpm --filter studio test
 pnpm --filter @mauriciodmo/create-framekit test
+pnpm check:runtime
 pnpm typecheck
 pnpm lint
 pnpm build
@@ -18,7 +19,7 @@ Vitest runs across workspaces. Core package tests normally run in Node, with jsd
 
 Coverage includes template discovery and code generation, navigation, data resolution, definition and field validation, editor state, CLI behavior, and type fixtures.
 
-Do not infer coverage for browser E2E, visual regression, a complete Studio user flow, production build/start, asset copying, Windows/macOS, or watcher behavior; these are not covered by the current suite.
+Browser E2E is covered by `tests/e2e/studio.spec.ts` in Chromium. Do not infer coverage for visual regression, a complete Studio user flow beyond this E2E, asset copying, broad Windows/macOS support, or watcher behavior from the automated suite. Production build/start is covered separately by the manual tarball smoke; the Windows CI consumer smoke is also separate from the browser E2E.
 
 ## Pack And Smoke Test
 

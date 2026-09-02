@@ -23,6 +23,13 @@ Templates live under `src/templates/`. A directory containing a default-exportin
 5. Build from the render props `data`, `assets`, `variant`, `width`, and `height`. Use Tailwind classes for static styling; reserve inline styles for runtime values and computed dimensions.
 6. Run `framekit check`; for visual work, inspect Studio with `framekit dev` and export PNG when appearance matters.
 
+`framekit dev` generates the canonical `templates` registry before starting Studio
+and regenerates it when files below `src/templates` change. `framekit check` and
+`framekit build` generate automatically; `framekit start` reads the built output.
+The generated registry contains validated summaries and lazy template loaders; use
+the generated `templates` export directly rather than maintaining an adapter or a
+second registry.
+
 ## Template rules
 
 - Every field needs a non-empty `label`; `required` defaults to `true`. See [Template Fields](references/fields.md).

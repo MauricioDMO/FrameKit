@@ -2,9 +2,9 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { humanizeSegment, manifestToNavigation, type TemplateManifestEntry } from './navigation'
+import { humanizeSegment, manifestToNavigation } from './navigation'
 
-const manifest: TemplateManifestEntry[] = [
+const manifest = [
   { slug: 'redes-sociales/instagram/promocion-cuadrada', meta: { title: 'Promocion Cuadrada' }, segments: ['redes-sociales', 'instagram', 'promocion-cuadrada'] },
   { slug: 'marketing/email/newsletter', meta: { title: 'Newsletter' }, segments: ['marketing', 'email', 'newsletter'] },
   { slug: 'redes-sociales/facebook/anuncio', meta: { title: 'Anuncio' }, segments: ['redes-sociales', 'facebook', 'anuncio'] },

@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defineTemplate, field } from '../../index'
+import { resolveTemplateData } from '../../core/resolve-template-data'
 
 import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, updateField } from './editor-state'
 
@@ -10,8 +11,21 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-  fields: { title: field.text({ label: 'Title' }), color: field.color({ label: 'Color' }), count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }), enabled: field.boolean({ label: 'Enabled' }) },
-  content: { en: {}, fr: {} },
+  fields: {
+    title: field.text({ label: 'Title' }),
+    color: field.color({ label: 'Color' }),
+    count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
+    enabled: field.boolean({ label: 'Enabled' }),
+    alignment: field.choice({
+      label: 'Alignment',
+      defaultValue: 'center',
+      options: [
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' }
+      ]
+    })
+  },
+  content: { en: { alignment: 'left' }, fr: {} },
   variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
   render: () => null,
 })
@@ -65,6 +79,29 @@ describe('editor state', () => {
     const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { enabled: 'true' } } }) }
 
     expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: {} } })
+  })
+
+  it('omits invalid persisted choices while preserving siblings and fallbacks', () => {
+    const storage = {
+      getItem: () => JSON.stringify({
+        selectedVariant: 'fr',
+        dataByVariant: {
+          en: { title: 'Saved English', alignment: 'legacy', enabled: true },
+          fr: { title: 'Saved French', alignment: 'legacy', enabled: false },
+        },
+      }),
+    }
+    const state = loadPersistedState('social/campaign', definition, storage)
+
+    expect(state).toEqual({
+      selectedVariant: 'fr',
+      dataByVariant: {
+        en: { title: 'Saved English', enabled: true },
+        fr: { title: 'Saved French', enabled: false },
+      },
+    })
+    expect(resolveTemplateData(definition, 'en', state!.dataByVariant.en)).toMatchObject({ title: 'Saved English', alignment: 'left', enabled: true })
+    expect(resolveTemplateData(definition, 'fr', state!.dataByVariant.fr)).toMatchObject({ title: 'Saved French', alignment: 'center', enabled: false })
   })
 
   it('keeps finite numeric edits and discards numeric strings or invalid values', () => {

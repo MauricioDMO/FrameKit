@@ -7,11 +7,16 @@ description: Validate FrameKit packages and their distribution before publishing
 
 Validate from the repository root. The root workspace is private; only `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` are publish targets.
 
+Edit this skill only under `Docs/skills/`. Run `pnpm sync:skills` to refresh the
+synchronized skill copies; do not edit `.agents/skills/` or generated-project
+copies directly.
+
 ## Release Gate
 
 1. Run the repository checks:
 
    ```sh
+   pnpm check:runtime
    pnpm lint
    pnpm test
    pnpm typecheck
@@ -27,7 +32,23 @@ Validate from the repository root. The root workspace is private; only `@maurici
 
 3. Run the manual smoke test outside this repository. Follow [Tarball Smoke Test](references/tarball-smoke-test.md).
 
-4. Report commands, tarball paths, results, and generated artifacts. Do not claim browser E2E, visual, cross-platform, watcher, production-start, or asset-copy coverage from the automated suite.
+4. Report commands, tarball paths, results, and generated artifacts. Report the Chromium E2E and manual tarball smoke separately; do not claim visual, broad cross-platform, watcher, or asset-copy coverage from the automated suite.
+
+## Post-publication Registry Gate
+
+After publication and before promotion, run the post-publication npm registry
+smoke in `Docs/en/development/testing-and-distribution.md`. Supply exact,
+release-time `CORE_SPEC` and `CREATOR_SPEC` values plus `EXPECTED_DIST_TAG`; do
+not encode a version or tag here. The check must run outside the repository and
+install from npm, verify the package export targets and both binaries, record
+the creator template's FrameKit version/range, scaffold with `-n`, install the
+exact core package, run `generate`, `check`, `build`, and `start`, poll
+`/editor` over HTTP, and clean up.
+
+Check the intended dist-tag independently of the consumer smoke. Record the
+inputs, resolved versions, runtime, commands, logs, and PASS/FAIL result. A
+failure blocks promotion to that tag, not the initial package upload; never
+publish or mutate a dist-tag during validation.
 
 ## Release Handoff
 
@@ -67,3 +88,4 @@ Read [CLI failures](references/cli-and-failures.md) when a CLI or installation s
 - `@mauriciodmo/create-framekit` contains `dist/`, `template/`, `README.md`, and `LICENSE`; its template is copied into the generated project.
 - Confirm the generated `src/generated/framekit/templates.ts` is present and gitignored in the generated consumer project.
 - Confirm neither tarball retains a reference to the original workspace.
+- The manual tarball smoke must also run the generated project's production build and `framekit start`, poll a Studio route over HTTP, and clean up the server.

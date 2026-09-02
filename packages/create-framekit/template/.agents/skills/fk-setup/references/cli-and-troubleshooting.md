@@ -4,11 +4,15 @@
 
 `framekit generate`, `check`, `dev`, `build`, and `start` respectively generate
 the registry, validate data, run Studio, build the standalone app, and start
-that build. `check` does not call `render` or test PNG export. `dev` uses
-`FRAMEKIT_HOST`, then `HOST`, then `localhost`; `PORT` defaults to `3000` and
-must be 1-65535.
+that build. `check` and `build` regenerate before validating or building; `dev`
+regenerates before starting and when watched templates change; `start` is
+read-only and does not regenerate. `check` does not call `render` or test PNG
+export. `dev` uses `FRAMEKIT_HOST`, then `HOST`, then `localhost`; `PORT`
+defaults to `3000` and must be 1-65535.
 
-The watcher regenerates for added or removed template files/directories and for asset changes under `src/templates/**/assets`. Next HMR handles edits to an existing `template.tsx`; restart `framekit dev` if a structural change is missed.
+The watcher observes every file and directory under `src/templates`. Additions,
+edits, and deletions there trigger regeneration; only one generation runs at a
+time. It also regenerates when paths under `src/brand` change.
 
 ## Discovery
 

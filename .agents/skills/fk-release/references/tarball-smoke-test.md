@@ -1,28 +1,18 @@
 # Tarball Smoke Test
 
-Run this outside the FrameKit repository.
+Run the complete sequence from the **Tarball Smoke Test (Manual)** section of
+`Docs/en/development/testing-and-distribution.md` outside the FrameKit
+repository's consumer directories. It is intentionally version-independent.
 
-1. Create an isolated basic consumer project outside this repository. Do not copy a workspace manifest that leaves `@mauriciodmo/framekit` as `workspace:*`; replace that dependency with the local core tarball before running `pnpm install`.
-2. Install the FrameKit tarball:
+The sequence must:
 
-   ```sh
-   pnpm add <path-to-framekit-tgz>
-   ```
+1. build and pack both public packages into a fresh temporary directory;
+2. inspect expected package files and reject tests, secrets, `workspace:` metadata, local `link:`/relative `file:` paths, and checkout paths;
+3. install the creator tarball in a separate `npm init -y` runner and scaffold a project with `-n`;
+4. replace the generated FrameKit dependency with the core tarball and run `npm install`, `npx --no-install framekit generate`, `npx --no-install framekit check`, and `npx --no-install framekit build`;
+5. start the generated standalone server with `npx --no-install framekit start`, poll `http://127.0.0.1:<port>/editor` until it returns successfully, and clean up the process.
 
-3. In that project, run:
-
-   ```sh
-   pnpm check
-   pnpm build
-   ```
-
-4. Create a separate minimal runner with `npm init -y`, install the `create-framekit` tarball, and run `create-framekit <new-directory>` from outside the repository. Using `npm init -y` avoids version-specific `pnpm init` metadata in the temporary runner.
-5. In the generated project, replace its FrameKit dependency with the local FrameKit tarball. Run:
-
-   ```sh
-   pnpm install
-   pnpm check
-   pnpm build
-   ```
-
-6. Confirm `src/generated/framekit/templates.ts` was generated and is gitignored. Inspect both tarball contents for `workspace:` or references to the original repository; local `file:` references created only in the temporary consumer are expected.
+The generated project must contain `src/generated/framekit/templates.ts`, and
+its `.gitignore` must ignore that path. `file:` references created by the
+temporary consumer are expected; neither package archive may point back to the
+original workspace.

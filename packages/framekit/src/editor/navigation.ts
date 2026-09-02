@@ -1,7 +1,5 @@
 import type { TemplateRegistryEntry } from '../types'
 
-export type TemplateManifestEntry = Pick<TemplateRegistryEntry, 'slug' | 'segments' | 'meta'>
-
 interface BrandManifestEntry {
   slug: string
   title: string
@@ -38,7 +36,7 @@ export function humanizeSegment(name: string): string {
 }
 
 export function manifestToNavigation(
-  manifest: readonly (TemplateManifestEntry | BrandManifestEntry)[],
+  manifest: readonly (Pick<TemplateRegistryEntry, 'slug' | 'segments' | 'meta'> | BrandManifestEntry)[],
   basePath = '/editor',
 ): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
