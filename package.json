@@ -12,11 +12,13 @@
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "build": "pnpm -r --if-present build",
+    "test:e2e": "playwright test",
     "sync:skills": "node scripts/sync-skills.mjs",
     "check:runtime": "node scripts/check-runtime-contract.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "husky": "^9.1.7"
   }
 }
