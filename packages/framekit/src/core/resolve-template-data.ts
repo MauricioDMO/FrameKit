@@ -21,27 +21,21 @@ export function resolveTemplateData<Definition extends TemplateBase>(
   const fieldKeys = new Set(Object.keys(definition.fields))
   const variantContent = definition.content[variant]
 
-  for (const [key, value] of Object.entries(variantContent)) {
-    if (!fieldKeys.has(key)) {
-      throw new Error(`content.${variant} contains unknown field key "${key}"`)
+  function applyValues(values: Record<string, string | number | boolean | undefined>, source: string): void {
+    for (const [key, value] of Object.entries(values)) {
+      if (!fieldKeys.has(key)) {
+        throw new Error(`${source} contains unknown field key "${key}"`)
+      }
+      const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : definition.fields[key].kind === 'number' ? 'number' : 'string'
+      if (typeof value !== expectedType || (expectedType === 'number' && !Number.isFinite(value))) {
+        throw new Error(`${source}.${key} must be a ${expectedType}`)
+      }
+      result[key] = value as string | number | boolean
     }
-    const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : definition.fields[key].kind === 'number' ? 'number' : 'string'
-    if (typeof value !== expectedType || (expectedType === 'number' && !Number.isFinite(value))) {
-      throw new Error(`content.${variant}.${key} must be a ${expectedType}`)
-    }
-    result[key] = value as string | number | boolean
   }
 
-  for (const [key, value] of Object.entries(edits)) {
-    if (!fieldKeys.has(key)) {
-      throw new Error(`edits contains unknown field key "${key}"`)
-    }
-    const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : definition.fields[key].kind === 'number' ? 'number' : 'string'
-    if (typeof value !== expectedType || (expectedType === 'number' && !Number.isFinite(value))) {
-      throw new Error(`edits.${key} must be a ${expectedType}`)
-    }
-    result[key] = value as string | number | boolean
-  }
+  applyValues(variantContent, `content.${variant}`)
+  applyValues(edits, 'edits')
 
   for (const [key, field] of Object.entries(definition.fields)) {
     if (field.kind !== 'image') continue
