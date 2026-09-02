@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-08-31.
+* **Última revisión:** 2026-09-02.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -84,15 +84,15 @@ Backlog
 
 ## Estado de issues en GitHub
 
-Snapshot consultado el 2026-08-31.
+Snapshot consultado el 2026-09-02.
 
 | Issue                                                    | GitHub | Local      | Acción                  |
 | -------------------------------------------------------- | ------ | ---------- | ----------------------- |
-| [#12](https://github.com/MauricioDMO/FrameKit/issues/12) | Open   | Verificada | Sincronizar y cerrar    |
-| [#13](https://github.com/MauricioDMO/FrameKit/issues/13) | Open   | Verificada | Resolver `#17` y cerrar |
-| [#14](https://github.com/MauricioDMO/FrameKit/issues/14) | Open   | Pendiente  | Auditar docs EN/ES      |
-| [#15](https://github.com/MauricioDMO/FrameKit/issues/15) | Open   | Pendiente  | Añadir CI y smokes      |
-| [#17](https://github.com/MauricioDMO/FrameKit/issues/17) | Open   | Pendiente  | Resolver antes de `#13` |
+| [#12](https://github.com/MauricioDMO/FrameKit/issues/12) | Open   | Verificada | Publicar evidencia, sincronizar y cerrar en GitHub |
+| [#13](https://github.com/MauricioDMO/FrameKit/issues/13) | Open   | Verificada | Publicar evidencia, sincronizar y cerrar en GitHub |
+| [#14](https://github.com/MauricioDMO/FrameKit/issues/14) | Open   | Verificada | Publicar evidencia, sincronizar y cerrar en GitHub |
+| [#15](https://github.com/MauricioDMO/FrameKit/issues/15) | Open   | Verificada | Publicar evidencia, sincronizar y cerrar en GitHub |
+| [#17](https://github.com/MauricioDMO/FrameKit/issues/17) | Open   | Verificada | Publicar evidencia, sincronizar y cerrar en GitHub |
 | [#18](https://github.com/MauricioDMO/FrameKit/issues/18) | Open   | Backlog    | Diferir                 |
 | [#19](https://github.com/MauricioDMO/FrameKit/issues/19) | Open   | Backlog    | Diferir                 |
 
@@ -146,31 +146,31 @@ Plan:
 * [ ] Revisar que el cuerpo de `#12` coincida con el contrato final.
 * [ ] Marcar los acceptance criteria reales en GitHub.
 * [ ] Publicar un comentario con commits y verificaciones.
-* [ ] Confirmar que no existen regresiones posteriores relevantes.
+* [x] Confirmar que no existen regresiones posteriores relevantes.
 * [ ] Cerrar `#12` en GitHub.
-* [ ] Marcar `#12` como completada en este tracker.
+* [x] Registrar `#12` como verificada localmente en este tracker.
 
 ### 1.2 Issue #17: Persisted Choice Values
 
 Issue:
 [#17](https://github.com/MauricioDMO/FrameKit/issues/17).
 
-* [ ] Confirmar la reproducción con una opción eliminada o renombrada.
-* [ ] Añadir una comprobación local de pertenencia a `field.options` durante la
+* [x] Confirmar la reproducción con una opción eliminada o renombrada.
+* [x] Añadir una comprobación local de pertenencia a `field.options` durante la
   hidratación.
-* [ ] Descartar solamente el override inválido.
-* [ ] Preservar los demás campos válidos de la misma variante.
-* [ ] Confirmar fallback hacia contenido de variante o default.
-* [ ] Mantener sin cambios number, boolean, text, color e image.
-* [ ] Añadir un test para una opción persistida válida.
-* [ ] Añadir un test para una opción obsoleta con campos hermanos válidos.
-* [ ] Verificar que el renderer recibe el valor resuelto actual.
-* [ ] Actualizar el test que actualmente conserva la opción desconocida.
-* [ ] Añadir una entrada en `CHANGELOG.md` bajo `Unreleased`.
-* [ ] Registrar que no requiere migración ni cambio de storage version.
-* [ ] Ejecutar checks enfocados del estado y editor.
-* [ ] Ejecutar checks completos del paquete y repositorio.
-* [ ] Publicar evidencia y cerrar `#17`.
+* [x] Descartar solamente el override inválido.
+* [x] Preservar los demás campos válidos de la misma variante.
+* [x] Confirmar fallback hacia contenido de variante o default.
+* [x] Mantener sin cambios number, boolean, text, color e image.
+* [x] Añadir un test para una opción persistida válida.
+* [x] Añadir un test para una opción obsoleta con campos hermanos válidos.
+* [x] Verificar que el renderer recibe el valor resuelto actual.
+* [x] Actualizar el test que actualmente conserva la opción desconocida.
+* [x] Añadir una entrada en `CHANGELOG.md` bajo `Unreleased`.
+* [x] Registrar que no requiere migración ni cambio de storage version.
+* [x] Verificar estado y editor mediante la suite completa.
+* [x] Ejecutar checks completos del paquete y repositorio.
+* [ ] Publicar evidencia, sincronizar la issue y cerrar `#17`.
 
 ### 1.3 Issue #13: Studio Canonical Contract
 
@@ -182,68 +182,69 @@ Plan:
 * [x] Integrar persistencia `v2`, controles nativos y validación.
 * [x] Completar tests, documentación, skills, changelog y migraciones.
 * [x] Registrar los checks locales en `Future/EXECUTION-STATUS.md`.
-* [ ] Resolver `#17` antes del cierre.
+* [x] Resolver `#17` localmente antes del cierre.
 * [ ] Actualizar el cuerpo para coincidir con la decisión de cierre de `#9`.
 * [ ] Eliminar referencias al global last-valid preview no implementado.
 * [ ] Corregir el enlace al plan.
 * [ ] Marcar los acceptance criteria reales en GitHub.
 * [ ] Publicar un comentario con commits y verificaciones.
 * [ ] Cerrar `#13` en GitHub.
-* [ ] Marcar `#13` como completada en este tracker.
+* [x] Registrar `#13` como verificada localmente en este tracker.
 
 ### 1.4 Issue #14: Documentation and Migration
 
 Plan:
 [issue-14-documentation-and-migration.md](./Future/issue-14-documentation-and-migration.md).
 
-* [ ] Inventariar exports, registry, CLI, starter y comportamiento final de
+* [x] Inventariar exports, registry, CLI, starter y comportamiento final de
   Studio.
-* [ ] Comparar el inventario con los cuatro README públicos.
-* [ ] Auditar todos los pares afectados bajo `Docs/en` y `Docs/es`.
-* [ ] Confirmar equivalencia temática entre inglés y español.
-* [ ] Eliminar enseñanza actual de APIs obsoletas.
-* [ ] Mantener referencias obsoletas solamente en contexto histórico.
-* [ ] Consolidar `Docs/en/getting-started/migration-next.md`.
-* [ ] Consolidar `Docs/es/getting-started/migration-next.md`.
-* [ ] Auditar `CHANGELOG.md` bajo `Unreleased`.
-* [ ] Confirmar metadata, variants, `field` singular y tipos
+* [x] Comparar el inventario con los cuatro README públicos.
+* [x] Auditar todos los pares afectados bajo `Docs/en` y `Docs/es`.
+* [x] Confirmar equivalencia temática entre inglés y español.
+* [x] Eliminar enseñanza actual de APIs obsoletas.
+* [x] Mantener referencias obsoletas solamente en contexto histórico.
+* [x] Consolidar `Docs/en/getting-started/migration-next.md`.
+* [x] Consolidar `Docs/es/getting-started/migration-next.md`.
+* [x] Auditar `CHANGELOG.md` bajo `Unreleased`.
+* [x] Confirmar metadata, variants, `field` singular y tipos
   number/boolean/choice.
-* [ ] Confirmar registry automático, persistencia `v2` y controles de Studio.
-* [ ] Mantener server image rendering documentado como trabajo futuro.
-* [ ] Actualizar únicamente las skills canónicas de `Docs/skills`.
-* [ ] Ejecutar `pnpm sync:skills`.
-* [ ] Verificar Quick Start con el starter generado.
+* [x] Confirmar registry automático, persistencia `v2` y controles de Studio.
+* [x] Mantener server image rendering documentado como trabajo futuro.
+* [x] Actualizar únicamente las skills canónicas de `Docs/skills`.
+* [x] Ejecutar `pnpm sync:skills`.
+* [x] Verificar Quick Start con el starter generado.
 * [ ] Verificar links y anchors internos.
-* [ ] Verificar generación, check, typecheck y build del starter.
-* [ ] Ejecutar runtime check, lint, tests, typecheck y build del repositorio.
+* [x] Verificar generación, check, typecheck y build del starter.
+* [x] Ejecutar runtime check, lint, tests, typecheck y build del repositorio.
 * [ ] Publicar evidencia en `#14`.
 * [ ] Cerrar `#14`.
-* [ ] Marcar `#14` como completada en este tracker.
+* [x] Registrar `#14` como verificada localmente en este tracker.
 
 ### 1.5 Issue #15: Testing and Release Gates
 
 Plan:
 [issue-15-testing-and-release-gates.md](./Future/issue-15-testing-and-release-gates.md).
 
-* [ ] Auditar la matriz existente sin duplicar tests enfocados.
-* [ ] Identificar únicamente gaps cross-layer.
-* [ ] Mantener Linux CI en Node `22.13.0` y `24`.
-* [ ] Fortalecer Windows para construir ambos paquetes públicos.
-* [ ] Crear un consumer de Windows de forma no interactiva.
+* [x] Auditar la matriz existente sin duplicar tests enfocados.
+* [x] Identificar únicamente gaps cross-layer.
+* [x] Mantener Linux CI en Node `22.13.0` y `24`.
+* [x] Fortalecer Windows para construir ambos paquetes públicos.
+* [x] Configurar un consumer de Windows de forma no interactiva; su ejecución
+  queda pendiente en CI.
 * [ ] Ejecutar generate y check en el consumer de Windows.
-* [ ] Añadir un único E2E crítico con Chromium.
-* [ ] Cubrir metadata, variante y campos text/number/choice/boolean/color.
-* [ ] Cubrir draft numérico inválido y preview confirmado.
-* [ ] Exportar PNG y comprobar dimensiones sin dependencia adicional.
-* [ ] Implementar o documentar un único smoke reproducible de tarballs.
-* [ ] Instalar ambos tarballs fuera del workspace.
-* [ ] Ejecutar create, generate, check, build, start y HTTP readiness.
-* [ ] Rechazar workspace references y rutas locales en los paquetes.
-* [ ] Documentar el smoke post-publicación con versiones exactas.
-* [ ] Separar pre-publicación, post-publicación y promoción de dist-tag.
-* [ ] Actualizar documentación EN/ES de testing y distribución.
-* [ ] Actualizar skills canónicas de release.
-* [ ] Añadir changelog y nota explícita de no migración.
+* [x] Añadir un único E2E crítico con Chromium.
+* [x] Cubrir metadata, variante y campos text/number/choice/boolean/color.
+* [x] Cubrir draft numérico inválido y preview confirmado.
+* [x] Exportar PNG y comprobar dimensiones sin dependencia adicional.
+* [x] Implementar o documentar un único smoke reproducible de tarballs.
+* [x] Instalar ambos tarballs fuera del workspace.
+* [x] Ejecutar create, generate, check, build, start y HTTP readiness.
+* [x] Rechazar workspace references y rutas locales en los paquetes.
+* [x] Documentar el smoke post-publicación con versiones exactas.
+* [x] Separar pre-publicación, post-publicación y promoción de dist-tag.
+* [x] Actualizar documentación EN/ES de testing y distribución.
+* [x] Actualizar skills canónicas de release.
+* [x] Añadir changelog y nota explícita de no migración.
 * [ ] Ejecutar todas las lanes y smokes requeridos.
 * [ ] Publicar evidencia en `#15`.
 * [ ] Cerrar `#15`.
@@ -259,7 +260,7 @@ No iniciar el roadmap siguiente hasta confirmar:
 * [ ] `#14` está cerrada.
 * [ ] `#15` está cerrada.
 * [ ] `Future/EXECUTION-STATUS.md` coincide con GitHub.
-* [ ] Documentación, changelog, migration guides y skills están sincronizados.
+* [x] Documentación, changelog, migration guides y skills están sincronizados.
 * [ ] Los gates definidos por `#15` pasan sobre el baseline final de Future.
 
 ## 2. Maintainability: fases 1 a 5
@@ -724,18 +725,18 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 ### Repository gates
 
 * [ ] `pnpm format:check` pasa.
-* [ ] `pnpm check:runtime` pasa.
-* [ ] `pnpm lint` pasa.
-* [ ] `pnpm test` pasa.
-* [ ] `pnpm typecheck` pasa.
-* [ ] `pnpm build` pasa.
-* [ ] Ambos paquetes públicos pasan inspección y tarball smoke.
-* [ ] El consumer aislado pasa generate, check, build, start y HTTP readiness.
+* [x] `pnpm check:runtime` pasa.
+* [x] `pnpm lint` pasa.
+* [x] `pnpm test` pasa.
+* [x] `pnpm typecheck` pasa.
+* [x] `pnpm build` pasa.
+* [x] Ambos paquetes públicos pasan inspección y tarball smoke.
+* [x] El consumer aislado pasa generate, check, build, start y HTTP readiness.
 * [ ] Docker produce un PNG real mediante Chromium como usuario no-root.
 * [ ] No quedan jobs, contexts, secretos ni generated outputs comprometidos.
-* [ ] README, documentación EN/ES, changelog, `migration-next.md` y skills
-  coinciden con el comportamiento publicado.
-* [ ] La versión de release continúa siendo una decisión separada.
+* [x] README, documentación EN/ES, changelog, `migration-next.md` y skills
+  coinciden con el comportamiento verificado localmente.
+* [x] La versión de release continúa siendo una decisión separada.
 
 ## Registro de decisiones
 

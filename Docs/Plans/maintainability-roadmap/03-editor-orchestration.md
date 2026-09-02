@@ -116,11 +116,11 @@ from `packages/framekit/src/editor.ts`.
 | `fields/components/choice-field.tsx`: `ChoiceField` | Same file and symbol | No change; retain unknown persisted choice display and native select behavior. |
 | `fields/components/boolean-field.tsx`: `BooleanField` | Same file and symbol | No change; retain real boolean values and switch accessibility. |
 | `framekit-navigation.tsx`: `FrameKitNavigation`, `FrameKitNavigationTree`, private `NavigationNode`, `NavigationFolder`, `readNavigationState`, `persistNavigationState`, `NavigationState`, and `navigationStorageKey` | Same file and symbols | No change; retain persisted folder state, pathname selection, nesting, and navigation accessibility. |
-| `navigation.ts`: `TemplateManifestEntry`, `TemplateNavigationFolder`, `TemplateNavigationItem`, `TemplateNavigationNode`, `humanizeSegment`, `manifestToNavigation` | Same file and symbols | No change; retain manifest-to-tree sorting and href generation. |
+| `navigation.ts`: `TemplateRegistryEntry`, `TemplateNavigationFolder`, `TemplateNavigationItem`, `TemplateNavigationNode`, `humanizeSegment`, `manifestToNavigation` | Same file and symbols | No change; retain registry-to-tree sorting and href generation. |
 | `editor/types.ts`: `EditorMessages`, `TemplateField`, `ImageFieldLabels`, `EditorFieldProps` | Same file and types | No change; the new private components consume existing message types and `TemplateMeta` only, with no new public types. |
 | `framekit-editor.test.tsx` | Same file | Retain the existing editor wiring, control, validation, state, render, and copy tests. Update only imports or test setup required by the new internal children; do not replace them with snapshots. |
 | `export-template.test.ts`, `framekit-navigation.test.tsx`, `navigation.test.ts`, `state/editor-state.test.ts` | Same files | Retain unchanged unless a compile-only import path requires a mechanical update. Their existing owners stay intact. |
-| `studio/framekit-studio.tsx`: `FrameKitStudio` and `FrameKitStudioTemplate` | Same file and symbols | No change. Studio continues to validate loaded definitions and render `FrameKitEditor` with the same props. |
+| `studio/framekit-studio.tsx`: `FrameKitStudio` | Same file and symbol | No change. Studio continues to validate loaded definitions and render `FrameKitEditor` with the same props. |
 
 ## Target component contracts
 

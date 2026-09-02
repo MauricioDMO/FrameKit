@@ -16,7 +16,7 @@ Normal development and production flows regenerate automatically. The explicit
 `framekit generate` command remains a one-off escape hatch, not a required daily
 step.
 
-## Current baseline
+## Initial baseline (before implementation)
 
 - Discovery returns filesystem-derived `slug`, `segments`, and a humanized
   `title` plus the absolute template path.
@@ -109,8 +109,8 @@ Rules:
    generation. Keep generated output outside that watched subtree and preserve
    event coalescing and write-if-changed behavior.
 7. Make the minimum Studio plumbing change needed to consume the new entry:
-   use `meta.title` in existing navigation and align `FrameKitStudioTemplate`
-   with the reusable registry type. Functional description, marketing
+   use `meta.title` in existing navigation and consume `TemplateRegistryEntry`
+   directly in Studio. Functional description, marketing
    description, tags, dimensions, and variant presentation remain #13.
 8. Update codegen/discovery fixtures and regenerate the first-party Studio and
    starter outputs through the normal generator; never hand-edit generated

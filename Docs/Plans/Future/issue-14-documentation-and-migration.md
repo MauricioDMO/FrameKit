@@ -13,7 +13,7 @@ contract, consolidate its versionless rolling migration guidance and
 sources. This issue verifies and completes documentation; it does not define or
 implement another runtime contract.
 
-## Current baseline
+## Initial baseline (before implementation)
 
 - The published runtime manifest is currently `0.8.1`; the future release that
   carries the canonical contract has not been selected.

@@ -40,22 +40,36 @@ starter” requirement below refers to that template and its generated output.
 ## Active execution order
 
 12. [#12 — Generated Template Registry](./issue-12-generated-template-registry.md)
-     — generate canonical metadata, dimensions, variants, assets, and lazy
-     loaders with automatic development and build lifecycle integration.
-13. [#13 — Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md)
-    — consume the final registry, metadata, variants, typed state, validation,
-    persistence, and native controls end to end in Studio.
-14. [#14 — Documentation and Migration](./issue-14-documentation-and-migration.md)
-    — perform the final versionless EN/ES audit, consolidate rolling migration
-    and changelog records, and synchronize canonical skills.
-15. [#15 — Testing and Release Gates](./issue-15-testing-and-release-gates.md) —
-    close cross-layer coverage gaps and define permanent CI, pre-publication
-    tarball, and post-publication registry gates without selecting a version.
+      — generate canonical metadata, dimensions, variants, assets, and lazy
+      loaders with automatic development and build lifecycle integration.
+      **Local implementation, documentation, and applicable verification gates verified; GitHub closure pending.**
+13. [#17 — Persisted Choice Values](https://github.com/MauricioDMO/FrameKit/issues/17)
+     — discard stale persisted choice overrides while preserving valid sibling
+     fields and current content/default fallback. **Local implementation, documentation, and applicable verification gates verified; GitHub closure pending.**
+14. [#13 — Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md)
+     — consume the final registry, metadata, variants, typed state, validation,
+     persistence, and native controls end to end in Studio.
+     **Local implementation, documentation, and applicable verification gates verified after #17; GitHub closure pending.**
+15. [#14 — Documentation and Migration](./issue-14-documentation-and-migration.md)
+     — perform the final versionless EN/ES audit, consolidate rolling migration
+     and changelog records, and synchronize canonical skills.
+     **Local documentation audit verified; internal-link verification pending; GitHub closure pending.**
+16. [#15 — Testing and Release Gates](./issue-15-testing-and-release-gates.md) —
+     close cross-layer coverage gaps and define permanent CI, pre-publication
+     tarball, and post-publication registry gates without selecting a version.
+     **Local gates verified, including one Chromium E2E and real pre-publication tarball smoke; Windows CI and post-publication registry smoke pending; GitHub closure pending.**
 
 Issues #1–#8 are completed and their detailed plan files are retained in Git
-history. Issue #12 generates the registry summary, and #13 completes Studio
-integration. Issue #14 is the final documentation audit; it does not defer the
-per-issue documentation requirements below. Issue #15 is the final versionless
+history. Local implementation, documentation, and completed applicable
+verification gates for #12, #17, #13, #14, and #15 are verified. GitHub remains
+the source of truth for closure; this status does not imply publication or issue
+closure. Windows CI execution, internal Markdown-link verification, and
+post-publication npm smoke remain pending. No packages have been published, no
+package versions have been changed, and no active GitHub issues have been
+closed. The clean-install consumer smoke passed; the old starter `node_modules`
+remains ignored and local-only.
+Issue #14 is the final documentation audit; it does not defer the per-issue
+documentation requirements below. Issue #15 is the final versionless
 verification and distribution gate.
 
 GitHub issues #9–#11 and #16 are closed as not planned and excluded from active
@@ -81,7 +95,7 @@ execution.
 
 ## Shared Definition of Done for active issues
 
-Before closing each issue in the active order #12 -> #13 -> #14 -> #15,
+Before closing each issue in the active order #12 -> #17 -> #13 -> #14 -> #15,
 maintainers must complete all of the following:
 
 - code implementation and focused tests;

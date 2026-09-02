@@ -12,7 +12,7 @@ repository and distribution gates. Keep per-issue contract verification,
 per-PR CI, pre-publication tarball validation, and post-publication registry
 validation distinct so none is mistaken for a release-version plan.
 
-## Current baseline
+## Initial baseline (before implementation)
 
 - Ubuntu CI runs Node.js `22.13.0` and `24` with pnpm `11.14.0`, runtime checks,
   builds, lint, tests, typecheck, workspace build, and package dry runs.

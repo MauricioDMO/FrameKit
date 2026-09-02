@@ -27,26 +27,27 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 6 | [#6 Choice Field](https://github.com/MauricioDMO/FrameKit/issues/6) | Campo de opciones | Completed | [x] Completado |
 | 7 | [#7 Boolean Field](https://github.com/MauricioDMO/FrameKit/issues/7) | Campo booleano | Completed | [x] Completado |
 | 8 | [#8 Number Field](https://github.com/MauricioDMO/FrameKit/issues/8) | Campo numérico | Completed | [x] Completado |
-| 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [x] Completado localmente |
-| 10 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [x] Completado localmente |
-| 11 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [ ] Pendiente |
-| 12 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [ ] Pendiente |
+| 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [x] Verificado localmente; cierre de GitHub pendiente |
+| 10 | [#17 Persisted Choice Values](https://github.com/MauricioDMO/FrameKit/issues/17) | Valores persistidos de opciones | Active | [x] Verificado localmente; cierre de GitHub pendiente |
+| 11 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [x] Verificado localmente tras #17; cierre de GitHub pendiente |
+| 12 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [x] Verificado localmente; cierre de GitHub pendiente |
+| 13 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [x] Verificado localmente; cierre de GitHub pendiente |
 
 ## Definition of Done por issue
 
 Usa este checklist al cerrar cada issue activo.
 
-- [ ] Implementación de código terminada.
-- [ ] Tests enfocados agregados o actualizados.
-- [ ] Documentación pública en inglés actualizada.
-- [ ] Documentación pública en español actualizada.
-- [ ] Entrada agregada en `CHANGELOG.md` bajo `Unreleased`.
-- [ ] `Docs/en/getting-started/migration-next.md` actualizado.
-- [ ] `Docs/es/getting-started/migration-next.md` actualizado.
-- [ ] Nota explícita de no migración incluida cuando el cambio sea aditivo.
-- [ ] Starter template y salida generada actualizados.
+- [x] Implementación de código terminada.
+- [x] Tests enfocados agregados o actualizados.
+- [x] Documentación pública en inglés actualizada.
+- [x] Documentación pública en español actualizada.
+- [x] Entrada agregada en `CHANGELOG.md` bajo `Unreleased`.
+- [x] `Docs/en/getting-started/migration-next.md` actualizado.
+- [x] `Docs/es/getting-started/migration-next.md` actualizado.
+- [x] Nota explícita de no migración incluida cuando el cambio sea aditivo.
+- [x] Starter template y salida generada actualizados.
 - [ ] Implementación, plan e issue de GitHub enlazados.
-- [ ] Verificaciones del issue ejecutadas y registradas.
+- [x] Verificaciones del issue ejecutadas y registradas.
 
 ## Seguimiento por issue
 
@@ -125,33 +126,43 @@ Usa este checklist al cerrar cada issue activo.
 - [x] Regeneración automática de desarrollo y build verificada.
 - [x] Tests y documentación del issue completados.
 - [x] Definition of Done completada.
-- [x] Verificaciones ejecutadas: tests raíz (FrameKit 199, Studio 2, scaffolder 19), typecheck, lint y build raíz; `pnpm check:runtime`; `framekit generate` y `framekit check` de Studio; generación del starter con el runtime local, typecheck y `next build --webpack`; `git diff --check`.
+- [x] Verificaciones reproducibles actuales: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 212, Studio 2, creator 19), `pnpm typecheck` y `pnpm build`; generación y check de Studio y del starter.
+- [ ] Issue de GitHub cerrado por los mantenedores.
+
+### #17 Persisted Choice Values
+
+- [x] Validar el filtro de pertenencia de valores persistidos contra las opciones declaradas.
+- [x] Preservar campos hermanos válidos y fallback a contenido/default.
+- [x] Actualizar la prueba del editor que todavía esperaba conservar una opción obsoleta.
+- [x] Ejecutar las verificaciones completas sin regresiones: FrameKit 212 tests, Studio 2, creator 19, lint, typecheck, build y runtime check.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #13 Studio Canonical Contract Integration
 
-- [x] Studio consume el registry canónico, metadata, variantes y datos tipados.
+- [x] Studio consume directamente el registry canónico en sus props y navegación, sin el adaptador de manifiesto de plantillas ni fallback de título.
 - [x] Validación, persistencia `v2` y controles nativos completados.
 - [x] Tests y documentación EN/ES del issue completados.
 - [x] Definition of Done completada: changelog, migraciones rolling, skills sincronizadas, starter y enlaces al plan/issue actualizados.
-- [x] Verificaciones ejecutadas: tests FrameKit (208), Studio (2), scaffolder (19), typecheck, lint y build raíz; `check:runtime`; `framekit generate`/`framekit check` del starter enlazado al runtime local; TypeScript y `next build --webpack` del starter; `git diff --check`.
+- [x] Verificaciones completas sin regresiones: tests FrameKit 212, Studio 2 y scaffolder 19; lint, typecheck, build, `check:runtime`, generación/check de Studio y starter, E2E Chromium y smoke manual de pre-publicación con tarballs reales.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #14 Documentation and Migration
 
-- [ ] Auditoría final EN/ES completada.
-- [ ] Guías rolling y changelog consolidados.
-- [ ] Skills canónicas sincronizadas.
-- [ ] Definition of Done completada.
+- [x] Auditoría final EN/ES completada.
+- [x] Guías rolling y changelog consolidados.
+- [x] Skills canónicas sincronizadas mediante `pnpm sync:skills`.
+- [x] Definition of Done completada.
+- [x] Verificaciones reproducibles actuales: `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck` y `pnpm build`; la sincronización de skills se ejecutó con `pnpm sync:skills`.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #15 Testing and Release Gates
 
-- [ ] Gaps de cobertura cross-layer cerrados.
-- [ ] Gates permanentes de CI definidos.
-- [ ] Validación pre-publicación de tarballs definida.
-- [ ] Validación post-publicación del registry definida.
-- [ ] Definition of Done completada.
+- [x] Gaps de cobertura cross-layer cerrados con un E2E Chromium único y checks de consumidor.
+- [x] Gates permanentes de CI definidos para Ubuntu, Windows y Chromium; la lane de Windows no se ejecutó localmente.
+- [x] Validación pre-publicación de tarballs definida y ejecutada manualmente con paquetes reales fuera del checkout.
+- [x] Validación post-publicación del registry definida con specs suministradas durante el release; no ejecutada todavía.
+- [x] Verificación local reproducible: instalación de Chromium, E2E Chromium (1 test), checks completos del repositorio y smoke del consumer aislado con generate, check, build, start y HTTP readiness.
+- [x] Definition of Done completada.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ## Decisiones cerradas
@@ -179,5 +190,8 @@ Usa este checklist al cerrar cada issue activo.
 | 2026-08-25 | Se completa y verifica localmente el issue #6: `field.choice`, select nativo, validación `invalid_choice`, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-25 | Se completa y verifica localmente el issue #7: `field.boolean`, checkbox nativo, validación `invalid_boolean`, persistencia booleana, tests, documentación EN/ES, changelog, migraciones, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-08-28 | Se sincroniza GitHub con el estado local: #1 y #4–#8 se cierran como completadas; #2–#3 ya estaban completadas y #9–#11 permanecen cerradas como no planificadas. | — |
-| 2026-08-29 | Se completa y verifica localmente el issue #12: registry canónico con metadata/dimensiones/variantes/assets y loaders lazy, generación automática, watcher completo de `src/templates`, tests, documentación EN/ES, changelog, migraciones, outputs generados y enlaces; el issue de GitHub permanece abierto. | — |
+| 2026-08-29 | Se completa y verifica localmente el issue #12: registry canónico con metadata/dimensiones/variantes/assets y loaders lazy, generación automática, watcher completo de `src/templates` y `src/brand`, tests, documentación EN/ES, changelog, migraciones, outputs generados y enlaces; el issue de GitHub permanece abierto. | — |
 | 2026-08-30 | Se completa y verifica localmente el issue #13: integración directa del registry canónico en Studio, metadata, variantes genéricas, controles tipados, navegación accesible, errores localizados, persistencia `v2`, tests, documentación EN/ES, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
+| 2026-09-02 | Se endurecen los límites de #12/#13: Studio y navegación reciben `TemplateRegistryEntry` directamente, se eliminan los tipos adaptadores de plantilla y se actualizan las pruebas de integración; #17 se aborda a continuación antes de cerrar el bloque. | — |
+| 2026-09-02 | Se completa y verifica localmente #17: los choices persistidos obsoletos se descartan de forma aislada, sobreviven los siblings válidos y se aplican los fallbacks actuales; se actualiza el test de Studio sin cerrar el issue de GitHub. También se completan localmente los gates documentales de #14 y técnicos de #15, sin seleccionar una versión. | — |
+| 2026-09-02 | Se completa la verificación local reproducible: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 212, Studio 2, creator 19), `pnpm typecheck`, `pnpm build`, instalación de Chromium y E2E Chromium (1 test). El smoke manual de pre-publicación se ejecuta fuera del checkout con tarballs reales: inspección sin referencias prohibidas, consumer creado por el creator, `npm install`, generate, check, build, start independiente y HTTP readiness; el directorio temporal se limpia. La lane de Windows no se ejecuta localmente y la validación post-publicación del registry queda definida, no ejecutada. | — |

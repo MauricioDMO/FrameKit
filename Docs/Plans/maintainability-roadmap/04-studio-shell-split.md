@@ -63,7 +63,7 @@ editor or brand catalog.
 
 | Current symbol/file | Target owner | Required change |
 | --- | --- | --- |
-| `FrameKitStudioBrand`, `FrameKitStudioTemplate`, the props union in `studio/framekit-studio.tsx` | `studio/framekit-studio.tsx` | Keep these types and their existing signatures in the facade module. Keep the same exports through `studio.ts`. |
+| `FrameKitStudioBrand`, `TemplateRegistryEntry`, and the props union in `studio/framekit-studio.tsx` | `studio/framekit-studio.tsx` | Keep the brand type and consume the canonical registry entry directly in the facade. Keep the same public Studio exports through `studio.ts`. |
 | `emptyTemplates`, `emptyBrands`, and `navigation` in `FrameKitStudio` | `studio/framekit-studio.tsx` | Keep stable empty defaults and compute `manifestToNavigation(isBrand ? brands : templates, isBrand ? '/brand' : '/editor')` in the facade; pass the resulting tree to the shell. |
 | `useParams`, `usePathname`, `slug`, `isBrand`, and `messages` in `FrameKitStudio` | `studio/framekit-studio.tsx` | Keep route and locale interpretation in the facade; do not make the shell infer route kind or create a second locale lookup. |
 | `LoadState` and the `useEffect` in `FrameKitStudio` | New `studio/use-studio-resource.ts` | Move the route-kind-aware load state and effect into `useStudioResource`. Keep the `loading`, `not-found`, `error`, `invalid`, and both `ready` shapes. Preserve cancellation cleanup, template validation, and registry dimension comparison. |
@@ -110,7 +110,7 @@ type FrameKitStudioSettingsProps = {
 type StudioResourceInput = {
   slug: string | undefined
   isBrand: boolean
-  templates: readonly FrameKitStudioTemplate[]
+  templates: readonly TemplateRegistryEntry[]
   brands: readonly FrameKitStudioBrand[]
 }
 ```

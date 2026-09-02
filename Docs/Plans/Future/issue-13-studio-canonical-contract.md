@@ -11,7 +11,7 @@ Complete Studio's end-to-end consumption of the canonical template, registry,
 variant, typed-data, and field contracts without redefining work owned by the
 underlying runtime issues or expanding Studio into a free-canvas editor.
 
-## Current baseline
+## Initial baseline (before implementation)
 
 - Studio receives generated entries with validated `meta.title` and a lazy loader,
   then validates the loaded definition before opening the editor.
