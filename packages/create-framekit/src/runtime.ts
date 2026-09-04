@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 
 import manifest from '../package.json'
 
+import { packageManagerBin } from './package-manager.js'
 import type { PackageManager } from './prompts.js'
 
 type Version = readonly [number, number, number]
@@ -52,10 +53,11 @@ function readPnpmVersion(): string {
   const detected = detectPnpmVersion()
   if (detected) return detected
 
-  const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+  const command = packageManagerBin('pnpm')
   try {
     return execFileSync(command, ['--version'], {
       encoding: 'utf8',
+      shell: process.platform === 'win32',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim()
   } catch {

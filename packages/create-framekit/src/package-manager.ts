@@ -9,10 +9,7 @@ export function detectPackageManager(): PackageManager | null {
 }
 
 export function packageManagerBin(pm: PackageManager): string {
-  if (pm === 'pnpm') {
-    return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  }
-  return 'npm'
+  return pm
 }
 
 export async function runCommand(
@@ -21,7 +18,7 @@ export async function runCommand(
   cwd: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, shell: false, stdio: 'inherit' })
+    const child = spawn(command, args, { cwd, shell: process.platform === 'win32', stdio: 'inherit' })
     child.once('error', (error) => {
       reject(new Error(`Command failed: ${command} ${args.join(' ')} (${error.message})`))
     })
@@ -54,6 +51,5 @@ export async function generateCatalog(pm: PackageManager, target: string): Promi
 }
 
 export async function runApproveBuilds(target: string): Promise<void> {
-  const bin = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  await runCommand(bin, ['approve-builds'], target)
+  await runCommand(packageManagerBin('pnpm'), ['approve-builds'], target)
 }

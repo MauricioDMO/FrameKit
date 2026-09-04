@@ -15,12 +15,26 @@ async function createTemporaryDirectory(prefix: string): Promise<string> {
   return directory
 }
 
-async function createFakePnpm(binDirectory: string, logFile: string): Promise<void> {
-  const executable = path.join(binDirectory, 'pnpm')
+async function createFakeCommand(binDirectory: string, name: string, source: string): Promise<void> {
   await mkdir(binDirectory, { recursive: true })
-  await writeFile(
-    executable,
-    `#!/usr/bin/env node
+  if (process.platform === 'win32') {
+    const script = path.join(binDirectory, `${name}.mjs`)
+    await writeFile(script, source, 'utf8')
+    await writeFile(
+      path.join(binDirectory, `${name}.cmd`),
+      `@echo off\r\n"${process.execPath}" "${script}" %*\r\nexit /b %errorlevel%\r\n`,
+      'utf8',
+    )
+    return
+  }
+
+  const executable = path.join(binDirectory, name)
+  await writeFile(executable, `#!/usr/bin/env node\n${source}`, 'utf8')
+  await chmod(executable, 0o755)
+}
+
+async function createFakePnpm(binDirectory: string, logFile: string): Promise<void> {
+  await createFakeCommand(binDirectory, 'pnpm', `
 import { appendFile } from 'node:fs/promises'
 if (process.argv[2] === '--version') {
   console.log('11.14.0')
@@ -28,39 +42,22 @@ if (process.argv[2] === '--version') {
 }
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
 if (process.env.FRAMEKIT_TEST_FAIL === process.argv[2]) process.exit(7)
-`,
-    'utf8',
-  )
-  await chmod(executable, 0o755)
+`)
 }
 
-function createFakeNpm(binDirectory: string, logFile: string): Promise<void> {
-  const executable = path.join(binDirectory, 'npm')
-  return mkdir(binDirectory, { recursive: true }).then(() =>
-    writeFile(
-      executable,
-      `#!/usr/bin/env node
+async function createFakeNpm(binDirectory: string, logFile: string): Promise<void> {
+  await createFakeCommand(binDirectory, 'npm', `
 import { appendFile } from 'node:fs/promises'
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
 if (process.env.FRAMEKIT_TEST_FAIL === process.argv[2]) process.exit(7)
-`,
-      'utf8',
-    ).then(() => chmod(executable, 0o755)),
-  )
+`)
 }
 
 async function createFakeGit(binDirectory: string, logFile: string): Promise<void> {
-  const executable = path.join(binDirectory, 'git')
-  await mkdir(binDirectory, { recursive: true })
-  await writeFile(
-    executable,
-    `#!/usr/bin/env node
+  await createFakeCommand(binDirectory, 'git', `
 import { appendFile } from 'node:fs/promises'
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
-`,
-    'utf8',
-  )
-  await chmod(executable, 0o755)
+`)
 }
 
 const mockState = { answers: [] as string[], index: 0 }
