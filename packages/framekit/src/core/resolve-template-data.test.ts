@@ -35,6 +35,35 @@ describe('resolveTemplateData', () => {
     })
   })
 
+  it('applies choice defaults, variant content, and edits in order', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Choice resolution' },
+      width: 100,
+      height: 100,
+      fields: {
+        alignment: field.choice({
+          label: 'Alignment',
+          options: [
+            { value: 'left', label: 'Left' },
+            { value: 'center', label: 'Center' },
+            { value: 'right', label: 'Right' },
+          ],
+          defaultValue: 'left',
+        }),
+      },
+      content: {
+        empty: {},
+        en: { alignment: 'center' },
+      },
+      variants: { default: 'empty' },
+      render: () => null,
+    })
+
+    expect(resolveTemplateData(definition, 'empty', {})).toEqual({ alignment: 'left' })
+    expect(resolveTemplateData(definition, 'en', {})).toEqual({ alignment: 'center' })
+    expect(resolveTemplateData(definition, 'en', { alignment: 'right' })).toEqual({ alignment: 'right' })
+  })
+
   it('resolves defaults before variant content and edits', () => {
     const definition = defineTemplate({
       meta: { title: 'Resolution order' },

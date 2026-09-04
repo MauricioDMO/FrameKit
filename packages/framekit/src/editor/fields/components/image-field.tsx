@@ -6,6 +6,8 @@ export function ImageField({ field, value, error, imageLabels, onImageUpload }: 
   const imageValue = typeof value === 'string' ? value : ''
   const [uploading, setUploading] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
+  const imageErrorId = `${field.key}-image-error`
+  const describedBy = [error && `${field.key}-error`, loadFailed && imageErrorId].filter(Boolean).join(' ') || undefined
 
   useEffect(() => {
     setLoadFailed(false)
@@ -32,15 +34,15 @@ export function ImageField({ field, value, error, imageLabels, onImageUpload }: 
         {imageValue && !loadFailed ? (
           <img src={imageValue} alt="" onError={() => setLoadFailed(true)} className="block max-h-40 w-full object-contain" />
         ) : (
-          <div className="flex min-h-24 items-center justify-center px-3 text-xs text-[#657168] dark:text-[#b8c8be]">
+          <div id={loadFailed ? imageErrorId : undefined} role={loadFailed ? 'alert' : undefined} className="flex min-h-24 items-center justify-center px-3 text-xs text-[#657168] dark:text-[#b8c8be]">
             {loadFailed ? imageLabels?.loadError : ''}
           </div>
         )}
       </div>
       {onImageUpload && imageLabels && (
-        <label className="inline-flex cursor-pointer select-none items-center rounded-lg border border-[#cccec8] bg-white px-3 py-2 text-xs font-bold text-[#4e5a53] transition hover:bg-[#efeee9] has-disabled:cursor-not-allowed has-disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]">
+        <label className="inline-flex cursor-pointer select-none items-center rounded-lg border border-[#cccec8] bg-white px-3 py-2 text-xs font-bold text-[#4e5a53] transition hover:bg-[#efeee9] has-focus-visible:ring-3 has-focus-visible:ring-[#39775f]/20 has-focus-visible:outline-none has-disabled:cursor-not-allowed has-disabled:opacity-50 dark:border-white/15 dark:bg-[#24342c] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]">
           {uploading ? imageLabels.uploading : imageLabels.select}
-          <input id={field.key} name={field.key} type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={error ? `${field.key}-error` : undefined} onChange={handleChange} className="sr-only" />
+          <input id={field.key} name={field.key} type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={describedBy} onChange={handleChange} className="sr-only" />
         </label>
       )}
     </div>

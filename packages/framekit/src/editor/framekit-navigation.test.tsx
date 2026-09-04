@@ -27,6 +27,14 @@ const navigation = {
   }],
 }
 
+const unselectedNavigation = {
+  ...navigation,
+  children: [{
+    ...navigation.children[0],
+    children: [{ type: 'template' as const, id: 'catalog/category/other', slug: 'catalog/category/other', title: 'Other', href: '/editor/catalog/category/other' }],
+  }],
+}
+
 beforeEach(() => localStorage.clear())
 afterEach(() => {
   cleanup()
@@ -37,35 +45,35 @@ describe('FrameKitNavigation', () => {
   it('keeps nested folder indicators independent', () => {
     localStorage.setItem('framekit:navigation:v1', JSON.stringify({ catalog: true, 'catalog/category': false }))
 
-    render(<FrameKitNavigationTree nodes={[navigation]} />)
+    render(<FrameKitNavigationTree nodes={[unselectedNavigation]} />)
 
     expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('true')
     const categoryButton = screen.getByRole('button', { name: 'Category' })
     expect(categoryButton.getAttribute('aria-expanded')).toBe('false')
     expect(categoryButton.querySelector('svg')?.classList.contains('rotate-90')).toBe(false)
-    expect(screen.queryByRole('link', { name: 'First' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Other' })).toBeNull()
   })
 
   it('applies the persisted closed state before the initial assertion', () => {
     localStorage.setItem('framekit:navigation:v1', JSON.stringify({ catalog: false }))
 
-    render(<FrameKitNavigation node={navigation} />)
+    render(<FrameKitNavigation node={unselectedNavigation} />)
 
     expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('false')
-    expect(screen.queryByRole('link', { name: 'First' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Other' })).toBeNull()
   })
 
   it('restores a folder state from localStorage', () => {
-    render(<FrameKitNavigation node={navigation} />)
+    render(<FrameKitNavigation node={unselectedNavigation} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Catalog' }))
-    expect(screen.queryByRole('link', { name: 'First' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Other' })).toBeNull()
 
     cleanup()
-    render(<FrameKitNavigation node={navigation} />)
+    render(<FrameKitNavigation node={unselectedNavigation} />)
 
     expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('false')
-    expect(screen.queryByRole('link', { name: 'First' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Other' })).toBeNull()
   })
 
   it('ignores malformed persisted state', () => {
@@ -90,5 +98,34 @@ describe('FrameKitNavigation', () => {
     expect(scopeLine).toBeTruthy()
     expect((scopeLine as HTMLElement).style.left).toBe('17px')
     expect(screen.getByRole('button', { name: 'Catalog' }).className).toContain('focus:ring-2')
+  })
+
+  it('keeps folders and template links keyboard-focusable with visible focus styles', () => {
+    render(<FrameKitNavigationTree nodes={[navigation]} />)
+
+    const folder = screen.getByRole('button', { name: 'Catalog' })
+    const link = screen.getByRole('link', { name: 'First' })
+
+    expect(folder.tagName).toBe('BUTTON')
+    expect(folder.getAttribute('type')).toBe('button')
+    expect(link.tagName).toBe('A')
+
+    folder.focus()
+    expect(document.activeElement).toBe(folder)
+    expect(folder.className).toContain('focus:ring-2')
+
+    link.focus()
+    expect(document.activeElement).toBe(link)
+    expect(link.className).toContain('focus:ring-2')
+  })
+
+  it('keeps the selected template visible when its folders are collapsed', () => {
+    localStorage.setItem('framekit:navigation:v1', JSON.stringify({ catalog: false, 'catalog/category': false }))
+
+    render(<FrameKitNavigationTree nodes={[navigation]} />)
+
+    expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('button', { name: 'Category' }).getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('link', { name: 'First' }).getAttribute('aria-current')).toBe('page')
   })
 })

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineTemplate, field } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
-import { copyTemplate } from './export-template'
+import { copyTemplate, exportTemplate } from './export-template'
 import { EditorField } from './fields/editor-field'
 import { NumberField } from './fields/components/number-field'
 import type { EditorMessages } from './types'
@@ -119,6 +119,15 @@ afterEach(() => {
 })
 
 describe('FrameKitEditor controls', () => {
+  it('shows the localized data error when template data cannot be resolved', () => {
+    const definition = createDefinition()
+    const brokenDefinition = { ...definition, variants: { ...definition.variants, default: 'missing' } } as TemplateDefinition
+
+    render(<FrameKitEditor template={createTemplate(brokenDefinition)} definition={brokenDefinition} messages={messages} />)
+
+    expect(screen.getByRole('alert').textContent).toBe(messages.dataError)
+  })
+
   it('shows template metadata in a modal and closes it', () => {
     renderEditor()
 
@@ -250,6 +259,31 @@ describe('FrameKitEditor controls', () => {
 
     fireEvent.change(alignment, { target: { value: 'right' } })
     expect((alignment as HTMLSelectElement).value).toBe('right')
+  })
+
+  it('does not pass a bare hash when clearing an optional color', async () => {
+    const definition = defineTemplate({
+      meta: { title: 'Optional color editor test' },
+      width: 100,
+      height: 100,
+      fields: { accentColor: field.color({ label: 'Accent color', required: false }) },
+      content: { en: { accentColor: '#abcdef' } },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+    const renderer = vi.spyOn(definition, 'render')
+
+    render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} />)
+    const input = screen.getByRole('textbox', { name: 'Accent color' })
+    expect((input as HTMLInputElement).value).toBe('abcdef')
+
+    fireEvent.change(input, { target: { value: '' } })
+
+    await waitFor(() => expect(renderer).toHaveBeenLastCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ accentColor: '' }),
+    })))
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+    await waitFor(() => expect(exportTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100))
   })
 
   it('renders boolean fields as switches and persists real booleans', async () => {
@@ -394,6 +428,18 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText('logo-on:1')).toBeTruthy()
   })
 
+  it('passes the current resolved choice to the renderer without losing sibling edits', () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', showLogo: false, alignment: 'obsolete' } } }))
+    const definition = createDefinition()
+    const renderer = vi.spyOn(definition, 'render')
+
+    render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} />)
+
+    expect(renderer).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ title: 'Ready', showLogo: false, alignment: 'center' }),
+    }))
+  })
+
   it('copies a valid template PNG', async () => {
     localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 1, tooSmall: 10, tooLarge: 20, steppedNumber: 4, sliderNumber: 50, accentColor: '#123456' } } }))
     renderEditor()
@@ -401,6 +447,63 @@ describe('FrameKitEditor controls', () => {
     fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))
 
     await waitFor(() => expect(copyTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 100, 100))
+  })
+
+  it.each([
+    ['download', messages.downloadPng, 'export'],
+    ['copy', messages.copyPng, 'copy'],
+  ] as const)('shows the localized alert when %s fails', async (_action, buttonName, actionName) => {
+    const failure = new Error('private export failure')
+    if (actionName === 'export') {
+      vi.mocked(exportTemplate).mockRejectedValueOnce(failure)
+    } else {
+      vi.mocked(copyTemplate).mockRejectedValueOnce(failure)
+    }
+
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined)
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      renderEditor()
+      fireEvent.click(screen.getByRole('button', { name: buttonName }))
+
+      await waitFor(() => expect(alert).toHaveBeenCalledWith(messages.exportAlert))
+      expect(consoleError).toHaveBeenCalledWith(messages.exportError, failure)
+    } finally {
+      alert.mockRestore()
+      consoleError.mockRestore()
+    }
+  })
+
+  it('shows a localized accessible error when image upload fails', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error('private upload failure'))
+    vi.stubGlobal('fetch', fetchMock)
+
+    try {
+      const definition = defineTemplate({
+        meta: { title: 'Image editor test' },
+        width: 100,
+        height: 100,
+        fields: { logo: field.image({ label: 'Logo', scope: 'variant' }) },
+        content: { en: {} },
+        variants: { default: 'en' },
+        render: ({ data }) => <span>{data.logo}</span>,
+      })
+      render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} />)
+      const input = screen.getByLabelText('Logo')
+      const file = new File(['image'], 'logo.png', { type: 'image/png' })
+      fireEvent.change(input, { target: { files: [file] } })
+
+      await waitFor(() => expect(screen.getByText(messages.imageUploadError)).toBeTruthy())
+      expect(input.getAttribute('aria-invalid')).toBe('true')
+      expect(input.getAttribute('aria-describedby')).toBe('logo-error')
+      expect(screen.getByText(messages.imageUploadError).id).toBe('logo-error')
+      expect(fetchMock).toHaveBeenCalledWith('/__framekit/assets', expect.objectContaining({
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+      }))
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('keeps editing when localStorage rejects writes', () => {

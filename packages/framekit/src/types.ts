@@ -110,6 +110,35 @@ export type NoUnknownMetaKeys<Meta extends TemplateMeta> =
     ? unknown
     : { [Key in Exclude<keyof Meta, keyof TemplateMeta>]: never }
 
+type VariantContentKeys<Content> = Extract<keyof Content, string>
+
+type NoUnknownVariantKeys<Variants extends TemplateVariants> =
+  Exclude<keyof Variants, keyof TemplateVariants> extends never
+    ? unknown
+    : { [Key in Exclude<keyof Variants, keyof TemplateVariants>]: never }
+
+type NoUnknownVariantDefault<Variants extends TemplateVariants, Content> =
+  string extends Variants['default']
+    ? unknown
+    : Variants['default'] extends VariantContentKeys<Content>
+      ? unknown
+      : { default: never }
+
+type NoUnknownVariantLabels<Variants extends TemplateVariants, Content> =
+  Variants extends { labels: infer Labels }
+    ? Labels extends object
+      ? string extends keyof Labels
+        ? unknown
+        : Exclude<keyof Labels, VariantContentKeys<Content>> extends never
+          ? unknown
+          : {
+              labels: Labels & {
+                [Key in Exclude<keyof Labels, VariantContentKeys<Content>>]: never
+              }
+            }
+      : unknown
+    : unknown
+
 export type NoUnknownContentKeys<
   Content extends TemplateContent<Fields>,
   Fields extends TemplateFields,
@@ -183,6 +212,9 @@ export type TemplateInput<
   width: Width
   height: Height
   fields: Fields
-  variants: Variants
+  variants: Variants &
+    NoUnknownVariantKeys<Variants> &
+    NoUnknownVariantDefault<Variants, Content> &
+    NoUnknownVariantLabels<Variants, Content>
   content: Content & NoUnknownContentKeys<Content, Fields>
 }

@@ -11,12 +11,13 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-  fields: {
-    title: field.text({ label: 'Title' }),
-    color: field.color({ label: 'Color' }),
-    count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
-    enabled: field.boolean({ label: 'Enabled' }),
-    alignment: field.choice({
+    fields: {
+      title: field.text({ label: 'Title' }),
+      color: field.color({ label: 'Color' }),
+      count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
+      enabled: field.boolean({ label: 'Enabled' }),
+      logo: field.image({ label: 'Logo' }),
+      alignment: field.choice({
       label: 'Alignment',
       defaultValue: 'center',
       options: [
@@ -70,9 +71,9 @@ describe('editor state', () => {
   })
 
   it('discards malformed persisted variants, fields, and values', () => {
-    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true, unknown: 'discarded', color: 7 }, unknown: { title: 'discarded' } } }) }
+    const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true, logo: '/saved/logo.png', unknown: 'discarded', color: 7 }, unknown: { title: 'discarded' } } }) }
 
-    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true } } })
+    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: { title: 'Saved', enabled: true, logo: '/saved/logo.png' } } })
   })
 
   it('discards persisted boolean strings instead of coercing them', () => {
@@ -81,7 +82,18 @@ describe('editor state', () => {
     expect(loadPersistedState('social/campaign', definition, storage)).toEqual({ selectedVariant: 'en', dataByVariant: { en: {} } })
   })
 
-  it('omits invalid persisted choices while preserving siblings and fallbacks', () => {
+  it('preserves a valid persisted choice', () => {
+    const storage = {
+      getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { alignment: 'center' } } }),
+    }
+
+    expect(loadPersistedState('social/campaign', definition, storage)).toEqual({
+      selectedVariant: 'en',
+      dataByVariant: { en: { alignment: 'center' } },
+    })
+  })
+
+  it('passes current content and default fallbacks to the resolver after dropping stale choices', () => {
     const storage = {
       getItem: () => JSON.stringify({
         selectedVariant: 'fr',
@@ -100,8 +112,12 @@ describe('editor state', () => {
         fr: { title: 'Saved French', enabled: false },
       },
     })
-    expect(resolveTemplateData(definition, 'en', state!.dataByVariant.en)).toMatchObject({ title: 'Saved English', alignment: 'left', enabled: true })
-    expect(resolveTemplateData(definition, 'fr', state!.dataByVariant.fr)).toMatchObject({ title: 'Saved French', alignment: 'center', enabled: false })
+    const resolvedEnglish = resolveTemplateData(definition, 'en', state!.dataByVariant.en)
+    const resolvedFrench = resolveTemplateData(definition, 'fr', state!.dataByVariant.fr)
+
+    expect(resolvedEnglish).toMatchObject({ title: 'Saved English', alignment: 'left', enabled: true })
+    expect(resolvedFrench).toMatchObject({ title: 'Saved French', alignment: 'center', enabled: false })
+
   })
 
   it('keeps finite numeric edits and discards numeric strings or invalid values', () => {

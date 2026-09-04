@@ -1,4 +1,4 @@
-import { field } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 const alignment = field.choice({
   label: 'Alignment',
@@ -35,6 +35,21 @@ field.choice({
   defaultValue: 'left',
   // @ts-expect-error choice has no required option
   required: false,
+})
+
+defineTemplate({
+  meta: { title: 'Choice template' },
+  width: 100,
+  height: 100,
+  fields: { alignment },
+  content: {
+    en: {
+      // @ts-expect-error choice content values must match declared option values
+      alignment: 'justify',
+    },
+  },
+  variants: { default: 'en' },
+  render: () => null,
 })
 
 void (null as unknown as OptionValuesAssertion)

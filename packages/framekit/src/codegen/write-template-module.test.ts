@@ -44,6 +44,21 @@ export function validateTemplateDefinition(definition) {
   await writeFile(path.join(framekitPackage, 'index.js'), source)
 }
 
+function normalizePathSeparators(value: string): string {
+  return value.replaceAll('\\', '/')
+}
+
+async function expectErrorWithPortablePath(
+  operation: () => Promise<unknown>,
+  expectedMessage: string,
+): Promise<void> {
+  const error = await operation().catch((cause: unknown) => cause)
+  expect(error).toBeInstanceOf(Error)
+  expect(normalizePathSeparators((error as Error).message)).toContain(
+    normalizePathSeparators(expectedMessage),
+  )
+}
+
 describe('findTemplates', () => {
   it('stops at a template and ignores its private auxiliary directories', async () => {
     const templatesRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-templates-'))
@@ -94,8 +109,9 @@ describe('findTemplates', () => {
         await mkdir(templateRoot, { recursive: true })
         await writeFile(path.join(templateRoot, 'template.tsx'), '')
 
-        await expect(findTemplates(templatesRoot)).rejects.toThrow(
-          new RegExp(`Segmento inválido '${segment}'.*${templateRoot.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}`),
+        await expectErrorWithPortablePath(
+          () => findTemplates(templatesRoot),
+          `Segmento inválido '${segment}' en ruta física: ${templateRoot}`,
         )
       } finally {
         await rm(templatesRoot, { recursive: true, force: true })
@@ -263,22 +279,67 @@ FrameKitStudio({ templates })
     }
   }, 30_000)
 
+  it('omits optional metadata and prohibited registry properties', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-summary-contract-'))
+    const templateRoot = path.join(root, 'src', 'templates', 'example')
+
+    try {
+      await mkdir(templateRoot, { recursive: true })
+      await writeFile(path.join(templateRoot, 'template.tsx'), `export default {
+  title: 'Forbidden filesystem title',
+  revision: 1,
+  mode: 'legacy',
+  compatibility: 'legacy',
+  category: 'social',
+  preview: '/preview.png',
+  meta: { title: 'Minimal template', revision: 1 },
+  width: 100,
+  height: 100,
+  fields: { privateValue: { kind: 'text', label: 'Private' } },
+  content: { moon: { privateValue: 'Secret' } },
+  variants: { default: 'moon', mode: 'legacy' },
+  render: () => null,
+}`)
+      await addFrameKitStub(root)
+
+      await writeTemplateModule({ projectRoot: root })
+
+      const generatedSource = await readFile(
+        path.join(root, 'src', 'generated', 'framekit', 'templates.ts'),
+        'utf8',
+      )
+      expect(generatedSource).toContain('meta: {"title":"Minimal template"},')
+      expect(generatedSource).toContain('variants: {"default":"moon"},')
+      expect(generatedSource).not.toContain('\n    title:')
+
+      for (const property of ['description', 'marketingDescription', 'tags', 'revision', 'mode', 'compatibility', 'category', 'preview']) {
+        expect(generatedSource).not.toContain(`"${property}"`)
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it.each([
+    ['syntax', 'export default {', undefined],
     ['import', `throw new Error('load failed')`, 'load failed'],
     ['validation', `export function validateTemplateDefinition() {
   return { success: false, error: 'definition is invalid' }
 }`, 'definition is invalid'],
-  ])('reports the source path for %s failures', async (_kind, source, message) => {
+  ] as const)('reports the source path for %s failures', async (kind, source, message) => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-summary-error-'))
     const templateRoot = path.join(root, 'src', 'templates', 'example')
 
     try {
       await mkdir(templateRoot, { recursive: true })
-      await writeFile(path.join(templateRoot, 'template.tsx'), _kind === 'import' ? source : validTemplateSource)
-      await addFrameKitStub(root, _kind === 'import' ? undefined : source)
+      await writeFile(path.join(templateRoot, 'template.tsx'), kind === 'validation' ? validTemplateSource : source)
+      await addFrameKitStub(root, kind === 'validation' ? source : undefined)
 
-      await expect(writeTemplateModule({ projectRoot: root })).rejects.toThrow(
-        `${path.join(templateRoot, 'template.tsx')}: ${message}`,
+      await expectErrorWithPortablePath(
+        () => writeTemplateModule({ projectRoot: root }),
+        message === undefined
+          ? path.join(templateRoot, 'template.tsx')
+          : `${path.join(templateRoot, 'template.tsx')}: ${message}`,
       )
       await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'))).rejects.toThrow()
     } finally {

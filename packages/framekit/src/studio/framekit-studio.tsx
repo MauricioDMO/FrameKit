@@ -37,51 +37,58 @@ type LoadState =
   | { status: 'ready', kind: 'template', entry: TemplateRegistryEntry, definition: TemplateDefinition }
   | { status: 'ready', kind: 'brand', preview: ComponentType, component: FrameKitStudioBrand }
 
+type LoadSnapshot = { routeKey: string, state: LoadState }
+
 export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrands }: FrameKitStudioProps) {
   const { slug: segments } = useParams<{ slug?: string[] }>()
   const pathname = usePathname()
   const slug = segments?.join('/')
   const isBrand = pathname === '/brand' || pathname.startsWith('/brand/')
+  const routeKey = `${isBrand ? 'brand' : 'template'}:${slug ?? ''}`
   const { locale, setLocale, messages } = useFrameKitLocale()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' })
+  const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot>({ routeKey, state: { status: 'loading' } })
+  const loadState = loadSnapshot.routeKey === routeKey ? loadSnapshot.state : { status: 'loading' as const }
   const navigation = manifestToNavigation(isBrand ? brands : templates, isBrand ? '/brand' : '/editor')
 
   useEffect(() => {
     if (!slug) return
 
     let cancelled = false
+    function updateLoadState(state: LoadState) {
+      if (!cancelled) setLoadSnapshot({ routeKey, state })
+    }
+
+    updateLoadState({ status: 'loading' })
     if (isBrand) {
       const entry = brands.find((candidate) => candidate.slug === slug)
-      if (!entry) return setLoadState({ status: 'not-found' })
+      if (!entry) return updateLoadState({ status: 'not-found' })
 
-      setLoadState({ status: 'loading' })
       entry.load().then((module) => {
-        if (!cancelled) setLoadState({ status: 'ready', kind: 'brand', preview: module.default as ComponentType, component: entry })
+        updateLoadState({ status: 'ready', kind: 'brand', preview: module.default as ComponentType, component: entry })
       }).catch(() => {
-        if (!cancelled) setLoadState({ status: 'error', kind: 'brand' })
+        updateLoadState({ status: 'error', kind: 'brand' })
       })
     } else {
       const entry = templates.find((candidate) => candidate.slug === slug)
-      if (!entry) return setLoadState({ status: 'not-found' })
+      if (!entry) return updateLoadState({ status: 'not-found' })
 
-      setLoadState({ status: 'loading' })
       entry.load().then((module) => {
         if (cancelled) return
         const result = validateTemplateDefinition(module.default as TemplateDefinition)
         if (!result.success || result.definition.width !== entry.width || result.definition.height !== entry.height) {
-          setLoadState({ status: 'invalid' })
+          updateLoadState({ status: 'invalid' })
           return
         }
-        setLoadState({ status: 'ready', kind: 'template', entry, definition: result.definition })
+        updateLoadState({ status: 'ready', kind: 'template', entry, definition: result.definition })
       }).catch(() => {
-        if (!cancelled) setLoadState({ status: 'error', kind: 'template' })
+        updateLoadState({ status: 'error', kind: 'template' })
       })
     }
 
     return () => { cancelled = true }
-  }, [slug, isBrand, templates, brands])
+  }, [slug, isBrand, routeKey, templates, brands])
 
   function toggleTheme() {
     const dark = !document.documentElement.classList.contains('dark')

@@ -26,7 +26,7 @@ afterEach(() => {
   route.pathname = '/editor'
 })
 
-function createTemplateEntry({ width = 100, meta = { title: 'Registry title', description: 'Functional description', marketingDescription: 'Marketing goal', tags: ['social', 'launch'] } }: { width?: number, meta?: TemplateRegistryEntry['meta'] } = {}) {
+function createTemplateEntry({ slug = 'social/campaign', width = 100, height = 80, meta = { title: 'Registry title', description: 'Functional description', marketingDescription: 'Marketing goal', tags: ['social', 'launch'] } }: { slug?: string, width?: number, height?: number, meta?: TemplateRegistryEntry['meta'] } = {}) {
   const definition = defineTemplate({
     meta: { title: 'Loaded definition title' },
     width: 100,
@@ -38,11 +38,11 @@ function createTemplateEntry({ width = 100, meta = { title: 'Registry title', de
   })
 
   return {
-    slug: 'social/campaign',
-    segments: ['social', 'campaign'],
+    slug,
+    segments: slug.split('/'),
     meta,
     width,
-    height: definition.height,
+    height,
     variants: definition.variants,
     variantKeys: Object.keys(definition.content),
     assets: { common: {}, variants: {} },
@@ -75,6 +75,90 @@ describe('FrameKitStudio sidebar', () => {
 })
 
 describe('FrameKitStudio template integration', () => {
+  it('shows the localized loading state while the template loader is pending', () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const entry = createTemplateEntry()
+    entry.load.mockReturnValue(new Promise<Awaited<ReturnType<typeof entry.load>>>(() => undefined))
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[entry]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    const loading = screen.getByLabelText('Loading...')
+    expect(entry.load).toHaveBeenCalledTimes(1)
+    expect(loading.getAttribute('aria-busy')).toBe('true')
+    expect(screen.queryByRole('heading', { name: 'Registry title' })).toBeNull()
+  })
+
+  it('shows the localized not-found state for an unknown template slug', async () => {
+    route.params = { slug: ['social', 'missing'] }
+    const entry = createTemplateEntry()
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[entry]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Template not found' })).toBeTruthy())
+    expect(screen.getByRole('link', { name: 'Back to editor' }).getAttribute('href')).toBe('/editor')
+    expect(entry.load).not.toHaveBeenCalled()
+  })
+
+  it('shows loading instead of keeping the previous template ready during navigation', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const first = createTemplateEntry({ meta: { title: 'First template' } })
+    const view = render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[first]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'First template' })).toBeTruthy())
+
+    const next = createTemplateEntry({ slug: 'social/launch', meta: { title: 'Next template' } })
+    next.load.mockReturnValue(new Promise<Awaited<ReturnType<typeof next.load>>>(() => undefined))
+    route.params = { slug: ['social', 'launch'] }
+    view.rerender(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[first, next]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    expect(screen.getByLabelText('Loading...')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'First template' })).toBeNull()
+  })
+
+  it('ignores a template loader result that resolves after navigation', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const first = createTemplateEntry({ meta: { title: 'First template' } })
+    let resolveFirst!: (module: Awaited<ReturnType<typeof first.load>>) => void
+    first.load.mockReturnValue(new Promise<Awaited<ReturnType<typeof first.load>>>((resolve) => { resolveFirst = resolve }))
+    const next = createTemplateEntry({ slug: 'social/launch', meta: { title: 'Next template' } })
+
+    const view = render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[first, next]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    route.params = { slug: ['social', 'launch'] }
+    view.rerender(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[first, next]} />
+      </FrameKitLocaleProvider>,
+    )
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Next template' })).toBeTruthy())
+
+    resolveFirst({ default: {} as never })
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Next template' })).toBeTruthy()
+      expect(screen.queryByRole('alert')).toBeNull()
+    })
+  })
+
   it('uses registry metadata for the selected template without a slug fallback', async () => {
     route.params = { slug: ['social', 'campaign'] }
     const entry = createTemplateEntry()
@@ -118,6 +202,32 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[createTemplateEntry({ width: 200 })]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('La plantilla no es válida'))
+  })
+
+  it('rejects a registry definition with a different height', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+
+    render(
+      <FrameKitLocaleProvider initialLocale="es">
+        <FrameKitStudio templates={[createTemplateEntry({ height: 90 })]} />
+      </FrameKitLocaleProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('La plantilla no es válida'))
+  })
+
+  it('rejects a loaded definition that fails validation', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const entry = createTemplateEntry()
+    entry.load.mockResolvedValue({ default: {} as never })
+
+    render(
+      <FrameKitLocaleProvider initialLocale="es">
+        <FrameKitStudio templates={[entry]} />
       </FrameKitLocaleProvider>,
     )
 

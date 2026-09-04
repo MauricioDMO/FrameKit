@@ -119,7 +119,12 @@ function NavigationNode({
     )
   }
 
-  return <NavigationFolder node={node} level={level} open={expandedById[node.id] ?? true} onToggle={() => onToggleFolder(node.id)} pathname={pathname} expandedById={expandedById} onToggleFolder={onToggleFolder} />
+  const open = expandedById[node.id] ?? true
+  return <NavigationFolder node={node} level={level} open={open || containsSelectedTemplate(node, pathname)} onToggle={() => onToggleFolder(node.id)} pathname={pathname} expandedById={expandedById} onToggleFolder={onToggleFolder} />
+}
+
+function containsSelectedTemplate(node: Extract<TemplateNavigationNode, { type: 'folder' }>, pathname: string): boolean {
+  return node.children.some((child) => child.type === 'template' ? child.href === pathname : containsSelectedTemplate(child, pathname))
 }
 
 function NavigationFolder({

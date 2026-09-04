@@ -13,6 +13,7 @@ export const template = defineTemplate({
   fields: {
     title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
     accentColor: field.color({ label: 'Color', defaultValue: '#173d31' }),
+    image: field.image({ label: 'Image' }),
     alignment: field.choice({
       label: 'Alignment',
       options: [
@@ -26,12 +27,13 @@ export const template = defineTemplate({
     showLogo: field.boolean({ label: 'Show logo' }),
   },
   content: {
-    moon: { title: 'Oferta', count: 15, showLogo: true },
-    fjord: { title: 'Offer', count: 20, showLogo: false },
+    moon: { title: 'Oferta', image: '/images/moon.png', count: 15, showLogo: true },
+    fjord: { title: 'Offer', image: '/images/fjord.png', count: 20, showLogo: false },
   },
   variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
   render({ data, variant, width, height }) {
     const title: string = data.title
+    const image: string = data.image
     const alignment: 'left' | 'center' | 'right' = data.alignment
     const count: number = data.count
     const showLogo: boolean = data.showLogo
@@ -42,6 +44,7 @@ export const template = defineTemplate({
     String(data.missing)
 
     void title
+    void image
     void alignment
     void count
     void showLogo
@@ -60,7 +63,7 @@ type Expect<Value extends true> = Value
 
 type DataAssertion = Expect<Equal<
   InferTemplateData<typeof template>,
-  { title: string; accentColor: string; alignment: 'left' | 'center' | 'right'; count: number; showLogo: boolean }
+  { title: string; accentColor: string; image: string; alignment: 'left' | 'center' | 'right'; count: number; showLogo: boolean }
 >>
 type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['variant'],

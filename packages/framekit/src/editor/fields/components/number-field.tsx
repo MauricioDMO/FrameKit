@@ -67,7 +67,7 @@ export function NumberField({ field, value, onChange, error, onValidationError }
           step={field.step ?? 1}
           value={normalizedSliderValue}
           onChange={handleChange}
-          className="min-w-0 flex-1 accent-[#39775f]"
+          className="min-w-0 flex-1 accent-[#39775f] focus-visible:ring-3 focus-visible:ring-[#39775f]/20 focus-visible:outline-none"
         />
         <output htmlFor={field.key} className="min-w-12 text-right text-sm font-bold tabular-nums text-[#59665f] dark:text-[#b8c8be]">{normalizedSliderValue}</output>
       </div>
