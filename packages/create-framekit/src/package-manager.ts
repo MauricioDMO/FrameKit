@@ -18,7 +18,12 @@ export async function runCommand(
   cwd: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, shell: process.platform === 'win32', stdio: 'inherit' })
+    const isWindows = process.platform === 'win32'
+    const child = spawn(
+      isWindows ? process.env.ComSpec ?? 'cmd.exe' : command,
+      isWindows ? ['/d', '/s', '/c', command, ...args] : args,
+      { cwd, shell: false, stdio: 'inherit' },
+    )
     child.once('error', (error) => {
       reject(new Error(`Command failed: ${command} ${args.join(' ')} (${error.message})`))
     })
