@@ -13,8 +13,12 @@ guide](./migration-v0.8.0.md).
 - This guide does not require an alpha, future, or otherwise preselected package
   version. Release version selection is a separate maintainer step.
 - The canonical runtime and Studio behavior described here is implemented. A
-  server image-generation API and other future roadmap work are not part of
-  this contract.
+  server image-generation API is future work; it is not implemented and is not
+  part of this contract.
+
+This rolling guide is the documentation deliverable for [GitHub issue
+#14](https://github.com/MauricioDMO/FrameKit/issues/14) and its [implementation
+plan](../../Plans/Future/issue-14-documentation-and-migration.md).
 
 ## Canonical Template Contract
 

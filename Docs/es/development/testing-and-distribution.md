@@ -53,16 +53,38 @@ El conjunto de pruebas no cubre:
 - **Otros sistemas operativos** — Windows tiene un smoke focalizado de consumidor en CI, pero esta documentación no garantiza soporte amplio de Windows ni macOS.
 - **Comportamiento del watcher** — la propagación de señales, vigilancia de archivos bajo carga y casos extremos del watcher están fuera del alcance actual de las pruebas.
 
-## Gates permanentes de CI
+## Estado de los gates
 
-- Ubuntu ejecuta las verificaciones completas del repositorio en Node.js `22.13.0` y `24` con pnpm `11.14.0`.
-- Windows ejecuta las verificaciones focalizadas de discovery, codegen, creator, typecheck, paquetes y consumidor generado en Node.js `22.13.0`.
-- Ubuntu ejecuta el único E2E de Chromium en Node.js `22.13.0`; el lane instala Chromium e inicia Studio con `pnpm dev`.
+Los comandos de este documento son checks locales salvo cuando se identifiquen
+explícitamente como pasos del workflow. Ejecutarlos localmente no cuenta como un
+resultado de CI.
 
-El smoke de creator en Windows usa `create-framekit <directorio> -n`, instala las
-dependencias del proyecto generado y ejecuta `framekit generate` y
-`framekit check`. No afirma cobertura de build de producción ni de navegador en
-Windows.
+- El [run CI 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+  completó correctamente los lanes de Ubuntu con Node.js `22.13.0`, Ubuntu con
+  Node.js `24` y Chromium. Su lane de Windows sí se ejecutó, pero falló en
+  `Run discovery and codegen tests` después de instalar y construir los paquetes
+  públicos; los pasos posteriores de Windows se omitieron. El gate de Windows
+  debe considerarse fallido hasta que un rerun pase.
+- La [evidencia del smoke pre-publicación de tarballs](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
+  registra PASS para un consumidor independiente y otro generado por creator.
+  Repite este gate en cada release.
+- El smoke del registro npm posterior a publicar queda pendiente hasta que los
+  paquetes publicados exactos estén disponibles y la comprobación pase; debe
+  pasar antes de promover el dist-tag final.
+
+## Gates de CI definidos en el workflow
+
+- El lane de Ubuntu del workflow está configurado para ejecutar las verificaciones completas del repositorio en Node.js `22.13.0` y `24` con pnpm `11.14.0`.
+- El lane de Windows está configurado para ejecutar las verificaciones
+  focalizadas de discovery, codegen, creator, typecheck, paquetes y consumidor
+  generado en Node.js `22.13.0`; la última ejecución registrada es el run fallido
+  enlazado arriba.
+- El lane de Ubuntu del workflow está configurado para ejecutar el único E2E de Chromium en Node.js `22.13.0`; instala Chromium e inicia Studio con `pnpm dev`.
+
+El smoke de creator en Windows está configurado para usar `create-framekit
+<directorio> -n`, instalar las dependencias del proyecto generado y ejecutar
+`framekit generate` y `framekit check`. No afirma cobertura de build de
+producción ni de navegador en Windows.
 
 ## Distribución y empaquetado
 
@@ -92,12 +114,38 @@ La lista `files` del paquete incluye `dist/`, `template/`, `README.md` y `LICENS
 
 Cuando un usuario ejecuta `create-framekit`, el directorio `template/` se copia desde el paquete instalado a su proyecto como una copia independiente, sin referencias al directorio del paquete.
 
-## Prueba de humo del tarball (manual)
+## Prueba de humo pre-publicación del tarball
 
-Ejecuta esta secuencia versionless desde una shell Bash. Los dos tarballs se
+Ejecuta localmente esta secuencia versionless desde una shell Bash antes de
+publicar. Los dos tarballs se
 construyen en un directorio temporal y cada consumidor se crea fuera del
 repositorio. No ejecutes los comandos del consumidor desde el checkout de
 FrameKit.
+
+El procedimiento reproducible canónico es este comando desde la raíz del
+repositorio:
+
+```sh
+node scripts/smoke-tarballs.mjs
+```
+
+El script mantiene todos los consumidores temporales fuera del workspace y
+verifica:
+
+- la auditoría de ambos tarballs públicos, incluidos archivos esperados, targets
+  de paquetes, binarios y rechazo de tests, secrets, referencias al workspace,
+  links locales y rutas del checkout;
+- un consumidor independiente instalado directamente desde el tarball de
+  `@mauriciodmo/framekit`, incluida la resolución de exports públicos y
+  `generate`, `check` y `build`;
+- un consumidor generado por creator, incluida la instalación limpia,
+  `generate`, `check`, `build`, `start` standalone, readiness HTTP y apagado/
+  limpieza correctos.
+
+La secuencia shell siguiente es un procedimiento manual opcional del camino de
+creator. Audita ambos archivos, pero su flujo de consumidor solo crea y ejecuta
+el consumidor generado por creator; no cubre el consumidor independiente del
+tarball core. Usa el script canónico anterior cuando se necesiten ambos caminos.
 
 ```bash
 set -eu
@@ -189,16 +237,21 @@ process.exit(1)
 NODE
 ```
 
-El smoke solo pasa cuando ambos tarballs reales tienen el contenido esperado,
+El procedimiento de abajo no registra un resultado por sí mismo. Consulta el
+[estado de ejecución de Future](../../Plans/Future/EXECUTION-STATUS.md) para el
+resultado específico del repositorio y la [evidencia actual del smoke](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md);
+repite este gate en cada release. Solo
+pasa cuando ambos tarballs reales tienen el contenido esperado,
 no contienen `workspace:`, links locales ni rutas del checkout, y el consumidor generado por
 el creator completa generation, check, build de producción, arranque standalone
 y readiness HTTP. El smoke exacto contra npm después de publicar permanece como
 handoff separado con las especificaciones de paquetes suministradas durante el
-release; consulta el [smoke del registro npm después de publicar](#smoke-del-registro-npm-después-de-publicar-manual-antes-de-promocionar).
+release; consulta el [smoke del registro npm después de publicar](#smoke-del-registro-npm-después-de-publicar-manual-pendiente-antes-de-promocionar).
 
-## Smoke del registro npm después de publicar (manual, antes de promocionar)
+## Smoke del registro npm después de publicar (manual, pendiente antes de promocionar)
 
-Ejecuta esto solo cuando los paquetes ya estén disponibles en npm. Es una puerta
+Este gate queda pendiente hasta que los paquetes estén disponibles en npm y la
+comprobación termine correctamente. Ejecútalo solo después de publicar. Es una puerta
 separada del smoke de tarballs previo a publicar: no puede impedir la carga
 inicial, pero un fallo bloquea la promoción al dist-tag previsto. Nunca publiques
 ni cambies un dist-tag como parte de esta comprobación.

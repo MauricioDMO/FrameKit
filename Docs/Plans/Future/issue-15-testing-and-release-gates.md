@@ -197,8 +197,7 @@ registry, duplicate per-error projects, or a second full application fixture.
 - Selecting, publishing, promoting, deprecating, or tagging a package version.
 - A version-specific release workflow; issue #16 is obsolete.
 - Legacy compatibility, deprecation diagnostics, or source migration tests.
-- The discriminated resolver and global last-valid-preview design rejected by
-  #9.
+- The resolver and preview-state designs rejected by #9.
 - Mandatory macOS, Firefox, WebKit, broad visual regression, or large-catalog
   load testing.
 - Exhaustive E2E duplication of focused field and validation tests.

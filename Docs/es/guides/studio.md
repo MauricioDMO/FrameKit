@@ -45,7 +45,7 @@ Cada uno de los seis tipos de field tiene su propio control; los controles text,
 - `color` usa un selector de color nativo junto con un input de texto hexadecimal y almacena un string.
 - `image` muestra el origen del asset resuelto y puede mostrar un control de upload cuando Studio proporciona un callback de upload.
 
-Los borradores del input numérico son locales al control numérico. Un borrador incompleto, como un valor vacío, no entra en los datos confirmados del editor, por lo que el preview sigue usando el último valor numérico confirmado. El preview y el render solo consumen datos tipados resueltos y confirmados; no usan una caché global del último preview válido.
+Los borradores del input numérico son locales al control numérico. Un borrador incompleto, como un valor vacío, no entra en los datos confirmados del editor, por lo que el preview sigue usando el último valor numérico confirmado. El preview y el render solo consumen datos tipados resueltos y confirmados.
 
 Exportar y Copiar PNG validan los datos resueltos. Los números deben ser finitos, estar dentro de `min`/`max` cuando se declaren y respetar `step` (que por defecto es `1`). Los fields text, color e image obligatorios rechazan valores vacíos; esos fields aceptan un valor vacío cuando `required: false`. También se comprueban la longitud del texto y el formato del color. Las choices deben ser strings de opciones declaradas y los booleanos deben ser booleanos reales; estos controles no validan convirtiendo strings.
 

@@ -2,6 +2,8 @@
 
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
+Studio export is currently browser-based and supports PNG only. A server-side
+image-generation API is future work.
 
 ## Compatibility
 

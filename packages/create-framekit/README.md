@@ -2,6 +2,9 @@
 
 Scaffold a new FrameKit project with one command:
 
+The generated project uses browser-based Studio export; a server-side
+image-generation API is future work.
+
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
 cd my-project

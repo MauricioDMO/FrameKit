@@ -2,6 +2,16 @@
 
 Publica el paquete o paquetes modificados desde la raíz del repositorio con pnpm. No uses `npm publish --workspace` ni `npm publish --prefix`: este repositorio declara sus workspaces con pnpm y el comando de npm puede fallar al procesar el manifiesto.
 
+Esta página es un procedimiento de release, no un registro de release. No
+confirma que las versiones, commits, tags, checks locales, CI, smokes o la
+publicación ya hayan ocurrido. El [run CI 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+sí ejecutó Windows, pero falló en `Run discovery and codegen tests`; sus lanes
+de Ubuntu y Chromium pasaron, por lo que hace falta un rerun exitoso de Windows.
+El [registro actual del smoke pre-publicación](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
+es PASS para ambos caminos de consumidor aislado. El smoke del registro posterior
+a publicar queda pendiente hasta que los paquetes publicados estén disponibles y
+la comprobación pase.
+
 ## Antes de publicar
 
 Usa Node.js `>=22.13.0` y pnpm `>=11.14.0` para trabajar en releases.
@@ -12,9 +22,14 @@ lanzamiento:
 pnpm check:runtime
 ```
 
-1. Versiona los paquetes de forma independiente. Actualiza solo el paquete que tenga cambios para la versión. Una versión nueva de `create-framekit` no requiere actualizar `@mauriciodmo/framekit`; conserva la dependencia de la plantilla en la versión principal publicada, salvo que la plantilla requiera una API nueva de FrameKit.
+1. Durante la preparación del release, versiona los paquetes de forma
+   independiente. Actualiza solo el paquete que tenga cambios para la versión.
+   Los placeholders de versión de abajo no asignan ni confirman una versión ya
+   completada. Una versión nueva de `create-framekit` no requiere actualizar
+   `@mauriciodmo/framekit`; conserva la dependencia de la plantilla en la versión
+   principal publicada, salvo que la plantilla requiera una API nueva de FrameKit.
 
-2. Ejecuta la puerta de lanzamiento:
+2. Ejecuta localmente la puerta de lanzamiento:
 
    ```sh
    pnpm --filter @mauriciodmo/framekit build
@@ -27,7 +42,7 @@ pnpm check:runtime
    pnpm --filter @mauriciodmo/create-framekit pack
    ```
 
-3. Realiza la [prueba de humo de los tarballs](testing-and-distribution.md#prueba-de-humo-del-tarball-manual).
+3. Realiza la [prueba de humo pre-publicación de los tarballs](testing-and-distribution.md#prueba-de-humo-pre-publicación-del-tarball). Usa el script canónico; la secuencia manual del camino de creator es opcional. No publiques hasta que este gate local pase.
 4. Crea un commit de release por versión. Un commit no puede introducir dos versiones distintas de paquetes. Ambos paquetes pueden compartir un commit solo cuando se publican exactamente con la misma versión:
 
    ```sh
@@ -62,13 +77,13 @@ pnpm --filter @mauriciodmo/create-framekit publish --access public --tag "$PUBLI
 
 No añadas `--otp` al comando. Si npm solicita un OTP, introdúcelo directamente
 en tu terminal interactiva. Cuando los paquetes estén disponibles, ejecuta el
-[smoke del registro npm después de publicar](testing-and-distribution.md#smoke-del-registro-npm-después-de-publicar-manual-antes-de-promocionar)
+[smoke del registro npm después de publicar](testing-and-distribution.md#smoke-del-registro-npm-después-de-publicar-manual-pendiente-antes-de-promocionar)
 con valores exactos de `CORE_SPEC`, `CREATOR_SPEC` y `EXPECTED_DIST_TAG`
 suministrados durante la preparación del release. Un fallo bloquea la
 promoción, no la carga inicial; registra las versiones resueltas y el runtime
 como indica esa comprobación.
 
-Después de que el smoke pase, el usuario puede promocionar cada paquete
+Después de que el smoke posterior a publicar pase, el usuario puede promocionar cada paquete
 publicado a su dist-tag final con `npm dist-tag add <paquete>@<versión-resuelta>
 <dist-tag-final>`. Usa únicamente los paquetes publicados en este handoff y las
 versiones devueltas por el smoke del registro.

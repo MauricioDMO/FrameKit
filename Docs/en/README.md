@@ -18,6 +18,7 @@ English | [Español](../es/README.md)
 ## Reference
 
 - [Template Contract](reference/template-contract.md): Full specification for defineTemplate.
+- [Brand Catalog](reference/brand-catalog.md): Discover and preview reusable brand components in Studio.
 - [Markdown](reference/markdown.md): Supported markdown syntax in text fields.
 - [CLI](reference/cli.md): FrameKit CLI commands and behavior.
 - [Public API](reference/public-api.md): Public API surface for integration.

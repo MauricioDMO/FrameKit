@@ -53,14 +53,33 @@ The test suite does not cover:
 - **Other operating systems** — Windows has a focused CI consumer smoke, but this documentation does not claim broad Windows or macOS support.
 - **Watcher behavior** — signal propagation, file watching under load, and watcher edge cases are outside the current test scope.
 
-## Permanent CI Gates
+## Gate status
 
-- Ubuntu runs the full repository checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`.
-- Windows runs the focused discovery, codegen, creator, typecheck, package, and generated-consumer checks on Node.js `22.13.0`.
-- Ubuntu runs the one Chromium E2E on Node.js `22.13.0`; the lane installs Chromium and starts Studio with `pnpm dev`.
+The commands in this document are local checks unless explicitly identified as
+workflow steps. Running them locally does not count as a CI result.
 
-The Windows creator smoke uses `create-framekit <directory> -n`, installs the
-generated project's dependencies, and runs `framekit generate` and
+- The [CI run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+  completed the Ubuntu Node.js `22.13.0`, Ubuntu Node.js `24`, and Chromium jobs
+  successfully. Its Windows lane was executed but failed at `Run discovery and
+  codegen tests` after installation and public-package builds; later Windows
+  steps were skipped. Treat the Windows gate as failed until a rerun passes.
+- The [pre-publication tarball smoke record](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
+  records PASS for both an independent consumer and a creator-generated
+  consumer. Repeat this gate for each release.
+- The post-publication npm registry smoke remains pending until the exact
+  published packages are available and the check passes; it must pass before
+  final dist-tag promotion.
+
+## CI Gates Defined in the Workflow
+
+- The Ubuntu workflow lane is configured to run the full repository checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`.
+- The Windows workflow lane is configured to run the focused discovery, codegen,
+  creator, typecheck, package, and generated-consumer checks on Node.js
+  `22.13.0`; the latest recorded execution is the failed run linked above.
+- The Ubuntu workflow lane is configured to run the one Chromium E2E on Node.js `22.13.0`; it installs Chromium and starts Studio with `pnpm dev`.
+
+The configured Windows creator smoke uses `create-framekit <directory> -n`,
+installs the generated project's dependencies, and runs `framekit generate` and
 `framekit check`. It does not claim production-build or browser coverage on
 Windows.
 
@@ -92,12 +111,36 @@ The package's `files` list includes `dist/`, `template/`, `README.md`, and `LICE
 
 When a user runs `create-framekit`, the `template/` directory is copied from the installed package into their project as a standalone copy, not referenced from the package directory.
 
-## Tarball Smoke Test (Manual)
+## Pre-publication Tarball Smoke Test
 
-Run this version-independent sequence from a Bash shell. The two package
+Run this version-independent sequence locally from a Bash shell before
+publication. The two package
 tarballs are built in a temporary directory, and every consumer project is
 created outside the repository. Do not run the consumer commands from the
 FrameKit checkout.
+
+The canonical reproducible procedure is the following command from the
+repository root:
+
+```sh
+node scripts/smoke-tarballs.mjs
+```
+
+The script keeps all temporary consumers outside the workspace and verifies:
+
+- archive audits for both public tarballs, including expected files, package
+  targets, binaries, and rejection of tests, secrets, workspace references,
+  local links, and checkout paths;
+- an independent consumer installed directly from the `@mauriciodmo/framekit`
+  tarball, including public export resolution and `generate`, `check`, and
+  `build`;
+- a creator-generated consumer, including a clean install, `generate`, `check`,
+  `build`, standalone `start`, HTTP readiness, and clean shutdown/cleanup.
+
+The shell sequence below is an optional manual creator-path procedure. It audits
+both archives but its consumer flow only creates and runs the creator-generated
+consumer; it does not cover the independent core-tarball consumer. Use the
+canonical script above when both consumer paths are required.
 
 ```bash
 set -eu
@@ -189,15 +232,20 @@ process.exit(1)
 NODE
 ```
 
-The smoke passes only when both real tarballs have the expected contents, no
+The procedure below does not record a result by itself. See the
+[Future execution status](../../Plans/Future/EXECUTION-STATUS.md) for the
+repository-specific result and the [current smoke evidence](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md);
+repeat this gate for each release. It passes
+only when both real tarballs have the expected contents, no
 `workspace:`, local-link, or checkout-path references, and the creator-generated consumer
 completes generation, check, production build, standalone start, and HTTP
 readiness. The exact npm registry smoke after publication remains a separate
-maintainer handoff with package specs supplied at release time; see [Post-publication npm registry smoke](#post-publication-npm-registry-smoke-manual-before-promotion).
+maintainer handoff with package specs supplied at release time; see [Post-publication npm registry smoke](#post-publication-npm-registry-smoke-manual-pending-before-promotion).
 
-## Post-publication npm registry smoke (manual, before promotion)
+## Post-publication npm Registry Smoke (Manual, Pending Before Promotion)
 
-Run this only after the packages are available on npm. It is a separate gate
+This gate remains pending until the packages are available on npm and the check
+has completed successfully. Run it only after publication. It is a separate gate
 from the pre-publication tarball smoke: it cannot prevent the initial upload,
 but a failure blocks promotion to the intended dist-tag. Never publish or
 change a dist-tag as part of this check.

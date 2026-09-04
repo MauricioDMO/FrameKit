@@ -45,7 +45,7 @@ Each of the six field kinds has its own control; the text, number, choice, boole
 - `color` uses a native color picker together with a hexadecimal text input and stores a string.
 - `image` displays the resolved asset source and can show an upload control when Studio provides an upload callback.
 
-Number input drafts are local to the number control. An incomplete draft, such as an empty value, does not enter committed editor data, so the preview continues to use the last committed numeric value. Preview and render consume only resolved, committed typed data; they do not use a global last-valid-preview cache.
+Number input drafts are local to the number control. An incomplete draft, such as an empty value, does not enter committed editor data, so the preview continues to use the last committed numeric value. Preview and render consume only resolved, committed typed data.
 
 Export and Copy PNG validate the resolved data. Number values must be finite, within `min`/`max` when declared, and aligned to `step` (which defaults to `1`). Required text, color, and image fields reject empty values; those fields accept an empty value when `required: false`. Text length and color format are also checked. Choices must be declared option strings, and booleans must be real booleans; these controls are not validated by coercing strings.
 

@@ -12,8 +12,29 @@ el de GitHub; este documento solo registra el avance local de implementación.
 - Mantén el orden de ejecución indicado en `README.md`.
 - No selecciones una versión de release mientras los mantenedores no la hayan
   definido.
-- Los issues #9, #10 y #11 son decisiones cerradas y no forman parte de la
+- Los issues #9, #10, #11 y #16 son decisiones cerradas y no forman parte de la
   ejecución activa.
+
+## Estado externo verificado
+
+- El [run CI 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+  ejecutó Windows y falló en `Run discovery and codegen tests`; instalación y
+  builds públicos pasaron, y los pasos posteriores fueron omitidos. Las lanes
+  Ubuntu `22.13.0`, `24` y Chromium del mismo run pasaron.
+- La [evidencia del smoke pre-publicación](./evidence/tarball-smoke-2026-09-04.md)
+  registra PASS para un consumidor independiente y otro generado por creator.
+- La API de protección de ramas de GitHub respondió `Branch not protected` para
+  `main` (HTTP 404); no se puede marcar ese gate como cumplido.
+- GitHub mantiene abiertos los issues [#12](https://github.com/MauricioDMO/FrameKit/issues/12),
+  [#13](https://github.com/MauricioDMO/FrameKit/issues/13),
+  [#14](https://github.com/MauricioDMO/FrameKit/issues/14),
+  [#15](https://github.com/MauricioDMO/FrameKit/issues/15) y
+  [#17](https://github.com/MauricioDMO/FrameKit/issues/17). El smoke npm
+  posterior a publicar no se ha ejecutado.
+- Checks locales de este turno: `pnpm test` PASS con FrameKit 235 tests en 25
+  archivos, creator 23 en 2 archivos y Studio 2 en 1 archivo; también pasan
+  `pnpm check:runtime`, lint, typecheck, build, E2E Chromium y
+  `pnpm sync:skills`.
 
 ## Orden de ejecución
 
@@ -28,7 +49,7 @@ el de GitHub; este documento solo registra el avance local de implementación.
 | 7 | [#7 Boolean Field](https://github.com/MauricioDMO/FrameKit/issues/7) | Campo booleano | Completed | [x] Completado |
 | 8 | [#8 Number Field](https://github.com/MauricioDMO/FrameKit/issues/8) | Campo numérico | Completed | [x] Completado |
 | 9 | [#12 Generated Template Registry](./issue-12-generated-template-registry.md) | Registry generado | Active | [x] Verificado localmente; cierre de GitHub pendiente |
-| 10 | [#17 Persisted Choice Values](https://github.com/MauricioDMO/FrameKit/issues/17) | Valores persistidos de opciones | Active | [x] Verificado localmente; cierre de GitHub pendiente |
+| 10 | [#17 Persisted Choice Values](./issue-17-persisted-choice-values.md) | Valores persistidos de opciones | Active | [x] Verificado localmente; cierre de GitHub pendiente |
 | 11 | [#13 Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md) | Integración canónica de Studio | Active | [x] Verificado localmente tras #17; cierre de GitHub pendiente |
 | 12 | [#14 Documentation and Migration](./issue-14-documentation-and-migration.md) | Documentación y migración | Active | [x] Verificado localmente; cierre de GitHub pendiente |
 | 13 | [#15 Testing and Release Gates](./issue-15-testing-and-release-gates.md) | Testing y gates de release | Active | [x] Verificado localmente; cierre de GitHub pendiente |
@@ -125,8 +146,9 @@ Usa este checklist al cerrar cada issue activo.
 - [x] Registry canónico generado y cargadores lazy implementados.
 - [x] Regeneración automática de desarrollo y build verificada.
 - [x] Tests y documentación del issue completados.
-- [x] Definition of Done completada.
-- [x] Verificaciones reproducibles actuales: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 212, Studio 2, creator 19), `pnpm typecheck` y `pnpm build`; generación y check de Studio y del starter.
+- [x] Definition of Done local completada; sincronización del cuerpo y cierre en
+  GitHub pendientes.
+- [x] Verificaciones reproducibles actuales: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 235 tests en 25 archivos, Studio 2 en 1 archivo, creator 23 en 2 archivos), `pnpm typecheck` y `pnpm build`; generación y check de Studio y del starter.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #17 Persisted Choice Values
@@ -134,7 +156,7 @@ Usa este checklist al cerrar cada issue activo.
 - [x] Validar el filtro de pertenencia de valores persistidos contra las opciones declaradas.
 - [x] Preservar campos hermanos válidos y fallback a contenido/default.
 - [x] Actualizar la prueba del editor que todavía esperaba conservar una opción obsoleta.
-- [x] Ejecutar las verificaciones completas sin regresiones: FrameKit 212 tests, Studio 2, creator 19, lint, typecheck, build y runtime check.
+- [x] Ejecutar las verificaciones completas sin regresiones: FrameKit 235 tests en 25 archivos, Studio 2 en 1 archivo, creator 23 en 2 archivos, lint, typecheck, build y runtime check.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #13 Studio Canonical Contract Integration
@@ -142,8 +164,8 @@ Usa este checklist al cerrar cada issue activo.
 - [x] Studio consume directamente el registry canónico en sus props y navegación, sin el adaptador de manifiesto de plantillas ni fallback de título.
 - [x] Validación, persistencia `v2` y controles nativos completados.
 - [x] Tests y documentación EN/ES del issue completados.
-- [x] Definition of Done completada: changelog, migraciones rolling, skills sincronizadas, starter y enlaces al plan/issue actualizados.
-- [x] Verificaciones completas sin regresiones: tests FrameKit 212, Studio 2 y scaffolder 19; lint, typecheck, build, `check:runtime`, generación/check de Studio y starter, E2E Chromium y smoke manual de pre-publicación con tarballs reales.
+- [x] Definition of Done local completada: changelog, migraciones rolling, skills sincronizadas y starter actualizados; sincronización del cuerpo y cierre en GitHub pendientes.
+- [x] Verificaciones completas sin regresiones: tests FrameKit 235 en 25 archivos, Studio 2 en 1 archivo y scaffolder 23 en 2 archivos; lint, typecheck, build, `check:runtime`, generación/check de Studio y starter, E2E Chromium y smoke manual de pre-publicación con tarballs reales.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #14 Documentation and Migration
@@ -151,25 +173,30 @@ Usa este checklist al cerrar cada issue activo.
 - [x] Auditoría final EN/ES completada.
 - [x] Guías rolling y changelog consolidados.
 - [x] Skills canónicas sincronizadas mediante `pnpm sync:skills`.
-- [x] Definition of Done completada.
+- [x] Definition of Done local completada; links y anchors internos verificados localmente.
 - [x] Verificaciones reproducibles actuales: `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck` y `pnpm build`; la sincronización de skills se ejecutó con `pnpm sync:skills`.
+- [x] Verificar links y anchors internos en 111 archivos Markdown, incluida la
+  evidencia actual.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ### #15 Testing and Release Gates
 
 - [x] Gaps de cobertura cross-layer cerrados con un E2E Chromium único y checks de consumidor.
-- [x] Gates permanentes de CI definidos para Ubuntu, Windows y Chromium; la lane de Windows no se ejecutó localmente.
-- [x] Validación pre-publicación de tarballs definida y ejecutada manualmente con paquetes reales fuera del checkout.
-- [x] Validación post-publicación del registry definida con specs suministradas durante el release; no ejecutada todavía.
-- [x] Verificación local reproducible: instalación de Chromium, E2E Chromium (1 test), checks completos del repositorio y smoke del consumer aislado con generate, check, build, start y HTTP readiness.
-- [x] Definition of Done completada.
+- [x] Gates permanentes de CI definidos para Ubuntu, Windows y Chromium.
+- [x] Ejecutar la lane de Windows en CI y registrar el resultado: el [run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859) falló en `Run discovery and codegen tests` después de instalar y construir los paquetes públicos.
+- [ ] Repetir la lane de Windows hasta que pase su consumer generado, incluyendo `generate` y `check`.
+- [x] Validación pre-publicación de tarballs definida y ejecutada manualmente con paquetes reales fuera del checkout; resultado registrado en la [evidencia del smoke](./evidence/tarball-smoke-2026-09-04.md).
+- [x] Validación post-publicación del registry definida con specs suministradas durante el release.
+- [ ] Ejecutar la validación post-publicación del registry; no se ha ejecutado todavía.
+- [x] Verificación local reproducible de este turno: `pnpm test` (FrameKit 235 tests en 25 archivos, creator 23 en 2 archivos y Studio 2 en 1 archivo), `pnpm check:runtime`, lint, typecheck, build, E2E Chromium y `pnpm sync:skills` pasan; también pasa el smoke del consumer aislado con generate, check, build, start y HTTP readiness.
+- [x] Definition of Done local completada; la ejecución Windows registrada falló y el smoke post-publication permanece pendiente.
 - [ ] Issue de GitHub cerrado por los mantenedores.
 
 ## Decisiones cerradas
 
 - [#9 Typed Data Pipeline](https://github.com/MauricioDMO/FrameKit/issues/9): cerrado como no
   planificado, sustituido por el trabajo tipado ya completado en #5–#8; no se
-  agregará el resolver discriminado ni un estado global de último preview válido.
+  agregará los diseños de resolución o estado de preview rechazados por #9.
 - [#10 Legacy Compatibility](https://github.com/MauricioDMO/FrameKit/issues/10): cerrado como
   no planificado; no habrá capa de compatibilidad runtime.
 - [#11 Source Migration Command](https://github.com/MauricioDMO/FrameKit/issues/11):
@@ -194,4 +221,6 @@ Usa este checklist al cerrar cada issue activo.
 | 2026-08-30 | Se completa y verifica localmente el issue #13: integración directa del registry canónico en Studio, metadata, variantes genéricas, controles tipados, navegación accesible, errores localizados, persistencia `v2`, tests, documentación EN/ES, skills sincronizadas y starter generado; el issue de GitHub permanece abierto. | — |
 | 2026-09-02 | Se endurecen los límites de #12/#13: Studio y navegación reciben `TemplateRegistryEntry` directamente, se eliminan los tipos adaptadores de plantilla y se actualizan las pruebas de integración; #17 se aborda a continuación antes de cerrar el bloque. | — |
 | 2026-09-02 | Se completa y verifica localmente #17: los choices persistidos obsoletos se descartan de forma aislada, sobreviven los siblings válidos y se aplican los fallbacks actuales; se actualiza el test de Studio sin cerrar el issue de GitHub. También se completan localmente los gates documentales de #14 y técnicos de #15, sin seleccionar una versión. | — |
-| 2026-09-02 | Se completa la verificación local reproducible: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 212, Studio 2, creator 19), `pnpm typecheck`, `pnpm build`, instalación de Chromium y E2E Chromium (1 test). El smoke manual de pre-publicación se ejecuta fuera del checkout con tarballs reales: inspección sin referencias prohibidas, consumer creado por el creator, `npm install`, generate, check, build, start independiente y HTTP readiness; el directorio temporal se limpia. La lane de Windows no se ejecuta localmente y la validación post-publicación del registry queda definida, no ejecutada. | — |
+| 2026-09-02 | Se completa la verificación local reproducible: `pnpm check:runtime`, `pnpm lint`, `pnpm test` (FrameKit 233, Studio 2, creator 23), `pnpm typecheck`, `pnpm build`, instalación de Chromium y E2E Chromium (1 test). La lane Windows no forma parte de esta ejecución local y el smoke post-publication queda definido, no ejecutado. | — |
+| 2026-09-04 | Se registra la evidencia del smoke pre-publicación con tarballs reales fuera del checkout: consumidor independiente y consumidor generado por creator pasan instalación, generación, check, build, start standalone, readiness HTTP y limpieza. El run CI [33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859) ejecuta Windows pero falla en `Run discovery and codegen tests`; Ubuntu y Chromium pasan. La protección de `main`, la sincronización/cierre de issues y el smoke npm post-publication permanecen pendientes. | — |
+| 2026-09-04 | Ejecución actual del turno: `pnpm test` pasa con FrameKit 235 tests en 25 archivos (incluidos `color-field.test.tsx` y `number-field.test.tsx`), creator 23 en 2 archivos y Studio 2 en 1 archivo. También pasan `pnpm check:runtime`, lint, typecheck, build, E2E Chromium y `pnpm sync:skills`. El resultado histórico del smoke de las 12:04 permanece registrado por separado con 233 tests. | — |

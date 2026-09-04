@@ -113,7 +113,7 @@ metadata, and provides final Studio integration coverage.
 - Keep `validateTemplateData` as the field-constraint validation boundary.
   Translate its errors at the UI boundary and associate them with controls.
 - Number drafts remain inside the number control. Preview and render consume
-  only committed typed values; there is no global last-valid-preview cache.
+  only committed typed values.
 - Export and copy validate current committed data, report field errors, and
   focus the first invalid control before producing output.
 - Preserve existing image common/variant resolution and development upload.
@@ -214,8 +214,8 @@ Do not restate a release version or promise legacy compatibility.
   caching.
 - Undo/redo, per-field/group reset, field grouping, or `ui` metadata.
 - Public/custom field registries, plugin controls, or alternate control styles.
-- A discriminated resolver, replacement error taxonomy, or global
-  last-valid-preview state (see the #9 closure decision).
+- A replacement resolver/error contract or alternate preview-state model (see
+  the #9 closure decision).
 - Portable documents, accounts, server persistence, or free-canvas editing.
 - Server image generation, legacy compatibility, automatic migration, or
   release-version selection.

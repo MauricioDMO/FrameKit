@@ -19,7 +19,7 @@ Templates live under `src/templates/`. A directory containing a default-exportin
 1. Inspect existing templates, assets, aliases, styling, `DESIGN.md`, and `src/profile.ts`.
 2. Choose dimensions, then create a lowercase kebab-case directory. Use [social sizes](references/social-media-sizes.md) for social formats.
 3. Decide what users edit. Keep fixed branding and layout out of fields. Read [Template Fields](references/fields.md) and [Image Fields](references/image-fields.md).
-4. Start with one inline `template.tsx` using `defineTemplate`, dimensions, fields, at least one content variant, and `render`.
+4. Start with one inline `template.tsx` using `defineTemplate`, including required `meta.title`, dimensions, fields, at least one content variant, and `render`.
 5. Build from the render props `data`, `assets`, `variant`, `width`, and `height`. Use Tailwind classes for static styling; reserve inline styles for runtime values and computed dimensions.
 6. Run `framekit check`; for visual work, inspect Studio with `framekit dev` and export PNG when appearance matters.
 
@@ -33,6 +33,7 @@ second registry.
 ## Template rules
 
 - Every field needs a non-empty `label`; `required` defaults to `true`. See [Template Fields](references/fields.md).
+- Every `defineTemplate` requires `meta` with a non-empty `title`, for example `meta: { title: 'Social card' }`.
 - `Markdown` is opt-in; see [FrameKit Markdown](references/markdown.md).
 - Use the installed icon libraries; see [Iconography](references/icons.md).
 - Template paths must use lowercase kebab-case. Directories beginning with `.` or `_` are ignored; directories without `template.tsx` may contain deeper templates.

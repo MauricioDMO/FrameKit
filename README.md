@@ -79,7 +79,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
 ## Known limitations
 
 - Beta software: APIs and generated project details may change between releases.
-- Export currently supports PNG only. There is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
+- Export currently supports PNG only in the browser. A server-side image-generation API is future work; there is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
 - Studio stores editor changes in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.
 - The Studio interface is localized to English and Spanish. Template content can define its own variant keys.

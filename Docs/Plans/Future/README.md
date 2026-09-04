@@ -42,32 +42,38 @@ starter” requirement below refers to that template and its generated output.
 12. [#12 — Generated Template Registry](./issue-12-generated-template-registry.md)
       — generate canonical metadata, dimensions, variants, assets, and lazy
       loaders with automatic development and build lifecycle integration.
-      **Local implementation, documentation, and applicable verification gates verified; GitHub closure pending.**
-13. [#17 — Persisted Choice Values](https://github.com/MauricioDMO/FrameKit/issues/17)
+       **Local implementation and applicable checks verified; GitHub body synchronization and closure pending.**
+13. [#17 — Persisted Choice Values](./issue-17-persisted-choice-values.md)
      — discard stale persisted choice overrides while preserving valid sibling
-     fields and current content/default fallback. **Local implementation, documentation, and applicable verification gates verified; GitHub closure pending.**
+      fields and current content/default fallback. **Local implementation and applicable checks verified; GitHub body synchronization and closure pending.**
 14. [#13 — Studio Canonical Contract Integration](./issue-13-studio-canonical-contract.md)
      — consume the final registry, metadata, variants, typed state, validation,
      persistence, and native controls end to end in Studio.
-     **Local implementation, documentation, and applicable verification gates verified after #17; GitHub closure pending.**
+      **Local implementation and applicable checks verified after #17; GitHub body synchronization and closure pending.**
 15. [#14 — Documentation and Migration](./issue-14-documentation-and-migration.md)
      — perform the final versionless EN/ES audit, consolidate rolling migration
      and changelog records, and synchronize canonical skills.
-     **Local documentation audit verified; internal-link verification pending; GitHub closure pending.**
+       **Local documentation audit and internal-link verification verified; GitHub body synchronization and closure pending.**
 16. [#15 — Testing and Release Gates](./issue-15-testing-and-release-gates.md) —
      close cross-layer coverage gaps and define permanent CI, pre-publication
      tarball, and post-publication registry gates without selecting a version.
-     **Local gates verified, including one Chromium E2E and real pre-publication tarball smoke; Windows CI and post-publication registry smoke pending; GitHub closure pending.**
+      **Local gates and real pre-publication tarball smoke verified; Windows CI run 33687196859 failed; successful rerun, post-publication registry smoke, and GitHub closure pending.**
 
 Issues #1–#8 are completed and their detailed plan files are retained in Git
-history. Local implementation, documentation, and completed applicable
-verification gates for #12, #17, #13, #14, and #15 are verified. GitHub remains
-the source of truth for closure; this status does not imply publication or issue
-closure. Windows CI execution, internal Markdown-link verification, and
-post-publication npm smoke remain pending. No packages have been published, no
-package versions have been changed, and no active GitHub issues have been
-closed. The clean-install consumer smoke passed; the old starter `node_modules`
-remains ignored and local-only.
+history. Local implementation, documentation, and completed local checks for
+#12, #17, #13, #14, and #15 are verified. GitHub remains the source of truth for
+closure; this status does not imply publication or issue closure. The
+[pre-publication tarball smoke record](./evidence/tarball-smoke-2026-09-04.md)
+passed for both an independent consumer and a creator-generated consumer. The
+[CI run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+completed both Ubuntu lanes and Chromium successfully, but its Windows lane was
+executed and failed at `Run discovery and codegen tests`; a successful rerun is
+required. The post-publication npm smoke is still pending. GitHub issue bodies
+still need synchronization, the active issues remain open, and branch protection
+for `main` is not configured. This Future block is therefore not complete. It
+has not published packages or changed package versions; earlier releases and
+version changes are outside its scope. The old starter `node_modules` remains
+ignored and local-only.
 Issue #14 is the final documentation audit; it does not defer the per-issue
 documentation requirements below. Issue #15 is the final versionless
 verification and distribution gate.

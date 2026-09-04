@@ -111,7 +111,7 @@ copies; never edit those targets directly or add another sync system.
    and accurate capabilities, requirements, and limitations.
 4. Correct public references and guides in pairs. Remove obsolete teaching of
    plural factories, textarea, locale/language content, string numbers,
-   discriminated resolver results, old registry exports, and persistence `v1`.
+   obsolete resolver result shapes, old registry exports, and persistence `v1`.
 5. Consolidate both rolling guides in implementation order #3–#8 and #12–#13,
    preserving explicit manual steps and additive no-migration notes.
 6. Audit accumulated `CHANGELOG.md` `Unreleased` entries against implementation
@@ -135,8 +135,8 @@ copies; never edit those targets directly or add another sync system.
   link check if one exists; do not add a documentation framework.
 - Search current docs and canonical skills for rejected plural fields,
   textarea, template locale/language, numeric strings, revision/mode,
-  discriminated resolver results, global last-valid preview, compatibility, and
-  future-version claims; classify historical and closure-decision matches.
+  rejected #9 designs, compatibility, and future-version claims; classify
+  historical and closure-decision matches.
 - Run `pnpm sync:skills` and verify sources and generated copies agree.
 - Run `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, and
   `pnpm build`.
@@ -161,7 +161,6 @@ copies; never edit those targets directly or add another sync system.
 - Renaming `migration-next.md` for a release or rewriting historical guides.
 - New APIs, runtime behavior, UI features, languages, or a marketing website.
 - Legacy compatibility, deprecation diagnostics, or automatic source migration.
-- The discriminated resolver and global last-valid-preview design rejected by
-  #9.
+- The resolver and preview-state designs rejected by #9.
 - Implementing server image generation or advanced roadmap features.
 - Defining release gates or package smoke matrices; those belong to #15.

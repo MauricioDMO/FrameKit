@@ -18,6 +18,7 @@
 ## Referencia
 
 - [Contrato de Plantilla](reference/template-contract.md): Especificación completa de defineTemplate.
+- [Catálogo de componentes de marca](reference/brand-catalog.md): Descubre y previsualiza componentes de marca reutilizables en Studio.
 - [Markdown](reference/markdown.md): Sintaxis markdown soportada en campos de texto.
 - [CLI](reference/cli.md): Comandos y comportamiento de la CLI de FrameKit.
 - [API Pública](reference/public-api.md): Superficie de API pública para integración.

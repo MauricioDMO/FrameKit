@@ -2,6 +2,15 @@
 
 Publish the changed package or packages from the repository root with pnpm. Do not use `npm publish --workspace` or `npm publish --prefix`: this repository defines workspaces through pnpm and the npm command can fail while processing the manifest.
 
+This page is a release procedure, not a release record. It does not confirm
+that versions, commits, tags, local checks, CI, smoke tests, or publication have
+already happened. The latest [CI run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+did execute Windows, but failed at `Run discovery and codegen tests`; its Ubuntu
+and Chromium jobs passed, so a successful Windows rerun is required. The
+[current pre-publication tarball record](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
+is PASS for both isolated consumer paths. The post-publication registry smoke
+remains pending until published packages are available and the check passes.
+
 ## Before Publishing
 
 Use Node.js `>=22.13.0` and pnpm `>=11.14.0` for release work. Verify the
@@ -11,9 +20,9 @@ repository contract before running the release gate:
 pnpm check:runtime
 ```
 
-1. Version packages independently. Update only the package with release changes. A `create-framekit` release does not require a new `@mauriciodmo/framekit` version; keep the template dependency at the current published core version unless the template requires a new core API.
+1. During release preparation, version packages independently. Update only the package with release changes. The version placeholders below do not assign or confirm a completed version. A `create-framekit` release does not require a new `@mauriciodmo/framekit` version; keep the template dependency at the current published core version unless the template requires a new core API.
 
-2. Run the release gate:
+2. Run the local release gate:
 
    ```sh
    pnpm --filter @mauriciodmo/framekit build
@@ -26,7 +35,7 @@ pnpm check:runtime
    pnpm --filter @mauriciodmo/create-framekit pack
    ```
 
-3. Perform the [tarball smoke test](testing-and-distribution.md#tarball-smoke-test-manual).
+3. Perform the [pre-publication tarball smoke test](testing-and-distribution.md#pre-publication-tarball-smoke-test). Use the canonical script; the manual creator-path sequence is optional. Do not publish until this local gate passes.
 4. Create one release commit per version. A commit must not introduce two different package versions. Both packages may share one commit only when they are released at the exact same version:
 
    ```sh
@@ -60,12 +69,12 @@ pnpm --filter @mauriciodmo/create-framekit publish --access public --tag "$PUBLI
 
 Do not add `--otp` to the command. If npm requests an OTP, enter it directly
 in your interactive terminal. After the packages are available, run the
-[post-publication npm registry smoke](testing-and-distribution.md#post-publication-npm-registry-smoke-manual-before-promotion)
+[post-publication npm registry smoke](testing-and-distribution.md#post-publication-npm-registry-smoke-manual-pending-before-promotion)
 with exact `CORE_SPEC`, `CREATOR_SPEC`, and `EXPECTED_DIST_TAG` values supplied
 during release preparation. A failure blocks promotion, not the initial upload;
 record the resolved versions and runtime as described by that check.
 
-After the smoke passes, the user may promote each released package to its final
+After the post-publication smoke passes, the user may promote each released package to its final
 dist-tag with `npm dist-tag add <package>@<resolved-version> <final-dist-tag>`.
 Use only the packages released in this handoff and the versions returned by the
 registry smoke.

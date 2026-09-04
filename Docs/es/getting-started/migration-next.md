@@ -13,8 +13,12 @@ migración histórica](./migration-v0.8.0.md).
 - Esta guía no exige una versión alpha, futura ni preseleccionada del paquete.
   La selección de versión de release es un paso separado de los maintainers.
 - El comportamiento canónico de runtime y Studio descrito aquí está
-  implementado. Una API de generación de imágenes en servidor y otro trabajo
-  futuro del roadmap no forman parte de este contrato.
+  implementado. La API de generación de imágenes en servidor es trabajo futuro;
+  no está implementada ni forma parte de este contrato.
+
+Esta guía rolling es el entregable documental del [issue #14 de
+GitHub](https://github.com/MauricioDMO/FrameKit/issues/14) y su [plan de
+implementación](../../Plans/Future/issue-14-documentation-and-migration.md).
 
 ## Contrato Canónico De Plantillas
 

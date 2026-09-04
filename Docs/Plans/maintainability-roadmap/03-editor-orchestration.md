@@ -113,7 +113,7 @@ from `packages/framekit/src/editor.ts`.
 | `fields/components/number-field.tsx`: `NumberField`, `normalizeSliderValue`, `decimalPlaces` | Same file and symbols | No change; retain draft values, validation, slider normalization, and decimal handling. |
 | `fields/components/color-field.tsx`: `ColorField` | Same file and symbol | No change; retain picker throttling and text/picker synchronization. |
 | `fields/components/image-field.tsx`: `ImageField` | Same file and symbol | No change; retain upload callback, file reset, loading, and image-error behavior. |
-| `fields/components/choice-field.tsx`: `ChoiceField` | Same file and symbol | No change; retain unknown persisted choice display and native select behavior. |
+| `fields/components/choice-field.tsx`: `ChoiceField` | Same file and symbol | No change; retain native select behavior. Unknown persisted choice overrides are discarded during hydration by `state/editor-state.ts` per #17. |
 | `fields/components/boolean-field.tsx`: `BooleanField` | Same file and symbol | No change; retain real boolean values and switch accessibility. |
 | `framekit-navigation.tsx`: `FrameKitNavigation`, `FrameKitNavigationTree`, private `NavigationNode`, `NavigationFolder`, `readNavigationState`, `persistNavigationState`, `NavigationState`, and `navigationStorageKey` | Same file and symbols | No change; retain persisted folder state, pathname selection, nesting, and navigation accessibility. |
 | `navigation.ts`: `TemplateRegistryEntry`, `TemplateNavigationFolder`, `TemplateNavigationItem`, `TemplateNavigationNode`, `humanizeSegment`, `manifestToNavigation` | Same file and symbols | No change; retain registry-to-tree sorting and href generation. |

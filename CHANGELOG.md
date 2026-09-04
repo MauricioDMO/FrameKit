@@ -53,4 +53,5 @@
   tarball and npm checks take versions supplied during release preparation; no
   release version is selected here. See [GitHub issue #15](https://github.com/MauricioDMO/FrameKit/issues/15).
 - Consolidated the English and Spanish rolling migration guides and marked the
-  `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).
+  `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14)
+  and the [implementation plan](Docs/Plans/Future/issue-14-documentation-and-migration.md).
