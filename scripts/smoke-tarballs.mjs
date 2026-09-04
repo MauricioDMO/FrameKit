@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import assert from 'node:assert/strict'
 import { access, constants, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
@@ -40,10 +41,6 @@ function redact(value, temporaryRoot) {
   return value.replaceAll(repoRoot, '<checkout>').replaceAll(temporaryRoot, '<temp>')
 }
 
-function formatCommand(command, args, cwd, temporaryRoot) {
-  return `${[command, ...args].join(' ')} (cwd: ${redact(cwd, temporaryRoot)})`
-}
-
 async function run(command, args, cwd, temporaryRoot, options = {}) {
   const result = await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
@@ -70,7 +67,7 @@ async function run(command, args, cwd, temporaryRoot, options = {}) {
     })
   })
 
-  const commandText = formatCommand(command, args, cwd, temporaryRoot)
+  const commandText = `${[command, ...args].join(' ')} (cwd: ${redact(cwd, temporaryRoot)})`
   console.log(`[${result.code === 0 ? 'PASS' : 'FAIL'}] ${commandText}`)
 
   if (result.code !== 0) {
@@ -79,10 +76,6 @@ async function run(command, args, cwd, temporaryRoot, options = {}) {
   }
 
   return result
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(message)
 }
 
 async function readJson(filePath) {
@@ -107,18 +100,11 @@ function isInside(directory, target) {
 }
 
 async function walkFiles(directory) {
-  const files = []
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const entryPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...await walkFiles(entryPath))
-    } else if (entry.isFile()) {
-      files.push(entryPath)
-    } else {
-      throw new Error(`Unexpected non-regular archive entry: ${entryPath}`)
-    }
-  }
-  return files
+  return (await readdir(directory, { withFileTypes: true, recursive: true })).flatMap((entry) => {
+    if (entry.isDirectory()) return []
+    if (!entry.isFile()) throw new Error(`Unexpected non-regular archive entry: ${path.join(entry.parentPath, entry.name)}`)
+    return [path.join(entry.parentPath, entry.name)]
+  })
 }
 
 function collectStrings(value, strings = []) {
@@ -130,13 +116,13 @@ function collectStrings(value, strings = []) {
   return strings
 }
 
-function collectTargets(value, targets = []) {
-  if (typeof value === 'string') {
-    targets.push(value)
-  } else if (value && typeof value === 'object') {
-    for (const nested of Object.values(value)) collectTargets(nested, targets)
+async function validatePackageTargets(packageRoot, manifest, label) {
+  for (const target of new Set([...collectStrings(manifest.exports), ...collectStrings(manifest.bin)])) {
+    assert(target.startsWith('./'), `${label}: invalid package target ${target}`)
+    const targetPath = path.resolve(packageRoot, target)
+    assert(isInside(packageRoot, targetPath), `${label}: package target escapes package ${target}`)
+    assert((await stat(targetPath).catch(() => null))?.isFile(), `${label}: package target does not exist ${target}`)
   }
-  return targets
 }
 
 async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, expectedBin }) {
@@ -157,18 +143,7 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
   await run('tar', ['-xzf', archive, '-C', extractionRoot], repoRoot, temporaryRoot)
   const packageRoot = path.join(extractionRoot, 'package')
   const manifest = await readJson(path.join(packageRoot, 'package.json'))
-  const targets = [
-    ...collectTargets(manifest.exports),
-    ...collectTargets(manifest.bin),
-  ]
-
-  for (const target of new Set(targets)) {
-    assert(target.startsWith('./'), `${label}: invalid package target ${target}`)
-    const targetPath = path.resolve(packageRoot, target)
-    assert(isInside(packageRoot, targetPath), `${label}: package target escapes archive ${target}`)
-    const targetStat = await stat(targetPath).catch(() => null)
-    assert(targetStat?.isFile(), `${label}: package target does not exist ${target}`)
-  }
+  await validatePackageTargets(packageRoot, manifest, label)
 
   assert(manifest.bin && typeof manifest.bin === 'object', `${label}: missing bin manifest`)
   assert(manifest.bin[expectedBin], `${label}: missing ${expectedBin} binary`)
@@ -194,17 +169,10 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
   return { manifest, entries, packageRoot }
 }
 
-function pickDependencies(manifest, names) {
+function pickDependencies(manifest, names, dependencyKey, dependencyLabel) {
   return Object.fromEntries(names.map((name) => {
-    assert(typeof manifest.dependencies?.[name] === 'string', `template is missing dependency ${name}`)
-    return [name, manifest.dependencies[name]]
-  }))
-}
-
-function pickDevDependencies(manifest, names) {
-  return Object.fromEntries(names.map((name) => {
-    assert(typeof manifest.devDependencies?.[name] === 'string', `template is missing devDependency ${name}`)
-    return [name, manifest.devDependencies[name]]
+    assert(typeof manifest[dependencyKey]?.[name] === 'string', `template is missing ${dependencyLabel} ${name}`)
+    return [name, manifest[dependencyKey][name]]
   }))
 }
 
@@ -221,12 +189,11 @@ async function createIndependentConsumer(temporaryRoot, coreArchive, templateMan
     version: '0.0.0',
     private: true,
     type: 'module',
-    scripts: { build: 'framekit build', check: 'framekit check' },
     dependencies: {
       '@mauriciodmo/framekit': `file:${path.resolve(coreArchive)}`,
-      ...pickDependencies(templateManifest, ['next', 'react', 'react-dom']),
+      ...pickDependencies(templateManifest, ['next', 'react', 'react-dom'], 'dependencies', 'dependency'),
     },
-    devDependencies: pickDevDependencies(templateManifest, [
+    devDependencies: pickDependencies(templateManifest, [
       '@tailwindcss/postcss',
       '@types/node',
       '@types/react',
@@ -234,7 +201,7 @@ async function createIndependentConsumer(temporaryRoot, coreArchive, templateMan
       'postcss',
       'tailwindcss',
       'typescript',
-    ]),
+    ], 'devDependencies', 'devDependency'),
   })
   await writeFile(path.join(consumerRoot, '.gitignore'), 'node_modules\n.framekit\npublic/__framekit\nsrc/generated/framekit\n', 'utf8')
   await writeFile(path.join(consumerRoot, 'next.config.ts'), "import type { NextConfig } from 'next'\n\nconst nextConfig: NextConfig = { distDir: '.framekit/next', output: 'standalone' }\n\nexport default nextConfig\n", 'utf8')
@@ -277,12 +244,7 @@ async function createIndependentConsumer(temporaryRoot, coreArchive, templateMan
 async function checkInstalledPackage(consumerRoot, packageName, expectedBin, temporaryRoot) {
   const packageRoot = path.join(consumerRoot, 'node_modules', ...packageName.split('/'))
   const manifest = await readJson(path.join(packageRoot, 'package.json'))
-  for (const target of new Set([...collectTargets(manifest.exports), ...collectTargets(manifest.bin)])) {
-    assert(target.startsWith('./'), `${packageName}: invalid installed target ${target}`)
-    const targetPath = path.resolve(packageRoot, target)
-    assert(isInside(packageRoot, targetPath), `${packageName}: installed target escapes package ${target}`)
-    assert((await stat(targetPath).catch(() => null))?.isFile(), `${packageName}: missing installed target ${target}`)
-  }
+  await validatePackageTargets(packageRoot, manifest, packageName)
 
   const binPath = path.join(consumerRoot, 'node_modules', '.bin', expectedBin)
   await access(binPath, constants.X_OK)
@@ -339,35 +301,22 @@ async function waitForHttp(child, url, temporaryRoot) {
 async function stopProcess(child) {
   if (child.exitCode !== null) return true
 
-  try {
-    if (process.platform === 'win32') {
-      child.kill('SIGTERM')
-    } else if (child.pid) {
-      process.kill(-child.pid, 'SIGTERM')
+  for (const signal of ['SIGTERM', 'SIGKILL']) {
+    try {
+      if (process.platform === 'win32') child.kill(signal)
+      else if (child.pid) process.kill(-child.pid, signal)
+    } catch (error) {
+      if (error?.code !== 'ESRCH') throw error
     }
-  } catch (error) {
-    if (error?.code !== 'ESRCH') throw error
+
+    const exited = await Promise.race([
+      child.exit,
+      new Promise((resolve) => setTimeout(() => resolve(false), 5_000)),
+    ])
+    if (exited !== false) return true
   }
 
-  const exited = await Promise.race([
-    child.exit,
-    new Promise((resolve) => setTimeout(() => resolve(false), 5_000)),
-  ])
-  if (exited !== false) return true
-
-  try {
-    if (process.platform === 'win32') {
-      child.kill('SIGKILL')
-    } else if (child.pid) {
-      process.kill(-child.pid, 'SIGKILL')
-    }
-  } catch (error) {
-    if (error?.code !== 'ESRCH') throw error
-  }
-  return (await Promise.race([
-    child.exit,
-    new Promise((resolve) => setTimeout(() => resolve(false), 5_000)),
-  ])) !== false
+  return false
 }
 
 function startServer(consumerRoot, port) {
