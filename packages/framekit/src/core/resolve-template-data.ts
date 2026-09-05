@@ -3,11 +3,11 @@ import { getDefaultValues } from './get-default-values'
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
-export function resolveTemplateData<Definition extends TemplateBase>(
+export function resolveTemplateData<Definition extends TemplateBase> (
   definition: Definition,
   variant: string,
   edits: Partial<InferTemplateData<Definition>> & Record<string, string | number | boolean>,
-  assets: TemplateAssetManifest = emptyAssets,
+  assets: TemplateAssetManifest = emptyAssets
 ): InferTemplateData<Definition> {
   if (!Object.prototype.hasOwnProperty.call(definition.content, variant)) {
     throw new Error(`content variant "${variant}" is not defined`)
@@ -22,13 +22,14 @@ export function resolveTemplateData<Definition extends TemplateBase>(
   const fieldKeys = new Set(Object.keys(definition.fields))
   const variantContent = definition.content[variant]
 
-  function applyValues(values: Record<string, string | number | boolean | undefined>, source: string): void {
+  function applyValues (values: Record<string, string | number | boolean | undefined>, source: string): void {
     for (const [key, value] of Object.entries(values)) {
       if (!fieldKeys.has(key)) {
         throw new Error(`${source} contains unknown field key "${key}"`)
       }
       const expectedType = definition.fields[key].kind === 'boolean' ? 'boolean' : definition.fields[key].kind === 'number' ? 'number' : 'string'
-      if (typeof value !== expectedType || (expectedType === 'number' && !Number.isFinite(value))) {
+      const actualType = typeof value
+      if (actualType !== expectedType || (expectedType === 'number' && !Number.isFinite(value))) {
         throw new Error(`${source}.${key} must be a ${expectedType}`)
       }
       result[key] = value as string | number | boolean

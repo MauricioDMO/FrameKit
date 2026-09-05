@@ -2,7 +2,7 @@ import { Fragment, type CSSProperties } from 'react'
 
 import {
   parseInlineMarkdown,
-  parseMarkdownBlocks,
+  parseMarkdownBlocks
 } from './markdown-parser'
 
 interface MarkdownProps {
@@ -12,7 +12,7 @@ interface MarkdownProps {
   style?: CSSProperties
 }
 
-function InlineMarkdown({ value }: Pick<MarkdownProps, 'value'>) {
+function InlineMarkdown ({ value }: Pick<MarkdownProps, 'value'>) {
   return parseInlineMarkdown(value).map((token, index) => {
     const key = `${token.type}-${index}`
 
@@ -24,7 +24,7 @@ function InlineMarkdown({ value }: Pick<MarkdownProps, 'value'>) {
   })
 }
 
-export function Markdown({ value, lists = false, className, style }: MarkdownProps) {
+export function Markdown ({ value, lists = false, className, style }: MarkdownProps) {
   if (!lists) {
     return (
       <span className={className} style={style}>

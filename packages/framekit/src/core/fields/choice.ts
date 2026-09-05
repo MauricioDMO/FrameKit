@@ -2,7 +2,7 @@ import type { ChoiceFieldDescriptor } from '../../types'
 
 type ChoiceOption = { value: string; label: string }
 
-export function choice<const Options extends readonly ChoiceOption[]>(params: {
+export function choice<const Options extends readonly ChoiceOption[]> (params: {
   label: string
   options: Options
   defaultValue: Options[number]['value']

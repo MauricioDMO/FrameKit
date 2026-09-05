@@ -7,11 +7,11 @@ import { FrameKitNavigation, FrameKitNavigationTree } from './framekit-navigatio
 import type { TemplateNavigationNode } from './navigation'
 
 vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>,
+  default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>
 }))
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/editor/catalog/category/first',
+  usePathname: () => '/editor/catalog/category/first'
 }))
 
 const navigation = {
@@ -24,16 +24,16 @@ const navigation = {
     id: 'catalog/category',
     slug: 'catalog/category',
     title: 'Category',
-    children: [{ type: 'template' as const, id: 'catalog/category/first', slug: 'catalog/category/first', title: 'First', href: '/editor/catalog/category/first' }],
-  }],
+    children: [{ type: 'template' as const, id: 'catalog/category/first', slug: 'catalog/category/first', title: 'First', href: '/editor/catalog/category/first' }]
+  }]
 }
 
 const unselectedNavigation = {
   ...navigation,
   children: [{
     ...navigation.children[0],
-    children: [{ type: 'template' as const, id: 'catalog/category/other', slug: 'catalog/category/other', title: 'Other', href: '/editor/catalog/category/other' }],
-  }],
+    children: [{ type: 'template' as const, id: 'catalog/category/other', slug: 'catalog/category/other', title: 'Other', href: '/editor/catalog/category/other' }]
+  }]
 }
 
 const siblingNavigation: TemplateNavigationNode[] = [
@@ -42,15 +42,15 @@ const siblingNavigation: TemplateNavigationNode[] = [
     id: 'catalog/category',
     slug: 'catalog/category',
     title: 'Category',
-    children: [{ type: 'template' as const, id: 'catalog/category/other', slug: 'catalog/category/other', title: 'Other', href: '/editor/catalog/category/other' }],
+    children: [{ type: 'template' as const, id: 'catalog/category/other', slug: 'catalog/category/other', title: 'Other', href: '/editor/catalog/category/other' }]
   },
   {
     type: 'folder' as const,
     id: 'catalog/seasonal',
     slug: 'catalog/seasonal',
     title: 'Seasonal',
-    children: [{ type: 'template' as const, id: 'catalog/seasonal/poster', slug: 'catalog/seasonal/poster', title: 'Poster', href: '/editor/catalog/seasonal/poster' }],
-  },
+    children: [{ type: 'template' as const, id: 'catalog/seasonal/poster', slug: 'catalog/seasonal/poster', title: 'Poster', href: '/editor/catalog/seasonal/poster' }]
+  }
 ]
 
 beforeEach(() => localStorage.clear())
@@ -208,7 +208,7 @@ describe('FrameKitNavigation', () => {
     expect(seasonal.getAttribute('aria-expanded')).toBe('false')
     expect(JSON.parse(localStorage.getItem('framekit:navigation:v1') as string)).toEqual({
       'catalog/category': false,
-      'catalog/seasonal': false,
+      'catalog/seasonal': false
     })
 
     fireEvent.click(category)

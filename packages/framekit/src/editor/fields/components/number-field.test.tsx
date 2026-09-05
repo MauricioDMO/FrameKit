@@ -13,7 +13,7 @@ const field = {
   min: 0,
   max: 100,
   step: 10,
-  control: 'slider' as const,
+  control: 'slider' as const
 }
 const inputField = { ...field, control: 'input' as const }
 

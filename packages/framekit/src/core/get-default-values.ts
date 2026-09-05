@@ -8,7 +8,7 @@ type DefaultValues<Fields extends Record<string, FieldDescriptor>> = {
       : string
 }
 
-export function getDefaultValues<const Fields extends Record<string, FieldDescriptor>>(fields: Fields): DefaultValues<Fields> {
+export function getDefaultValues<const Fields extends Record<string, FieldDescriptor>> (fields: Fields): DefaultValues<Fields> {
   const result: Record<string, string | number | boolean> = {}
   for (const key in fields) {
     const field = fields[key]

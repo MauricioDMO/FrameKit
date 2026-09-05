@@ -10,7 +10,7 @@ import {
   promptInstallDependencies,
   promptApproveBuilds,
   promptInitGit,
-  type PackageManager,
+  type PackageManager
 } from './prompts.js'
 import { detectPackageManager } from './package-manager.js'
 import { createProject, updateSkills } from './project.js'
@@ -27,7 +27,7 @@ interface ParsedArgs {
   answer: Answer
 }
 
-function parseArgs(args: string[]): ParsedArgs {
+function parseArgs (args: string[]): ParsedArgs {
   if (args[0] === 'update-skills') {
     if (args.length > 2 || args[1]?.startsWith('-')) throw new Error(USAGE)
     return { command: 'update-skills', projectName: args[1], answer: undefined }
@@ -51,11 +51,11 @@ function parseArgs(args: string[]): ParsedArgs {
   return { command: 'create', projectName, answer }
 }
 
-function devCommand(pm: PackageManager): string {
+function devCommand (pm: PackageManager): string {
   return pm === 'npm' ? 'npm run dev' : 'pnpm dev'
 }
 
-export async function main(args = process.argv.slice(2)): Promise<void> {
+export async function main (args = process.argv.slice(2)): Promise<void> {
   assertSupportedNodeRuntime()
   const parsed = parseArgs(args)
 
@@ -97,7 +97,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   const target = await createProject(projectName, packageManager, {
     installDependencies,
     runApproveBuilds,
-    initGit,
+    initGit
   })
 
   const displayPath = path.isAbsolute(projectName)
@@ -114,7 +114,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
 
 const invokedFile = process.argv[1]
 if (invokedFile && realpathSync(invokedFile) === realpathSync(fileURLToPath(import.meta.url))) {
-  void main().catch((error: unknown) => {
+  main().catch((error: unknown) => {
     console.error(red(error instanceof Error ? error.message : String(error)))
     process.exitCode = 1
   })

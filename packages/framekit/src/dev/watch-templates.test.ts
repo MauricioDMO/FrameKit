@@ -20,20 +20,20 @@ let watcherReadiness = new WeakMap<FSWatcher, Promise<void>>()
 
 type ChokidarEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
-function waitForReady(watcher: FSWatcher): Promise<void> {
+function waitForReady (watcher: FSWatcher): Promise<void> {
   if (watcher._readyEmitted) return Promise.resolve()
 
   return new Promise<void>((resolve, reject) => {
     let settled = false
     const timeout = setTimeout(() => finish(new Error('Timed out waiting for Chokidar to become ready')), WATCH_TIMEOUT_MS)
 
-    function cleanup() {
+    function cleanup () {
       clearTimeout(timeout)
       watcher.off('ready', onReady)
       watcher.off('error', onError)
     }
 
-    function finish(error?: Error) {
+    function finish (error?: Error) {
       if (settled) return
       settled = true
       cleanup()
@@ -44,11 +44,11 @@ function waitForReady(watcher: FSWatcher): Promise<void> {
       }
     }
 
-    function onReady() {
+    function onReady () {
       finish()
     }
 
-    function onError(error: unknown) {
+    function onError (error: unknown) {
       finish(error instanceof Error ? error : new Error(String(error)))
     }
 
@@ -57,7 +57,7 @@ function waitForReady(watcher: FSWatcher): Promise<void> {
   })
 }
 
-async function createProject(): Promise<string> {
+async function createProject (): Promise<string> {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-watch-'))
   activeRoots.push(projectRoot)
   await mkdir(path.join(projectRoot, 'src', 'templates', 'example'), { recursive: true })
@@ -65,7 +65,7 @@ async function createProject(): Promise<string> {
   return projectRoot
 }
 
-async function startWatcher(projectRoot: string) {
+async function startWatcher (projectRoot: string) {
   const onStructureChange = vi.fn()
   const onError = vi.fn()
   const result = watchTemplates({ projectRoot, onStructureChange, onError })
@@ -87,23 +87,23 @@ async function startWatcher(projectRoot: string) {
   }
 }
 
-async function waitForStructureChange(
+async function waitForStructureChange (
   watcher: FSWatcher,
   onStructureChange: ReturnType<typeof vi.fn>,
   expectedEvent: ChokidarEvent,
   expectedPath: string,
-  mutation: () => Promise<void>,
+  mutation: () => Promise<void>
 ): Promise<void> {
   const callsBefore = onStructureChange.mock.calls.length
   await waitForChokidarEvent(watcher, expectedEvent, expectedPath, mutation)
   expect(onStructureChange.mock.calls.length).toBeGreaterThan(callsBefore)
 }
 
-async function waitForChokidarEvent(
+async function waitForChokidarEvent (
   watcher: FSWatcher,
   expectedEvent: ChokidarEvent,
   expectedPath: string,
-  mutation: () => Promise<void>,
+  mutation: () => Promise<void>
 ): Promise<void> {
   const normalizedExpectedPath = path.resolve(expectedPath)
 
@@ -111,12 +111,12 @@ async function waitForChokidarEvent(
     let settled = false
     const timeout = setTimeout(() => finish(new Error(`Timed out waiting for Chokidar to observe ${expectedEvent} at ${normalizedExpectedPath}`)), WATCH_TIMEOUT_MS)
 
-    function cleanup() {
+    function cleanup () {
       clearTimeout(timeout)
       watcher.off('all', onAll)
     }
 
-    function finish(error?: Error) {
+    function finish (error?: Error) {
       if (settled) return
       settled = true
       cleanup()
@@ -127,13 +127,13 @@ async function waitForChokidarEvent(
       }
     }
 
-    function onAll(event: string, filePath: string) {
+    function onAll (event: string, filePath: string) {
       if (event !== expectedEvent || path.resolve(filePath) !== normalizedExpectedPath) return
       finish()
     }
 
     watcher.on('all', onAll)
-    void mutation().catch((error: unknown) => finish(error instanceof Error ? error : new Error(String(error))))
+    mutation().catch((error: unknown) => finish(error instanceof Error ? error : new Error(String(error))))
   })
 }
 

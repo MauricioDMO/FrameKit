@@ -2,7 +2,7 @@ import { fieldComponents } from './registry'
 import { FieldLabel } from './shared'
 import type { EditorFieldProps } from '../types'
 
-export function EditorField({ field, value, onChange, error, onValidationError, imageLabels, colorPickerLabel, onImageUpload }: EditorFieldProps) {
+export function EditorField ({ field, value, onChange, error, onValidationError, imageLabels, colorPickerLabel, onImageUpload }: EditorFieldProps) {
   const Field = fieldComponents[field.type]
   const isLabelContainer = field.type !== 'color' && field.type !== 'image'
   const Container = isLabelContainer ? 'label' : 'div'
@@ -24,7 +24,7 @@ export function EditorField({ field, value, onChange, error, onValidationError, 
         <p id={`${field.key}-error`} className="mt-1 text-xs text-red-600 dark:text-red-400">
           {error}
         </p>
-        )}
+      )}
     </Container>
   )
 }

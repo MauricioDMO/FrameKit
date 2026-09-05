@@ -2,15 +2,15 @@ import path from 'node:path'
 
 import type { DiscoveredBrandComponent } from '../discovery/types'
 
-function importPathForPreview(component: DiscoveredBrandComponent, outputDirectory: string): string {
+function importPathForPreview (component: DiscoveredBrandComponent, outputDirectory: string): string {
   const previewPath = path.join(component.absolutePath, 'preview')
   const relativePath = path.relative(outputDirectory, previewPath).split(path.sep).join('/')
   return relativePath.startsWith('.') ? relativePath : `./${relativePath}`
 }
 
-export function createBrandModule(
+export function createBrandModule (
   components: readonly DiscoveredBrandComponent[],
-  options: { outputDirectory: string },
+  options: { outputDirectory: string }
 ): string {
   const entries = components
     .map((component) => `  {

@@ -188,10 +188,10 @@ export const frameKitMessages: Record<FrameKitLocale, FrameKitStudioMessages> = 
       title: 'Template not found',
       description: 'This route does not match a template available in the catalog.',
       backToEditor: 'Back to editor'
-    },
-  },
+    }
+  }
 }
 
-export function getFrameKitLocale(value?: string | null): FrameKitLocale {
+export function getFrameKitLocale (value?: string | null): FrameKitLocale {
   return value?.toLowerCase().startsWith('en') ? 'en' : 'es'
 }

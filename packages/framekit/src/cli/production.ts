@@ -7,7 +7,7 @@ import { runChild } from './run-child'
 
 const require = createRequire(import.meta.url)
 
-async function exists(filePath: string): Promise<boolean> {
+async function exists (filePath: string): Promise<boolean> {
   try {
     await access(filePath)
     return true
@@ -16,7 +16,7 @@ async function exists(filePath: string): Promise<boolean> {
   }
 }
 
-async function findStandaloneServer(projectRoot: string): Promise<string> {
+async function findStandaloneServer (projectRoot: string): Promise<string> {
   const standaloneRoot = path.join(projectRoot, '.framekit', 'next', 'standalone')
 
   if (!(await exists(standaloneRoot))) {
@@ -25,7 +25,7 @@ async function findStandaloneServer(projectRoot: string): Promise<string> {
 
   const candidates: string[] = []
 
-  async function visit(directory: string): Promise<void> {
+  async function visit (directory: string): Promise<void> {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       if (entry.name === 'node_modules') continue
       const entryPath = path.join(directory, entry.name)
@@ -50,7 +50,7 @@ async function findStandaloneServer(projectRoot: string): Promise<string> {
   return candidates[0]
 }
 
-async function copyStandaloneAssets(projectRoot: string): Promise<void> {
+async function copyStandaloneAssets (projectRoot: string): Promise<void> {
   const serverDirectory = path.dirname(await findStandaloneServer(projectRoot))
   const publicDirectory = path.join(projectRoot, 'public')
 
@@ -61,11 +61,11 @@ async function copyStandaloneAssets(projectRoot: string): Promise<void> {
   await cp(
     path.join(projectRoot, '.framekit', 'next', 'static'),
     path.join(serverDirectory, '.framekit', 'next', 'static'),
-    { recursive: true },
+    { recursive: true }
   )
 }
 
-export async function build(projectRoot: string): Promise<number> {
+export async function build (projectRoot: string): Promise<number> {
   const checkCode = await check(projectRoot)
   if (checkCode !== 0) return checkCode
 
@@ -76,6 +76,6 @@ export async function build(projectRoot: string): Promise<number> {
   return 0
 }
 
-export async function start(projectRoot: string): Promise<number> {
+export async function start (projectRoot: string): Promise<number> {
   return runChild(await findStandaloneServer(projectRoot), [], projectRoot)
 }

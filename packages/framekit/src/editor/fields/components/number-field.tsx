@@ -5,13 +5,13 @@ import { validateNumberValue } from '../../../core/validation/data'
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../../types'
 
-function decimalPlaces(value: number): number {
+function decimalPlaces (value: number): number {
   const [coefficient, exponentText] = value.toString().toLowerCase().split('e')
   const fractionLength = coefficient.includes('.') ? coefficient.length - coefficient.indexOf('.') - 1 : 0
   return Math.max(0, fractionLength - Number(exponentText ?? 0))
 }
 
-function normalizeSliderValue(value: number, min: number | undefined, max: number | undefined, step: number): number {
+function normalizeSliderValue (value: number, min: number | undefined, max: number | undefined, step: number): number {
   const lower = min ?? 0
   const upper = max ?? 100
   const bounded = Math.min(upper, Math.max(lower, value))
@@ -24,7 +24,7 @@ function normalizeSliderValue(value: number, min: number | undefined, max: numbe
   return precision <= 100 ? Number(clamped.toFixed(precision)) : clamped
 }
 
-export function NumberField({ field, value, onChange, error, onValidationError }: EditorFieldProps) {
+export function NumberField ({ field, value, onChange, error, onValidationError }: EditorFieldProps) {
   const control = field.control ?? 'input'
   const committedValue = typeof value === 'number' && Number.isFinite(value) ? value : undefined
   const sliderValue = committedValue ?? field.min ?? 0
@@ -37,7 +37,7 @@ export function NumberField({ field, value, onChange, error, onValidationError }
     setDraftValue(committedValue === undefined ? '' : String(committedValue))
   }, [committedValue])
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleChange (event: ChangeEvent<HTMLInputElement>) {
     if (control === 'input') setDraftValue(event.currentTarget.value)
     const nextValue = event.currentTarget.valueAsNumber
     const validationError = validateNumberValue(nextValue, field)

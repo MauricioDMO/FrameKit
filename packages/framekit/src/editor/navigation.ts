@@ -27,7 +27,7 @@ export type TemplateNavigationNode =
   | TemplateNavigationFolder
   | TemplateNavigationItem
 
-export function humanizeSegment(name: string): string {
+export function humanizeSegment (name: string): string {
   return name
     .split('-')
     .filter(Boolean)
@@ -35,9 +35,9 @@ export function humanizeSegment(name: string): string {
     .join(' ')
 }
 
-export function manifestToNavigation(
+export function manifestToNavigation (
   manifest: readonly (Pick<TemplateRegistryEntry, 'slug' | 'segments' | 'meta'> | BrandManifestEntry)[],
-  basePath = '/editor',
+  basePath = '/editor'
 ): TemplateNavigationNode[] {
   const folderMap = new Map<string, TemplateNavigationNode>()
   const root: TemplateNavigationNode[] = []
@@ -61,7 +61,7 @@ export function manifestToNavigation(
             id: slug,
             slug,
             title: folderTitle,
-              href: `${basePath}/${slug}`,
+            href: `${basePath}/${slug}`
           }
           folderMap.set(folderSlug, item)
         } else {
@@ -70,7 +70,7 @@ export function manifestToNavigation(
             id: folderSlug,
             slug: folderSlug,
             title: folderTitle,
-            children: [],
+            children: []
           }
           folderMap.set(folderSlug, folder)
         }
@@ -94,7 +94,7 @@ export function manifestToNavigation(
     }
   }
 
-  function sortNodes(nodes: TemplateNavigationNode[]): TemplateNavigationNode[] {
+  function sortNodes (nodes: TemplateNavigationNode[]): TemplateNavigationNode[] {
     return nodes
       .sort((a, b) => {
         return a.title.localeCompare(b.title)

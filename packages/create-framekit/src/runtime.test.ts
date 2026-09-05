@@ -10,20 +10,20 @@ const temporaryDirectories: string[] = []
 const initialCwd = process.cwd()
 const initialEnvironment = {
   PATH: process.env.PATH,
-  npm_config_user_agent: process.env.npm_config_user_agent,
+  npm_config_user_agent: process.env.npm_config_user_agent
 }
 
-async function createTemporaryDirectory(prefix: string): Promise<string> {
+async function createTemporaryDirectory (prefix: string): Promise<string> {
   const directory = await mkdtemp(path.join(os.tmpdir(), prefix))
   temporaryDirectories.push(directory)
   return directory
 }
 
-async function createFakePnpm(
+async function createFakePnpm (
   binDirectory: string,
   logFile: string,
   version: string,
-  versionExitCode = 0,
+  versionExitCode = 0
 ): Promise<void> {
   await mkdir(binDirectory)
   const source = `
@@ -41,7 +41,7 @@ if (process.argv[2] === '--version') {
     await writeFile(
       path.join(binDirectory, 'pnpm.cmd'),
       `@echo off\r\n"${process.execPath}" "${script}" %*\r\nexit /b %errorlevel%\r\n`,
-      'utf8',
+      'utf8'
     )
     return
   }
@@ -51,7 +51,7 @@ if (process.argv[2] === '--version') {
   await chmod(executable, 0o755)
 }
 
-function restoreEnvironment(): void {
+function restoreEnvironment (): void {
   process.chdir(initialCwd)
   for (const [name, value] of Object.entries(initialEnvironment)) {
     if (value === undefined) delete process.env[name]
@@ -131,7 +131,7 @@ afterEach(async () => {
   restoreEnvironment()
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
-      rm(directory, { recursive: true, force: true }),
-    ),
+      rm(directory, { recursive: true, force: true })
+    )
   )
 })

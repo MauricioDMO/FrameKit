@@ -42,45 +42,45 @@ type ProjectFixture = {
   traversalDirectory: string
 }
 
-function requestFor(body: string, { method = 'POST', contentType = 'application/json' }: RequestOptions = {}): IncomingMessage {
+function requestFor (body: string, { method = 'POST', contentType = 'application/json' }: RequestOptions = {}): IncomingMessage {
   const request = Readable.from([body]) as unknown as IncomingMessage
   Object.assign(request, {
     method,
     url: '/__framekit/assets',
-    headers: { 'content-length': String(Buffer.byteLength(body)), 'content-type': contentType },
+    headers: { 'content-length': String(Buffer.byteLength(body)), 'content-type': contentType }
   })
   return request
 }
 
-function responseFor(): TestResponse {
+function responseFor (): TestResponse {
   const headers: Record<string, string | number> = {}
   return {
     headers,
-    setHeader(name: string, value: string | number) {
+    setHeader (name: string, value: string | number) {
       headers[name.toLowerCase()] = value
     },
-    end(this: TestResponse, body?: string) {
+    end (this: TestResponse, body?: string) {
       this.body = body
-    },
+    }
   } as unknown as TestResponse
 }
 
-function uploadBody(overrides: Partial<UploadBody> = {}): string {
+function uploadBody (overrides: Partial<UploadBody> = {}): string {
   return JSON.stringify({
     templateSlug,
     variant,
     fieldKey,
     mimeType: 'image/png',
     data: newAssetBytes.toString('base64'),
-    ...overrides,
+    ...overrides
   })
 }
 
-function expectJsonResponse(
+function expectJsonResponse (
   response: TestResponse,
   statusCode: number,
   body: Record<string, string>,
-  additionalHeaders: Record<string, string | number> = {},
+  additionalHeaders: Record<string, string | number> = {}
 ): void {
   const expectedBody = JSON.stringify(body)
   if (response.body === undefined) throw new Error('Expected a response body')
@@ -90,19 +90,19 @@ function expectJsonResponse(
   expect(response.headers).toEqual({
     'content-type': 'application/json; charset=utf-8',
     'content-length': Buffer.byteLength(expectedBody),
-    ...additionalHeaders,
+    ...additionalHeaders
   })
 }
 
-function deferred(): { promise: Promise<void>; resolve: () => void } {
+function deferred (): { promise: Promise<void>; resolve: () => void } {
   let resolve!: () => void
-  const promise = new Promise<void>((resolvePromise) => {
-    resolve = resolvePromise
+  const promise = new Promise<void>((_resolve) => {
+    resolve = _resolve
   })
   return { promise, resolve }
 }
 
-async function createProject(): Promise<ProjectFixture> {
+async function createProject (): Promise<ProjectFixture> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-upload-'))
   const template = path.join(root, 'src', 'templates', 'social', 'post')
   const assetsDirectory = path.join(template, 'assets', variant)
@@ -117,7 +117,7 @@ async function createProject(): Promise<ProjectFixture> {
       assetsDirectory,
       oldAsset,
       newAsset: path.join(assetsDirectory, `${fieldKey}.png`),
-      traversalDirectory: path.join(template, 'outside'),
+      traversalDirectory: path.join(template, 'outside')
     }
   } catch (error) {
     await rm(root, { recursive: true, force: true })
@@ -141,7 +141,7 @@ const errorCases: ErrorCase[] = [
   { name: 'JSON', body: '{not-json', statusCode: 400, error: 'El cuerpo del upload no es JSON válido' },
   { name: 'inputs', body: JSON.stringify({ templateSlug }), statusCode: 400, error: 'Faltan datos del asset' },
   { name: 'path traversal', body: uploadBody({ variant: '../outside' }), statusCode: 400, error: 'La variante no es válida' },
-  { name: 'missing template', body: uploadBody({ templateSlug: 'missing' }), statusCode: 404, error: 'La plantilla no existe' },
+  { name: 'missing template', body: uploadBody({ templateSlug: 'missing' }), statusCode: 404, error: 'La plantilla no existe' }
 ]
 
 describe('handleAssetUpload', () => {

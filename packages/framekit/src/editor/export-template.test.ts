@@ -6,7 +6,7 @@ import { domToPng } from 'modern-screenshot'
 import { copyTemplate, exportTemplate } from './export-template'
 
 vi.mock('modern-screenshot', () => ({
-  domToPng: vi.fn().mockResolvedValue('data:image/png;base64,AAAA'),
+  domToPng: vi.fn().mockResolvedValue('data:image/png;base64,AAAA')
 }))
 
 const originalFontsDescriptor = Object.getOwnPropertyDescriptor(document, 'fonts')
@@ -18,7 +18,7 @@ beforeEach(() => {
   clipboardBlob = new Blob(['png'], { type: 'image/png' })
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ blob: vi.fn().mockResolvedValue(clipboardBlob) }))
   vi.stubGlobal('ClipboardItem', class ClipboardItem {
-    constructor(readonly items: Record<string, Blob>) {}
+    constructor (readonly items: Record<string, Blob>) {}
   })
 })
 
@@ -33,7 +33,7 @@ afterEach(() => {
   }
 })
 
-function setupClipboard() {
+function setupClipboard () {
   const write = vi.fn().mockResolvedValue(undefined)
   vi.stubGlobal('navigator', { clipboard: { write } })
   return write

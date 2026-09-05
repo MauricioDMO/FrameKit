@@ -1,6 +1,6 @@
 import { BrandHero } from './component'
 
-export default function Preview() {
+export default function Preview () {
   return (
     <div className="w-[720px] bg-[#10271f] p-14 text-[#f5f7ee]">
       <BrandHero

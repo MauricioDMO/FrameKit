@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { TemplateBase } from '../../types'
 import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
 
-export function useEditorState(slug: string, definition: TemplateBase) {
+export function useEditorState (slug: string, definition: TemplateBase) {
   const hydratedRef = useRef(false)
   const definitionRef = useRef(definition)
   const [state, setState] = useState(() => {
@@ -41,18 +41,18 @@ export function useEditorState(slug: string, definition: TemplateBase) {
     }
   }, [slug, renderedState])
 
-  function changeVariant(variant: string) {
+  function changeVariant (variant: string) {
     setState((current) => selectVariant(current, variant))
     setErrors({})
   }
 
-  function clearVariant() {
+  function clearVariant () {
     setState(resetVariant)
     setResetVersion((current) => current + 1)
     setErrors({})
   }
 
-  function changeField(key: string, value: string | number | boolean) {
+  function changeField (key: string, value: string | number | boolean) {
     setState((current) => updateField(current, key, value))
     setErrors((current) => {
       if (!current[key]) return current

@@ -12,18 +12,18 @@ const initialCwd = process.cwd()
 const initialEnvironment = {
   PATH: process.env.PATH,
   FRAMEKIT_TEST_FAIL: process.env.FRAMEKIT_TEST_FAIL,
-  npm_config_user_agent: process.env.npm_config_user_agent,
+  npm_config_user_agent: process.env.npm_config_user_agent
 }
 
 type RecordedCommand = { args: string[], cwd: string }
 
-async function createTemporaryDirectory(prefix: string): Promise<string> {
+async function createTemporaryDirectory (prefix: string): Promise<string> {
   const directory = await mkdtemp(path.join(os.tmpdir(), prefix))
   temporaryDirectories.push(directory)
   return directory
 }
 
-async function createFakeCommand(binDirectory: string, name: string, source: string): Promise<void> {
+async function createFakeCommand (binDirectory: string, name: string, source: string): Promise<void> {
   await mkdir(binDirectory, { recursive: true })
   if (process.platform === 'win32') {
     const script = path.join(binDirectory, `${name}.mjs`)
@@ -31,7 +31,7 @@ async function createFakeCommand(binDirectory: string, name: string, source: str
     await writeFile(
       path.join(binDirectory, `${name}.cmd`),
       `@echo off\r\n"${process.execPath}" "${script}" %*\r\nexit /b %errorlevel%\r\n`,
-      'utf8',
+      'utf8'
     )
     return
   }
@@ -41,7 +41,7 @@ async function createFakeCommand(binDirectory: string, name: string, source: str
   await chmod(executable, 0o755)
 }
 
-async function createFakePnpm(binDirectory: string, logFile: string): Promise<void> {
+async function createFakePnpm (binDirectory: string, logFile: string): Promise<void> {
   await createFakeCommand(binDirectory, 'pnpm', `
 import { appendFile } from 'node:fs/promises'
 if (process.argv[2] === '--version') {
@@ -53,7 +53,7 @@ if (process.env.FRAMEKIT_TEST_FAIL === process.argv[2]) process.exit(7)
 `)
 }
 
-async function createFakeNpm(binDirectory: string, logFile: string): Promise<void> {
+async function createFakeNpm (binDirectory: string, logFile: string): Promise<void> {
   await createFakeCommand(binDirectory, 'npm', `
 import { appendFile } from 'node:fs/promises'
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
@@ -61,7 +61,7 @@ if (process.env.FRAMEKIT_TEST_FAIL === process.argv[2]) process.exit(7)
 `)
 }
 
-async function createFakeGit(binDirectory: string, logFile: string): Promise<void> {
+async function createFakeGit (binDirectory: string, logFile: string): Promise<void> {
   await createFakeCommand(binDirectory, 'git', `
 import { appendFile } from 'node:fs/promises'
 await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) + '\\n')
@@ -70,30 +70,30 @@ await appendFile(${JSON.stringify(logFile)}, JSON.stringify({ args: process.argv
 
 const mockState = { answers: [] as string[], index: 0 }
 
-function setPromptAnswers(...answers: string[]): void {
+function setPromptAnswers (...answers: string[]): void {
   mockState.answers = answers
   mockState.index = 0
 }
 
-function expectAllPromptAnswersUsed(): void {
+function expectAllPromptAnswersUsed (): void {
   expect(mockState.index).toBe(mockState.answers.length)
 }
 
 vi.mock('node:readline/promises', () => ({
-  createInterface() {
+  createInterface () {
     return {
-      question(label: string): Promise<string> {
+      question (label: string): Promise<string> {
         const answer = mockState.answers[mockState.index]
         if (answer === undefined) throw new Error(`Unexpected prompt: ${label}`)
         mockState.index += 1
         return Promise.resolve(answer)
       },
-      close() {},
+      close () {}
     }
-  },
+  }
 }))
 
-async function readCommandLog(logFile: string): Promise<RecordedCommand[]> {
+async function readCommandLog (logFile: string): Promise<RecordedCommand[]> {
   let content: string
   try {
     content = await readFile(logFile, 'utf8')
@@ -107,17 +107,17 @@ async function readCommandLog(logFile: string): Promise<RecordedCommand[]> {
     : content.trim().split('\n').map((line) => JSON.parse(line) as RecordedCommand)
 }
 
-function expectCommands(
+function expectCommands (
   commands: RecordedCommand[],
   destination: string,
-  expectedArgs: string[][],
+  expectedArgs: string[][]
 ): void {
   expect(commands).toEqual(expectedArgs.map((args) => ({ args, cwd: destination })))
 }
 
-async function expectProjectFiles(
+async function expectProjectFiles (
   destination: string,
-  packageManager: 'pnpm' | 'npm',
+  packageManager: 'pnpm' | 'npm'
 ): Promise<void> {
   const packageJson = JSON.parse(await readFile(path.join(destination, 'package.json'), 'utf8')) as Record<string, unknown> & {
     dependencies: Record<string, string>
@@ -132,8 +132,8 @@ async function expectProjectFiles(
       dev: 'framekit dev',
       build: 'framekit build',
       start: 'framekit start',
-      check: 'framekit check',
-    },
+      check: 'framekit check'
+    }
   })
   expect(packageJson.dependencies['@mauriciodmo/framekit']).toBeTypeOf('string')
   await expect(readFile(path.join(destination, '.gitignore'), 'utf8')).resolves.toContain('.framekit')
@@ -154,7 +154,7 @@ async function expectProjectFiles(
   }
 }
 
-function restoreEnvironment(): void {
+function restoreEnvironment (): void {
   process.chdir(initialCwd)
   for (const [name, value] of Object.entries(initialEnvironment)) {
     if (value === undefined) delete process.env[name]
@@ -168,8 +168,8 @@ afterEach(async () => {
   mockState.index = 0
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
-      rm(directory, { recursive: true, force: true }),
-    ),
+      rm(directory, { recursive: true, force: true })
+    )
   )
 })
 
@@ -185,8 +185,8 @@ describe('create-framekit', () => {
         createProject(destination, 'pnpm', {
           installDependencies: false,
           runApproveBuilds: false,
-          initGit: false,
-        }),
+          initGit: false
+        })
       ).rejects.toThrow('The directory already exists')
       await expect(readFile(path.join(destination, 'keep.txt'), 'utf8')).resolves.toBe('keep')
     })
@@ -201,14 +201,14 @@ describe('create-framekit', () => {
       const destination = await createProject(path.join(root, 'nested', '..', 'project'), 'pnpm', {
         installDependencies: true,
         runApproveBuilds: false,
-        initGit: false,
+        initGit: false
       })
 
       expect(destination).toBe(path.join(root, 'project'))
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
-        ['framekit', 'generate'],
+        ['framekit', 'generate']
       ])
       await expect(readFile(path.join(destination, '.gitignore'), 'utf8')).resolves.toContain('next-env.d.ts')
     })
@@ -226,8 +226,8 @@ describe('create-framekit', () => {
         createProject(destination, 'pnpm', {
           installDependencies: true,
           runApproveBuilds: false,
-          initGit: false,
-        }),
+          initGit: false
+        })
       ).rejects.toThrow('Command failed: pnpm install')
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [['install']])
@@ -246,13 +246,13 @@ describe('create-framekit', () => {
         createProject(destination, 'pnpm', {
           installDependencies: true,
           runApproveBuilds: false,
-          initGit: false,
-        }),
+          initGit: false
+        })
       ).rejects.toThrow('Command failed: pnpm framekit generate')
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
-        ['framekit', 'generate'],
+        ['framekit', 'generate']
       ])
     })
 
@@ -267,7 +267,7 @@ describe('create-framekit', () => {
       await createProject(destination, 'pnpm', {
         installDependencies: false,
         runApproveBuilds: false,
-        initGit: false,
+        initGit: false
       })
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [])
@@ -284,13 +284,13 @@ describe('create-framekit', () => {
       await createProject(destination, 'pnpm', {
         installDependencies: true,
         runApproveBuilds: true,
-        initGit: false,
+        initGit: false
       })
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
         ['approve-builds'],
-        ['framekit', 'generate'],
+        ['framekit', 'generate']
       ])
     })
 
@@ -305,7 +305,7 @@ describe('create-framekit', () => {
       await createProject(destination, 'pnpm', {
         installDependencies: false,
         runApproveBuilds: true,
-        initGit: false,
+        initGit: false
       })
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [])
@@ -322,13 +322,13 @@ describe('create-framekit', () => {
       await createProject(destination, 'pnpm', {
         installDependencies: false,
         runApproveBuilds: false,
-        initGit: true,
+        initGit: true
       })
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [
         ['init'],
         ['add', '-A'],
-        ['commit', '-m', 'Initial FrameKit project'],
+        ['commit', '-m', 'Initial FrameKit project']
       ])
     })
 
@@ -343,12 +343,12 @@ describe('create-framekit', () => {
       await createProject(destination, 'npm', {
         installDependencies: true,
         runApproveBuilds: false,
-        initGit: false,
+        initGit: false
       })
       await expectProjectFiles(destination, 'npm')
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
-        ['exec', '--', 'framekit', 'generate'],
+        ['exec', '--', 'framekit', 'generate']
       ])
     })
   })
@@ -370,7 +370,7 @@ describe('create-framekit', () => {
         'fk-brand',
         'fk-setup',
         'fk-studio',
-        'fk-templates',
+        'fk-templates'
       ])
       await expect(readFile(path.join(project, '.agents', 'skills', 'fk-setup', 'SKILL.md'), 'utf8')).resolves.toContain('name: fk-setup')
       await expect(readFile(path.join(project, '.agents', 'skills', 'custom-skill', 'SKILL.md'), 'utf8')).resolves.toBe('custom')
@@ -381,16 +381,16 @@ describe('create-framekit', () => {
       const root = await createTemporaryDirectory('create-framekit-missing-skills-')
 
       await expect(updateSkills(path.join(root, 'missing'))).rejects.toThrow(
-        'The project directory does not exist',
+        'The project directory does not exist'
       )
     })
 
     it('throws usage error when more than one arg', async () => {
       await expect(main(['one', 'two'])).rejects.toThrow(
-        'Usage: create-framekit [project-directory] [-y|-n]',
+        'Usage: create-framekit [project-directory] [-y|-n]'
       )
       await expect(main(['update-skills', 'one', 'two'])).rejects.toThrow(
-        'Usage: create-framekit [project-directory] [-y|-n]',
+        'Usage: create-framekit [project-directory] [-y|-n]'
       )
     })
 
@@ -411,7 +411,7 @@ describe('create-framekit', () => {
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
         ['approve-builds'],
-        ['framekit', 'generate'],
+        ['framekit', 'generate']
       ])
       expectAllPromptAnswersUsed()
     })
@@ -432,7 +432,7 @@ describe('create-framekit', () => {
       expectCommands(await readCommandLog(log), destination, [
         ['install'],
         ['approve-builds'],
-        ['framekit', 'generate'],
+        ['framekit', 'generate']
       ])
       expectAllPromptAnswersUsed()
     })
@@ -471,7 +471,7 @@ describe('create-framekit', () => {
         ['framekit', 'generate'],
         ['init'],
         ['add', '-A'],
-        ['commit', '-m', 'Initial FrameKit project'],
+        ['commit', '-m', 'Initial FrameKit project']
       ])
     })
 
@@ -492,7 +492,7 @@ describe('create-framekit', () => {
         ['exec', '--', 'framekit', 'generate'],
         ['init'],
         ['add', '-A'],
-        ['commit', '-m', 'Initial FrameKit project'],
+        ['commit', '-m', 'Initial FrameKit project']
       ])
     })
 
@@ -505,10 +505,10 @@ describe('create-framekit', () => {
 
     it('rejects long flags and conflicting answer flags', async () => {
       await expect(main(['--y'])).rejects.toThrow(
-        'Usage: create-framekit [project-directory] [-y|-n]',
+        'Usage: create-framekit [project-directory] [-y|-n]'
       )
       await expect(main(['-y', '-n'])).rejects.toThrow(
-        'Usage: create-framekit [project-directory] [-y|-n]',
+        'Usage: create-framekit [project-directory] [-y|-n]'
       )
     })
   })

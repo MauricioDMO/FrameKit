@@ -13,11 +13,11 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-function getPicker() {
+function getPicker () {
   return document.getElementById('accentColor-picker') as HTMLInputElement
 }
 
-function getPickerLabel() {
+function getPickerLabel () {
   return getPicker().nextElementSibling as HTMLLabelElement
 }
 

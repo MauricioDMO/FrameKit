@@ -15,7 +15,7 @@ describe('server options', () => {
   it.each([
     ['1', 1],
     ['65535', 65_535],
-    ['4321', 4_321],
+    ['4321', 4_321]
   ])('accepts PORT %s', (value, port) => {
     expect(getServerOptions({ PORT: value })).toEqual({ hostname: 'localhost', port })
   })

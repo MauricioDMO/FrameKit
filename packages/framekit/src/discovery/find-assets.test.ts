@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 
 import { findTemplateAssets } from './find-assets'
 
-async function withTempDirectory<T>(prefix: string, callback: (root: string) => Promise<T>): Promise<T> {
+async function withTempDirectory<T> (prefix: string, callback: (root: string) => Promise<T>): Promise<T> {
   const root = await mkdtemp(path.join(os.tmpdir(), prefix))
   try {
     return await callback(root)
@@ -21,7 +21,7 @@ describe('findTemplateAssets', () => {
   it('returns empty assets when the template has no assets', () => withTempDirectory('framekit-assets-', async (root) => {
     await expect(findTemplateAssets(root, 'empty/template')).resolves.toEqual({
       manifest: { common: {}, variants: {} },
-      files: [],
+      files: []
     })
   }))
 
@@ -34,10 +34,10 @@ describe('findTemplateAssets', () => {
       manifest: {
         common: {
           constructor: '/__framekit/templates/brand/logo/common/constructor.png',
-          toString: '/__framekit/templates/brand/logo/common/toString.webp',
+          toString: '/__framekit/templates/brand/logo/common/toString.webp'
         },
-        variants: {},
-      },
+        variants: {}
+      }
     })
   }))
 
@@ -51,20 +51,20 @@ describe('findTemplateAssets', () => {
     await expect(findTemplateAssets(root, 'social/post')).resolves.toEqual({
       manifest: {
         common: { background: '/__framekit/templates/social/post/common/background.svg' },
-        variants: { es: { hero: '/__framekit/templates/social/post/es/hero.webp' } },
+        variants: { es: { hero: '/__framekit/templates/social/post/es/hero.webp' } }
       },
       files: [
         {
           sourcePath: path.join(root, 'assets', 'common', 'background.svg'),
           relativePath: path.join('common', 'background.svg'),
-          publicPath: '/__framekit/templates/social/post/common/background.svg',
+          publicPath: '/__framekit/templates/social/post/common/background.svg'
         },
         {
           sourcePath: path.join(root, 'assets', 'es', 'hero.webp'),
           relativePath: path.join('es', 'hero.webp'),
-          publicPath: '/__framekit/templates/social/post/es/hero.webp',
-        },
-      ],
+          publicPath: '/__framekit/templates/social/post/es/hero.webp'
+        }
+      ]
     })
   }))
 
@@ -84,9 +84,9 @@ describe('findTemplateAssets', () => {
     await expect(findTemplateAssets(root, 'brand/logo')).resolves.toMatchObject({
       manifest: {
         common: { hero: '/__framekit/templates/brand/logo/common/hero.PNG' },
-        variants: {},
+        variants: {}
       },
-      files: [{ relativePath: path.join('common', 'hero.PNG') }],
+      files: [{ relativePath: path.join('common', 'hero.PNG') }]
     })
   }))
 
@@ -133,7 +133,7 @@ describe('findTemplateAssets', () => {
       path.join('alpha', 'a.png'),
       path.join('alpha', 'z.png'),
       path.join('zeta', 'a.png'),
-      path.join('zeta', 'z.png'),
+      path.join('zeta', 'z.png')
     ])
   }))
 })

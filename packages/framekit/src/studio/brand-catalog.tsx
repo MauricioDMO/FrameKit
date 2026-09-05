@@ -2,11 +2,11 @@
 
 import type { ComponentType } from 'react'
 
-export function FrameKitBrandCatalog({
+export function FrameKitBrandCatalog ({
   title,
   description,
   preview: Preview,
-  messages,
+  messages
 }: {
   title: string
   description: string

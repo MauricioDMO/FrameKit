@@ -10,7 +10,7 @@ import { collectTemplateSummaries } from './collect-template-summaries'
 import { createBrandModule } from './create-brand-module'
 import { createTemplateModule } from './create-template-module'
 
-async function writeIfChanged(filePath: string, content: string): Promise<void> {
+async function writeIfChanged (filePath: string, content: string): Promise<void> {
   let current = ''
 
   try {
@@ -24,18 +24,18 @@ async function writeIfChanged(filePath: string, content: string): Promise<void> 
   }
 }
 
-async function syncTemplateAssets(
+async function syncTemplateAssets (
   projectRoot: string,
-  templates: readonly DiscoveredTemplate[],
+  templates: readonly DiscoveredTemplate[]
 ): Promise<Record<string, TemplateAssetManifest>> {
   const discovered = await Promise.all(
     templates.map(async (template) => ({
       template,
-      assets: await findTemplateAssets(template.absolutePath, template.slug),
-    })),
+      assets: await findTemplateAssets(template.absolutePath, template.slug)
+    }))
   )
   const assetsBySlug = Object.fromEntries(
-    discovered.map(({ template, assets }) => [template.slug, assets.manifest]),
+    discovered.map(({ template, assets }) => [template.slug, assets.manifest])
   )
   const outputRoot = path.join(projectRoot, 'public', '__framekit', 'templates')
 
@@ -52,7 +52,7 @@ async function syncTemplateAssets(
   return assetsBySlug
 }
 
-export async function writeTemplateModule(options: {
+export async function writeTemplateModule (options: {
   projectRoot: string
 }): Promise<DiscoveredTemplate[]> {
   const templatesDirectory = path.join(options.projectRoot, 'src', 'templates')

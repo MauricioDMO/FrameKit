@@ -12,7 +12,7 @@ describe('getFrameKitLocale', () => {
     ['fr-FR,fr;q=0.9', 'es'],
     ['', 'es'],
     [null, 'es'],
-    [undefined, 'es'],
+    [undefined, 'es']
   ] as const)('resolves %j to %s', (value, expected) => {
     expect(getFrameKitLocale(value)).toBe(expected)
   })

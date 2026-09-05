@@ -7,5 +7,5 @@ export default defineConfig({
   outExtensions: () => ({ js: '.js' }),
   sourcemap: false,
   logLevel: 'error',
-  outDir: 'dist',
+  outDir: 'dist'
 })

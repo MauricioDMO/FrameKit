@@ -39,7 +39,7 @@ const escapedTemplateSource = `export default {
     title: escapedTemplateTitle,
     description: escapedTemplateDescription,
     marketingDescription: 'Marketing "copy"',
-    tags: ['generated', 'escaping'],
+    tags: ['generated', 'escaping']
   })},
   width: 320,
   height: 180,
@@ -50,7 +50,7 @@ const escapedTemplateSource = `export default {
   render: () => null,
 }`
 
-async function addFrameKitStub(root: string, source = `
+async function addFrameKitStub (root: string, source = `
 export function validateTemplateDefinition(definition) {
   return { success: true, definition }
 }
@@ -60,30 +60,30 @@ export function validateTemplateDefinition(definition) {
   await writeFile(path.join(framekitPackage, 'package.json'), JSON.stringify({
     name: '@mauriciodmo/framekit',
     type: 'module',
-    exports: './index.js',
+    exports: './index.js'
   }))
   await writeFile(path.join(framekitPackage, 'index.js'), source)
 }
 
-function normalizePathSeparators(value: string): string {
+function normalizePathSeparators (value: string): string {
   return value.replaceAll('\\', '/')
 }
 
-async function expectErrorWithPortablePath(
+async function expectErrorWithPortablePath (
   operation: () => Promise<unknown>,
-  expectedMessage: string,
+  expectedMessage: string
 ): Promise<void> {
   const error = await operation().catch((cause: unknown) => cause)
   expect(error).toBeInstanceOf(Error)
   expect(normalizePathSeparators((error as Error).message)).toContain(
-    normalizePathSeparators(expectedMessage),
+    normalizePathSeparators(expectedMessage)
   )
 }
 
-async function writeTemplateFixture(
+async function writeTemplateFixture (
   root: string,
   slug: string,
-  source = validTemplateSource,
+  source = validTemplateSource
 ): Promise<string> {
   const directory = path.join(root, 'src', 'templates', ...slug.split('/'))
   await mkdir(directory, { recursive: true })
@@ -91,10 +91,10 @@ async function writeTemplateFixture(
   return directory
 }
 
-async function writeBrandFixture(
+async function writeBrandFixture (
   root: string,
   slug: string,
-  options: { description: string; marker: string },
+  options: { description: string; marker: string }
 ): Promise<string> {
   const directory = path.join(root, 'src', 'brand', ...slug.split('/'))
   await mkdir(directory, { recursive: true })
@@ -104,7 +104,7 @@ async function writeBrandFixture(
   return directory
 }
 
-async function executeGeneratedLoaders(root: string): Promise<{
+async function executeGeneratedLoaders (root: string): Promise<{
   templateMetadata: Array<Record<string, unknown>>
   brandMetadata: Array<Record<string, unknown>>
   brandManifest: Array<Record<string, unknown>>
@@ -165,8 +165,8 @@ describe('findTemplates', () => {
         {
           slug: 'social/campaign',
           segments: ['social', 'campaign'],
-          absolutePath: templateRoot,
-        },
+          absolutePath: templateRoot
+        }
       ])
     } finally {
       await rm(templatesRoot, { recursive: true, force: true })
@@ -188,23 +188,22 @@ describe('findTemplates', () => {
     }
   })
 
-  it.each(['Uppercase', 'with_underscore', 'with space', 'conácento'])
-    ('rejects invalid segment %j', async (segment) => {
-      const templatesRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-templates-'))
+  it.each(['Uppercase', 'with_underscore', 'with space', 'conácento'])('rejects invalid segment %j', async (segment) => {
+    const templatesRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-templates-'))
 
-      try {
-        const templateRoot = path.join(templatesRoot, segment)
-        await mkdir(templateRoot, { recursive: true })
-        await writeFile(path.join(templateRoot, 'template.tsx'), '')
+    try {
+      const templateRoot = path.join(templatesRoot, segment)
+      await mkdir(templateRoot, { recursive: true })
+      await writeFile(path.join(templateRoot, 'template.tsx'), '')
 
-        await expectErrorWithPortablePath(
-          () => findTemplates(templatesRoot),
-          `Segmento inválido '${segment}' en ruta física: ${templateRoot}`,
-        )
-      } finally {
-        await rm(templatesRoot, { recursive: true, force: true })
-      }
-    })
+      await expectErrorWithPortablePath(
+        () => findTemplates(templatesRoot),
+          `Segmento inválido '${segment}' en ruta física: ${templateRoot}`
+      )
+    } finally {
+      await rm(templatesRoot, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('writeTemplateModule', () => {
@@ -216,7 +215,7 @@ describe('writeTemplateModule', () => {
       await mkdir(templatesRoot, { recursive: true })
 
       await expect(writeTemplateModule({ projectRoot: root })).rejects.toThrow(
-        `No se encontraron plantillas en: ${templatesRoot}`,
+        `No se encontraron plantillas en: ${templatesRoot}`
       )
     } finally {
       await rm(root, { recursive: true, force: true })
@@ -231,17 +230,17 @@ describe('writeTemplateModule', () => {
       const alphaTemplate = await writeTemplateFixture(root, 'alpha/post')
       await writeBrandFixture(root, 'zulu-brand', {
         description: escapedBrandDescription,
-        marker: 'zulu-preview',
+        marker: 'zulu-preview'
       })
       await writeBrandFixture(root, 'alpha-brand', {
         description: 'Alpha brand block.',
-        marker: 'alpha-preview',
+        marker: 'alpha-preview'
       })
       await addFrameKitStub(root)
 
       await expect(writeTemplateModule({ projectRoot: root })).resolves.toEqual([
         { slug: 'alpha/post', segments: ['alpha', 'post'], absolutePath: alphaTemplate },
-        { slug: 'zeta/launch', segments: ['zeta', 'launch'], absolutePath: zetaTemplate },
+        { slug: 'zeta/launch', segments: ['zeta', 'launch'], absolutePath: zetaTemplate }
       ])
 
       const generated = await executeGeneratedLoaders(root)
@@ -255,13 +254,13 @@ describe('writeTemplateModule', () => {
           title: escapedTemplateTitle,
           description: escapedTemplateDescription,
           marketingDescription: 'Marketing "copy"',
-          tags: ['generated', 'escaping'],
+          tags: ['generated', 'escaping']
         },
         width: 320,
         height: 180,
         variants: { default: 'only' },
         variantKeys: ['only'],
-        assets: { common: {}, variants: {} },
+        assets: { common: {}, variants: {} }
       })
 
       expect(generated.brandMetadata).toEqual([
@@ -269,14 +268,14 @@ describe('writeTemplateModule', () => {
           slug: 'alpha-brand',
           title: 'Alpha Brand',
           segments: ['alpha-brand'],
-          description: 'Alpha brand block.',
+          description: 'Alpha brand block.'
         },
         {
           slug: 'zulu-brand',
           title: 'Zulu Brand',
           segments: ['zulu-brand'],
-          description: escapedBrandDescription,
-        },
+          description: escapedBrandDescription
+        }
       ])
       expect(generated.brandManifest).toEqual(generated.brandMetadata)
       expect(generated.brandRegistryKeys).toEqual(['alpha-brand', 'zulu-brand'])
@@ -321,7 +320,7 @@ describe('writeTemplateModule', () => {
       const templateRoot = await writeTemplateFixture(root, 'example')
       const brandRoot = await writeBrandFixture(root, 'example', {
         description: 'Before brand description.',
-        marker: 'example-preview',
+        marker: 'example-preview'
       })
       await addFrameKitStub(root)
       await writeTemplateModule({ projectRoot: root })
@@ -333,7 +332,7 @@ describe('writeTemplateModule', () => {
 
       await writeFile(
         path.join(templateRoot, 'template.tsx'),
-        validTemplateSource.replace('Generated template', 'Updated template'),
+        validTemplateSource.replace('Generated template', 'Updated template')
       )
       await writeFile(path.join(brandRoot, 'README.md'), '# example\n\nAfter brand description.\n')
       await writeTemplateModule({ projectRoot: root })
@@ -429,7 +428,7 @@ describe('writeTemplateModule', () => {
         height: 100,
         variants: { default: 'moon' },
         variantKeys: ['moon'],
-        assets: { common: {}, variants: {} },
+        assets: { common: {}, variants: {} }
       }])
     } finally {
       await rm(root, { recursive: true, force: true })
@@ -438,10 +437,10 @@ describe('writeTemplateModule', () => {
 
   it.each([
     ['syntax', 'export default {', undefined],
-    ['import', `throw new Error('load failed')`, 'load failed'],
+    ['import', 'throw new Error(\'load failed\')', 'load failed'],
     ['validation', `export function validateTemplateDefinition() {
   return { success: false, error: 'definition is invalid' }
-}`, 'definition is invalid'],
+}`, 'definition is invalid']
   ] as const)('reports the source path for %s failures', async (kind, source, message) => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-summary-error-'))
     const templateRoot = path.join(root, 'src', 'templates', 'example')
@@ -455,7 +454,7 @@ describe('writeTemplateModule', () => {
         () => writeTemplateModule({ projectRoot: root }),
         message === undefined
           ? path.join(templateRoot, 'template.tsx')
-          : `${path.join(templateRoot, 'template.tsx')}: ${message}`,
+          : `${path.join(templateRoot, 'template.tsx')}: ${message}`
       )
       await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'))).rejects.toThrow()
     } finally {
@@ -474,10 +473,10 @@ describe('writeTemplateModule', () => {
 
       await expectErrorWithPortablePath(
         () => writeTemplateModule({ projectRoot: root }),
-        `Los assets no pueden tener subcarpetas: ${invalidDirectory}`,
+        `Los assets no pueden tener subcarpetas: ${invalidDirectory}`
       )
       await expect(
-        readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts')),
+        readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'))
       ).rejects.toThrow()
     } finally {
       await rm(root, { recursive: true, force: true })
@@ -499,7 +498,7 @@ describe('writeTemplateModule', () => {
 
       await expectErrorWithPortablePath(
         () => writeTemplateModule({ projectRoot: root }),
-        `Falta preview.tsx en: ${brandRoot}`,
+        `Falta preview.tsx en: ${brandRoot}`
       )
       await expect(readFile(existingAsset, 'utf8')).resolves.toBe('previous asset')
     } finally {

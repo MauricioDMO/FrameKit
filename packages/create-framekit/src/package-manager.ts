@@ -1,28 +1,28 @@
 import { spawn } from 'node:child_process'
 import type { PackageManager } from './prompts.js'
 
-export function detectPackageManager(): PackageManager | null {
+export function detectPackageManager (): PackageManager | null {
   const ua = process.env.npm_config_user_agent ?? ''
   if (ua.startsWith('pnpm/')) return 'pnpm'
   if (ua.startsWith('npm/')) return 'npm'
   return null
 }
 
-export function packageManagerBin(pm: PackageManager): string {
+export function packageManagerBin (pm: PackageManager): string {
   return pm
 }
 
-export async function runCommand(
+export async function runCommand (
   command: string,
   args: string[],
-  cwd: string,
+  cwd: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const isWindows = process.platform === 'win32'
     const child = spawn(
       isWindows ? process.env.ComSpec ?? 'cmd.exe' : command,
       isWindows ? ['/d', '/s', '/c', command, ...args] : args,
-      { cwd, shell: false, stdio: 'inherit' },
+      { cwd, shell: false, stdio: 'inherit' }
     )
     child.once('error', (error) => {
       reject(new Error(`Command failed: ${command} ${args.join(' ')} (${error.message})`))
@@ -38,15 +38,15 @@ export async function runCommand(
   })
 }
 
-export async function installDependencies(
+export async function installDependencies (
   pm: PackageManager,
-  target: string,
+  target: string
 ): Promise<void> {
   const bin = packageManagerBin(pm)
   await runCommand(bin, ['install'], target)
 }
 
-export async function generateCatalog(pm: PackageManager, target: string): Promise<void> {
+export async function generateCatalog (pm: PackageManager, target: string): Promise<void> {
   const bin = packageManagerBin(pm)
   if (pm === 'pnpm') {
     await runCommand(bin, ['framekit', 'generate'], target)
@@ -55,6 +55,6 @@ export async function generateCatalog(pm: PackageManager, target: string): Promi
   }
 }
 
-export async function runApproveBuilds(target: string): Promise<void> {
+export async function runApproveBuilds (target: string): Promise<void> {
   await runCommand(packageManagerBin('pnpm'), ['approve-builds'], target)
 }

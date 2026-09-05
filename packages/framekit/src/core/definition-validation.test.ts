@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest'
 
 import { field, validateTemplateDefinition } from '../index'
 
-function validDefinition() {
+function validDefinition () {
   return {
     meta: { title: 'Valid template' },
     width: 100,
     height: 200,
     fields: {
-      title: { kind: 'text', label: 'Title' },
+      title: { kind: 'text', label: 'Title' }
     },
     content: {
-      en: { title: 'Hello' },
+      en: { title: 'Hello' }
     },
     variants: { default: 'en', labels: { en: 'English' } },
-    render: () => null,
+    render: () => null
   }
 }
 
@@ -30,7 +30,7 @@ describe('validateTemplateDefinition', () => {
     ['non-plain variants', { variants: [] }, 'variants must be a plain object'],
     ['empty variants', { variants: {} }, 'variants.default must be a non-empty string'],
     ['non-plain content', { content: [] }, 'content must be a plain object'],
-    ['unknown top-level property', { version: 1 }, 'definition contains unknown property "version"'],
+    ['unknown top-level property', { version: 1 }, 'definition contains unknown property "version"']
   ])('rejects a %s', (_name, definition, error) => {
     const candidate = definition === null || Array.isArray(definition) ? definition : { ...validDefinition(), ...definition }
     expect(validateTemplateDefinition(candidate)).toEqual({ success: false, error })
@@ -43,8 +43,8 @@ describe('validateTemplateDefinition', () => {
         title: 'Social card',
         description: 'A card for social posts',
         marketingDescription: 'Present an offer and motivate an action',
-        tags: ['social', 'promotion'],
-      },
+        tags: ['social', 'promotion']
+      }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -54,7 +54,7 @@ describe('validateTemplateDefinition', () => {
     const definition = {
       ...validDefinition(),
       fields: {},
-      content: { en: {} },
+      content: { en: {} }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -64,18 +64,18 @@ describe('validateTemplateDefinition', () => {
     ['description', { description: 1 }, 'meta.description must be a string'],
     ['marketingDescription', { marketingDescription: 1 }, 'meta.marketingDescription must be a string'],
     ['tags', { tags: 'social' }, 'meta.tags must be an array of strings'],
-    ['tag value', { tags: ['social', 1] }, 'meta.tags must be an array of strings'],
+    ['tag value', { tags: ['social', 1] }, 'meta.tags must be an array of strings']
   ])('rejects invalid metadata %s', (_name, change, error) => {
     expect(validateTemplateDefinition({
       ...validDefinition(),
-      meta: { ...validDefinition().meta, ...change },
+      meta: { ...validDefinition().meta, ...change }
     })).toEqual({ success: false, error })
   })
 
   it.each(['revision', 'status', 'keywords', 'order'])('rejects unsupported metadata property %s', (key) => {
     expect(validateTemplateDefinition({
       ...validDefinition(),
-      meta: { ...validDefinition().meta, [key]: 'unsupported' },
+      meta: { ...validDefinition().meta, [key]: 'unsupported' }
     })).toEqual({ success: false, error: `meta contains unknown property "${key}"` })
   })
 
@@ -130,25 +130,25 @@ describe('validateTemplateDefinition', () => {
     ['text lengths on non-text', { kind: 'color', label: 'Color', minLength: 1 }, 'fields.title cannot define minLength or maxLength'],
     ['invalid image scope', { kind: 'image', label: 'Image', scope: 'locale' }, 'fields.title.scope is invalid'],
     ['limits on image', { kind: 'image', label: 'Image', min: 0 }, 'fields.title cannot define min or max'],
-    ['scope on non-image', { kind: 'text', label: 'Title', scope: 'common' }, 'fields.title.scope is only valid for image fields'],
+    ['scope on non-image', { kind: 'text', label: 'Title', scope: 'common' }, 'fields.title.scope is only valid for image fields']
   ])('rejects %s descriptors', (_name, field, error) => {
     expect(validateTemplateDefinition({
       ...validDefinition(),
-      fields: { title: field },
+      fields: { title: field }
     })).toEqual({ success: false, error })
   })
 
   it.each([
     ['required', { required: false }, 'fields.count cannot define required'],
     ['null step', { step: null }, 'fields.count.step must be a finite positive number'],
-    ['null control', { control: null }, 'fields.count.control must be "input" or "slider"'],
+    ['null control', { control: null }, 'fields.count.control must be "input" or "slider"']
   ])('rejects number factory parameters with %s', (_name, invalid, error) => {
     const descriptor = field.number({ label: 'Count', defaultValue: 1, ...invalid } as never)
 
     expect(validateTemplateDefinition({
       ...validDefinition(),
       fields: { count: descriptor },
-      content: { en: { count: 1 } },
+      content: { en: { count: 1 } }
     })).toEqual({ success: false, error })
   })
 
@@ -164,12 +164,12 @@ describe('validateTemplateDefinition', () => {
           label: 'Alignment',
           options: [
             { value: 'left', label: 'Left' },
-            { value: 'center', label: 'Center' },
+            { value: 'center', label: 'Center' }
           ],
-          defaultValue: 'center',
-        },
+          defaultValue: 'center'
+        }
       },
-      content: { en: { title: 'Hello', color: '#ffffff', image: 'logo.png', alignment: 'center' } },
+      content: { en: { title: 'Hello', color: '#ffffff', image: 'logo.png', alignment: 'center' } }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -179,7 +179,7 @@ describe('validateTemplateDefinition', () => {
     const definition = {
       ...validDefinition(),
       fields: { showLogo: { kind: 'boolean', label: 'Show logo' } },
-      content: { en: { showLogo: true } },
+      content: { en: { showLogo: true } }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -189,7 +189,7 @@ describe('validateTemplateDefinition', () => {
     const definition = {
       ...validDefinition(),
       fields: { opacity: { kind: 'number', label: 'Opacity', defaultValue: 100, min: 0, max: 100, step: 5, control: 'slider' } },
-      content: { en: { opacity: 50 } },
+      content: { en: { opacity: 50 } }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -199,7 +199,7 @@ describe('validateTemplateDefinition', () => {
     const definition = {
       ...validDefinition(),
       fields: { count: { kind: 'number', label: 'Count', defaultValue: 10, min: 10, max: 20 } },
-      content: { en: { count: 10 }, max: { count: 20 } },
+      content: { en: { count: 10 }, max: { count: 20 } }
     }
 
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
@@ -209,7 +209,7 @@ describe('validateTemplateDefinition', () => {
     ['below minimum', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 10, min: 10, max: 20 } }, content: { en: { count: 9 } } }, 'content.en.count must be greater than or equal to min'],
     ['above maximum', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 10, min: 10, max: 20 } }, content: { en: { count: 21 } } }, 'content.en.count must be less than or equal to max'],
     ['outside step', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 10, min: 10, max: 20, step: 2 } }, content: { en: { count: 11 } } }, 'content.en.count must match step'],
-    ['outside step at a large magnitude', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 100000000000000.1, step: 0.1 } }, content: { en: { count: 100000000000000.12 } } }, 'content.en.count must match step'],
+    ['outside step at a large magnitude', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 100000000000000.1, step: 0.1 } }, content: { en: { count: Number('100000000000000.12') } } }, 'content.en.count must match step']
   ])('rejects numeric content %s', (_name, change, error) => {
     expect(validateTemplateDefinition({ ...validDefinition(), ...change })).toEqual({ success: false, error })
   })
@@ -220,13 +220,13 @@ describe('validateTemplateDefinition', () => {
 
     expect(validateTemplateDefinition(definition)).toEqual({
       success: false,
-      error: `${dimension} must be a positive finite integer`,
+      error: `${dimension} must be a positive finite integer`
     })
   })
 
   it.each([
     ['missing', undefined],
-    ['non-function', 'not a function'],
+    ['non-function', 'not a function']
   ])('rejects a %s render', (_name, render) => {
     const definition: Record<string, unknown> = validDefinition()
     if (render === undefined) delete definition.render
@@ -234,7 +234,7 @@ describe('validateTemplateDefinition', () => {
 
     expect(validateTemplateDefinition(definition)).toEqual({
       success: false,
-      error: 'render must be a function',
+      error: 'render must be a function'
     })
   })
 
@@ -251,22 +251,22 @@ describe('validateTemplateDefinition', () => {
     ['non-string default variant', { variants: { default: 1 } }, 'variants.default must be a non-empty string'],
     ['unknown default variant', { variants: { default: 'fr' } }, 'variants.default "fr" is not defined in content'],
     ['unsupported variant property', { variants: { default: 'en', mode: 'language' } }, 'variants contains unknown property "mode"'],
-    ['unknown variant label', { variants: { default: 'en', labels: { fr: 'French' } } }, 'variants.labels contains unknown variant key "fr"'],
+    ['unknown variant label', { variants: { default: 'en', labels: { fr: 'French' } } }, 'variants.labels contains unknown variant key "fr"']
   ])('rejects %s', (_name, change, error) => {
     expect(validateTemplateDefinition({ ...validDefinition(), ...change })).toEqual({
       success: false,
-      error,
+      error
     })
   })
 
   it.each([
     ['non-object labels', [], 'variants.labels must be a plain object'],
     ['empty label', { en: '  ' }, 'variants.labels.en must be a non-empty string'],
-    ['non-string label', { en: 1 }, 'variants.labels.en must be a non-empty string'],
+    ['non-string label', { en: 1 }, 'variants.labels.en must be a non-empty string']
   ])('rejects invalid variant labels: %s', (_name, labels, error) => {
     expect(validateTemplateDefinition({
       ...validDefinition(),
-      variants: { default: 'en', labels },
+      variants: { default: 'en', labels }
     })).toEqual({ success: false, error })
   })
 })

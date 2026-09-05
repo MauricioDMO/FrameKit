@@ -7,7 +7,7 @@ export default defineConfig({
     studio: 'src/studio.ts',
     'studio-root': 'src/studio-root.ts',
     dev: 'src/dev.ts',
-    cli: 'src/cli/index.ts',
+    cli: 'src/cli/index.ts'
   },
   format: ['esm'],
   dts: true,
@@ -17,5 +17,5 @@ export default defineConfig({
   sourcemap: false,
   logLevel: 'error',
   external: ['next', 'react', 'react-dom', '@tabler/icons-react', 'modern-screenshot', 'chokidar', 'tsx'],
-  outDir: 'dist',
+  outDir: 'dist'
 })

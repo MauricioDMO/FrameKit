@@ -30,14 +30,14 @@ const invalidDataTemplateSource = `export default {
   render: () => null,
 }`
 
-async function createProject(): Promise<string> {
+async function createProject (): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-cli-'))
   temporaryRoots.push(root)
   await writeFile(path.join(root, 'package.json'), '{"type":"module"}')
   return root
 }
 
-async function runCli(root: string, args: readonly string[]): Promise<{
+async function runCli (root: string, args: readonly string[]): Promise<{
   code: number | null
   stdout: string
   stderr: string
@@ -46,7 +46,7 @@ async function runCli(root: string, args: readonly string[]): Promise<{
     const child = spawn(process.execPath, [tsxCli, cliFile, ...args], {
       cwd: root,
       env: { ...process.env, npm_config_user_agent: '' },
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe']
     })
     let stdout = ''
     let stderr = ''
@@ -57,29 +57,29 @@ async function runCli(root: string, args: readonly string[]): Promise<{
   })
 }
 
-async function addTemplate(root: string, source: string): Promise<void> {
+async function addTemplate (root: string, source: string): Promise<void> {
   const directory = path.join(root, 'src', 'templates', 'example')
   await mkdir(directory, { recursive: true })
   await writeFile(path.join(directory, 'template.tsx'), source)
 }
 
-async function addFrameKitRuntime(root: string): Promise<void> {
+async function addFrameKitRuntime (root: string): Promise<void> {
   const directory = path.join(root, 'node_modules', '@mauriciodmo', 'framekit')
   await mkdir(directory, { recursive: true })
   await writeFile(path.join(directory, 'package.json'), JSON.stringify({
     name: '@mauriciodmo/framekit',
     type: 'module',
-    exports: './index.js',
+    exports: './index.js'
   }))
   const validationModule = new URL('./core/validation/index.ts', import.meta.url).href
   const resolveTemplateDataModule = new URL('./core/resolve-template-data.ts', import.meta.url).href
   await writeFile(path.join(directory, 'index.js'), [
     `export { validateTemplateDefinition, validateTemplateData } from ${JSON.stringify(validationModule)}`,
-    `export { resolveTemplateData } from ${JSON.stringify(resolveTemplateDataModule)}`,
+    `export { resolveTemplateData } from ${JSON.stringify(resolveTemplateDataModule)}`
   ].join('\n'))
 }
 
-async function addInvalidDataTemplate(root: string): Promise<void> {
+async function addInvalidDataTemplate (root: string): Promise<void> {
   await addFrameKitRuntime(root)
   await addTemplate(root, invalidDataTemplateSource)
 }
@@ -92,7 +92,7 @@ describe('framekit CLI', () => {
   it.each([
     ['unknown command', ['unknown']],
     ['missing command', []],
-    ['extra arguments', ['generate', 'extra']],
+    ['extra arguments', ['generate', 'extra']]
   ] as const)('prints usage for %s', async (_caseName, args) => {
     const result = await runCli(await createProject(), args)
 

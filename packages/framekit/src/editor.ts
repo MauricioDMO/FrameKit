@@ -5,5 +5,5 @@ export type { EditorMessages } from './editor/types'
 export type {
   TemplateNavigationFolder,
   TemplateNavigationItem,
-  TemplateNavigationNode,
+  TemplateNavigationNode
 } from './editor/navigation'

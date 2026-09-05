@@ -4,11 +4,11 @@ import { fileURLToPath } from 'node:url'
 
 const packageRoot = path.resolve(
   process.cwd(),
-  process.argv[2] ?? path.relative(process.cwd(), path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')),
+  process.argv[2] ?? path.relative(process.cwd(), path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'))
 )
 const distRoot = path.join(packageRoot, 'dist')
 
-async function findJavaScriptFiles(directory: string): Promise<string[]> {
+async function findJavaScriptFiles (directory: string): Promise<string[]> {
   const files: string[] = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const filePath = path.join(directory, entry.name)
@@ -18,11 +18,11 @@ async function findJavaScriptFiles(directory: string): Promise<string[]> {
   return files
 }
 
-function isInside(directory: string, target: string): boolean {
+function isInside (directory: string, target: string): boolean {
   return target === directory || target.startsWith(`${directory}${path.sep}`)
 }
 
-async function assertFile(target: string, description: string): Promise<void> {
+async function assertFile (target: string, description: string): Promise<void> {
   if (!isInside(packageRoot, target)) throw new Error(`${description} fuera del paquete: ${target}`)
   try {
     if (!(await lstat(target)).isFile()) throw new Error('no es un archivo')
@@ -31,7 +31,7 @@ async function assertFile(target: string, description: string): Promise<void> {
   }
 }
 
-function collectTargets(value: unknown, description: string, targets: string[]): void {
+function collectTargets (value: unknown, description: string, targets: string[]): void {
   if (typeof value === 'string') {
     if (!value.startsWith('./')) throw new Error(`Target inválido en ${description}: ${value}`)
     targets.push(value)
@@ -58,7 +58,7 @@ for (const filePath of await findJavaScriptFiles(distRoot)) {
 
   const matches = [
     ...source.matchAll(/\b(?:import|export)\s+(?:[^'"]*?\sfrom\s+)?(['"])(\.\.?\/[^'"]+)\1/g),
-    ...source.matchAll(/\bimport\s*\(\s*(['"])(\.\.?\/[^'"]+)\1/g),
+    ...source.matchAll(/\bimport\s*\(\s*(['"])(\.\.?\/[^'"]+)\1/g)
   ]
   for (const match of matches) {
     const specifier = match[2]

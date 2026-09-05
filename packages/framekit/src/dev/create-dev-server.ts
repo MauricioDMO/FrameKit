@@ -18,12 +18,12 @@ export interface DevServer {
   close(): Promise<void>
 }
 
-export async function createDevServer(options: DevServerOptions): Promise<DevServer> {
+export async function createDevServer (options: DevServerOptions): Promise<DevServer> {
   let closing = false
   let generationPending = false
   let generationRunning: Promise<void> | undefined
 
-  function reportError(error: unknown): void {
+  function reportError (error: unknown): void {
     const normalizedError = error instanceof Error ? error : new Error(String(error))
 
     if (options.onError) {
@@ -35,7 +35,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     process.exitCode = 1
   }
 
-  function generate(): Promise<void> {
+  function generate (): Promise<void> {
     if (generationRunning) {
       generationPending = true
       return generationRunning
@@ -57,10 +57,10 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     return generationRunning
   }
 
-  function scheduleGeneration(): void {
+  function scheduleGeneration (): void {
     if (closing) return
 
-    void generate().catch((error: unknown) => {
+    generate().catch((error: unknown) => {
       reportError(error)
     })
   }
@@ -72,14 +72,14 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     dir: options.projectRoot,
     hostname: options.hostname,
     port: options.port,
-    turbopack: true,
+    turbopack: true
   })
 
   let httpServer: Server | undefined
   let templateWatcher: TemplateWatcher | undefined
   const upgradedSockets = new Set<Duplex>()
 
-  async function closeResources(): Promise<void> {
+  async function closeResources (): Promise<void> {
     closing = true
 
     let closeError: unknown
@@ -121,19 +121,19 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     httpServer = createServer((request, response) => {
       const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
       if (pathname === '/__framekit/assets') {
-        void handleAssetUpload(request, response, {
+        handleAssetUpload(request, response, {
           projectRoot: options.projectRoot,
-          regenerate: generate,
+          regenerate: generate
         })
         return
       }
-      void handler(request, response)
+      handler(request, response)
     })
 
     httpServer.on('upgrade', (request, socket, head) => {
       upgradedSockets.add(socket)
       socket.once('close', () => upgradedSockets.delete(socket))
-      void upgradeHandler(request, socket, head).catch((error: unknown) => {
+      upgradeHandler(request, socket, head).catch((error: unknown) => {
         socket.destroy()
         console.error(error)
       })
@@ -142,9 +142,9 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     templateWatcher = watchTemplates({
       projectRoot: options.projectRoot,
       onStructureChange: scheduleGeneration,
-      onError(error) {
+      onError (error) {
         reportError(error)
-      },
+      }
     })
 
     let port = options.port

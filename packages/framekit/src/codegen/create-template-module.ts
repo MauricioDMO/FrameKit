@@ -6,22 +6,22 @@ import type { TemplateSummary } from './collect-template-summaries'
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
 
-function importPathForTemplate(
+function importPathForTemplate (
   template: DiscoveredTemplate,
-  outputDirectory: string,
+  outputDirectory: string
 ): string {
   const templatePath = path.join(template.absolutePath, 'template')
   const relativePath = path.relative(outputDirectory, templatePath).split(path.sep).join('/')
   return relativePath.startsWith('.') ? relativePath : `./${relativePath}`
 }
 
-export function createTemplateModule(
+export function createTemplateModule (
   templates: readonly DiscoveredTemplate[],
   options: {
     outputDirectory: string
     assetsBySlug: Readonly<Record<string, TemplateAssetManifest>>
     summariesBySlug: Readonly<Record<string, TemplateSummary>>
-  },
+  }
 ): string {
   const entries = templates
     .map((template) => {

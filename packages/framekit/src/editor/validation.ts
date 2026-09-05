@@ -1,7 +1,7 @@
 import type { TemplateDataValidationError } from '../core/validation'
 import type { EditorMessages } from './types'
 
-export function translateValidationError(error: TemplateDataValidationError, messages: EditorMessages) {
+export function translateValidationError (error: TemplateDataValidationError, messages: EditorMessages) {
   switch (error.code) {
     case 'required': return messages.errorRequired
     case 'invalid_number': return messages.errorInvalidNumber

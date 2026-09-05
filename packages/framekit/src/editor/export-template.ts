@@ -1,4 +1,4 @@
-async function renderTemplate(element: HTMLDivElement, width: number, height: number) {
+async function renderTemplate (element: HTMLDivElement, width: number, height: number) {
   // The screenshot library captures rendered pixels, so fonts must finish loading first.
   await document.fonts.ready
   const { domToPng } = await import('modern-screenshot')
@@ -18,7 +18,7 @@ async function renderTemplate(element: HTMLDivElement, width: number, height: nu
   }
 }
 
-export async function exportTemplate(element: HTMLDivElement, slug: string, width: number, height: number) {
+export async function exportTemplate (element: HTMLDivElement, slug: string, width: number, height: number) {
   const image = await renderTemplate(element, width, height)
   const link = document.createElement('a')
   link.href = image
@@ -26,7 +26,7 @@ export async function exportTemplate(element: HTMLDivElement, slug: string, widt
   link.click()
 }
 
-export async function copyTemplate(element: HTMLDivElement, width: number, height: number) {
+export async function copyTemplate (element: HTMLDivElement, width: number, height: number) {
   if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
     throw new Error('Image clipboard support is unavailable')
   }

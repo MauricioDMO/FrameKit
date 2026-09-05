@@ -14,5 +14,5 @@ export const fieldComponents = {
   number: NumberField,
   image: ImageField,
   choice: ChoiceField,
-  boolean: BooleanField,
+  boolean: BooleanField
 } satisfies Record<string, ComponentType<EditorFieldProps>>

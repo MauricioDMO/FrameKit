@@ -1,4 +1,4 @@
-export function getServerOptions(environment: Record<string, string | undefined>) {
+export function getServerOptions (environment: Record<string, string | undefined>) {
   const hostname = environment.FRAMEKIT_HOST ?? environment.HOST ?? 'localhost'
   const port = Number(environment.PORT ?? 3000)
 

@@ -4,7 +4,7 @@ import { isValidColor } from '../../../core/validation'
 import { controlClass } from '../shared'
 import type { EditorFieldProps } from '../../types'
 
-export function ColorField({ field, value, onChange, error, colorPickerLabel }: EditorFieldProps) {
+export function ColorField ({ field, value, onChange, error, colorPickerLabel }: EditorFieldProps) {
   const stringValue = typeof value === 'string' ? value : ''
   const normalizedValue = stringValue.trim()
   const externalPickerValue = isValidColor(normalizedValue) ? normalizedValue : '#000000'
@@ -22,7 +22,7 @@ export function ColorField({ field, value, onChange, error, colorPickerLabel }: 
     setPickerState({ externalValue: externalPickerValue, pickerValue: externalPickerValue })
   }
 
-  function cancelPendingPickerUpdate() {
+  function cancelPendingPickerUpdate () {
     if (timeoutRef.current !== null) {
       window.clearTimeout(timeoutRef.current)
       timeoutRef.current = null
@@ -30,7 +30,7 @@ export function ColorField({ field, value, onChange, error, colorPickerLabel }: 
     pendingValueRef.current = null
   }
 
-  function schedulePickerUpdate(nextValue: string) {
+  function schedulePickerUpdate (nextValue: string) {
     pendingValueRef.current = nextValue
     if (timeoutRef.current !== null) return
 
@@ -46,9 +46,9 @@ export function ColorField({ field, value, onChange, error, colorPickerLabel }: 
   return (
     <div className="flex max-w-full items-center gap-2">
           <input id={pickerId} name={field.key} type="color" required={field.required} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={error ? `${field.key}-error` : undefined} value={pickerState.pickerValue} onChange={(event) => {
-        const nextValue = event.target.value
-        setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })
-        schedulePickerUpdate(nextValue)
+            const nextValue = event.target.value
+            setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })
+            schedulePickerUpdate(nextValue)
           }} className="sr-only peer" />
        <label htmlFor={pickerId} aria-label={`${colorPickerLabel ?? field.label}: ${field.label}`} className="h-10 w-16 shrink-0 cursor-pointer select-none rounded-xl border border-[#d6d5ce] p-1 peer-focus-visible:ring-3 peer-focus-visible:ring-[#39775f]/20 peer-focus-visible:outline-none dark:border-white/15">
         <span aria-hidden="true" className="block size-full rounded-lg" style={{ backgroundColor: pickerState.pickerValue }} />

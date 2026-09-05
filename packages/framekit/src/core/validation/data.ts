@@ -12,11 +12,11 @@ export type TemplateDataValidationError =
   | { code: 'invalid_choice' }
   | { code: 'invalid_boolean' }
 
-export function isValidColor(value: string): boolean {
+export function isValidColor (value: string): boolean {
   return /^#[\da-f]{6}$/i.test(value)
 }
 
-export function isValidNumberStep(value: number, min: number | undefined, step = 1): boolean {
+export function isValidNumberStep (value: number, min: number | undefined, step = 1): boolean {
   const base = min ?? 0
   if (!Number.isFinite(value) || !Number.isFinite(base) || !Number.isFinite(step) || step <= 0) return false
 
@@ -33,8 +33,8 @@ export function isValidNumberStep(value: number, min: number | undefined, step =
   const stepParts = decimalParts(step)
   const powerOfTen = (exponent: number) => BigInt(10) ** BigInt(exponent)
   const commonScale = Math.min(valueParts.scale, baseParts.scale)
-  const difference = valueParts.integer * powerOfTen(valueParts.scale - commonScale)
-    - baseParts.integer * powerOfTen(baseParts.scale - commonScale)
+  const difference = valueParts.integer * powerOfTen(valueParts.scale - commonScale) -
+    baseParts.integer * powerOfTen(baseParts.scale - commonScale)
   const scaleDifference = commonScale - stepParts.scale
   const numerator = scaleDifference >= 0 ? difference * powerOfTen(scaleDifference) : difference
   const denominator = scaleDifference >= 0
@@ -49,7 +49,7 @@ export function isValidNumberStep(value: number, min: number | undefined, step =
   return distance * BigInt(16_777_216) < denominator
 }
 
-export function validateNumberValue(value: unknown, field: Pick<NumberFieldDescriptor, 'min' | 'max' | 'step'>): TemplateDataValidationError | undefined {
+export function validateNumberValue (value: unknown, field: Pick<NumberFieldDescriptor, 'min' | 'max' | 'step'>): TemplateDataValidationError | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value)) return { code: 'invalid_number' }
   if (field.min !== undefined && value < field.min) return { code: 'number_too_small', min: field.min }
   if (field.max !== undefined && value > field.max) return { code: 'number_too_large', max: field.max }
@@ -60,9 +60,9 @@ export function validateNumberValue(value: unknown, field: Pick<NumberFieldDescr
   }
 }
 
-export function validateTemplateData(
+export function validateTemplateData (
   definition: TemplateBase,
-  data: Record<string, string | number | boolean>,
+  data: Record<string, string | number | boolean>
 ): Record<string, TemplateDataValidationError> {
   const errors: Record<string, TemplateDataValidationError> = {}
 

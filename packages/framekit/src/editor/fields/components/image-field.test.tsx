@@ -9,7 +9,7 @@ const field = { key: 'logo', type: 'image' as const, required: true, label: 'Log
 const imageLabels = {
   select: 'Subir imagen',
   uploading: 'Subiendo',
-  loadError: 'No se pudo cargar el asset',
+  loadError: 'No se pudo cargar el asset'
 }
 
 afterEach(cleanup)

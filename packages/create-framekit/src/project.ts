@@ -6,17 +6,17 @@ import {
   installDependencies,
   generateCatalog,
   runApproveBuilds,
-  runCommand,
+  runCommand
 } from './package-manager.js'
 
 const templateDirectory = fileURLToPath(new URL('../template/', import.meta.url))
 const legacySkillDirectories = [
   'framekit-project-setup',
   'framekit-studio-usage',
-  'framekit-template-creation',
+  'framekit-template-creation'
 ]
 
-async function pathExists(target: string): Promise<boolean> {
+async function pathExists (target: string): Promise<boolean> {
   try {
     await lstat(target)
     return true
@@ -26,14 +26,14 @@ async function pathExists(target: string): Promise<boolean> {
   }
 }
 
-export async function createProject(
+export async function createProject (
   projectName: string,
   pm: PackageManager,
   options: {
     installDependencies: boolean
     runApproveBuilds: boolean
     initGit: boolean
-  },
+  }
 ): Promise<string> {
   const target = path.resolve(process.cwd(), projectName)
 
@@ -43,7 +43,7 @@ export async function createProject(
 
   await cp(templateDirectory, target, {
     recursive: true,
-    filter: (source) => path.basename(source) !== 'node_modules',
+    filter: (source) => path.basename(source) !== 'node_modules'
   })
   await rename(path.join(target, '_gitignore'), path.join(target, '.gitignore'))
 
@@ -69,7 +69,7 @@ export async function createProject(
   return target
 }
 
-export async function updateSkills(projectName = '.'): Promise<string> {
+export async function updateSkills (projectName = '.'): Promise<string> {
   const target = path.resolve(process.cwd(), projectName)
   if (!(await pathExists(target))) throw new Error(`The project directory does not exist: ${target}`)
 
@@ -85,7 +85,7 @@ export async function updateSkills(projectName = '.'): Promise<string> {
   }
 
   await Promise.all(
-    legacySkillDirectories.map((name) => rm(path.join(destination, name), { recursive: true, force: true })),
+    legacySkillDirectories.map((name) => rm(path.join(destination, name), { recursive: true, force: true }))
   )
 
   return target

@@ -12,16 +12,16 @@ const mimeExtensions: Record<string, string> = {
   'image/gif': '.gif',
   'image/jpeg': '.jpg',
   'image/png': '.png',
-  'image/webp': '.webp',
+  'image/webp': '.webp'
 }
 
 class AssetUploadError extends Error {
-  constructor(public readonly statusCode: number, message: string) {
+  constructor (public readonly statusCode: number, message: string) {
     super(message)
   }
 }
 
-function sendJson(response: ServerResponse, statusCode: number, body: Record<string, string>): void {
+function sendJson (response: ServerResponse, statusCode: number, body: Record<string, string>): void {
   const payload = JSON.stringify(body)
   response.statusCode = statusCode
   response.setHeader('content-type', 'application/json; charset=utf-8')
@@ -29,7 +29,7 @@ function sendJson(response: ServerResponse, statusCode: number, body: Record<str
   response.end(payload)
 }
 
-async function readBody(request: IncomingMessage): Promise<string> {
+async function readBody (request: IncomingMessage): Promise<string> {
   const declaredLength = Number(request.headers['content-length'] ?? 0)
   if (Number.isFinite(declaredLength) && declaredLength > maxRequestBytes) {
     throw new AssetUploadError(413, 'La solicitud de asset es demasiado grande')
@@ -48,7 +48,7 @@ async function readBody(request: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString('utf8')
 }
 
-function decodeAsset(data: string): Buffer {
+function decodeAsset (data: string): Buffer {
   if (!/^[A-Za-z0-9+/]*={0,2}$/.test(data) || data.length % 4 !== 0) {
     throw new AssetUploadError(400, 'Los datos del asset no son base64 válido')
   }
@@ -63,7 +63,7 @@ function decodeAsset(data: string): Buffer {
   return bytes
 }
 
-function validateImageSignature(mimeType: string, bytes: Buffer): void {
+function validateImageSignature (mimeType: string, bytes: Buffer): void {
   const isPng = bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
   const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8
   const isWebp = bytes.subarray(0, 4).toString('ascii') === 'RIFF' && bytes.subarray(8, 12).toString('ascii') === 'WEBP'
@@ -73,7 +73,7 @@ function validateImageSignature(mimeType: string, bytes: Buffer): void {
   if (!valid) throw new AssetUploadError(415, 'El contenido no coincide con el tipo de imagen declarado')
 }
 
-async function replaceAsset(
+async function replaceAsset (
   projectRoot: string,
   input: {
     templateSlug: string
@@ -81,7 +81,7 @@ async function replaceAsset(
     fieldKey: string
     mimeType: string
     data: string
-  },
+  }
 ): Promise<void> {
   if (!fieldKeyPattern.test(input.fieldKey) || input.fieldKey === 'language') {
     throw new AssetUploadError(400, 'La key del field no es válida')
@@ -113,10 +113,10 @@ async function replaceAsset(
   await writeFile(path.join(assetsDirectory, `${input.fieldKey}${extension}`), bytes)
 }
 
-export async function handleAssetUpload(
+export async function handleAssetUpload (
   request: IncomingMessage,
   response: ServerResponse,
-  options: { projectRoot: string; regenerate: () => Promise<void> },
+  options: { projectRoot: string; regenerate: () => Promise<void> }
 ): Promise<boolean> {
   const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
   if (pathname !== '/__framekit/assets') return false
@@ -155,7 +155,7 @@ export async function handleAssetUpload(
       variant: body.variant,
       fieldKey: body.fieldKey,
       mimeType: body.mimeType,
-      data: body.data,
+      data: body.data
     })
     await options.regenerate()
     sendJson(response, 200, { status: 'ok' })

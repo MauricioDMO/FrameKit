@@ -7,7 +7,7 @@ export interface BrandHeroProps {
   accentColor?: string
 }
 
-export function BrandHero({ eyebrow, title, description, accentColor = '#c8f7d9' }: BrandHeroProps) {
+export function BrandHero ({ eyebrow, title, description, accentColor = '#c8f7d9' }: BrandHeroProps) {
   return (
     <section className="max-w-[720px]">
       <Markdown

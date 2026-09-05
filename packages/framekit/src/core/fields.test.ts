@@ -21,7 +21,7 @@ describe('field factories', () => {
       required: false,
       defaultValue: 'Default title',
       minLength: 1,
-      maxLength: 80,
+      maxLength: 80
     })
 
     expect(descriptor).toEqual({
@@ -31,7 +31,7 @@ describe('field factories', () => {
       required: false,
       defaultValue: 'Default title',
       minLength: 1,
-      maxLength: 80,
+      maxLength: 80
     })
     expect(Object.isFrozen(descriptor)).toBe(true)
   })
@@ -41,7 +41,7 @@ describe('field factories', () => {
       label: 'Accent color',
       placeholder: '#000000',
       required: false,
-      defaultValue: '#AABBCC',
+      defaultValue: '#AABBCC'
     })
 
     expect(descriptor).toEqual({
@@ -49,7 +49,7 @@ describe('field factories', () => {
       label: 'Accent color',
       placeholder: '#000000',
       required: false,
-      defaultValue: '#AABBCC',
+      defaultValue: '#AABBCC'
     })
     expect(Object.isFrozen(descriptor)).toBe(true)
   })
@@ -60,7 +60,7 @@ describe('field factories', () => {
       placeholder: 'Upload a hero image',
       required: false,
       defaultValue: '/assets/images/hero.webp',
-      scope: 'variant',
+      scope: 'variant'
     })
 
     expect(descriptor).toEqual({
@@ -69,7 +69,7 @@ describe('field factories', () => {
       placeholder: 'Upload a hero image',
       required: false,
       defaultValue: '/assets/images/hero.webp',
-      scope: 'variant',
+      scope: 'variant'
     })
     expect(Object.isFrozen(descriptor)).toBe(true)
   })
@@ -89,7 +89,7 @@ describe('field factories', () => {
       min: -100,
       max: 100,
       step: 5,
-      control: 'slider',
+      control: 'slider'
     })
 
     expect(descriptor).toEqual({
@@ -100,7 +100,7 @@ describe('field factories', () => {
       min: -100,
       max: 100,
       step: 5,
-      control: 'slider',
+      control: 'slider'
     })
     expect(Object.isFrozen(descriptor)).toBe(true)
   })
@@ -109,7 +109,7 @@ describe('field factories', () => {
     const sourceOptions = [
       { value: 'left', label: 'Left' },
       { value: 'center', label: 'Center' },
-      { value: 'right', label: 'Right' },
+      { value: 'right', label: 'Right' }
     ]
     const descriptor = api.field.choice({ label: 'Alignment', options: sourceOptions, defaultValue: 'center' })
 

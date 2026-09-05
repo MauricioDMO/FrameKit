@@ -4,7 +4,7 @@ import { defineTemplate, field, validateTemplateData } from '../index'
 
 import { isValidColor } from './validation/data'
 
-function createDefinition() {
+function createDefinition () {
   return defineTemplate({
     meta: { title: 'Data validation' },
     width: 100,
@@ -21,13 +21,13 @@ function createDefinition() {
       requiredImage: field.image({ label: 'Required image' }),
       optionalImage: field.image({ label: 'Optional image', required: false }),
       requiredColor: field.color({ label: 'Required color' }),
-      optionalColor: field.color({ label: 'Optional color', required: false }),
+      optionalColor: field.color({ label: 'Optional color', required: false })
     },
     content: {
-      en: {},
+      en: {}
     },
     variants: { default: 'en' },
-    render: () => null,
+    render: () => null
   })
 }
 
@@ -43,10 +43,10 @@ const validData = {
   requiredImage: '/assets/images/hero.webp',
   optionalImage: '',
   requiredColor: '#AABBCC',
-  optionalColor: '',
+  optionalColor: ''
 }
 
-function createChoiceDefinition() {
+function createChoiceDefinition () {
   return defineTemplate({
     meta: { title: 'Choice validation' },
     width: 100,
@@ -57,18 +57,18 @@ function createChoiceDefinition() {
         options: [
           { value: 'left', label: 'Left' },
           { value: 'center', label: 'Center' },
-          { value: 'right', label: 'Right' },
+          { value: 'right', label: 'Right' }
         ],
-        defaultValue: 'center',
-      }),
+        defaultValue: 'center'
+      })
     },
     content: { en: {} },
     variants: { default: 'en' },
-    render: () => null,
+    render: () => null
   })
 }
 
-function createBooleanDefinition() {
+function createBooleanDefinition () {
   return defineTemplate({
     meta: { title: 'Boolean validation' },
     width: 100,
@@ -76,11 +76,11 @@ function createBooleanDefinition() {
     fields: {
       omittedDefault: field.boolean({ label: 'Omitted default' }),
       explicitTrue: field.boolean({ label: 'Explicit true', defaultValue: true }),
-      explicitFalse: field.boolean({ label: 'Explicit false', defaultValue: false }),
+      explicitFalse: field.boolean({ label: 'Explicit false', defaultValue: false })
     },
     content: { en: {} },
     variants: { default: 'en' },
-    render: () => null,
+    render: () => null
   })
 }
 
@@ -93,7 +93,7 @@ describe('isValidColor', () => {
     ['five digits', '#00000', false],
     ['seven digits', '#0000000', false],
     ['non-hex digit', '#00000g', false],
-    ['empty value', '', false],
+    ['empty value', '', false]
   ])('handles the %s color case', (_name, value, expected) => {
     expect(isValidColor(value)).toBe(expected)
   })
@@ -115,12 +115,12 @@ describe('validateTemplateData', () => {
       requiredImage: '  ',
       optionalImage: '  ',
       requiredColor: '  ',
-      optionalColor: '  ',
+      optionalColor: '  '
     })).toEqual({
       requiredText: { code: 'required' },
       validNumber: { code: 'invalid_number' },
       requiredImage: { code: 'required' },
-      requiredColor: { code: 'required' },
+      requiredColor: { code: 'required' }
     })
   })
 
@@ -138,11 +138,11 @@ describe('validateTemplateData', () => {
       requiredImage: '/assets/images/hero.webp',
       optionalImage: '',
       requiredColor: '#AABBCC',
-      optionalColor: '',
+      optionalColor: ''
     })).toEqual({
       tooSmall: { code: 'number_too_small', min: 10 },
       tooLarge: { code: 'number_too_large', max: 20 },
-      invalidNumber: { code: 'invalid_number' },
+      invalidNumber: { code: 'invalid_number' }
     })
   })
 
@@ -160,7 +160,7 @@ describe('validateTemplateData', () => {
       requiredImage: '/assets/images/hero.webp',
       optionalImage: '',
       requiredColor: '#AABBCC',
-      optionalColor: '#112233',
+      optionalColor: '#112233'
     })).toEqual({})
 
     expect(validateTemplateData(definition, {
@@ -173,7 +173,7 @@ describe('validateTemplateData', () => {
       requiredImage: '',
       optionalImage: '',
       requiredColor: '#AABBCC',
-      optionalColor: 'red',
+      optionalColor: 'red'
     })).toEqual({
       validNumber: { code: 'invalid_number' },
       tooSmall: { code: 'invalid_number' },
@@ -181,34 +181,34 @@ describe('validateTemplateData', () => {
       steppedNumber: { code: 'invalid_number' },
       invalidNumber: { code: 'invalid_number' },
       requiredImage: { code: 'required' },
-      optionalColor: { code: 'invalid_color' },
+      optionalColor: { code: 'invalid_color' }
     })
   })
 
   it.each([
     ['number', 42],
-    ['boolean', true],
+    ['boolean', true]
   ] as const)('rejects a %s value for text fields without coercion', (_type, value) => {
     expect(validateTemplateData(createDefinition(), { ...validData, requiredText: value })).toEqual({
-      requiredText: { code: 'required' },
+      requiredText: { code: 'required' }
     })
   })
 
   it.each([
     ['number', 42],
-    ['boolean', true],
+    ['boolean', true]
   ] as const)('rejects a %s value for image fields without coercion', (_type, value) => {
     expect(validateTemplateData(createDefinition(), { ...validData, requiredImage: value })).toEqual({
-      requiredImage: { code: 'required' },
+      requiredImage: { code: 'required' }
     })
   })
 
   it.each([
     ['number', 42],
-    ['boolean', true],
+    ['boolean', true]
   ] as const)('rejects a %s value for color fields without coercion', (_type, value) => {
     expect(validateTemplateData(createDefinition(), { ...validData, requiredColor: value })).toEqual({
-      requiredColor: { code: 'invalid_color' },
+      requiredColor: { code: 'invalid_color' }
     })
   })
 
@@ -243,12 +243,12 @@ describe('validateTemplateData', () => {
     expect(validateTemplateData(definition, { omittedDefault: 'false', explicitTrue: 'true', explicitFalse: 0 as unknown as boolean })).toEqual({
       omittedDefault: { code: 'invalid_boolean' },
       explicitTrue: { code: 'invalid_boolean' },
-      explicitFalse: { code: 'invalid_boolean' },
+      explicitFalse: { code: 'invalid_boolean' }
     })
     expect(validateTemplateData(definition, {})).toEqual({
       omittedDefault: { code: 'invalid_boolean' },
       explicitTrue: { code: 'invalid_boolean' },
-      explicitFalse: { code: 'invalid_boolean' },
+      explicitFalse: { code: 'invalid_boolean' }
     })
   })
 
@@ -263,20 +263,20 @@ describe('validateTemplateData', () => {
       invalidNumber: 13,
       requiredText: 'Ready',
       requiredImage: '/assets/images/hero.webp',
-      requiredColor: '#AABBCC',
+      requiredColor: '#AABBCC'
     })).toEqual({
       validNumber: { code: 'invalid_number' },
-      steppedNumber: { code: 'invalid_step', step: 2 },
+      steppedNumber: { code: 'invalid_step', step: 2 }
     })
   })
 
   it.each([
     ['NaN', Number.NaN],
     ['Infinity', Number.POSITIVE_INFINITY],
-    ['-Infinity', Number.NEGATIVE_INFINITY],
+    ['-Infinity', Number.NEGATIVE_INFINITY]
   ] as const)('rejects %s numeric data', (_name, value) => {
     expect(validateTemplateData(createDefinition(), { ...validData, validNumber: value })).toEqual({
-      validNumber: { code: 'invalid_number' },
+      validNumber: { code: 'invalid_number' }
     })
   })
 
@@ -286,17 +286,17 @@ describe('validateTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        value: field.number({ label: 'Value', defaultValue: -1, min: -2, max: 2, step: 1 }),
+        value: field.number({ label: 'Value', defaultValue: -1, min: -2, max: 2, step: 1 })
       },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(validateTemplateData(definition, { value: -2 })).toEqual({})
     expect(validateTemplateData(definition, { value: 2 })).toEqual({})
     expect(validateTemplateData(definition, { value: -3 })).toEqual({
-      value: { code: 'number_too_small', min: -2 },
+      value: { code: 'number_too_small', min: -2 }
     })
   })
 
@@ -306,11 +306,11 @@ describe('validateTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        value: field.number({ label: 'Value', defaultValue: 1, step: -1 }),
+        value: field.number({ label: 'Value', defaultValue: 1, step: -1 })
       },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })).toThrow('fields.value.step must be a finite positive number')
   })
 
@@ -322,11 +322,11 @@ describe('validateTemplateData', () => {
       fields: { value: field.number({ label: 'Value', defaultValue: 100000000000000.1, step: 0.1 }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
-    expect(validateTemplateData(definition, { value: 100000000000000.12 })).toEqual({
-      value: { code: 'invalid_step', step: 0.1 },
+    expect(validateTemplateData(definition, { value: Number('100000000000000.12') })).toEqual({
+      value: { code: 'invalid_step', step: 0.1 }
     })
   })
 
@@ -341,23 +341,23 @@ describe('validateTemplateData', () => {
         decimal: field.number({ label: 'Decimal value', defaultValue: 0.3, min: 0, step: 0.1 }),
         minimumStepAtZero: field.number({ label: 'Minimum step at zero', defaultValue: 0, step: Number.MIN_VALUE }),
         minimumStepValue: field.number({ label: 'Minimum step value', defaultValue: Number.MIN_VALUE, step: Number.MIN_VALUE }),
-        minimumStepLargeValue: field.number({ label: 'Minimum step large value', defaultValue: Number.MAX_VALUE, step: Number.MIN_VALUE }),
+        minimumStepLargeValue: field.number({ label: 'Minimum step large value', defaultValue: Number.MAX_VALUE, step: Number.MIN_VALUE })
       },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(validateTemplateData(definition, {
       tiny: 1.24e-18,
-      large: 1_000_000_000_000_000.12,
+      large: Number('1000000000000000.12'),
       decimal: 0.1 + 0.2,
       minimumStepAtZero: 0,
       minimumStepValue: Number.MIN_VALUE,
-      minimumStepLargeValue: Number.MAX_VALUE,
+      minimumStepLargeValue: Number.MAX_VALUE
     })).toEqual({
       tiny: { code: 'invalid_step', step: 1e-18 },
-      large: { code: 'invalid_step', step: 1 },
+      large: { code: 'invalid_step', step: 1 }
     })
   })
 
@@ -371,16 +371,16 @@ describe('validateTemplateData', () => {
           label: 'Value',
           defaultValue: 1_000_000_000_000_000.1,
           min: 0.1,
-          step: 0.2,
-        }),
+          step: 0.2
+        })
       },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(validateTemplateData(definition, { value: 1e15 })).toEqual({
-      value: { code: 'invalid_step', step: 0.2 },
+      value: { code: 'invalid_step', step: 0.2 }
     })
   })
 
@@ -392,12 +392,12 @@ describe('validateTemplateData', () => {
       fields: { value: field.number({ label: 'Value', defaultValue: 2, step: 1 }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(validateTemplateData(definition, { value: 2.00000001 })).toEqual({})
     expect(validateTemplateData(definition, { value: 2.0000001 })).toEqual({
-      value: { code: 'invalid_step', step: 1 },
+      value: { code: 'invalid_step', step: 1 }
     })
   })
 
@@ -409,12 +409,12 @@ describe('validateTemplateData', () => {
       fields: { value: field.number({ label: 'Value', defaultValue: 10, min: 0, step: 10 }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(validateTemplateData(definition, { value: 10.0000005 })).toEqual({})
     expect(validateTemplateData(definition, { value: 10.0000006 })).toEqual({
-      value: { code: 'invalid_step', step: 10 },
+      value: { code: 'invalid_step', step: 10 }
     })
   })
 })

@@ -3,7 +3,7 @@ import process from 'node:process'
 import { createDevServer } from '../dev/create-dev-server'
 import { getServerOptions } from '../dev/server-options'
 
-export async function dev(projectRoot: string): Promise<never> {
+export async function dev (projectRoot: string): Promise<never> {
   const { hostname, port } = getServerOptions(process.env)
   let rejectFailure: (error: Error) => void = () => undefined
   const failure = new Promise<never>((_resolve, reject) => {

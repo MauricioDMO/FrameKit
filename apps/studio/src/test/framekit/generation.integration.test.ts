@@ -75,13 +75,13 @@ type GeneratedModules = {
   brandRegistry: Record<string, FrameKitStudioBrand['load']>
 }
 
-function metadataWithoutLoader<T extends { load: unknown }>(entry: T): Omit<T, 'load'> {
-  const { load, ...metadata } = entry
-  void load
+function metadataWithoutLoader<T extends { load: unknown }> (entry: T): Omit<T, 'load'> {
+  const metadata = { ...entry } as Omit<T, 'load'> & { load?: unknown }
+  delete metadata.load
   return metadata
 }
 
-async function exposeFrameKitRuntime(projectRoot: string): Promise<void> {
+async function exposeFrameKitRuntime (projectRoot: string): Promise<void> {
   const packageRoot = path.join(projectRoot, 'node_modules', '@mauriciodmo', 'framekit')
   const runtimeEntry = import.meta.resolve('@mauriciodmo/framekit')
 
@@ -89,16 +89,16 @@ async function exposeFrameKitRuntime(projectRoot: string): Promise<void> {
   await writeFile(path.join(packageRoot, 'package.json'), JSON.stringify({
     name: '@mauriciodmo/framekit',
     type: 'module',
-    exports: './index.js',
+    exports: './index.js'
   }))
   await writeFile(path.join(packageRoot, 'index.js'), `export * from ${JSON.stringify(runtimeEntry)}\n`)
 }
 
-async function writeTemplateFixture(
+async function writeTemplateFixture (
   projectRoot: string,
   slug: string,
   source: string,
-  assets: Record<string, string> = {},
+  assets: Record<string, string> = {}
 ): Promise<void> {
   const templateRoot = path.join(projectRoot, 'src', 'templates', ...slug.split('/'))
   await mkdir(templateRoot, { recursive: true })
@@ -111,11 +111,11 @@ async function writeTemplateFixture(
   }
 }
 
-async function writeBrandFixture(
+async function writeBrandFixture (
   projectRoot: string,
   slug: string,
   description: string,
-  marker: string,
+  marker: string
 ): Promise<void> {
   const brandRoot = path.join(projectRoot, 'src', 'brand', ...slug.split('/'))
   await mkdir(brandRoot, { recursive: true })
@@ -124,18 +124,18 @@ async function writeBrandFixture(
   await writeFile(path.join(brandRoot, 'README.md'), `# ${slug}\n\n${description}\n`)
 }
 
-async function loadGeneratedModules(projectRoot: string): Promise<GeneratedModules> {
+async function loadGeneratedModules (projectRoot: string): Promise<GeneratedModules> {
   const generatedRoot = path.join(projectRoot, 'src', 'generated', 'framekit')
   const [templateModule, brandModule] = await Promise.all([
     import(pathToFileURL(path.join(generatedRoot, 'templates.ts')).href),
-    import(pathToFileURL(path.join(generatedRoot, 'brands.ts')).href),
+    import(pathToFileURL(path.join(generatedRoot, 'brands.ts')).href)
   ])
 
   return {
     templates: templateModule.templates as TemplateRegistryEntry[],
     brands: brandModule.brands as FrameKitStudioBrand[],
     brandManifest: brandModule.brandManifest as Array<Omit<FrameKitStudioBrand, 'load'>>,
-    brandRegistry: brandModule.brandRegistry as Record<string, FrameKitStudioBrand['load']>,
+    brandRegistry: brandModule.brandRegistry as Record<string, FrameKitStudioBrand['load']>
   }
 }
 
@@ -147,7 +147,7 @@ describe('template generation integration', () => {
       await writeTemplateFixture(projectRoot, 'alpha/post', alphaTemplateSource, {
         'common/logo.svg': '<svg>common-logo</svg>',
         'es/portrait.png': 'es-portrait',
-        'en/portrait.webp': 'en-portrait',
+        'en/portrait.webp': 'en-portrait'
       })
       await writeTemplateFixture(projectRoot, 'beta/story', betaTemplateSource)
       await writeBrandFixture(projectRoot, 'alpha/hero-card', 'Reusable alpha brand block.', 'alpha-preview')
@@ -157,7 +157,7 @@ describe('template generation integration', () => {
       const discovered = await writeTemplateModule({ projectRoot })
       expect(discovered.map(({ slug, segments }) => ({ slug, segments }))).toEqual([
         { slug: 'alpha/post', segments: ['alpha', 'post'] },
-        { slug: 'beta/story', segments: ['beta', 'story'] },
+        { slug: 'beta/story', segments: ['beta', 'story'] }
       ])
 
       const generated = await loadGeneratedModules(projectRoot)
@@ -170,7 +170,7 @@ describe('template generation integration', () => {
             title: 'Alpha campaign',
             description: 'A campaign post for social channels.',
             marketingDescription: 'Turn a campaign idea into a clear social post.',
-            tags: ['alpha', 'campaign'],
+            tags: ['alpha', 'campaign']
           },
           width: 1200,
           height: 630,
@@ -180,9 +180,9 @@ describe('template generation integration', () => {
             common: { logo: '/__framekit/templates/alpha/post/common/logo.svg' },
             variants: {
               en: { portrait: '/__framekit/templates/alpha/post/en/portrait.webp' },
-              es: { portrait: '/__framekit/templates/alpha/post/es/portrait.png' },
-            },
-          },
+              es: { portrait: '/__framekit/templates/alpha/post/es/portrait.png' }
+            }
+          }
         },
         {
           slug: 'beta/story',
@@ -191,14 +191,14 @@ describe('template generation integration', () => {
             title: 'Beta story',
             description: 'A vertical story with a focused call to action.',
             marketingDescription: 'Present a seasonal offer in a vertical format.',
-            tags: ['beta', 'story'],
+            tags: ['beta', 'story']
           },
           width: 1080,
           height: 1920,
           variants: { default: 'summer', labels: { summer: 'Summer', winter: 'Winter' } },
           variantKeys: ['summer', 'winter'],
-          assets: { common: {}, variants: {} },
-        },
+          assets: { common: {}, variants: {} }
+        }
       ])
 
       for (const entry of generated.templates) {
@@ -212,13 +212,13 @@ describe('template generation integration', () => {
           width: validation.definition.width,
           height: validation.definition.height,
           variants: validation.definition.variants,
-          variantKeys: Object.keys(validation.definition.content),
+          variantKeys: Object.keys(validation.definition.content)
         }).toEqual({
           meta: entry.meta,
           width: entry.width,
           height: entry.height,
           variants: entry.variants,
-          variantKeys: entry.variantKeys,
+          variantKeys: entry.variantKeys
         })
       }
 
@@ -232,20 +232,20 @@ describe('template generation integration', () => {
           slug: 'alpha/hero-card',
           title: 'Hero Card',
           segments: ['alpha', 'hero-card'],
-          description: 'Reusable alpha brand block.',
+          description: 'Reusable alpha brand block.'
         },
         {
           slug: 'zeta/quote-card',
           title: 'Quote Card',
           segments: ['zeta', 'quote-card'],
-          description: 'Reusable zeta brand block.',
-        },
+          description: 'Reusable zeta brand block.'
+        }
       ])
       expect(generated.brandManifest).toEqual(brandMetadata)
       expect(Object.keys(generated.brandRegistry)).toEqual(['alpha/hero-card', 'zeta/quote-card'])
       await expect(Promise.all(generated.brands.map(async (brand) => (await brand.load()).default))).resolves.toEqual([
         { marker: 'alpha-preview' },
-        { marker: 'zeta-preview' },
+        { marker: 'zeta-preview' }
       ])
       const registryPreview = await generated.brandRegistry['alpha/hero-card']()
       expect((registryPreview.default as { marker: string }).marker).toBe('alpha-preview')

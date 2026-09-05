@@ -18,20 +18,20 @@ export interface DiscoveredTemplateAssets {
   files: DiscoveredAsset[]
 }
 
-function emptyAssets(): DiscoveredTemplateAssets {
+function emptyAssets (): DiscoveredTemplateAssets {
   return { manifest: { common: {}, variants: {} }, files: [] }
 }
 
-function publicPathFor(slug: string, relativePath: string): string {
+function publicPathFor (slug: string, relativePath: string): string {
   const encodedSlug = slug.split('/').map(encodeURIComponent).join('/')
   const encodedPath = relativePath.split(path.sep).map(encodeURIComponent).join('/')
   return `/__framekit/templates/${encodedSlug}/${encodedPath}`
 }
 
-async function readAssetDirectory(
+async function readAssetDirectory (
   directory: string,
   relativeDirectory: string,
-  slug: string,
+  slug: string
 ): Promise<{ values: Record<string, string>; files: DiscoveredAsset[] }> {
   const values: Record<string, string> = {}
   const files: DiscoveredAsset[] = []
@@ -59,16 +59,16 @@ async function readAssetDirectory(
     files.push({
       sourcePath: path.join(directory, entry.name),
       relativePath,
-      publicPath: values[key],
+      publicPath: values[key]
     })
   }
 
   return { values, files }
 }
 
-export async function findTemplateAssets(
+export async function findTemplateAssets (
   templateDirectory: string,
-  slug: string,
+  slug: string
 ): Promise<DiscoveredTemplateAssets> {
   const assetsDirectory = path.join(templateDirectory, 'assets')
   let entries

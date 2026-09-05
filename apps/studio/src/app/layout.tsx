@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/assets/logos/framekit-small.svg', media: '(prefers-color-scheme: light)' },
-      { url: '/assets/logos/framekit-small-dark.svg', media: '(prefers-color-scheme: dark)' },
-    ],
-  },
+      { url: '/assets/logos/framekit-small-dark.svg', media: '(prefers-color-scheme: dark)' }
+    ]
+  }
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout ({ children }: { children: React.ReactNode }) {
   return <FrameKitStudioRoot>{children}</FrameKitStudioRoot>
 }

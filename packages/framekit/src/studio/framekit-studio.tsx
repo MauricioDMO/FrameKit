@@ -39,7 +39,7 @@ type LoadState =
 
 type LoadSnapshot = { routeKey: string, state: LoadState }
 
-export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrands }: FrameKitStudioProps) {
+export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBrands }: FrameKitStudioProps) {
   const { slug: segments } = useParams<{ slug?: string[] }>()
   const pathname = usePathname()
   const slug = segments?.join('/')
@@ -56,7 +56,7 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
     if (!slug) return
 
     let cancelled = false
-    function updateLoadState(state: LoadState) {
+    function updateLoadState (state: LoadState) {
       if (!cancelled) setLoadSnapshot({ routeKey, state })
     }
 
@@ -90,13 +90,13 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
     return () => { cancelled = true }
   }, [slug, isBrand, routeKey, templates, brands])
 
-  function toggleTheme() {
+  function toggleTheme () {
     const dark = !document.documentElement.classList.contains('dark')
     document.documentElement.classList.toggle('dark', dark)
     document.cookie = `theme=${dark ? 'dark' : 'light'}; path=/; max-age=31536000; samesite=lax`
   }
 
-  function toggleSidebar() {
+  function toggleSidebar () {
     setSidebarCollapsed((collapsed) => !collapsed)
     setSettingsOpen(false)
   }
@@ -113,14 +113,16 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
   return (
     <div className={`min-h-screen bg-[#f0eee7] lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[56px_1fr]' : 'lg:grid-cols-[296px_1fr]'} xl:h-dvh xl:min-h-0 xl:overflow-hidden dark:bg-[#17221d]`}>
       <aside className={`flex flex-col border-b border-white/10 bg-[#10271f] text-white lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 ${sidebarCollapsed ? 'h-20.5 lg:h-screen' : ''}`}>
-        {sidebarCollapsed ? (
+        {sidebarCollapsed
+          ? (
           <>
             <button type="button" onClick={toggleSidebar} aria-label={messages.sidebar.expandLabel} title={messages.sidebar.expandLabel} className="inline-flex h-20.5 w-full shrink-0 items-center justify-center border-b border-white/10 text-[#c8f7d9] transition hover:bg-white/8 focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none"><span className="flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10"><IconLayoutSidebarLeftExpand size={18} /></span></button>
             <div className="hidden min-h-0 flex-1 items-center justify-center overflow-hidden lg:flex">
               <span aria-hidden="true" className="-rotate-90 whitespace-nowrap text-[10px] font-black tracking-[0.28em] text-[#91ae9f] select-none">F R A M E K I T</span>
             </div>
           </>
-        ) : (
+            )
+          : (
           <>
             <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
               <div className="flex min-w-0 items-center gap-3">
@@ -149,29 +151,29 @@ export function FrameKitStudio({ templates = emptyTemplates, brands = emptyBrand
               </div>
             </div>
           </>
-        )}
+            )}
       </aside>
       <main className="min-w-0 xl:min-h-0 xl:overflow-hidden">{content}</main>
     </div>
   )
 }
 
-function LoadingState({ label }: { label: string }) {
+function LoadingState ({ label }: { label: string }) {
   return <div aria-busy="true" aria-label={label} className="flex min-h-screen flex-col text-[#17221d] xl:h-full xl:min-h-0 dark:text-[#e6eee9]"><header className="flex h-20.5 shrink-0 flex-wrap items-center justify-between gap-4 border-b border-black/8 bg-[#faf9f5] px-5 py-4 sm:px-7 dark:border-white/10 dark:bg-[#1d2923]"><div className="h-7 w-48 animate-pulse rounded-md bg-[#cbd5ce] dark:bg-[#40564a]" /><div className="h-10 w-32 animate-pulse rounded-xl bg-[#dce3de] dark:bg-[#2d4036]" /></header><div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[300px_1fr] xl:overflow-hidden"><aside className="rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]"><div className="h-full min-h-48 animate-pulse rounded-xl bg-[#e4e9e5] dark:bg-[#26382f]" /></aside><section className="relative flex min-h-130 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]"><div className="absolute inset-0 bg-[radial-gradient(#4f5e56_0.7px,transparent_0.7px)] bg-size-[16px_16px] opacity-30 dark:opacity-50" /><div className="relative aspect-square w-[min(70%,720px)] animate-pulse rounded-sm bg-[#cbd5ce] shadow-[0_24px_60px_rgba(25,35,30,0.24)] dark:bg-[#12382c]" /></section></div></div>
 }
 
-function EmptyState({ isBrand }: { isBrand: boolean }) {
+function EmptyState ({ isBrand }: { isBrand: boolean }) {
   const { messages } = useFrameKitLocale()
   const title = isBrand ? messages.brand.emptyTitle : messages.emptyState.title
   const description = isBrand ? messages.brand.emptyDescription : messages.emptyState.description
   return <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen"><div className="max-w-md text-center"><div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#173d31] text-[#b9f8d2] shadow-[0_10px_30px_rgba(23,61,49,0.25)]"><IconPhoto size={28} stroke={1.7} /></div><p className="mt-7 text-xs font-bold tracking-[0.24em] text-[#577066] uppercase dark:text-[#a4b8ac]">{isBrand ? messages.brand.componentLabel : messages.emptyState.ready}</p><h1 className="mt-3 text-3xl font-black tracking-[-0.04em] text-[#17221d] dark:text-[#e6eee9]">{title}</h1><p className="mt-3 leading-7 text-[#657168] dark:text-[#b8c8be]">{description}</p></div></div>
 }
 
-function NotFoundState({ isBrand }: { isBrand: boolean }) {
+function NotFoundState ({ isBrand }: { isBrand: boolean }) {
   const { messages } = useFrameKitLocale()
   return <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen"><div className="max-w-md text-center"><p className="text-xs font-bold tracking-[0.24em] text-[#748078] uppercase">{messages.notFound.statusLabel}</p><h1 className="mt-3 text-3xl font-black tracking-tight">{isBrand ? messages.brand.notFoundTitle : messages.notFound.title}</h1><p className="mt-3 leading-7 text-[#657168]">{isBrand ? messages.brand.notFoundDescription : messages.notFound.description}</p><Link href={isBrand ? '/brand' : '/editor'} className="mt-7 inline-block rounded-xl bg-[#173d31] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0f2c23]">{messages.notFound.backToEditor}</Link></div></div>
 }
 
-function MessageState({ children }: { children: React.ReactNode }) {
+function MessageState ({ children }: { children: React.ReactNode }) {
   return <div role="alert" className="flex min-h-[60vh] items-center justify-center p-8 text-[#17221d] dark:text-[#e6eee9]">{children}</div>
 }

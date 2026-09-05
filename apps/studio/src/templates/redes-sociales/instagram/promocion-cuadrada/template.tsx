@@ -7,7 +7,7 @@ export default defineTemplate({
     title: 'Promoción cuadrada',
     description: 'Una pieza cuadrada para comunicar una oferta o servicio en redes sociales.',
     marketingDescription: 'Presentar una oferta, destacar sus beneficios y motivar una conversación.',
-    tags: ['instagram', 'social', 'promoción'],
+    tags: ['instagram', 'social', 'promoción']
   },
   width: 1440,
   height: 1440,
@@ -20,17 +20,17 @@ export default defineTemplate({
       label: 'Estilo del CTA',
       options: [
         { value: 'solid', label: 'Sólido' },
-        { value: 'outline', label: 'Contorno' },
+        { value: 'outline', label: 'Contorno' }
       ],
-      defaultValue: 'solid',
+      defaultValue: 'solid'
     }),
     backgroundImage: field.image({
       label: 'Imagen de fondo',
-      scope: 'common',
+      scope: 'common'
     }),
     imageOpacity: field.number({ label: 'Opacidad de imagen', defaultValue: 55, min: 0, max: 100, step: 5 }),
     showBackgroundImage: field.boolean({ label: 'Mostrar imagen de fondo', defaultValue: true }),
-    accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' }),
+    accentColor: field.color({ label: 'Color principal', defaultValue: '#b9f8d2' })
   },
   content: {
     es: {
@@ -38,18 +38,18 @@ export default defineTemplate({
       title: 'Diseñamos sitios que hacen crecer tu **negocio**',
       description: 'Estrategia, diseño y desarrollo para construir una presencia digital que trabaja a tu favor.',
       website: 'web.mauriciodmo.com',
-      imageOpacity: 55,
+      imageOpacity: 55
     },
     en: {
       eyebrow: 'Digital studio / 2026',
       title: 'We design websites that grow your **business**',
       description: 'Strategy, design, and development to build a digital presence that works for you.',
       website: 'web.mauriciodmo.com',
-      imageOpacity: 55,
-    },
+      imageOpacity: 55
+    }
   },
   variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
-  render({ data, variant, width, height }) {
+  render ({ data, variant, width, height }) {
     const accentColor = data.accentColor || '#b9f8d2'
     const labels =
       variant === 'es'
@@ -122,5 +122,5 @@ export default defineTemplate({
         </div>
       </article>
     )
-  },
+  }
 })

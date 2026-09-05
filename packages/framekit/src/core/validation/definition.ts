@@ -6,7 +6,7 @@ const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants'
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 const VARIANT_KEYS = new Set(['default', 'labels'])
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
+function isPlainObject (value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return false
   }
@@ -23,7 +23,7 @@ type ValidationResult<Definition> = {
   error: string
 }
 
-export function validateTemplateBase(definition: unknown): ValidationResult<TemplateBase> {
+export function validateTemplateBase (definition: unknown): ValidationResult<TemplateBase> {
   if (!isPlainObject(definition)) {
     return { success: false, error: 'definition must be a non-null object' }
   }
@@ -321,7 +321,8 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
         : field.kind === 'number'
           ? 'number'
           : 'string'
-      if (typeof entry[key] !== expectedType || (expectedType === 'number' && !Number.isFinite(entry[key]))) {
+      const actualType = typeof entry[key]
+      if (actualType !== expectedType || (expectedType === 'number' && !Number.isFinite(entry[key]))) {
         return { success: false, error: `content.${variant}.${key} must be a ${expectedType}` }
       }
       if (field.kind === 'number') {
@@ -343,7 +344,7 @@ export function validateTemplateBase(definition: unknown): ValidationResult<Temp
   return { success: true, definition: definition as unknown as TemplateBase }
 }
 
-export function validateTemplateDefinition(definition: unknown): ValidationResult<TemplateDefinition> {
+export function validateTemplateDefinition (definition: unknown): ValidationResult<TemplateDefinition> {
   const validation = validateTemplateBase(definition)
   if (!validation.success) return validation
 

@@ -4,9 +4,9 @@ import path from 'node:path'
 import { exists, validateSegment } from './helpers'
 import type { DiscoveredTemplate } from './types'
 
-export async function findTemplates(
+export async function findTemplates (
   templatesDirectory: string,
-  segments: readonly string[] = [],
+  segments: readonly string[] = []
 ): Promise<DiscoveredTemplate[]> {
   const entries = await readdir(templatesDirectory, { withFileTypes: true })
   const templates: DiscoveredTemplate[] = []
@@ -24,7 +24,7 @@ export async function findTemplates(
       templates.push({
         slug: nextSegments.join('/'),
         segments: nextSegments,
-        absolutePath: directoryPath,
+        absolutePath: directoryPath
       })
       continue
     }

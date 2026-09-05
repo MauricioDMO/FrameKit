@@ -2,26 +2,26 @@ import { EventEmitter } from 'node:events'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createDevServer } from './create-dev-server'
+
 const mocks = vi.hoisted(() => ({
   app: {
     prepare: vi.fn(),
     getRequestHandler: vi.fn(),
     getUpgradeHandler: vi.fn(),
-    close: vi.fn(),
+    close: vi.fn()
   },
   watcher: { close: vi.fn() },
   createServer: vi.fn(),
   next: vi.fn(),
   watchTemplates: vi.fn(),
-  writeTemplateModule: vi.fn(),
+  writeTemplateModule: vi.fn()
 }))
 
 vi.mock('node:http', () => ({ createServer: mocks.createServer }))
 vi.mock('next', () => ({ default: mocks.next }))
 vi.mock('../codegen/write-template-module', () => ({ writeTemplateModule: mocks.writeTemplateModule }))
 vi.mock('./watch-templates', () => ({ watchTemplates: mocks.watchTemplates }))
-
-import { createDevServer } from './create-dev-server'
 
 const options = { projectRoot: '/tmp/framekit', hostname: '127.0.0.1', port: 0 }
 
@@ -45,7 +45,7 @@ class MockHttpServer extends EventEmitter {
   readonly address = vi.fn(() => ({
     address: '127.0.0.1',
     family: 'IPv4',
-    port: this.boundPort,
+    port: this.boundPort
   }))
 
   readonly closeAllConnections = vi.fn()
@@ -55,7 +55,7 @@ class MockHttpServer extends EventEmitter {
     callback()
   })
 
-  constructor(private readonly listenErrors: NodeJS.ErrnoException[] = []) {
+  constructor (private readonly listenErrors: NodeJS.ErrnoException[] = []) {
     super()
   }
 }
@@ -77,22 +77,22 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-function deferred(): { promise: Promise<void>; resolve: () => void } {
+function deferred (): { promise: Promise<void>; resolve: () => void } {
   let resolve!: () => void
-  const promise = new Promise<void>((resolvePromise) => {
-    resolve = resolvePromise
+  const promise = new Promise<void>((_resolve) => {
+    resolve = _resolve
   })
   return { promise, resolve }
 }
 
-function errnoError(code: string): NodeJS.ErrnoException {
+function errnoError (code: string): NodeJS.ErrnoException {
   return Object.assign(new Error(code), { code })
 }
 
-function getWatchOptions(): {
+function getWatchOptions (): {
   onStructureChange: () => void
   onError: (error: Error) => void
-} {
+  } {
   const watchOptions = mocks.watchTemplates.mock.calls[0]?.[0]
   if (!watchOptions) throw new Error('Expected watcher options')
   return watchOptions
@@ -108,7 +108,7 @@ describe('createDevServer', () => {
       dir: '/tmp/framekit',
       hostname: 'studio.test',
       port: 4_321,
-      turbopack: true,
+      turbopack: true
     })
 
     await server.close()
@@ -196,7 +196,7 @@ describe('createDevServer', () => {
     await vi.waitFor(() => expect(mocks.app.close).toHaveBeenCalledOnce())
 
     let settled = false
-    void closing.then(() => {
+    closing.then(() => {
       settled = true
     })
     await Promise.resolve()

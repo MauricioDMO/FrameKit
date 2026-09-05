@@ -13,25 +13,25 @@ describe('resolveTemplateData', () => {
       fields: {
         backgroundImage: field.image({
           label: 'Background',
-          defaultValue: '/assets/images/backgrounds/forest.svg',
+          defaultValue: '/assets/images/backgrounds/forest.svg'
         }),
         title: field.text({ label: 'Title', defaultValue: 'Default title' }),
-        count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
+        count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 })
       },
       content: {
-        aurora: { title: 'Variant title', count: 2 },
+        aurora: { title: 'Variant title', count: 2 }
       },
       variants: { default: 'aurora' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'aurora', {
       title: 'Edited title',
-      count: 3,
+      count: 3
     })).toEqual({
       backgroundImage: '/assets/images/backgrounds/forest.svg',
       title: 'Edited title',
-      count: 3,
+      count: 3
     })
   })
 
@@ -46,17 +46,17 @@ describe('resolveTemplateData', () => {
           options: [
             { value: 'left', label: 'Left' },
             { value: 'center', label: 'Center' },
-            { value: 'right', label: 'Right' },
+            { value: 'right', label: 'Right' }
           ],
-          defaultValue: 'left',
-        }),
+          defaultValue: 'left'
+        })
       },
       content: {
         empty: {},
-        en: { alignment: 'center' },
+        en: { alignment: 'center' }
       },
       variants: { default: 'empty' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'empty', {})).toEqual({ alignment: 'left' })
@@ -73,20 +73,20 @@ describe('resolveTemplateData', () => {
         backgroundImage: field.image({ defaultValue: '/assets/images/backgrounds/forest.svg', label: 'Background' }),
         accentColor: field.color({ defaultValue: '#b9f8d2', label: 'Accent' }),
         eyebrow: field.text({ label: 'Eyebrow' }),
-        title: field.text({ label: 'Title' }),
+        title: field.text({ label: 'Title' })
       },
       content: {
-        en: { eyebrow: 'Digital studio / 2026', title: 'Variant title' },
+        en: { eyebrow: 'Digital studio / 2026', title: 'Variant title' }
       },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'en', { title: 'Edited title' })).toEqual({
       backgroundImage: '/assets/images/backgrounds/forest.svg',
       accentColor: '#b9f8d2',
       eyebrow: 'Digital studio / 2026',
-      title: 'Edited title',
+      title: 'Edited title'
     })
   })
 
@@ -98,17 +98,17 @@ describe('resolveTemplateData', () => {
       fields: {
         omittedDefault: field.boolean({ label: 'Omitted default' }),
         explicitTrue: field.boolean({ label: 'Explicit true', defaultValue: true }),
-        fromContent: field.boolean({ label: 'From content' }),
+        fromContent: field.boolean({ label: 'From content' })
       },
       content: { en: { fromContent: true } },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'en', { fromContent: false })).toEqual({
       omittedDefault: false,
       explicitTrue: true,
-      fromContent: false,
+      fromContent: false
     })
   })
 
@@ -120,13 +120,13 @@ describe('resolveTemplateData', () => {
       fields: { count: field.number({ label: 'Count', defaultValue: 1 }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     for (const count of ['2' as unknown as number, Number.NaN]) {
       const invalidDefinition = {
         ...definition,
-        content: { en: { count } },
+        content: { en: { count } }
       } as unknown as typeof definition
 
       expect(() => resolveTemplateData(invalidDefinition, 'en', {})).toThrow('content.en.count must be a number')
@@ -136,7 +136,7 @@ describe('resolveTemplateData', () => {
   it.each([
     ['boolean', { showLogo: 'true' }, 'edits.showLogo must be a boolean'],
     ['number', { count: '2' }, 'edits.count must be a number'],
-    ['text', { title: 2 }, 'edits.title must be a string'],
+    ['text', { title: 2 }, 'edits.title must be a string']
   ])('rejects invalid %s edit values at the resolver boundary', (_kind, edits, error) => {
     const definition = defineTemplate({
       meta: { title: 'Edit resolution' },
@@ -145,11 +145,11 @@ describe('resolveTemplateData', () => {
       fields: {
         showLogo: field.boolean({ label: 'Show logo' }),
         count: field.number({ label: 'Count', defaultValue: 1 }),
-        title: field.text({ label: 'Title' }),
+        title: field.text({ label: 'Title' })
       },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(() => resolveTemplateData(definition, 'en', edits as never)).toThrow(error)
@@ -163,7 +163,7 @@ describe('resolveTemplateData', () => {
       fields: { count: field.number({ label: 'Count', defaultValue: 1 }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(() => resolveTemplateData(definition, 'en', { count: Number.NaN })).toThrow('edits.count must be a number')
@@ -175,7 +175,7 @@ describe('resolveTemplateData', () => {
     expect(resolveTemplateData(extractedTemplate, 'aurora', {})).toEqual({
       title: 'Northern light',
       accentColor: '',
-      alignment: 'center',
+      alignment: 'center'
     })
   })
 
@@ -186,27 +186,27 @@ describe('resolveTemplateData', () => {
       height: 100,
       fields: {
         hero: field.image({ label: 'Hero', scope: 'variant' }),
-        background: field.image({ label: 'Background', scope: 'common' }),
+        background: field.image({ label: 'Background', scope: 'common' })
       },
       content: { en: {}, es: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'en', {
       hero: '/edited/hero.svg',
-      background: '/edited/background.svg',
+      background: '/edited/background.svg'
     }, {
       common: { hero: '/common/hero.svg', background: '/common/background.svg' },
-      variants: { en: { hero: '/en/hero.webp', background: '/en/background.webp' } },
+      variants: { en: { hero: '/en/hero.webp', background: '/en/background.webp' } }
     })).toEqual({ hero: '/en/hero.webp', background: '/common/background.svg' })
 
     expect(resolveTemplateData(definition, 'es', {
       hero: '/edited/hero.svg',
-      background: '/edited/background.svg',
+      background: '/edited/background.svg'
     }, {
       common: { hero: '/common/hero.svg', background: '/common/background.svg' },
-      variants: {},
+      variants: {}
     })).toEqual({ hero: '/common/hero.svg', background: '/common/background.svg' })
   })
 
@@ -218,22 +218,22 @@ describe('resolveTemplateData', () => {
       fields: {
         showLogo: field.boolean({ label: 'Show logo', defaultValue: true }),
         count: field.number({ label: 'Count', defaultValue: 2 }),
-        title: field.text({ label: 'Title', defaultValue: 'Default', required: false }),
+        title: field.text({ label: 'Title', defaultValue: 'Default', required: false })
       },
       content: { en: { showLogo: true, count: 1, title: 'Variant' } },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(resolveTemplateData(definition, 'en', { title: 'Edited' })).toEqual({
       showLogo: true,
       count: 1,
-      title: 'Edited',
+      title: 'Edited'
     })
     expect(resolveTemplateData(definition, 'en', { showLogo: false, count: 0, title: '' })).toEqual({
       showLogo: false,
       count: 0,
-      title: '',
+      title: ''
     })
   })
 
@@ -245,7 +245,7 @@ describe('resolveTemplateData', () => {
       fields: { title: field.text({ label: 'Title' }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     for (const edits of [null, [], new Date()]) {
@@ -260,16 +260,16 @@ describe('resolveTemplateData', () => {
       height: 100,
       fields: {
         hero: field.image({ label: 'Hero' }),
-        title: field.text({ label: 'Title', defaultValue: 'Default' }),
+        title: field.text({ label: 'Title', defaultValue: 'Default' })
       },
       content: { en: { title: 'Variant' } },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
     const edits = { title: 'Edited' }
     const assets = {
       common: { hero: '/common/hero.svg' },
-      variants: { en: { hero: '/en/hero.svg' } },
+      variants: { en: { hero: '/en/hero.svg' } }
     }
     const originalContent = structuredClone(definition.content)
     const originalEdits = structuredClone(edits)
@@ -289,7 +289,7 @@ describe('resolveTemplateData', () => {
       fields: { title: field.text({ label: 'Title' }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
 
     expect(() => resolveTemplateData(definition, 'missing', {})).toThrow('content variant "missing" is not defined')

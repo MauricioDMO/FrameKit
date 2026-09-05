@@ -8,7 +8,7 @@ const manifest = [
   { slug: 'redes-sociales/instagram/promocion-cuadrada', meta: { title: 'Promocion Cuadrada' }, segments: ['redes-sociales', 'instagram', 'promocion-cuadrada'] },
   { slug: 'marketing/email/newsletter', meta: { title: 'Newsletter' }, segments: ['marketing', 'email', 'newsletter'] },
   { slug: 'redes-sociales/facebook/anuncio', meta: { title: 'Anuncio' }, segments: ['redes-sociales', 'facebook', 'anuncio'] },
-  { slug: 'redes-sociales/instagram/otra', meta: { title: 'Otra' }, segments: ['redes-sociales', 'instagram', 'otra'] },
+  { slug: 'redes-sociales/instagram/otra', meta: { title: 'Otra' }, segments: ['redes-sociales', 'instagram', 'otra'] }
 ]
 
 describe('manifest navigation', () => {
@@ -29,9 +29,9 @@ describe('manifest navigation', () => {
             id: 'marketing/email',
             slug: 'marketing/email',
             title: 'Email',
-            children: [{ type: 'template', id: 'marketing/email/newsletter', slug: 'marketing/email/newsletter', title: 'Newsletter', href: '/editor/marketing/email/newsletter' }],
-          },
-        ],
+            children: [{ type: 'template', id: 'marketing/email/newsletter', slug: 'marketing/email/newsletter', title: 'Newsletter', href: '/editor/marketing/email/newsletter' }]
+          }
+        ]
       },
       {
         type: 'folder',
@@ -44,7 +44,7 @@ describe('manifest navigation', () => {
             id: 'redes-sociales/facebook',
             slug: 'redes-sociales/facebook',
             title: 'Facebook',
-            children: [{ type: 'template', id: 'redes-sociales/facebook/anuncio', slug: 'redes-sociales/facebook/anuncio', title: 'Anuncio', href: '/editor/redes-sociales/facebook/anuncio' }],
+            children: [{ type: 'template', id: 'redes-sociales/facebook/anuncio', slug: 'redes-sociales/facebook/anuncio', title: 'Anuncio', href: '/editor/redes-sociales/facebook/anuncio' }]
           },
           {
             type: 'folder',
@@ -53,11 +53,11 @@ describe('manifest navigation', () => {
             title: 'Instagram',
             children: [
               { type: 'template', id: 'redes-sociales/instagram/otra', slug: 'redes-sociales/instagram/otra', title: 'Otra', href: '/editor/redes-sociales/instagram/otra' },
-              { type: 'template', id: 'redes-sociales/instagram/promocion-cuadrada', slug: 'redes-sociales/instagram/promocion-cuadrada', title: 'Promocion Cuadrada', href: '/editor/redes-sociales/instagram/promocion-cuadrada' },
-            ],
-          },
-        ],
-      },
+              { type: 'template', id: 'redes-sociales/instagram/promocion-cuadrada', slug: 'redes-sociales/instagram/promocion-cuadrada', title: 'Promocion Cuadrada', href: '/editor/redes-sociales/instagram/promocion-cuadrada' }
+            ]
+          }
+        ]
+      }
     ])
   })
 
@@ -68,22 +68,22 @@ describe('manifest navigation', () => {
         id: 'people',
         slug: 'people',
         title: 'People',
-        children: [{ type: 'template', id: 'people/quote', slug: 'people/quote', title: 'Quote', href: '/brand/people/quote' }],
-      },
+        children: [{ type: 'template', id: 'people/quote', slug: 'people/quote', title: 'Quote', href: '/brand/people/quote' }]
+      }
     ])
   })
 
   it('sorts template children by title rather than slug', () => {
     expect(manifestToNavigation([
       { slug: 'catalog/zulu', meta: { title: 'Alpha' }, segments: ['catalog', 'zulu'] },
-      { slug: 'catalog/alpha', meta: { title: 'Zulu' }, segments: ['catalog', 'alpha'] },
+      { slug: 'catalog/alpha', meta: { title: 'Zulu' }, segments: ['catalog', 'alpha'] }
     ])).toMatchObject([{
       type: 'folder',
       title: 'Catalog',
       children: [
         { type: 'template', slug: 'catalog/zulu', title: 'Alpha' },
-        { type: 'template', slug: 'catalog/alpha', title: 'Zulu' },
-      ],
+        { type: 'template', slug: 'catalog/alpha', title: 'Zulu' }
+      ]
     }])
   })
 

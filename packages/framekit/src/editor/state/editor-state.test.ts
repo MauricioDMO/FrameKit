@@ -10,13 +10,13 @@ const definition = defineTemplate({
   meta: { title: 'Editor state' },
   width: 100,
   height: 100,
-    fields: {
-      title: field.text({ label: 'Title' }),
-      color: field.color({ label: 'Color' }),
-      count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
-      enabled: field.boolean({ label: 'Enabled' }),
-      logo: field.image({ label: 'Logo' }),
-      alignment: field.choice({
+  fields: {
+    title: field.text({ label: 'Title' }),
+    color: field.color({ label: 'Color' }),
+    count: field.number({ label: 'Count', defaultValue: 1, min: 0, max: 10 }),
+    enabled: field.boolean({ label: 'Enabled' }),
+    logo: field.image({ label: 'Logo' }),
+    alignment: field.choice({
       label: 'Alignment',
       defaultValue: 'center',
       options: [
@@ -27,7 +27,7 @@ const definition = defineTemplate({
   },
   content: { en: { alignment: 'left' }, fr: {} },
   variants: { default: 'en', labels: { en: 'English', fr: 'French' } },
-  render: () => null,
+  render: () => null
 })
 
 describe('editor state', () => {
@@ -63,16 +63,16 @@ describe('editor state', () => {
       fields: { title: field.text({ label: 'Title' }) },
       content: { en: {}, fr: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
     const state = {
       selectedVariant: 'fr',
-      dataByVariant: { en: { title: 'Saved', count: 3 }, fr: { title: 'Titre français' }, removed: { title: 'Discarded' } },
+      dataByVariant: { en: { title: 'Saved', count: 3 }, fr: { title: 'Titre français' }, removed: { title: 'Discarded' } }
     }
 
     expect(rebaseState(state, refreshed)).toEqual({
       selectedVariant: 'fr',
-      dataByVariant: { en: { title: 'Saved' }, fr: { title: 'Titre français' } },
+      dataByVariant: { en: { title: 'Saved' }, fr: { title: 'Titre français' } }
     })
   })
 
@@ -84,16 +84,16 @@ describe('editor state', () => {
       fields: { title: field.text({ label: 'Title' }) },
       content: { en: {} },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
     const state = {
       selectedVariant: 'fr',
-      dataByVariant: { en: { title: 'Saved' }, fr: { title: 'Discarded' } },
+      dataByVariant: { en: { title: 'Saved' }, fr: { title: 'Discarded' } }
     }
 
     expect(rebaseState(state, refreshed)).toEqual({
       selectedVariant: 'en',
-      dataByVariant: { en: { title: 'Saved' } },
+      dataByVariant: { en: { title: 'Saved' } }
     })
   })
 
@@ -117,12 +117,12 @@ describe('editor state', () => {
 
   it('preserves a valid persisted choice', () => {
     const storage = {
-      getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { alignment: 'center' } } }),
+      getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { alignment: 'center' } } })
     }
 
     expect(loadPersistedState('social/campaign', definition, storage)).toEqual({
       selectedVariant: 'en',
-      dataByVariant: { en: { alignment: 'center' } },
+      dataByVariant: { en: { alignment: 'center' } }
     })
   })
 
@@ -132,23 +132,23 @@ describe('editor state', () => {
         selectedVariant: 'fr',
         dataByVariant: {
           en: { title: 'Saved English', alignment: 'legacy', enabled: true },
-          fr: { title: 'Saved French', alignment: 'legacy', enabled: false },
-        },
-      }),
+          fr: { title: 'Saved French', alignment: 'legacy', enabled: false }
+        }
+      })
     }
     expect(loadPersistedState('social/campaign', definition, storage)).toEqual({
       selectedVariant: 'fr',
       dataByVariant: {
         en: { title: 'Saved English', enabled: true },
-        fr: { title: 'Saved French', enabled: false },
-      },
+        fr: { title: 'Saved French', enabled: false }
+      }
     })
   })
 
   it.each([
     ['finite number', 5, { count: 5 }],
     ['numeric string', '5', {}],
-    ['out-of-range number', 11, {}],
+    ['out-of-range number', 11, {}]
   ] as const)('handles the declared count field: %s', (_caseName, value, expected) => {
     const storage = { getItem: () => JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { count: value } } }) }
 
@@ -175,7 +175,7 @@ describe('editor state', () => {
         return key === 'framekit:social/campaign:v1'
           ? JSON.stringify({ selectedLocale: 'fr', dataByLocale: { fr: { title: 'Old title' } } })
           : null
-      },
+      }
     }
 
     expect(loadPersistedState('social/campaign', definition, storage)).toBeNull()

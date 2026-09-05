@@ -12,7 +12,7 @@ const inlineMarkdown = /(\*\*[^*\n]+?\*\*|~~[^~\n]+?~~|\*[^*\n]+?\*|_[^_\n]+?_)/
 const unorderedList = /^[-*]\s+(.+)$/
 const orderedList = /^\d+[.)]\s+(.+)$/
 
-export function parseInlineMarkdown(value: string): MarkdownInlineToken[] {
+export function parseInlineMarkdown (value: string): MarkdownInlineToken[] {
   return value
     .split(inlineMarkdown)
     .filter(Boolean)
@@ -36,7 +36,7 @@ export function parseInlineMarkdown(value: string): MarkdownInlineToken[] {
     })
 }
 
-export function parseMarkdownBlocks(value: string): MarkdownBlock[] {
+export function parseMarkdownBlocks (value: string): MarkdownBlock[] {
   const lines = value.split(/\r?\n/)
   const blocks: MarkdownBlock[] = []
 
@@ -54,7 +54,7 @@ export function parseMarkdownBlocks(value: string): MarkdownBlock[] {
 
     while (index + 1 < lines.length) {
       const nextMatch = (type === 'unordered-list' ? unorderedList : orderedList).exec(
-        lines[index + 1],
+        lines[index + 1]
       )
       if (!nextMatch) break
 

@@ -17,7 +17,7 @@ describe('runtime requirements', () => {
     ['an invalid version', ''],
     ['a missing patch version', '22.13'],
     ['a malformed version', 'not-a-version'],
-    ['a version with trailing garbage', '22.13.0-basura'],
+    ['a version with trailing garbage', '22.13.0-basura']
   ])('rejects %s', (_caseName, version) => {
     expect(() => assertSupportedRuntime(version, '')).toThrow('requires Node.js >=22.13.0')
   })
@@ -28,7 +28,7 @@ describe('runtime requirements', () => {
 
   it.each(['pnpm/10.0.0 npm/? node/v22.13.0', 'pnpm/11.13.9 npm/? node/v22.13.0'])('rejects an unsupported pnpm version: %s', (userAgent) => {
     expect(() => assertSupportedRuntime('22.13.0', userAgent)).toThrow(
-      'requires pnpm >=11.14.0',
+      'requires pnpm >=11.14.0'
     )
   })
 

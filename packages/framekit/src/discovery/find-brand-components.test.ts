@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 
 import { findBrandComponents } from './find-brand-components'
 
-async function withTempDirectory<T>(prefix: string, callback: (root: string) => Promise<T>): Promise<T> {
+async function withTempDirectory<T> (prefix: string, callback: (root: string) => Promise<T>): Promise<T> {
   const root = await mkdtemp(path.join(os.tmpdir(), prefix))
   try {
     return await callback(root)
@@ -30,7 +30,7 @@ describe('findBrandComponents', () => {
       title: 'Person Quote',
       segments: ['people', 'person-quote'],
       absolutePath: component,
-      description: 'Reusable quote block for a person-led message.',
+      description: 'Reusable quote block for a person-led message.'
     }])
   }))
 
@@ -57,19 +57,19 @@ describe('findBrandComponents', () => {
       title: 'Brand Card',
       segments: ['visible', 'brand-card'],
       absolutePath: component,
-      description: 'Visible brand card.',
+      description: 'Visible brand card.'
     }])
   }))
 
   it.each([
     { label: 'uppercase', segment: 'Brand' },
-    { label: 'underscore', segment: 'brand_name' },
+    { label: 'underscore', segment: 'brand_name' }
   ])('rejects $label segments with the exact physical path', ({ segment }) => withTempDirectory('framekit-brand-segment-', async (root) => {
     const invalidDirectory = path.join(root, segment)
     await mkdir(invalidDirectory)
 
     await expect(findBrandComponents(root)).rejects.toThrowError(
-      new Error(`Segmento inválido '${segment}' en ruta física: ${invalidDirectory}`),
+      new Error(`Segmento inválido '${segment}' en ruta física: ${invalidDirectory}`)
     )
   }))
 
@@ -88,13 +88,13 @@ describe('findBrandComponents', () => {
       { slug: 'alpha/another', segments: ['alpha', 'another'] },
       { slug: 'alpha/card', segments: ['alpha', 'card'] },
       { slug: 'identity/voice/hero-card', segments: ['identity', 'voice', 'hero-card'] },
-      { slug: 'zeta', segments: ['zeta'] },
+      { slug: 'zeta', segments: ['zeta'] }
     ])
   }))
 
   it.each([
     { label: 'empty', readme: '' },
-    { label: 'headings-only', readme: '# Brand card\n## Details\n### Notes\n' },
+    { label: 'headings-only', readme: '# Brand card\n## Details\n### Notes\n' }
   ])('rejects $label README files with the exact description error', ({ readme }) => withTempDirectory('framekit-brand-readme-', async (root) => {
     const component = path.join(root, 'identity', 'brand-card')
     const readmePath = path.join(component, 'README.md')
@@ -104,7 +104,7 @@ describe('findBrandComponents', () => {
     await writeFile(readmePath, readme)
 
     await expect(findBrandComponents(root)).rejects.toThrowError(
-      new Error(`README sin descripción en: ${readmePath}`),
+      new Error(`README sin descripción en: ${readmePath}`)
     )
   }))
 
@@ -125,7 +125,7 @@ describe('findBrandComponents', () => {
       'A **multiline** [brand message](https://example.com)',
       'that keeps flowing.',
       '',
-      '## Notes',
+      '## Notes'
     ].join('\r\n'))
 
     await expect(findBrandComponents(root)).resolves.toEqual([{
@@ -133,7 +133,7 @@ describe('findBrandComponents', () => {
       title: 'Hero Card',
       segments: ['identity', 'voice', 'hero-card'],
       absolutePath: component,
-      description: 'A multiline brand message that keeps flowing.',
+      description: 'A multiline brand message that keeps flowing.'
     }])
   }))
 

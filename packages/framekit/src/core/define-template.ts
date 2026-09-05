@@ -7,13 +7,13 @@ import type {
   TemplateMeta,
   TemplateInput,
   TemplateRenderProps,
-  TemplateVariants,
+  TemplateVariants
 } from '../types'
 import type { ReactNode } from 'react'
 
 import { validateTemplateBase, validateTemplateDefinition } from './validation'
 
-function assertValid(result: { success: true } | { success: false; error: string }): void {
+function assertValid (result: { success: true } | { success: false; error: string }): void {
   if (!result.success) throw new Error(result.error)
 }
 
@@ -24,8 +24,8 @@ export function defineTemplateBase<
   const Height extends number,
   const Meta extends TemplateMeta,
   const Variants extends TemplateVariants,
->(
-  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & NoLanguageFields<Fields>,
+> (
+  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & NoLanguageFields<Fields>
 ): TemplateBase<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateBase(definition))
   return definition
@@ -38,10 +38,10 @@ export function defineTemplate<
   const Height extends number,
   const Meta extends TemplateMeta,
   const Variants extends TemplateVariants,
->(
+> (
   definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & {
     render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height, Meta, Variants>>): ReactNode
-  } & NoLanguageFields<Fields>,
+  } & NoLanguageFields<Fields>
 ): TemplateDefinition<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateDefinition(definition))
   return definition

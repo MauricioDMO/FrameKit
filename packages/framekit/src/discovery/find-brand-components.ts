@@ -4,21 +4,21 @@ import path from 'node:path'
 import { exists, validateSegment } from './helpers'
 import type { DiscoveredBrandComponent } from './types'
 
-function humanizeSegment(segment: string): string {
+function humanizeSegment (segment: string): string {
   return segment
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
 
-function stripMarkdown(value: string): string {
+function stripMarkdown (value: string): string {
   return value
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[`*_~]/g, '')
     .trim()
 }
 
-function readDescription(readme: string, readmePath: string): string {
+function readDescription (readme: string, readmePath: string): string {
   const paragraph: string[] = []
   let inFence = false
 
@@ -51,9 +51,9 @@ function readDescription(readme: string, readmePath: string): string {
   return description
 }
 
-export async function findBrandComponents(
+export async function findBrandComponents (
   brandDirectory: string,
-  segments: readonly string[] = [],
+  segments: readonly string[] = []
 ): Promise<DiscoveredBrandComponent[]> {
   if (!(await exists(brandDirectory))) return []
 
@@ -78,7 +78,7 @@ export async function findBrandComponents(
         title: humanizeSegment(entry.name),
         segments: nextSegments,
         absolutePath: directoryPath,
-        description: readDescription(await readFile(readmePath, 'utf8'), readmePath),
+        description: readDescription(await readFile(readmePath, 'utf8'), readmePath)
       })
       continue
     }

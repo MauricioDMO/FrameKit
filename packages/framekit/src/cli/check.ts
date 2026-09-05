@@ -10,10 +10,10 @@ import { runChild } from './run-child'
 
 const require = createRequire(import.meta.url)
 
-function createCheckSource(
+function createCheckSource (
   templates: readonly DiscoveredTemplate[],
   checkFile: string,
-  assetsBySlug: Readonly<Record<string, TemplateAssetManifest>>,
+  assetsBySlug: Readonly<Record<string, TemplateAssetManifest>>
 ): string {
   const imports = templates.map((template, index) => {
     const templateFile = path.join(template.absolutePath, 'template.tsx')
@@ -59,13 +59,13 @@ if (failed) process.exitCode = 1
 `
 }
 
-export async function check(projectRoot: string): Promise<number> {
+export async function check (projectRoot: string): Promise<number> {
   const templates = await generate(projectRoot)
   const assetsBySlug = Object.fromEntries(
     await Promise.all(templates.map(async (template) => [
       template.slug,
-      (await findTemplateAssets(template.absolutePath, template.slug)).manifest,
-    ] as const)),
+      (await findTemplateAssets(template.absolutePath, template.slug)).manifest
+    ] as const))
   )
   const framekitDirectory = path.join(projectRoot, '.framekit')
   await mkdir(framekitDirectory, { recursive: true })

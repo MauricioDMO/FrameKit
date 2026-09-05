@@ -11,7 +11,7 @@ describe('getVariants', () => {
       fields: { title: field.text({ label: 'Title' }) },
       content: { mobile: { title: 'Mobile' }, campaign: { title: 'Campaign' } },
       variants: { default: 'mobile' },
-      render: () => null,
+      render: () => null
     })
 
     expect(getVariants(definition)).toEqual(['mobile', 'campaign'])

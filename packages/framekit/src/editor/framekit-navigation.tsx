@@ -11,9 +11,9 @@ const navigationStorageKey = 'framekit:navigation:v1'
 const useNavigationEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 type NavigationState = Record<string, boolean>
 
-export function FrameKitNavigation({
+export function FrameKitNavigation ({
   node,
-  level = 0,
+  level = 0
 }: {
   node: TemplateNavigationNode
   level?: number
@@ -21,9 +21,9 @@ export function FrameKitNavigation({
   return <FrameKitNavigationTree nodes={[node]} level={level} />
 }
 
-export function FrameKitNavigationTree({
+export function FrameKitNavigationTree ({
   nodes,
-  level = 0,
+  level = 0
 }: {
   nodes: readonly TemplateNavigationNode[]
   level?: number
@@ -35,7 +35,7 @@ export function FrameKitNavigationTree({
     setExpandedById(readNavigationState())
   }, [])
 
-  function toggleFolder(id: string) {
+  function toggleFolder (id: string) {
     setExpandedById((current) => {
       if (!current) return current
 
@@ -63,7 +63,7 @@ export function FrameKitNavigationTree({
   )
 }
 
-function readNavigationState(): NavigationState {
+function readNavigationState (): NavigationState {
   try {
     const stored = localStorage.getItem(navigationStorageKey)
     if (!stored) return {}
@@ -77,7 +77,7 @@ function readNavigationState(): NavigationState {
   }
 }
 
-function persistNavigationState(state: NavigationState) {
+function persistNavigationState (state: NavigationState) {
   try {
     localStorage.setItem(navigationStorageKey, JSON.stringify(state))
   } catch {
@@ -85,12 +85,12 @@ function persistNavigationState(state: NavigationState) {
   }
 }
 
-function NavigationNode({
+function NavigationNode ({
   node,
   level,
   pathname,
   expandedById,
-  onToggleFolder,
+  onToggleFolder
 }: {
   node: TemplateNavigationNode
   level: number
@@ -98,7 +98,6 @@ function NavigationNode({
   expandedById: NavigationState
   onToggleFolder: (id: string) => void
 }) {
-
   if (node.type === 'template') {
     const selected = pathname === node.href
 
@@ -123,18 +122,18 @@ function NavigationNode({
   return <NavigationFolder node={node} level={level} open={open || containsSelectedTemplate(node, pathname)} onToggle={() => onToggleFolder(node.id)} pathname={pathname} expandedById={expandedById} onToggleFolder={onToggleFolder} />
 }
 
-function containsSelectedTemplate(node: Extract<TemplateNavigationNode, { type: 'folder' }>, pathname: string): boolean {
+function containsSelectedTemplate (node: Extract<TemplateNavigationNode, { type: 'folder' }>, pathname: string): boolean {
   return node.children.some((child) => child.type === 'template' ? child.href === pathname : containsSelectedTemplate(child, pathname))
 }
 
-function NavigationFolder({
+function NavigationFolder ({
   node,
   level,
   open,
   onToggle,
   pathname,
   expandedById,
-  onToggleFolder,
+  onToggleFolder
 }: {
   node: Extract<TemplateNavigationNode, { type: 'folder' }>
   level: number
@@ -144,7 +143,6 @@ function NavigationFolder({
   expandedById: NavigationState
   onToggleFolder: (id: string) => void
 }) {
-
   return (
     <div className="mb-0.5">
       <button

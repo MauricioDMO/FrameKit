@@ -16,12 +16,12 @@ interface View { scale: number; x: number; y: number }
 const MIN_SCALE = 0.1
 const MAX_SCALE = 4
 
-function getFittedView(container: HTMLDivElement, width: number, height: number): View {
+function getFittedView (container: HTMLDivElement, width: number, height: number): View {
   const scale = Math.max(Math.min((container.clientWidth - 48) / width, (container.clientHeight - 48) / height, 1), MIN_SCALE)
   return { scale, x: (container.clientWidth - width * scale) / 2, y: (container.clientHeight - height * scale) / 2 }
 }
 
-export function TemplatePreview({ width, height, label, actualSizeLabel, fitToViewLabel, children }: TemplatePreviewProps) {
+export function TemplatePreview ({ width, height, label, actualSizeLabel, fitToViewLabel, children }: TemplatePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ pointerId: number; x: number; y: number; view: View } | null>(null)
@@ -30,13 +30,13 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
   const [viewMode, setViewMode] = useState<'fit' | 'actual' | 'custom'>('fit')
   const [dragging, setDragging] = useState(false)
 
-  function fitToView() {
+  function fitToView () {
     const container = containerRef.current
     if (container) setView(getFittedView(container, width, height))
     setViewMode('fit')
   }
 
-  function showActualSize() {
+  function showActualSize () {
     const container = containerRef.current
     if (!container) return
     setView({ scale: 1, x: (container.clientWidth - width) / 2, y: (container.clientHeight - height) / 2 })
@@ -48,7 +48,6 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     if (!container) return
     setView(getFittedView(container, width, height))
     setViewReady(true)
-
   }, [width, height])
 
   useEffect(() => {
@@ -63,7 +62,7 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     const stage = stageRef.current
     if (!stage) return
     const previewStage = stage
-    function zoomAtPointer(event: WheelEvent) {
+    function zoomAtPointer (event: WheelEvent) {
       if (!event.ctrlKey) return
       event.preventDefault()
       const bounds = previewStage.getBoundingClientRect()
@@ -80,14 +79,14 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     return () => previewStage.removeEventListener('wheel', zoomAtPointer)
   }, [])
 
-  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerDown (event: React.PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
     dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, view }
     setDragging(true)
   }
 
-  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerMove (event: React.PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
     if (event.clientX === drag.x && event.clientY === drag.y) return
@@ -95,7 +94,7 @@ export function TemplatePreview({ width, height, label, actualSizeLabel, fitToVi
     setView({ ...drag.view, x: drag.view.x + event.clientX - drag.x, y: drag.view.y + event.clientY - drag.y })
   }
 
-  function endDrag(event: React.PointerEvent<HTMLDivElement>) {
+  function endDrag (event: React.PointerEvent<HTMLDivElement>) {
     if (dragRef.current?.pointerId !== event.pointerId) return
     dragRef.current = null
     setDragging(false)

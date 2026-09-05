@@ -8,11 +8,11 @@ export interface EditorState {
 
 export const storageKey = (slug: string) => `framekit:${slug}:v2`
 
-export function getInitialState(definition: TemplateBase): EditorState {
+export function getInitialState (definition: TemplateBase): EditorState {
   return { selectedVariant: definition.variants.default, dataByVariant: {} }
 }
 
-function filterFieldData(definition: TemplateBase, fields: Record<string, unknown>): Record<string, string | number | boolean> {
+function filterFieldData (definition: TemplateBase, fields: Record<string, unknown>): Record<string, string | number | boolean> {
   const data: Record<string, string | number | boolean> = {}
   for (const [key, value] of Object.entries(fields)) {
     const field = definition.fields[key]
@@ -21,14 +21,14 @@ function filterFieldData(definition: TemplateBase, fields: Record<string, unknow
       if (validateNumberValue(value, field) === undefined) data[key] = value as number
     } else if (field.kind === 'choice') {
       if (field.options.some((option) => option.value === value)) data[key] = value as string
-    } else if (typeof value === (field.kind === 'boolean' ? 'boolean' : 'string')) {
+    } else if (field.kind === 'boolean' ? typeof value === 'boolean' : typeof value === 'string') {
       data[key] = value as string | boolean
     }
   }
   return data
 }
 
-export function rebaseState(state: EditorState, definition: TemplateBase): EditorState {
+export function rebaseState (state: EditorState, definition: TemplateBase): EditorState {
   const validVariants = new Set(Object.keys(definition.content))
   const dataByVariant: EditorState['dataByVariant'] = {}
 
@@ -38,11 +38,11 @@ export function rebaseState(state: EditorState, definition: TemplateBase): Edito
 
   return {
     selectedVariant: validVariants.has(state.selectedVariant) ? state.selectedVariant : definition.variants.default,
-    dataByVariant,
+    dataByVariant
   }
 }
 
-export function loadPersistedState(slug: string, definition: TemplateBase, storage: Pick<Storage, 'getItem'>): EditorState | null {
+export function loadPersistedState (slug: string, definition: TemplateBase, storage: Pick<Storage, 'getItem'>): EditorState | null {
   try {
     const stored = storage.getItem(storageKey(slug))
     if (!stored) return null
@@ -70,22 +70,22 @@ export function loadPersistedState(slug: string, definition: TemplateBase, stora
   }
 }
 
-export function selectVariant(state: EditorState, selectedVariant: string): EditorState {
+export function selectVariant (state: EditorState, selectedVariant: string): EditorState {
   return { ...state, selectedVariant }
 }
 
-export function resetVariant(state: EditorState): EditorState {
+export function resetVariant (state: EditorState): EditorState {
   const dataByVariant = { ...state.dataByVariant }
   delete dataByVariant[state.selectedVariant]
   return { ...state, dataByVariant }
 }
 
-export function updateField(state: EditorState, key: string, value: string | number | boolean): EditorState {
+export function updateField (state: EditorState, key: string, value: string | number | boolean): EditorState {
   return {
     ...state,
     dataByVariant: {
       ...state.dataByVariant,
-      [state.selectedVariant]: { ...state.dataByVariant[state.selectedVariant], [key]: value },
-    },
+      [state.selectedVariant]: { ...state.dataByVariant[state.selectedVariant], [key]: value }
+    }
   }
 }

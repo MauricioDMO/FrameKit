@@ -1,12 +1,12 @@
 import { spawn } from 'node:child_process'
 import process from 'node:process'
 
-export async function runChild(modulePath: string, args: string[], projectRoot: string): Promise<number> {
+export async function runChild (modulePath: string, args: string[], projectRoot: string): Promise<number> {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [modulePath, ...args], {
       cwd: projectRoot,
       shell: false,
-      stdio: 'inherit',
+      stdio: 'inherit'
     })
 
     const forwardSignal = (signal: NodeJS.Signals) => child.kill(signal)

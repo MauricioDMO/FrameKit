@@ -13,5 +13,5 @@ export type {
   NumberFieldDescriptor,
   ImageFieldDescriptor,
   ChoiceFieldDescriptor,
-  BooleanFieldDescriptor,
+  BooleanFieldDescriptor
 } from '../../types'

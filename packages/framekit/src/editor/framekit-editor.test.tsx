@@ -14,7 +14,7 @@ import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 
 vi.mock('./export-template', () => ({
   copyTemplate: vi.fn().mockResolvedValue(undefined),
-  exportTemplate: vi.fn().mockResolvedValue(undefined),
+  exportTemplate: vi.fn().mockResolvedValue(undefined)
 }))
 
 const messages: EditorMessages = {
@@ -50,17 +50,17 @@ const messages: EditorMessages = {
   imageSelect: 'Subir imagen',
   imageUploading: 'Subiendo',
   imageLoadError: 'No se pudo cargar el asset',
-  imageUploadError: 'No se pudo subir el asset',
+  imageUploadError: 'No se pudo subir el asset'
 }
 
-function createDefinition() {
+function createDefinition () {
   return defineTemplate({
-     meta: {
-       title: 'Editor test',
-       tags: ['framekit', 'introducción', 'react'],
-       description: 'Una introducción visual a FrameKit y su flujo de trabajo.',
-       marketingDescription: 'Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.',
-     },
+    meta: {
+      title: 'Editor test',
+      tags: ['framekit', 'introducción', 'react'],
+      description: 'Una introducción visual a FrameKit y su flujo de trabajo.',
+      marketingDescription: 'Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.'
+    },
     width: 100,
     height: 100,
     fields: {
@@ -76,23 +76,23 @@ function createDefinition() {
         options: [
           { value: 'left', label: 'Left' },
           { value: 'center', label: 'Center' },
-          { value: 'right', label: 'Right' },
+          { value: 'right', label: 'Right' }
         ],
-        defaultValue: 'center',
+        defaultValue: 'center'
       }),
       showLogo: field.boolean({ label: 'Show logo', defaultValue: true }),
       accentColor: field.color({ label: 'Accent color', defaultValue: '#123456' }),
-      optionalColor: field.color({ label: 'Optional color', required: false }),
+      optionalColor: field.color({ label: 'Optional color', required: false })
     },
     content: { en: { title: 'English title' }, fr: { title: 'French title' } },
     variants: { default: 'en', labels: { en: 'English' } },
-    render({ data }) {
+    render ({ data }) {
       return <span>{data.showLogo ? 'logo-on' : 'logo-off'}:{data.invalidNumber}</span>
-    },
+    }
   })
 }
 
-function createTemplate(definition: TemplateDefinition, meta = definition.meta): TemplateRegistryEntry {
+function createTemplate (definition: TemplateDefinition, meta = definition.meta): TemplateRegistryEntry {
   return {
     slug: 'social/campaign',
     segments: ['social', 'campaign'],
@@ -102,11 +102,11 @@ function createTemplate(definition: TemplateDefinition, meta = definition.meta):
     variants: definition.variants,
     variantKeys: Object.keys(definition.content),
     assets: { common: {}, variants: {} },
-    load: async () => ({ default: definition }),
+    load: async () => ({ default: definition })
   }
 }
 
-function renderEditor(sidebarCollapsed = false) {
+function renderEditor (sidebarCollapsed = false) {
   const definition = createDefinition()
   return render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} sidebarCollapsed={sidebarCollapsed} />)
 }
@@ -165,7 +165,7 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText(messages.variantLabel)).toBeTruthy()
     expect(Array.from((selector as HTMLSelectElement).options).map((option) => [option.value, option.textContent])).toEqual([
       ['en', 'English'],
-      ['fr', 'fr'],
+      ['fr', 'fr']
     ])
   })
 
@@ -254,7 +254,7 @@ describe('FrameKitEditor controls', () => {
     expect(Array.from((alignment as HTMLSelectElement).options).map((option) => [option.value, option.textContent])).toEqual([
       ['left', 'Left'],
       ['center', 'Center'],
-      ['right', 'Right'],
+      ['right', 'Right']
     ])
     expect((alignment as HTMLSelectElement).value).toBe('center')
     expect(alignment.getAttribute('required')).toBeNull()
@@ -272,7 +272,7 @@ describe('FrameKitEditor controls', () => {
       fields: { accentColor: field.color({ label: 'Accent color', required: false }) },
       content: { en: { accentColor: '#abcdef' } },
       variants: { default: 'en' },
-      render: () => null,
+      render: () => null
     })
     const renderer = vi.spyOn(definition, 'render')
 
@@ -283,7 +283,7 @@ describe('FrameKitEditor controls', () => {
     fireEvent.change(input, { target: { value: '' } })
 
     await waitFor(() => expect(renderer).toHaveBeenLastCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ accentColor: '' }),
+      data: expect.objectContaining({ accentColor: '' })
     })))
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     await waitFor(() => expect(exportTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100))
@@ -329,7 +329,7 @@ describe('FrameKitEditor controls', () => {
         <EditorField field={{ key: 'title', type: 'text', required: true, label: 'Title' }} value="" onChange={vi.fn()} error={messages.errorRequired} />
         <EditorField field={{ key: 'color', type: 'color', required: true, label: 'Color' }} value="#123456" onChange={vi.fn()} error={messages.errorInvalidColor} colorPickerLabel={messages.colorPickerLabel} />
         <EditorField field={{ key: 'logo', type: 'image', required: true, label: 'Logo' }} value="" onChange={vi.fn()} error={messages.errorRequired} imageLabels={{ select: messages.imageSelect, uploading: messages.imageUploading, loadError: messages.imageLoadError }} onImageUpload={async () => undefined} />
-      </>,
+      </>
     )
 
     expect(screen.getByRole('textbox', { name: 'Title' }).getAttribute('aria-describedby')).toBe('title-error')
@@ -439,7 +439,7 @@ describe('FrameKitEditor controls', () => {
     render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} />)
 
     expect(renderer).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ title: 'Ready', showLogo: false, alignment: 'center' }),
+      data: expect.objectContaining({ title: 'Ready', showLogo: false, alignment: 'center' })
     }))
   })
 
@@ -479,7 +479,7 @@ describe('FrameKitEditor controls', () => {
 
   it.each([
     ['download', messages.downloadPng, 'export'],
-    ['copy', messages.copyPng, 'copy'],
+    ['copy', messages.copyPng, 'copy']
   ] as const)('shows the localized alert when %s fails', async (_action, buttonName, actionName) => {
     const failure = new Error('private export failure')
     if (actionName === 'export') {
@@ -514,7 +514,7 @@ describe('FrameKitEditor controls', () => {
         fields: { logo: field.image({ label: 'Logo', scope: 'variant' }) },
         content: { en: {} },
         variants: { default: 'en' },
-        render: ({ data }) => <span>{data.logo}</span>,
+        render: ({ data }) => <span>{data.logo}</span>
       })
       render(<FrameKitEditor template={createTemplate(definition)} definition={definition} messages={messages} />)
       const input = screen.getByLabelText('Logo')
@@ -535,8 +535,8 @@ describe('FrameKitEditor controls', () => {
           fieldKey: 'logo',
           filename: 'logo.png',
           mimeType: 'image/png',
-          data: 'aW1hZ2U=',
-        }),
+          data: 'aW1hZ2U='
+        })
       })
     } finally {
       vi.unstubAllGlobals()

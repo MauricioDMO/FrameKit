@@ -24,7 +24,7 @@ interface FrameKitEditorProps<Definition extends TemplateBase> {
   sidebarCollapsed?: boolean
 }
 
-function readFileAsBase64(file: File): Promise<string> {
+function readFileAsBase64 (file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
@@ -37,7 +37,7 @@ function readFileAsBase64(file: File): Promise<string> {
   })
 }
 
-export function FrameKitEditor<Definition extends TemplateBase>({ template, definition, messages, sidebarCollapsed = false }: FrameKitEditorProps<Definition>) {
+export function FrameKitEditor<Definition extends TemplateBase> ({ template, definition, messages, sidebarCollapsed = false }: FrameKitEditorProps<Definition>) {
   const { slug, assets } = template
   const exportRef = useRef<HTMLDivElement>(null)
   const metadataCloseRef = useRef<HTMLButtonElement>(null)
@@ -51,7 +51,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
     if (!metadataOpen) return
 
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    function closeOnEscape(event: KeyboardEvent) {
+    function closeOnEscape (event: KeyboardEvent) {
       if (event.key === 'Escape') setMetadataOpen(false)
     }
 
@@ -70,7 +70,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
     return <div role="alert" className="flex min-h-[60vh] items-center justify-center p-8 text-[#17221d] dark:text-[#e6eee9]">{messages.dataError}</div>
   }
 
-  function changeFieldValidation(key: string, error?: TemplateDataValidationError) {
+  function changeFieldValidation (key: string, error?: TemplateDataValidationError) {
     setErrors((current) => {
       if (!error) {
         if (!current[key]) return current
@@ -82,7 +82,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
     })
   }
 
-  async function uploadImage(key: string, file: File, scope: ImageFieldScope): Promise<void> {
+  async function uploadImage (key: string, file: File, scope: ImageFieldScope): Promise<void> {
     try {
       const response = await fetch('/__framekit/assets', {
         method: 'POST',
@@ -93,8 +93,8 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
           fieldKey: key,
           filename: file.name,
           mimeType: file.type,
-          data: await readFileAsBase64(file),
-        }),
+          data: await readFileAsBase64(file)
+        })
       })
 
       if (!response.ok) throw new Error(`Asset upload failed with ${response.status}`)
@@ -105,7 +105,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
     }
   }
 
-  async function runExport(action: (element: HTMLDivElement) => Promise<void>) {
+  async function runExport (action: (element: HTMLDivElement) => Promise<void>) {
     const element = exportRef.current
     if (!element || exporting) return
 
@@ -131,11 +131,11 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
     }
   }
 
-  function exportPng() {
+  function exportPng () {
     return runExport((element) => exportTemplate(element, slug, definition.width, definition.height))
   }
 
-  function copyPng() {
+  function copyPng () {
     return runExport((element) => copyTemplate(element, definition.width, definition.height))
   }
 
@@ -166,7 +166,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
               assets,
               variant: selectedVariant as TemplateRenderProps<Definition>['variant'],
               width: definition.width,
-              height: definition.height,
+              height: definition.height
             })}
           </div>
         </TemplatePreview>
@@ -192,7 +192,7 @@ export function FrameKitEditor<Definition extends TemplateBase>({ template, defi
   )
 }
 
-function TemplateMetadata({ meta, messages }: { meta: TemplateMeta, messages: EditorMessages }) {
+function TemplateMetadata ({ meta, messages }: { meta: TemplateMeta, messages: EditorMessages }) {
   if (meta.description === undefined && meta.marketingDescription === undefined) return null
 
   return (
@@ -213,7 +213,7 @@ function TemplateMetadata({ meta, messages }: { meta: TemplateMeta, messages: Ed
   )
 }
 
-function TemplateTags({ meta, messages }: { meta: TemplateMeta, messages: EditorMessages }) {
+function TemplateTags ({ meta, messages }: { meta: TemplateMeta, messages: EditorMessages }) {
   if (!meta.tags || meta.tags.length === 0) return null
 
   return (

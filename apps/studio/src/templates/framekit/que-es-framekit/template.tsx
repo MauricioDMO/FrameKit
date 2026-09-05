@@ -7,7 +7,7 @@ export default defineTemplate({
     title: 'Qué es FrameKit',
     description: 'Una introducción visual a FrameKit y su flujo de trabajo.',
     marketingDescription: 'Explicar cómo FrameKit convierte plantillas React en contenido visual reutilizable.',
-    tags: ['framekit', 'introducción', 'react'],
+    tags: ['framekit', 'introducción', 'react']
   },
   width: 1440,
   height: 1440,
@@ -17,7 +17,7 @@ export default defineTemplate({
     description: field.text({ label: 'Descripción' }),
     website: field.text({ label: 'Sitio web' }),
     opacity: field.number({ label: 'Opacidad', defaultValue: 100, min: 0, max: 100 }),
-    accentColor: field.color({ label: 'Color de acento', defaultValue: '#c8f7d9' }),
+    accentColor: field.color({ label: 'Color de acento', defaultValue: '#c8f7d9' })
   },
   content: {
     es: {
@@ -25,18 +25,18 @@ export default defineTemplate({
       title: 'Diseña imágenes desde **React**',
       description: 'Plantillas editables para crear contenido visual consistente, reutilizable y listo para exportar.',
       website: 'framekit.dev',
-      opacity: 100,
+      opacity: 100
     },
     en: {
       eyebrow: 'NEW / FRAMEKIT',
       title: 'Design images with **React**',
       description: 'Editable templates for consistent, reusable visual content that is ready to export.',
       website: 'framekit.dev',
-      opacity: 100,
-    },
+      opacity: 100
+    }
   },
   variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
-  render({ data, variant, width, height }) {
+  render ({ data, variant, width, height }) {
     const accentColor = data.accentColor || '#c8f7d9'
     const labels = variant === 'es'
       ? { define: 'Define', edit: 'Edita', export: 'Exporta', output: 'PNG listo', studio: 'Taller visual' }
@@ -97,5 +97,5 @@ export default defineTemplate({
         </div>
       </article>
     )
-  },
+  }
 })

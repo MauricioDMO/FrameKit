@@ -15,7 +15,7 @@ interface EditorControlsProps {
   onImageUpload?: (key: string, file: File, scope: 'common' | 'variant') => Promise<void>
 }
 
-export function EditorControls({ definition, messages, selectedVariant, data, errors, onVariantChange, onFieldChange, onFieldValidationError, onImageUpload }: EditorControlsProps) {
+export function EditorControls ({ definition, messages, selectedVariant, data, errors, onVariantChange, onFieldChange, onFieldValidationError, onImageUpload }: EditorControlsProps) {
   return (
     <aside className="studio-editor-scrollbar rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
       <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
@@ -46,7 +46,7 @@ export function EditorControls({ definition, messages, selectedVariant, data, er
                 scope: field.kind === 'image' ? field.scope : undefined,
                 options: field.kind === 'choice' ? field.options : undefined,
                 label: field.label,
-                placeholder: 'placeholder' in field ? field.placeholder : undefined,
+                placeholder: 'placeholder' in field ? field.placeholder : undefined
               }}
               value={data[key] ?? (field.kind === 'number' ? field.defaultValue : field.kind === 'boolean' ? false : '')}
               onChange={(value) => onFieldChange(key, value)}

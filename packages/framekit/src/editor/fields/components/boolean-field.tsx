@@ -1,6 +1,6 @@
 import type { EditorFieldProps } from '../../types'
 
-export function BooleanField({ field, value, onChange, error }: EditorFieldProps) {
+export function BooleanField ({ field, value, onChange, error }: EditorFieldProps) {
   return (
     <span className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer">
       <input

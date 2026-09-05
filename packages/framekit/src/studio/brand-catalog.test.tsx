@@ -9,7 +9,7 @@ afterEach(cleanup)
 
 describe('FrameKitBrandCatalog', () => {
   it('renders the component preview, description, and catalog labels', () => {
-    function Preview() {
+    function Preview () {
       return <div>Preview content</div>
     }
 
@@ -19,7 +19,7 @@ describe('FrameKitBrandCatalog', () => {
         description="Reusable quote block for a person-led message."
         preview={Preview}
         messages={{ componentLabel: 'Brand component', previewLabel: 'Component preview', descriptionLabel: 'Description', editHint: 'Edit in code.', badgeLabel: 'Brand', sourceLabel: 'component.tsx' }}
-      />,
+      />
     )
 
     expect(screen.getByRole('heading', { name: 'Person Quote' })).toBeTruthy()

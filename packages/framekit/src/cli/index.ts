@@ -10,7 +10,7 @@ import { assertSupportedRuntime } from './runtime'
 
 const usage = 'Uso: framekit <generate|check|dev|build|start>'
 
-async function main(): Promise<void> {
+async function main (): Promise<void> {
   assertSupportedRuntime()
   const [command, ...extraArguments] = process.argv.slice(2)
   if (!command || extraArguments.length > 0) throw new Error(usage)
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch((error: unknown) => {
+main().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error))
   process.exitCode = 1
 })

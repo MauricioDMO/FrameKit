@@ -10,14 +10,14 @@ import { FrameKitStudio } from './framekit-studio'
 import { FrameKitLocaleProvider } from './locale-provider'
 
 vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>,
+  default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>
 }))
 
 const route = vi.hoisted(() => ({ params: {} as { slug?: string[] }, pathname: '/editor' }))
 
 vi.mock('next/navigation', () => ({
   useParams: () => route.params,
-  usePathname: () => route.pathname,
+  usePathname: () => route.pathname
 }))
 
 const initialLocalStorage = new Map<string, string>()
@@ -30,14 +30,14 @@ for (let index = 0; index < localStorage.length; index += 1) {
 const initialDocumentAttributes = Array.from(document.documentElement.attributes).map(({ name, value }) => [name, value] as const)
 const initialCookies = document.cookie
 
-function clearCookies() {
+function clearCookies () {
   for (const cookie of document.cookie.split('; ')) {
     const name = cookie.split('=', 1)[0]
     if (name) document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
   }
 }
 
-function restoreBrowserState() {
+function restoreBrowserState () {
   localStorage.clear()
   for (const [key, value] of initialLocalStorage) localStorage.setItem(key, value)
 
@@ -58,7 +58,7 @@ afterEach(() => {
   restoreBrowserState()
 })
 
-function createTemplateEntry({ slug = 'social/campaign', width = 100, height = 80, meta = { title: 'Registry title', description: 'Functional description', marketingDescription: 'Marketing goal', tags: ['social', 'launch'] }, onRender }: { slug?: string, width?: number, height?: number, meta?: TemplateRegistryEntry['meta'], onRender?: (props: Parameters<TemplateDefinition['render']>[0]) => void } = {}) {
+function createTemplateEntry ({ slug = 'social/campaign', width = 100, height = 80, meta = { title: 'Registry title', description: 'Functional description', marketingDescription: 'Marketing goal', tags: ['social', 'launch'] }, onRender }: { slug?: string, width?: number, height?: number, meta?: TemplateRegistryEntry['meta'], onRender?: (props: Parameters<TemplateDefinition['render']>[0]) => void } = {}) {
   const definition = defineTemplate({
     meta: { title: 'Loaded definition title' },
     width: 100,
@@ -69,7 +69,7 @@ function createTemplateEntry({ slug = 'social/campaign', width = 100, height = 8
     render: (props) => {
       onRender?.(props)
       return <span>{props.data.title}</span>
-    },
+    }
   })
 
   return {
@@ -81,18 +81,18 @@ function createTemplateEntry({ slug = 'social/campaign', width = 100, height = 8
     variants: definition.variants,
     variantKeys: Object.keys(definition.content),
     assets: { common: {}, variants: {} },
-    load: vi.fn(async () => ({ default: definition })),
+    load: vi.fn(async () => ({ default: definition }))
   } satisfies TemplateRegistryEntry
 }
 
-function createBrandEntry({ slug = 'communication/hero', title = 'Hero', description = 'A hero component.' }: { slug?: string, title?: string, description?: string } = {}) {
+function createBrandEntry ({ slug = 'communication/hero', title = 'Hero', description = 'A hero component.' }: { slug?: string, title?: string, description?: string } = {}) {
   const preview = vi.fn(() => <span>Brand preview</span>)
   const brand = {
     slug,
     title,
     segments: slug.split('/'),
     description,
-    load: vi.fn(async () => ({ default: preview })),
+    load: vi.fn(async () => ({ default: preview }))
   }
   return { brand, preview }
 }
@@ -102,7 +102,7 @@ describe('FrameKitStudio sidebar', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     expect(screen.getByRole('heading', { name: 'Select a template' }).textContent).toBe('Select a template')
@@ -115,7 +115,7 @@ describe('FrameKitStudio sidebar', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     const settings = screen.getByRole('button', { name: 'Ajustes' })
@@ -148,7 +148,7 @@ describe('FrameKitStudio sidebar', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
@@ -176,7 +176,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} brands={[]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     expect(screen.getByRole('heading', { name: 'Select a component' }).textContent).toBe('Select a component')
@@ -192,7 +192,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     const loading = screen.getByLabelText('Loading...')
@@ -209,7 +209,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Template not found' }).textContent).toBe('Template not found'))
@@ -227,7 +227,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} brands={[brand]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     const loading = screen.getByLabelText('Loading component...')
@@ -245,7 +245,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} brands={[brand]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Component not found' }).textContent).toBe('Component not found'))
@@ -260,7 +260,7 @@ describe('FrameKitStudio template integration', () => {
     const view = render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[first]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'First template' }).textContent).toBe('First template'))
@@ -271,7 +271,7 @@ describe('FrameKitStudio template integration', () => {
     view.rerender(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[first, next]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     expect(screen.getByLabelText('Loading...').getAttribute('aria-busy')).toBe('true')
@@ -288,14 +288,14 @@ describe('FrameKitStudio template integration', () => {
     const view = render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[first, next]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     route.params = { slug: ['social', 'launch'] }
     view.rerender(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[first, next]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Next template' }).textContent).toBe('Next template'))
 
@@ -314,7 +314,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(onRender).toHaveBeenLastCalledWith({
@@ -322,7 +322,7 @@ describe('FrameKitStudio template integration', () => {
       assets: { common: {}, variants: {} },
       variant: 'moon',
       width: 100,
-      height: 80,
+      height: 80
     }))
 
     fireEvent.change(screen.getByRole('combobox', { name: 'Variante' }), { target: { value: 'fjord' } })
@@ -331,7 +331,7 @@ describe('FrameKitStudio template integration', () => {
       assets: { common: {}, variants: {} },
       variant: 'fjord',
       width: 100,
-      height: 80,
+      height: 80
     })
   })
 
@@ -342,7 +342,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Registry title' }).textContent).toBe('Registry title'))
@@ -368,7 +368,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[createTemplateEntry({ width: 200 })]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('La plantilla no es válida'))
@@ -380,7 +380,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[createTemplateEntry({ height: 90 })]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('La plantilla no es válida'))
@@ -394,7 +394,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('La plantilla no es válida'))
@@ -407,7 +407,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="es">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     const variant = await waitFor(() => screen.getByRole('combobox', { name: 'Variante' }))
@@ -429,7 +429,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[entry]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Error loading template'))
@@ -444,7 +444,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} brands={[brand]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Hero' }).textContent).toBe('Hero'))
@@ -464,7 +464,7 @@ describe('FrameKitStudio template integration', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
         <FrameKitStudio templates={[]} brands={[brand]} />
-      </FrameKitLocaleProvider>,
+      </FrameKitLocaleProvider>
     )
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('The component could not be loaded'))

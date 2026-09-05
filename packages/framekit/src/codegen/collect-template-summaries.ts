@@ -12,15 +12,15 @@ const require = createRequire(import.meta.url)
 
 export type TemplateSummary = Pick<TemplateRegistryEntry, 'meta' | 'width' | 'height' | 'variants' | 'variantKeys'>
 
-function importPathForTemplate(template: DiscoveredTemplate, scriptDirectory: string): string {
+function importPathForTemplate (template: DiscoveredTemplate, scriptDirectory: string): string {
   const relativePath = path.relative(scriptDirectory, path.join(template.absolutePath, 'template.tsx')).split(path.sep).join('/')
   return relativePath.startsWith('.') ? relativePath : `./${relativePath}`
 }
 
-function createSummarySource(
+function createSummarySource (
   templates: readonly DiscoveredTemplate[],
   scriptFile: string,
-  summaryFile: string,
+  summaryFile: string
 ): string {
   const imports = templates.map((template, index) => {
     const sourcePath = path.join(template.absolutePath, 'template.tsx')
@@ -36,7 +36,7 @@ async function loadTemplate(templatePath, specifier) {
   try {
     return (await import(specifier)).default
   } catch (error) {
-    throw new Error(\`${'${templatePath}'}: ${'${error instanceof Error ? error.message : String(error)}'}\`)
+    throw new Error(templatePath + ': ' + (error instanceof Error ? error.message : String(error)))
   }
 }
 
@@ -48,7 +48,7 @@ ${entries}
 
 const summaries = templates.map(({ slug, path: templatePath, definition }) => {
   const result = validateTemplateDefinition(definition)
-  if (!result.success) throw new Error(\`${'${templatePath}'}: ${'${result.error}'}\`)
+  if (!result.success) throw new Error(templatePath + ': ' + result.error)
 
   const { meta, width, height, variants, content } = result.definition
   return {
@@ -73,7 +73,7 @@ await writeFile(${JSON.stringify(summaryFile)}, JSON.stringify(summaries), 'utf8
 `
 }
 
-function normalizeSummary(value: unknown): TemplateSummary {
+function normalizeSummary (value: unknown): TemplateSummary {
   if (!value || typeof value !== 'object') throw new Error('El resumen generado no es válido')
   const summary = value as Partial<TemplateSummary>
   if (!summary.meta || typeof summary.meta !== 'object' || typeof summary.width !== 'number' || typeof summary.height !== 'number' || !summary.variants || typeof summary.variants !== 'object' || !Array.isArray(summary.variantKeys)) {
@@ -84,13 +84,13 @@ function normalizeSummary(value: unknown): TemplateSummary {
     width: summary.width,
     height: summary.height,
     variants: summary.variants as TemplateVariants,
-    variantKeys: summary.variantKeys as string[],
+    variantKeys: summary.variantKeys as string[]
   }
 }
 
-export async function collectTemplateSummaries(
+export async function collectTemplateSummaries (
   projectRoot: string,
-  templates: readonly DiscoveredTemplate[],
+  templates: readonly DiscoveredTemplate[]
 ): Promise<Readonly<Record<string, TemplateSummary>>> {
   const framekitDirectory = path.join(projectRoot, '.framekit')
   await mkdir(framekitDirectory, { recursive: true })
@@ -104,7 +104,7 @@ export async function collectTemplateSummaries(
     try {
       await execFileAsync(process.execPath, [require.resolve('tsx/cli'), scriptFile], {
         cwd: projectRoot,
-        maxBuffer: 10 * 1024 * 1024,
+        maxBuffer: 10 * 1024 * 1024
       })
     } catch (error) {
       const stderr = error && typeof error === 'object' && 'stderr' in error ? String(error.stderr) : ''

@@ -1,6 +1,6 @@
 import type { TextFieldDescriptor } from '../../types'
 
-export function text(
+export function text (
   params: {
     label: string;
     placeholder?: string;
