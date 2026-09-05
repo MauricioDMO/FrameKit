@@ -344,8 +344,8 @@ dos tests existentes de FrameKit durante la ejecución recursiva.
 Plan:
 [03-editor-orchestration.md](./maintainability-roadmap/03-editor-orchestration.md).
 
-Estado de implementación: implementada en el checkout actual; permanece abierta
-hasta que el exit gate completo pase.
+Estado de implementación: completada en `8680ccd`; permanece abierta hasta que
+el exit gate completo pase.
 
 * [ ] Confirmar el contrato público actual de `FrameKitEditor`.
 * [ ] Extraer solamente `EditorHeader`.
@@ -758,7 +758,8 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 
 * [x] `pnpm check:runtime` pasa.
 * [x] `pnpm lint` pasa.
-* [x] `pnpm test` pasa.
+* [ ] `pnpm test` pasa; la ejecución actual queda bloqueada porque varios tests
+  existentes de FrameKit superan el timeout fijo de 5 segundos.
 * [x] `pnpm typecheck` pasa.
 * [x] `pnpm build` pasa.
 * [x] Ambos paquetes públicos pasan inspección y tarball smoke.
