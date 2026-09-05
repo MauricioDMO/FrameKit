@@ -17,8 +17,7 @@ guide](./migration-v0.8.0.md).
   part of this contract.
 
 This rolling guide is the documentation deliverable for [GitHub issue
-#14](https://github.com/MauricioDMO/FrameKit/issues/14) and its [implementation
-plan](../../Plans/Future/issue-14-documentation-and-migration.md).
+#14](https://github.com/MauricioDMO/FrameKit/issues/14).
 
 ## Canonical Template Contract
 
@@ -272,7 +271,7 @@ use the same output format.
 
 See the [generated registry CLI reference](../reference/cli.md#framekit-generate),
 the [public API reference](../reference/public-api.md#generated-template-registry),
-and the [Generated Template Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
+and [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ## Persisted Choice Values
 
@@ -343,8 +342,7 @@ source, and treat the `v1` persistence invalidation as an intentional manual
 reset where applicable. Regenerate generated files with `framekit generate`
 instead of editing them by hand, then run `framekit check` and `framekit build`.
 
-See the [Studio canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/13)
-and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).
+See the [Studio canonical contract issue](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 ## Verification and release status
 

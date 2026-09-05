@@ -59,15 +59,13 @@ Los comandos de este documento son checks locales salvo cuando se identifiquen
 explícitamente como pasos del workflow. Ejecutarlos localmente no cuenta como un
 resultado de CI.
 
-- El [run CI 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
+- El [run CI 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
   completó correctamente los lanes de Ubuntu con Node.js `22.13.0`, Ubuntu con
-  Node.js `24` y Chromium. Su lane de Windows sí se ejecutó, pero falló en
-  `Run discovery and codegen tests` después de instalar y construir los paquetes
-  públicos; los pasos posteriores de Windows se omitieron. El gate de Windows
-  debe considerarse fallido hasta que un rerun pase.
-- La [evidencia del smoke pre-publicación de tarballs](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
-  registra PASS para un consumidor independiente y otro generado por creator.
-  Repite este gate en cada release.
+  Node.js `24`, Windows y Chromium.
+- El smoke pre-publicación de tarballs registrado en el [issue #15 de
+  GitHub](https://github.com/MauricioDMO/FrameKit/issues/15) pasó para un
+  consumidor independiente y otro generado por creator. Repite este gate en
+  cada release.
 - El smoke del registro npm posterior a publicar queda pendiente hasta que los
   paquetes publicados exactos estén disponibles y la comprobación pase; debe
   pasar antes de promover el dist-tag final.
@@ -77,7 +75,7 @@ resultado de CI.
 - El lane de Ubuntu del workflow está configurado para ejecutar las verificaciones completas del repositorio en Node.js `22.13.0` y `24` con pnpm `11.14.0`.
 - El lane de Windows está configurado para ejecutar las verificaciones
   focalizadas de discovery, codegen, creator, typecheck, paquetes y consumidor
-  generado en Node.js `22.13.0`; la última ejecución registrada es el run fallido
+  generado en Node.js `22.13.0`; la última ejecución registrada es el run exitoso
   enlazado arriba.
 - El lane de Ubuntu del workflow está configurado para ejecutar el único E2E de Chromium en Node.js `22.13.0`; instala Chromium e inicia Studio con `pnpm dev`.
 
@@ -238,9 +236,8 @@ NODE
 ```
 
 El procedimiento de abajo no registra un resultado por sí mismo. Consulta el
-[estado de ejecución de Future](../../Plans/Future/EXECUTION-STATUS.md) para el
-resultado específico del repositorio y la [evidencia actual del smoke](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md);
-repite este gate en cada release. Solo
+[issue #15 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/15) para el
+resultado específico del repositorio; repite este gate en cada release. Solo
 pasa cuando ambos tarballs reales tienen el contenido esperado,
 no contienen `workspace:`, links locales ni rutas del checkout, y el consumidor generado por
 el creator completa generation, check, build de producción, arranque standalone

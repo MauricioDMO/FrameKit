@@ -4,13 +4,12 @@ Publica el paquete o paquetes modificados desde la raíz del repositorio con pnp
 
 Esta página es un procedimiento de release, no un registro de release. No
 confirma que las versiones, commits, tags, checks locales, CI, smokes o la
-publicación ya hayan ocurrido. El [run CI 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
-sí ejecutó Windows, pero falló en `Run discovery and codegen tests`; sus lanes
-de Ubuntu y Chromium pasaron, por lo que hace falta un rerun exitoso de Windows.
-El [registro actual del smoke pre-publicación](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
-es PASS para ambos caminos de consumidor aislado. El smoke del registro posterior
-a publicar queda pendiente hasta que los paquetes publicados estén disponibles y
-la comprobación pase.
+publicación ya hayan ocurrido. El [run CI 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+pasó Ubuntu, Windows y Chromium. El smoke pre-publicación de tarballs pasó para
+ambos caminos de consumidor aislado; el resultado está registrado en el [issue
+#15 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/15). El smoke del
+registro posterior a publicar queda pendiente hasta que los paquetes publicados
+estén disponibles y la comprobación pase.
 
 ## Antes de publicar
 

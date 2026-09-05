@@ -35,16 +35,15 @@ module exports only `templates: TemplateRegistryEntry[]`. Each entry contains th
 filesystem `slug` and `segments`, validated `meta`, `width`, `height`, `variants`,
 declaration-ordered `variantKeys`, the template asset manifest, and a lazy `load`
 function. The generated file is disposable; update the source template and run
-the generation workflow instead of editing it. See the [Generated Template
-Registry plan](../../Plans/Future/issue-12-generated-template-registry.md).
+the generation workflow instead of editing it. See [GitHub issue
+#12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 This generated `templates` array is the canonical input to `FrameKitStudio`; pass
 it directly without an adapter. Studio uses `entry.meta.title` for navigation and
 the selected editor heading, displays `description`, `marketingDescription`, and
 `tags` when present, and reads the entry's dimensions, variants, asset manifest,
 and lazy `load` function. The loaded definition and registry dimensions must
-agree before the editor opens. See the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md)
-and [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
+agree before the editor opens. See [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 ## Authoring Forms
 
@@ -366,4 +365,4 @@ The key `language` is reserved inside `fields` and cannot be used as a field nam
 
 ---
 
-[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) · [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12) · [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13) · [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md)
+[English](./template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [GitHub issue #3](https://github.com/MauricioDMO/FrameKit/issues/3) · [GitHub issue #4](https://github.com/MauricioDMO/FrameKit/issues/4) · [GitHub issue #5](https://github.com/MauricioDMO/FrameKit/issues/5) · [GitHub issue #6](https://github.com/MauricioDMO/FrameKit/issues/6) · [GitHub issue #7](https://github.com/MauricioDMO/FrameKit/issues/7) · [GitHub issue #8](https://github.com/MauricioDMO/FrameKit/issues/8) · [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12) · [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13)

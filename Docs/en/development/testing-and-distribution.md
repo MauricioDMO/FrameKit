@@ -58,14 +58,13 @@ The test suite does not cover:
 The commands in this document are local checks unless explicitly identified as
 workflow steps. Running them locally does not count as a CI result.
 
-- The [CI run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
-  completed the Ubuntu Node.js `22.13.0`, Ubuntu Node.js `24`, and Chromium jobs
-  successfully. Its Windows lane was executed but failed at `Run discovery and
-  codegen tests` after installation and public-package builds; later Windows
-  steps were skipped. Treat the Windows gate as failed until a rerun passes.
-- The [pre-publication tarball smoke record](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
-  records PASS for both an independent consumer and a creator-generated
-  consumer. Repeat this gate for each release.
+- The [CI run 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+  completed the Ubuntu Node.js `22.13.0`, Ubuntu Node.js `24`, Windows, and
+  Chromium jobs successfully.
+- The pre-publication tarball smoke recorded in [GitHub issue
+  #15](https://github.com/MauricioDMO/FrameKit/issues/15) passed for both an
+  independent consumer and a creator-generated consumer. Repeat this gate for
+  each release.
 - The post-publication npm registry smoke remains pending until the exact
   published packages are available and the check passes; it must pass before
   final dist-tag promotion.
@@ -75,7 +74,7 @@ workflow steps. Running them locally does not count as a CI result.
 - The Ubuntu workflow lane is configured to run the full repository checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`.
 - The Windows workflow lane is configured to run the focused discovery, codegen,
   creator, typecheck, package, and generated-consumer checks on Node.js
-  `22.13.0`; the latest recorded execution is the failed run linked above.
+  `22.13.0`; the latest recorded execution is the successful run linked above.
 - The Ubuntu workflow lane is configured to run the one Chromium E2E on Node.js `22.13.0`; it installs Chromium and starts Studio with `pnpm dev`.
 
 The configured Windows creator smoke uses `create-framekit <directory> -n`,
@@ -232,10 +231,9 @@ process.exit(1)
 NODE
 ```
 
-The procedure below does not record a result by itself. See the
-[Future execution status](../../Plans/Future/EXECUTION-STATUS.md) for the
-repository-specific result and the [current smoke evidence](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md);
-repeat this gate for each release. It passes
+The procedure below does not record a result by itself. See [GitHub issue
+#15](https://github.com/MauricioDMO/FrameKit/issues/15) for the
+repository-specific result; repeat this gate for each release. It passes
 only when both real tarballs have the expected contents, no
 `workspace:`, local-link, or checkout-path references, and the creator-generated consumer
 completes generation, check, production build, standalone start, and HTTP

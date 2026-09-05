@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-04.
+* **Última revisión:** 2026-09-05.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -26,11 +26,12 @@ casos de prueba, comandos y exit gates detallados.
 
 ## Índice de planes
 
-* [Future](./Future/README.md): contrato canónico, documentación y gates de
-  release. Su estado local detallado vive en
-  [Future/EXECUTION-STATUS.md](./Future/EXECUTION-STATUS.md).
+* Future (bloque completado): contrato canónico, documentación y gates de
+  release. El detalle histórico se conserva en el historial de Git y en las
+  issues cerradas #12, #13, #14, #15 y #17.
 * [Maintainability Roadmap](./maintainability-roadmap/README.md): seis fases de
-  mantenimiento que preservan comportamiento.
+  mantenimiento que preservan comportamiento. Es el siguiente bloque operativo
+  después del cierre versionless del bloque Future.
 * [Server Image Rendering API](./server-image-rendering-api/README.md): ocho
   pasos para renderizado PNG autenticado en un proceso Node de larga duración.
 
@@ -38,8 +39,8 @@ casos de prueba, comandos y exit gates detallados.
 
 | Orden | Bloque                                                | Gate para avanzar                                                             |
 | ----: | ----------------------------------------------------- | ----------------------------------------------------------------------------- |
-|     0 | Sincronizar GitHub y alinear issues con los planes    | Issues y planes describen el contrato real                                    |
-|     1 | Terminar `Future/`: `#12 -> #17 -> #13 -> #14 -> #15` | `#12`, `#13`, `#14`, `#15` y `#17` cerradas                                   |
+|     0 | Sincronizar GitHub y alinear issues con los planes    | Issues y planes activos describen el contrato real                            |
+|     1 | Cerrar el bloque Future: `#12 -> #17 -> #13 -> #14 -> #15` | `#12`, `#13`, `#14`, `#15` y `#17` cerradas                                   |
 |     2 | Maintainability fases 1 a 5                           | Tooling, validación, Editor, Studio y estilos estabilizados                   |
 |     3 | Server Image Rendering pasos 1 a 8                    | API, browser, seguridad, Docker y distribución verificadas                    |
 |     4 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
@@ -84,21 +85,22 @@ Backlog
 
 ## Estado de issues en GitHub
 
-Snapshot consultado el 2026-09-04.
+Snapshot consultado el 2026-09-05.
 
 | Issue                                                    | GitHub | Local      | Acción                  |
 | -------------------------------------------------------- | ------ | ---------- | ----------------------- |
-| [#12](https://github.com/MauricioDMO/FrameKit/issues/12) | Open   | Verificada localmente | Publicar evidencia, sincronizar el cuerpo y cerrar en GitHub |
-| [#13](https://github.com/MauricioDMO/FrameKit/issues/13) | Open   | Verificada localmente | Publicar evidencia, sincronizar el cuerpo y cerrar en GitHub |
-| [#14](https://github.com/MauricioDMO/FrameKit/issues/14) | Open   | Verificada localmente | Publicar evidencia, sincronizar el cuerpo y cerrar en GitHub |
-| [#15](https://github.com/MauricioDMO/FrameKit/issues/15) | Open   | Verificación local; Windows CI falló y post-publication pendiente | Repetir Windows, completar post-publication, publicar evidencia y cerrar en GitHub |
-| [#17](https://github.com/MauricioDMO/FrameKit/issues/17) | Open   | Verificada localmente | Publicar evidencia, sincronizar el cuerpo y cerrar en GitHub |
+| [#12](https://github.com/MauricioDMO/FrameKit/issues/12) | Closed | Verificada y sincronizada | Issue cerrada; seguimiento normal del contrato |
+| [#13](https://github.com/MauricioDMO/FrameKit/issues/13) | Closed | Verificada y sincronizada | Issue cerrada; seguimiento normal del contrato |
+| [#14](https://github.com/MauricioDMO/FrameKit/issues/14) | Closed | Verificada y sincronizada | Issue cerrada; seguimiento normal de documentación |
+| [#15](https://github.com/MauricioDMO/FrameKit/issues/15) | Closed | Verificada con CI 33948285021 | Issue cerrada; smoke npm queda como handoff de release |
+| [#17](https://github.com/MauricioDMO/FrameKit/issues/17) | Closed | Verificada y sincronizada | Issue cerrada; seguimiento normal del contrato |
 | [#18](https://github.com/MauricioDMO/FrameKit/issues/18) | Open   | Backlog    | Diferir                 |
 | [#19](https://github.com/MauricioDMO/FrameKit/issues/19) | Open   | Backlog    | Diferir                 |
 
-Ninguna issue abierta tiene parent, subissues, milestone o assignee. No hay una
-issue asignada al plan de server rendering y el roadmap de mantenibilidad no
-requiere issues por diseño.
+Las issues del bloque Future están cerradas. #18 y #19 permanecen abiertas como
+backlog no bloqueante. Ninguna issue abierta tiene parent, subissues, milestone o
+assignee. No hay una issue asignada al plan de server rendering y el roadmap de
+mantenibilidad no requiere issues por diseño.
 
 ## 0. Gobierno y sincronización
 
@@ -107,19 +109,23 @@ requiere issues por diseño.
 * [x] Aprobar el orden global de este documento.
 * [x] Crear este tracker maestro en `Docs/Plans/README.md`.
 * [x] Registrar el snapshot inicial con fecha.
-* [ ] Handoff externo pendiente: sincronizar en GitHub el cuerpo de [#12](https://github.com/MauricioDMO/FrameKit/issues/12) con su [plan vigente](Future/issue-12-generated-template-registry.md); sus enlaces actuales aún requieren actualización.
-* [ ] Handoff externo pendiente: sincronizar en GitHub el cuerpo de [#13](https://github.com/MauricioDMO/FrameKit/issues/13) con su [plan vigente](Future/issue-13-studio-canonical-contract.md) y retirar los requisitos rechazados.
-* [ ] Handoff externo pendiente: sincronizar en GitHub el cuerpo de [#14](https://github.com/MauricioDMO/FrameKit/issues/14) con su [plan vigente](Future/issue-14-documentation-and-migration.md).
-* [ ] Handoff externo pendiente: sincronizar en GitHub el cuerpo de [#15](https://github.com/MauricioDMO/FrameKit/issues/15) con su [plan vigente](Future/issue-15-testing-and-release-gates.md).
-* [ ] Handoff externo pendiente: cambiar en GitHub los títulos de #13, #14 y #15 para eliminar la promesa de una versión específica.
-* [ ] Handoff externo pendiente: actualizar en #14 el baseline de `CHANGELOG.md` y `migration-next.md`.
+* [x] Handoff externo: sincronizar en GitHub el cuerpo de [#12](https://github.com/MauricioDMO/FrameKit/issues/12) con el contrato final.
+* [x] Handoff externo: sincronizar en GitHub el cuerpo de [#13](https://github.com/MauricioDMO/FrameKit/issues/13) con el contrato final y retirar los requisitos rechazados.
+* [x] Handoff externo: sincronizar en GitHub el cuerpo de [#14](https://github.com/MauricioDMO/FrameKit/issues/14) con el contrato final.
+* [x] Handoff externo: sincronizar en GitHub el cuerpo de [#15](https://github.com/MauricioDMO/FrameKit/issues/15) con el contrato final.
+* [x] Handoff externo: cambiar en GitHub los títulos de #13, #14 y #15 para eliminar la promesa de una versión específica.
+* [x] Handoff externo: actualizar en #14 el baseline final de `CHANGELOG.md` y `migration-next.md`.
 * [ ] Crear una issue paraguas para server image rendering.
 * [ ] Enlazar en esa issue los ocho pasos del plan de servidor.
-* [ ] Mantener el roadmap de mantenibilidad sin issues obligatorias.
-* [ ] Registrar `#18` y `#19` como backlog no bloqueante.
-* [ ] Confirmar que el orden global de este README coincide con los planes hijos.
+* [x] Mantener el roadmap de mantenibilidad sin issues obligatorias.
+* [x] Registrar `#18` y `#19` como backlog no bloqueante.
+* [x] Confirmar que el orden global de este README coincide con los planes hijos.
 
 ## 1. Cierre de Future
+
+El bloque versionless está completado. Sus documentos detallados se retiraron
+del checkout; el detalle histórico se conserva en la historia de Git y en las
+issues cerradas correspondientes.
 
 Orden obligatorio:
 
@@ -132,25 +138,25 @@ que debe resolverse antes de considerar finalizada la integración de Studio.
 
 ### 1.1 Issue #12: Generated Template Registry
 
-Plan:
-[issue-12-generated-template-registry.md](./Future/issue-12-generated-template-registry.md).
+Issue cerrada:
+[#12](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 * [x] Implementar el registry canónico.
 * [x] Incluir metadata, dimensiones, variantes, assets y loaders lazy.
 * [x] Verificar regeneración automática en desarrollo y build.
 * [x] Completar tests, documentación, changelog, migraciones y starter.
-* [x] Registrar los checks locales en `Future/EXECUTION-STATUS.md`.
-* [ ] Revisar que el cuerpo de `#12` coincida con el contrato final.
-* [ ] Marcar los acceptance criteria reales en GitHub.
-* [ ] Publicar un comentario con commits y verificaciones.
+* [x] Registrar los checks locales de cierre.
+* [x] Revisar que el cuerpo de `#12` coincida con el contrato final.
+* [x] Marcar los acceptance criteria reales en GitHub.
+* [x] Publicar un comentario con commits y verificaciones.
 * [x] Confirmar que no existen regresiones posteriores relevantes.
-* [ ] Cerrar `#12` en GitHub.
+* [x] Cerrar `#12` en GitHub.
 * [x] Registrar `#12` como verificada localmente en este tracker.
 
 ### 1.2 Issue #17: Persisted Choice Values
 
 Issue:
-[issue-17-persisted-choice-values.md](./Future/issue-17-persisted-choice-values.md).
+[#17](https://github.com/MauricioDMO/FrameKit/issues/17).
 
 * [x] Confirmar la reproducción con una opción eliminada o renombrada.
 * [x] Añadir una comprobación local de pertenencia a `field.options` durante la
@@ -167,31 +173,31 @@ Issue:
 * [x] Registrar que no requiere migración ni cambio de storage version.
 * [x] Verificar estado y editor mediante la suite completa.
 * [x] Ejecutar checks completos del paquete y repositorio.
-* [ ] Publicar evidencia, sincronizar la issue y cerrar `#17`.
+* [x] Publicar evidencia, sincronizar la issue y cerrar `#17`.
 
 ### 1.3 Issue #13: Studio Canonical Contract
 
-Plan:
-[issue-13-studio-canonical-contract.md](./Future/issue-13-studio-canonical-contract.md).
+Issue cerrada:
+[#13](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 * [x] Consumir el registry canónico directamente en Studio.
 * [x] Integrar metadata, variantes y datos tipados.
 * [x] Integrar persistencia `v2`, controles nativos y validación.
 * [x] Completar tests, documentación, skills, changelog y migraciones.
-* [x] Registrar los checks locales en `Future/EXECUTION-STATUS.md`.
+* [x] Registrar los checks locales de cierre.
 * [x] Resolver `#17` localmente antes del cierre.
-* [ ] Actualizar el cuerpo para coincidir con la decisión histórica de `#9` y
+* [x] Actualizar el cuerpo para coincidir con la decisión histórica de `#9` y
   retirar sus requisitos rechazados.
-* [ ] Corregir el enlace al plan.
-* [ ] Marcar los acceptance criteria reales en GitHub.
-* [ ] Publicar un comentario con commits y verificaciones.
-* [ ] Cerrar `#13` en GitHub.
+* [x] Corregir el enlace al plan.
+* [x] Marcar los acceptance criteria reales en GitHub.
+* [x] Publicar un comentario con commits y verificaciones.
+* [x] Cerrar `#13` en GitHub.
 * [x] Registrar `#13` como verificada localmente en este tracker.
 
 ### 1.4 Issue #14: Documentation and Migration
 
-Plan:
-[issue-14-documentation-and-migration.md](./Future/issue-14-documentation-and-migration.md).
+Issue cerrada:
+[#14](https://github.com/MauricioDMO/FrameKit/issues/14).
 
 * [x] Inventariar exports, registry, CLI, starter y comportamiento final de
   Studio.
@@ -210,27 +216,28 @@ Plan:
 * [x] Actualizar únicamente las skills canónicas de `Docs/skills`.
 * [x] Ejecutar `pnpm sync:skills`.
 * [x] Verificar Quick Start con el starter generado.
-* [x] Verificar links y anchors internos en 111 archivos Markdown, incluida la
-  evidencia actual.
+* [x] Verificar links y anchors internos en 111 archivos Markdown, incluido el
+  registro de cierre en GitHub.
 * [x] Verificar generación, check, typecheck y build del starter.
 * [x] Ejecutar runtime check, lint, tests, typecheck y build del repositorio.
-* [ ] Publicar evidencia en `#14`.
-* [ ] Cerrar `#14`.
+* [x] Publicar evidencia en `#14`.
+* [x] Cerrar `#14`.
 * [x] Registrar `#14` como verificada localmente en este tracker.
 
 ### 1.5 Issue #15: Testing and Release Gates
 
-Plan:
-[issue-15-testing-and-release-gates.md](./Future/issue-15-testing-and-release-gates.md).
+Issue cerrada:
+[#15](https://github.com/MauricioDMO/FrameKit/issues/15).
 
 * [x] Auditar la matriz existente sin duplicar tests enfocados.
 * [x] Identificar únicamente gaps cross-layer.
 * [x] Mantener Linux CI en Node `22.13.0` y `24`.
 * [x] Fortalecer Windows para construir ambos paquetes públicos.
 * [x] Ejecutar la lane de Windows en CI y registrar el resultado: el run
-  [33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
-  falló en `Run discovery and codegen tests`.
-* [ ] Repetir la lane de Windows hasta completar correctamente el consumer con
+  [33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+  pasó discovery/codegen, creator, typecheck, consumer generado, `generate`,
+  `check` e inspección de ambos paquetes; el run 33687196859 queda superseded.
+* [x] Repetir la lane de Windows hasta completar correctamente el consumer con
   `generate` y `check`.
 * [x] Añadir un único E2E crítico con Chromium.
 * [x] Cubrir metadata, variante y campos text/number/choice/boolean/color.
@@ -246,29 +253,35 @@ Plan:
 * [x] Actualizar documentación EN/ES de testing y distribución.
 * [x] Actualizar skills canónicas de release.
 * [x] Añadir changelog y nota explícita de no migración.
-* [ ] Completar todas las lanes y smokes requeridos: la lane de Windows tiene un
-  fallo registrado y el smoke post-publication sigue pendiente.
-* [ ] Publicar evidencia en `#15`.
-* [ ] Cerrar `#15`.
-* [ ] Marcar `Future/` como completado.
+* [x] Completar todas las lanes versionless requeridas; el smoke post-publication
+  queda documentado como handoff de release y requiere specs publicadas.
+* [x] Publicar evidencia en `#15`.
+* [x] Cerrar `#15`.
+* [x] Marcar el bloque Future como completado para la implementación versionless.
 
 ### 1.6 Gate de Future
 
-No iniciar el roadmap siguiente hasta confirmar:
+Los gates de implementación versionless de Future están cumplidos y el
+siguiente paso operativo es validar el baseline e iniciar Maintainability fase 1.
+Los dos puntos externos restantes se mantienen explícitos: protección de `main`
+es gobierno del repositorio y el smoke npm es un handoff posterior a publicar
+una versión.
 
-* [ ] `#12` está cerrada.
-* [ ] `#17` está cerrada.
-* [ ] `#13` está cerrada.
-* [ ] `#14` está cerrada.
-* [ ] `#15` está cerrada.
-* [ ] `Future/EXECUTION-STATUS.md` coincide con GitHub.
+* [x] `#12` está cerrada.
+* [x] `#17` está cerrada.
+* [x] `#13` está cerrada.
+* [x] `#14` está cerrada.
+* [x] `#15` está cerrada.
+* [x] El cierre local de Future coincide con GitHub.
 * [x] Documentación local, changelog, migration guides y skills están
   sincronizados.
-* [ ] Los cuerpos de las issues y sus enlaces a los planes están sincronizados
-  en GitHub.
-* [ ] `main` está protegido con los checks requeridos.
-* [ ] Los gates definidos por `#15` pasan sobre el baseline final de Future.
-* [ ] El smoke npm post-publication pasa antes de promover el dist-tag.
+* [x] Los cuerpos de las issues reflejan el contrato final y sus cierres están
+  sincronizados en GitHub.
+* [ ] `main` está protegido con los checks requeridos (seguimiento independiente
+  de gobierno del repositorio).
+* [x] Los gates definidos por `#15` pasan sobre el baseline final de Future.
+* [ ] El smoke npm post-publication pasa antes de promover el dist-tag (handoff
+  posterior a seleccionar y publicar una versión).
 
 ## 2. Maintainability: fases 1 a 5
 
@@ -708,8 +721,8 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 
 ### Future
 
-* [ ] `#12`, `#13`, `#14`, `#15` y `#17` están cerradas.
-* [ ] `Future/` está completado y sincronizado con GitHub.
+* [x] `#12`, `#13`, `#14`, `#15` y `#17` están cerradas.
+* [x] El bloque Future está completado y sincronizado con GitHub.
 
 ### Maintainability
 
@@ -751,7 +764,7 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-08-31 | Usar un único tracker raíz y mantener los contratos detallados en los planes hijos                                                 |
 | 2026-08-31 | Resolver `#17` dentro de Future y antes de cerrar la integración de Studio `#13`                                                   |
-| 2026-08-31 | Completar `Future/` antes de iniciar Maintainability                                                                               |
+| 2026-08-31 | Completar el bloque Future antes de iniciar Maintainability                                                                        |
 | 2026-08-31 | Ejecutar Maintainability fases 1 a 5 antes de implementar Server Image Rendering                                                   |
 | 2026-08-31 | Extraer `TemplateCanvas` durante Server Step 2, después de simplificar `FrameKitEditor` en Maintainability 3                       |
 | 2026-08-31 | Ejecutar Maintainability fase 6 después del servidor para definir una sola vez los límites de la arquitectura final con `./server` |

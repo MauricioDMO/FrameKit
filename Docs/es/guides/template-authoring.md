@@ -39,7 +39,7 @@ el `slug` y los `segments` del sistema de archivos, `meta` validada, `width`,
 `height`, `variants`, `variantKeys` en orden de declaración, el manifiesto de
 assets de la plantilla y una función lazy `load`. El archivo generado es
 descartable: actualiza la plantilla fuente y ejecuta el flujo de generación en
-lugar de editarlo. Consulta el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
+lugar de editarlo. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 El array generado `templates` es la entrada canónica de `FrameKitStudio`; pásalo
 directamente, sin un adaptador. Studio usa `entry.meta.title` para la navegación y
@@ -47,8 +47,7 @@ el encabezado del editor seleccionado, muestra `description`,
 `marketingDescription` y `tags` cuando están presentes, y lee las dimensiones,
 variantes, manifest de assets y función lazy `load` de la entrada. La definición
 cargada y las dimensiones del registro deben coincidir antes de abrir el editor.
-Consulta el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md)
-y el [issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13).
+Consulta el [issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 ## Formas de creación
 
@@ -380,4 +379,4 @@ La clave `language` está reservada dentro de `fields` y no puede usarse como no
 
 ---
 
-[English](../../en/guides/template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8) · [Issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12) · [Issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13) · [Plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md)
+[English](../../en/guides/template-authoring.md) · [Español](../../es/guides/template-authoring.md) · [Issue #3 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/3) · [Issue #4 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/4) · [Issue #5 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/5) · [Issue #6 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/6) · [Issue #7 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/7) · [Issue #8 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/8) · [Issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12) · [Issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13)

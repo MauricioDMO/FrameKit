@@ -17,8 +17,7 @@ migración histórica](./migration-v0.8.0.md).
   no está implementada ni forma parte de este contrato.
 
 Esta guía rolling es el entregable documental del [issue #14 de
-GitHub](https://github.com/MauricioDMO/FrameKit/issues/14) y su [plan de
-implementación](../../Plans/Future/issue-14-documentation-and-migration.md).
+GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
 
 ## Contrato Canónico De Plantillas
 
@@ -281,7 +280,7 @@ posteriores usan el mismo formato.
 
 Consulta la [referencia CLI del registro generado](../reference/cli.md#framekit-generate),
 la [referencia de la API pública](../reference/public-api.md#registro-generado-de-plantillas)
-y el [plan del Registro Generado de Plantillas](../../Plans/Future/issue-12-generated-template-registry.md).
+y el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12).
 
 ## Valores Choice Persistidos
 
@@ -357,8 +356,7 @@ la invalidación de persistencia `v1` como un reset manual intencional cuando
 corresponda. Regenera los archivos generados con `framekit generate` en lugar de
 editarlos a mano y luego ejecuta `framekit check` y `framekit build`.
 
-Consulta el [issue del contrato canónico de Studio](https://github.com/MauricioDMO/FrameKit/issues/13)
-y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).
+Consulta el [issue del contrato canónico de Studio](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 ## Estado de verificación y release
 

@@ -4,12 +4,12 @@ Publish the changed package or packages from the repository root with pnpm. Do n
 
 This page is a release procedure, not a release record. It does not confirm
 that versions, commits, tags, local checks, CI, smoke tests, or publication have
-already happened. The latest [CI run 33687196859](https://github.com/MauricioDMO/FrameKit/actions/runs/33687196859)
-did execute Windows, but failed at `Run discovery and codegen tests`; its Ubuntu
-and Chromium jobs passed, so a successful Windows rerun is required. The
-[current pre-publication tarball record](../../Plans/Future/evidence/tarball-smoke-2026-09-04.md)
-is PASS for both isolated consumer paths. The post-publication registry smoke
-remains pending until published packages are available and the check passes.
+already happened. The latest [CI run 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+passed Ubuntu, Windows, and Chromium. The pre-publication tarball smoke passed
+for both isolated consumer paths; its result is recorded in [GitHub issue
+#15](https://github.com/MauricioDMO/FrameKit/issues/15). The post-publication
+registry smoke remains pending until published packages are available and the
+check passes.
 
 ## Before Publishing
 

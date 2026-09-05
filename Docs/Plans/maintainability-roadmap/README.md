@@ -74,8 +74,10 @@ skill synchronization and explicitly stages the synchronized copies; it does
 not format staged files. In the Ubuntu CI job, the runtime contract is checked
 before installation; after a frozen-lockfile install, FrameKit and the creator
 are built, then lint, test, type-check, workspace-build, and package-content
-checks run. The Windows smoke job installs, builds the creator, and checks its
-package contents. CI currently has no format check.
+checks run. The Windows smoke job also builds both public packages, runs the
+discovery/codegen and creator tests, type-checks the workspace, creates and
+installs a generated consumer, runs `framekit generate` and `framekit check`,
+and inspects both package contents. CI currently has no format check.
 
 The existing `.gitignore` covers the principal FrameKit and Next.js generated
 paths. The first phase makes the editor, Git checkout, formatter, and written

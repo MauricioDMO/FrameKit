@@ -101,7 +101,7 @@ optional `description`, `marketingDescription`, and `tags`. The registry's
 dimensions, variants, asset manifest, and lazy loader are passed through the
 Studio load boundary. This is project-local generated output, not an export of
 a published package entry point. See [GitHub issue #12](https://github.com/MauricioDMO/FrameKit/issues/12)
-and the [Studio canonical contract plan](../../Plans/Future/issue-13-studio-canonical-contract.md).
+and [GitHub issue #13](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 `framekit generate` is the explicit one-off regeneration command; it writes
 `src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.

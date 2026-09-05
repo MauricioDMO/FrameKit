@@ -104,7 +104,7 @@ Studio y el encabezado del editor seleccionado; cuando están presentes, Studio
 también muestra `description`, `marketingDescription` y `tags` opcionales. Las
 dimensiones, variantes, manifest de assets y loader lazy del registro atraviesan
 el límite de carga de Studio. Consulta el [issue #12 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/12)
-y el [plan del contrato canónico de Studio](../../Plans/Future/issue-13-studio-canonical-contract.md).
+y el [issue #13 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/13).
 
 `framekit generate` es el comando explícito de regeneración puntual; escribe
 `src/generated/framekit/templates.ts` y `src/generated/framekit/brands.ts`.
