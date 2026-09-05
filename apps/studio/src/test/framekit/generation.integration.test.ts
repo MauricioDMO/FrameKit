@@ -7,110 +7,250 @@ import { pathToFileURL } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { templates } from '@framekit/generated/templates'
-import { validateTemplateDefinition } from '@mauriciodmo/framekit'
+import { validateTemplateDefinition, type TemplateRegistryEntry } from '@mauriciodmo/framekit'
 import { writeTemplateModule } from '@mauriciodmo/framekit/dev'
+import type { FrameKitStudioBrand } from '@mauriciodmo/framekit/studio'
 
-const templateSource = `export default {
+const GENERATION_TIMEOUT_MS = 30_000
+
+const alphaTemplateSource = `export default {
   meta: {
-    title: 'Generated template',
-    description: 'A functional description',
-    marketingDescription: 'A marketing description',
-    tags: ['generated', 'test'],
+    title: 'Alpha campaign',
+    description: 'A campaign post for social channels.',
+    marketingDescription: 'Turn a campaign idea into a clear social post.',
+    tags: ['alpha', 'campaign'],
   },
-  width: 120,
-  height: 80,
-  fields: {},
-  content: { moon: {}, fjord: {} },
-  variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
-  render() { return null },
+  width: 1200,
+  height: 630,
+  fields: {
+    headline: { kind: 'text', label: 'Headline', defaultValue: 'Launch' },
+    logo: { kind: 'image', label: 'Logo', scope: 'common' },
+    portrait: { kind: 'image', label: 'Portrait', scope: 'variant' },
+    showBadge: { kind: 'boolean', label: 'Show badge', defaultValue: true },
+  },
+  content: {
+    es: { headline: 'Lanza', showBadge: true },
+    en: { headline: 'Launch', showBadge: false },
+  },
+  variants: { default: 'es', labels: { es: 'Spanish', en: 'English' } },
+  render: () => null,
 }
 `
 
-async function addFrameKitStub(projectRoot: string): Promise<void> {
+const betaTemplateSource = `export default {
+  meta: {
+    title: 'Beta story',
+    description: 'A vertical story with a focused call to action.',
+    marketingDescription: 'Present a seasonal offer in a vertical format.',
+    tags: ['beta', 'story'],
+  },
+  width: 1080,
+  height: 1920,
+  fields: {
+    title: { kind: 'text', label: 'Title', defaultValue: 'Seasonal story' },
+    accentColor: { kind: 'color', label: 'Accent color', defaultValue: '#ff6600' },
+    cta: {
+      kind: 'choice',
+      label: 'Call to action',
+      options: [
+        { value: 'read', label: 'Read' },
+        { value: 'shop', label: 'Shop' },
+      ],
+      defaultValue: 'read',
+    },
+  },
+  content: {
+    summer: { title: 'Summer offer', accentColor: '#ff6600', cta: 'shop' },
+    winter: { title: 'Winter offer', accentColor: '#3366ff', cta: 'read' },
+  },
+  variants: { default: 'summer', labels: { summer: 'Summer', winter: 'Winter' } },
+  render: () => null,
+}
+`
+
+type GeneratedModules = {
+  templates: TemplateRegistryEntry[]
+  brands: FrameKitStudioBrand[]
+  brandManifest: Array<Omit<FrameKitStudioBrand, 'load'>>
+  brandRegistry: Record<string, FrameKitStudioBrand['load']>
+}
+
+function metadataWithoutLoader<T extends { load: unknown }>(entry: T): Omit<T, 'load'> {
+  const { load, ...metadata } = entry
+  void load
+  return metadata
+}
+
+async function exposeFrameKitRuntime(projectRoot: string): Promise<void> {
   const packageRoot = path.join(projectRoot, 'node_modules', '@mauriciodmo', 'framekit')
+  const runtimeEntry = import.meta.resolve('@mauriciodmo/framekit')
+
   await mkdir(packageRoot, { recursive: true })
   await writeFile(path.join(packageRoot, 'package.json'), JSON.stringify({
     name: '@mauriciodmo/framekit',
     type: 'module',
     exports: './index.js',
   }))
-  await writeFile(path.join(packageRoot, 'index.js'), `
-export function validateTemplateDefinition(definition) {
-  return { success: true, definition }
+  await writeFile(path.join(packageRoot, 'index.js'), `export * from ${JSON.stringify(runtimeEntry)}\n`)
 }
-`)
+
+async function writeTemplateFixture(
+  projectRoot: string,
+  slug: string,
+  source: string,
+  assets: Record<string, string> = {},
+): Promise<void> {
+  const templateRoot = path.join(projectRoot, 'src', 'templates', ...slug.split('/'))
+  await mkdir(templateRoot, { recursive: true })
+  await writeFile(path.join(templateRoot, 'template.tsx'), source)
+
+  for (const [relativePath, contents] of Object.entries(assets)) {
+    const assetPath = path.join(templateRoot, 'assets', ...relativePath.split('/'))
+    await mkdir(path.dirname(assetPath), { recursive: true })
+    await writeFile(assetPath, contents)
+  }
+}
+
+async function writeBrandFixture(
+  projectRoot: string,
+  slug: string,
+  description: string,
+  marker: string,
+): Promise<void> {
+  const brandRoot = path.join(projectRoot, 'src', 'brand', ...slug.split('/'))
+  await mkdir(brandRoot, { recursive: true })
+  await writeFile(path.join(brandRoot, 'component.tsx'), 'export function BrandComponent() { return null }')
+  await writeFile(path.join(brandRoot, 'preview.tsx'), `export default ${JSON.stringify({ marker })}`)
+  await writeFile(path.join(brandRoot, 'README.md'), `# ${slug}\n\n${description}\n`)
+}
+
+async function loadGeneratedModules(projectRoot: string): Promise<GeneratedModules> {
+  const generatedRoot = path.join(projectRoot, 'src', 'generated', 'framekit')
+  const [templateModule, brandModule] = await Promise.all([
+    import(pathToFileURL(path.join(generatedRoot, 'templates.ts')).href),
+    import(pathToFileURL(path.join(generatedRoot, 'brands.ts')).href),
+  ])
+
+  return {
+    templates: templateModule.templates as TemplateRegistryEntry[],
+    brands: brandModule.brands as FrameKitStudioBrand[],
+    brandManifest: brandModule.brandManifest as Array<Omit<FrameKitStudioBrand, 'load'>>,
+    brandRegistry: brandModule.brandRegistry as Record<string, FrameKitStudioBrand['load']>,
+  }
 }
 
 describe('template generation integration', () => {
-  it('loads the pilot template through the generated loader', async () => {
-    const entry = templates.find((template) => template.slug === 'redes-sociales/instagram/promocion-cuadrada')
-    expect(entry).toBeDefined()
-    expect(entry).not.toHaveProperty('title')
-    expect(entry?.meta.title).toBe('Promoción cuadrada')
-    expect(entry?.variantKeys).toEqual(['es', 'en'])
-
-    const loaded = await entry!.load()
-    expect(validateTemplateDefinition(loaded.default).success).toBe(true)
-  })
-
-  it('generates a clean Studio registry and loads its template defaults', async () => {
+  it('generates metadata, loaders, assets, and brands from an isolated project', async () => {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-studio-'))
 
     try {
-      const templatesRoot = path.join(projectRoot, 'src', 'templates')
-      const firstTemplate = path.join(templatesRoot, 'branding', 'social', 'square')
-      const secondTemplate = path.join(templatesRoot, 'product', 'launch')
-      const outputDirectory = path.join(projectRoot, 'src', 'generated', 'framekit')
-      await mkdir(firstTemplate, { recursive: true })
-      await mkdir(secondTemplate, { recursive: true })
-      await writeFile(path.join(firstTemplate, 'template.tsx'), templateSource)
-      await writeFile(path.join(secondTemplate, 'template.tsx'), templateSource)
-      await addFrameKitStub(projectRoot)
+      await writeTemplateFixture(projectRoot, 'alpha/post', alphaTemplateSource, {
+        'common/logo.svg': '<svg>common-logo</svg>',
+        'es/portrait.png': 'es-portrait',
+        'en/portrait.webp': 'en-portrait',
+      })
+      await writeTemplateFixture(projectRoot, 'beta/story', betaTemplateSource)
+      await writeBrandFixture(projectRoot, 'alpha/hero-card', 'Reusable alpha brand block.', 'alpha-preview')
+      await writeBrandFixture(projectRoot, 'zeta/quote-card', 'Reusable zeta brand block.', 'zeta-preview')
+      await exposeFrameKitRuntime(projectRoot)
 
-      await writeTemplateModule({ projectRoot })
+      const discovered = await writeTemplateModule({ projectRoot })
+      expect(discovered.map(({ slug, segments }) => ({ slug, segments }))).toEqual([
+        { slug: 'alpha/post', segments: ['alpha', 'post'] },
+        { slug: 'beta/story', segments: ['beta', 'story'] },
+      ])
 
-      const generated = await import(pathToFileURL(path.join(outputDirectory, 'templates.ts')).href)
+      const generated = await loadGeneratedModules(projectRoot)
 
-      expect(await readFile(path.join(outputDirectory, 'templates.ts'), 'utf8')).toBe(`/* Archivo generado automáticamente. No modificar. */
+      expect(generated.templates.map(metadataWithoutLoader)).toEqual([
+        {
+          slug: 'alpha/post',
+          segments: ['alpha', 'post'],
+          meta: {
+            title: 'Alpha campaign',
+            description: 'A campaign post for social channels.',
+            marketingDescription: 'Turn a campaign idea into a clear social post.',
+            tags: ['alpha', 'campaign'],
+          },
+          width: 1200,
+          height: 630,
+          variants: { default: 'es', labels: { es: 'Spanish', en: 'English' } },
+          variantKeys: ['es', 'en'],
+          assets: {
+            common: { logo: '/__framekit/templates/alpha/post/common/logo.svg' },
+            variants: {
+              en: { portrait: '/__framekit/templates/alpha/post/en/portrait.webp' },
+              es: { portrait: '/__framekit/templates/alpha/post/es/portrait.png' },
+            },
+          },
+        },
+        {
+          slug: 'beta/story',
+          segments: ['beta', 'story'],
+          meta: {
+            title: 'Beta story',
+            description: 'A vertical story with a focused call to action.',
+            marketingDescription: 'Present a seasonal offer in a vertical format.',
+            tags: ['beta', 'story'],
+          },
+          width: 1080,
+          height: 1920,
+          variants: { default: 'summer', labels: { summer: 'Summer', winter: 'Winter' } },
+          variantKeys: ['summer', 'winter'],
+          assets: { common: {}, variants: {} },
+        },
+      ])
 
-import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
-
-export const templates: TemplateRegistryEntry[] = [
-  {
-    slug: "branding/social/square",
-    segments: ["branding","social","square"],
-    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
-    width: 120,
-    height: 80,
-    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
-    variantKeys: ["moon","fjord"],
-    assets: {"common":{},"variants":{}},
-    load: () => import("../../templates/branding/social/square/template"),
-  },
-  {
-    slug: "product/launch",
-    segments: ["product","launch"],
-    meta: {"title":"Generated template","description":"A functional description","marketingDescription":"A marketing description","tags":["generated","test"]},
-    width: 120,
-    height: 80,
-    variants: {"default":"moon","labels":{"moon":"Lunar","fjord":"Fjordic"}},
-    variantKeys: ["moon","fjord"],
-    assets: {"common":{},"variants":{}},
-    load: () => import("../../templates/product/launch/template"),
-  }
-]
-`)
-
-      for (const slug of ['branding/social/square', 'product/launch']) {
-        const entry = generated.templates.find((template: { slug: string }) => template.slug === slug)
-        expect(entry).toBeDefined()
-        const loaded = await entry!.load()
+      for (const entry of generated.templates) {
+        const loaded = await entry.load()
         const validation = validateTemplateDefinition(loaded.default)
-        expect(validation.success, slug).toBe(true)
+        expect(validation.success, entry.slug).toBe(true)
+        if (!validation.success) continue
+
+        expect({
+          meta: validation.definition.meta,
+          width: validation.definition.width,
+          height: validation.definition.height,
+          variants: validation.definition.variants,
+          variantKeys: Object.keys(validation.definition.content),
+        }).toEqual({
+          meta: entry.meta,
+          width: entry.width,
+          height: entry.height,
+          variants: entry.variants,
+          variantKeys: entry.variantKeys,
+        })
       }
+
+      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg>common-logo</svg>')
+      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'es', 'portrait.png'), 'utf8')).resolves.toBe('es-portrait')
+      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'en', 'portrait.webp'), 'utf8')).resolves.toBe('en-portrait')
+
+      const brandMetadata = generated.brands.map(metadataWithoutLoader)
+      expect(brandMetadata).toEqual([
+        {
+          slug: 'alpha/hero-card',
+          title: 'Hero Card',
+          segments: ['alpha', 'hero-card'],
+          description: 'Reusable alpha brand block.',
+        },
+        {
+          slug: 'zeta/quote-card',
+          title: 'Quote Card',
+          segments: ['zeta', 'quote-card'],
+          description: 'Reusable zeta brand block.',
+        },
+      ])
+      expect(generated.brandManifest).toEqual(brandMetadata)
+      expect(Object.keys(generated.brandRegistry)).toEqual(['alpha/hero-card', 'zeta/quote-card'])
+      await expect(Promise.all(generated.brands.map(async (brand) => (await brand.load()).default))).resolves.toEqual([
+        { marker: 'alpha-preview' },
+        { marker: 'zeta-preview' },
+      ])
+      const registryPreview = await generated.brandRegistry['alpha/hero-card']()
+      expect((registryPreview.default as { marker: string }).marker).toBe('alpha-preview')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }
-  })
+  }, GENERATION_TIMEOUT_MS)
 })
