@@ -3,7 +3,7 @@
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMoon, IconPhoto, IconSettings, IconStack2, IconSun, IconTag } from '@tabler/icons-react'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
-import type { ComponentType } from 'react'
+import type { ComponentType, SVGProps } from 'react'
 import { useEffect, useState } from 'react'
 
 import { validateTemplateDefinition } from '../core/validation'
@@ -16,6 +16,16 @@ import { useFrameKitLocale } from './locale-provider'
 
 const emptyTemplates: readonly TemplateRegistryEntry[] = []
 const emptyBrands: readonly FrameKitStudioBrand[] = []
+
+function FrameKitLogo (props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.6199 16.4563C16.9773 16.4563 16.4563 16.9772 16.4563 17.6199V47.2354C16.4563 47.5475 16.3309 47.8465 16.1084 48.0652L7.79753 56.2358C7.06167 56.9593 5.81812 56.4379 5.81812 55.406L5.81812 6.98181C5.81812 6.33915 6.33909 5.81818 6.98175 5.81818L55.406 5.81818C56.4379 5.81818 56.9592 7.06173 56.2358 7.79759L48.0652 16.1084C47.8465 16.3309 47.5475 16.4563 47.2354 16.4563L17.6199 16.4563Z" fill="white" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M21.3932 31.7489C21.3932 32.7856 22.6466 33.3048 23.3796 32.5717L32.5718 23.3796C33.3048 22.6466 32.7856 21.3932 31.7489 21.3932H22.5568C21.9141 21.3932 21.3932 21.9141 21.3932 22.5568V31.7489Z" fill="white" />
+      <path d="M23.3963 56.095C22.6704 56.8512 21.3932 56.3379 21.3932 55.2892L21.3932 43.2683C21.3932 42.9597 21.5158 42.6638 21.734 42.4455L42.4455 21.734C42.6638 21.5158 42.9597 21.3932 43.2684 21.3932L55.2893 21.3932C56.3375 21.3932 56.8513 22.6703 56.0951 23.3962L44.4308 34.5937C43.9607 35.045 43.9528 35.7944 44.4134 36.2555L56.1961 48.0499C56.6502 48.5044 56.65 49.2409 56.1957 49.6951L49.6937 56.1971C49.24 56.6509 48.5046 56.6517 48.0498 56.1989L36.2332 44.433C35.7719 43.9737 35.0235 43.9821 34.5727 44.4518L23.3963 56.095Z" fill="white" />
+    </svg>
+  )
+}
 
 export interface FrameKitStudioBrand {
   slug: string
@@ -126,7 +136,7 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
           <>
             <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
               <div className="flex min-w-0 items-center gap-3">
-                <img src="/assets/logos/framekit-small-dark.svg" alt="" aria-hidden="true" className="size-10 rounded-lg" />
+                <FrameKitLogo aria-hidden="true" className="size-10" />
                 <div><p className="font-black tracking-[-0.02em]">FrameKit</p><p className="mt-0.5 text-[11px] tracking-[0.16em] text-[#91ae9f] uppercase">{messages.sidebar.workshop}</p></div>
               </div>
               <button type="button" onClick={toggleSidebar} aria-label={messages.sidebar.collapseLabel} title={messages.sidebar.collapseLabel} className="ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[#c8f7d9] transition hover:bg-white/10 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"><IconLayoutSidebarLeftCollapse size={18} /></button>

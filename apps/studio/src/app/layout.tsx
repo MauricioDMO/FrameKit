@@ -7,10 +7,7 @@ import './globals.css'
 export const metadata: Metadata = {
   ...frameKitMessages.es.metadata,
   icons: {
-    icon: [
-      { url: '/assets/logos/framekit-small.svg', media: '(prefers-color-scheme: light)' },
-      { url: '/assets/logos/framekit-small-dark.svg', media: '(prefers-color-scheme: dark)' }
-    ]
+    icon: [{ url: '/assets/logos/framekit-small.svg' }]
   }
 }
 
