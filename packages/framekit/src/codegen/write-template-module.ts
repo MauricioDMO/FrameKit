@@ -66,10 +66,10 @@ export async function writeTemplateModule(options: {
   }
 
   const summariesBySlug = await collectTemplateSummaries(options.projectRoot, templates)
-  const assetsBySlug = await syncTemplateAssets(options.projectRoot, templates)
-  const source = createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })
   const brands = await findBrandComponents(path.join(options.projectRoot, 'src', 'brand'))
   const brandSource = createBrandModule(brands, { outputDirectory })
+  const assetsBySlug = await syncTemplateAssets(options.projectRoot, templates)
+  const source = createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })
 
   await mkdir(outputDirectory, { recursive: true })
   await writeIfChanged(outputFile, source)

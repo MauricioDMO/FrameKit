@@ -13,7 +13,8 @@ export function resolveTemplateData<Definition extends TemplateBase>(
     throw new Error(`content variant "${variant}" is not defined`)
   }
 
-  if (!edits || typeof edits !== 'object' || Array.isArray(edits)) {
+  const editsPrototype = edits && typeof edits === 'object' ? Object.getPrototypeOf(edits) : undefined
+  if (editsPrototype !== Object.prototype && editsPrototype !== null) {
     throw new Error('edits must be a plain object')
   }
 

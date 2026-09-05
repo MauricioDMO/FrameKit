@@ -50,7 +50,7 @@ async function readAssetDirectory(
     if (!imageExtensions.has(extension)) continue
 
     const key = entry.name.slice(0, -extension.length)
-    if (!key || values[key]) {
+    if (!key || Object.hasOwn(values, key)) {
       throw new Error(`Assets duplicados para '${key}' en: ${directory}`)
     }
 

@@ -8,11 +8,12 @@ defineTemplate({
     title: field.text({ label: 'Título' }),
   },
   content: {
-    // @ts-expect-error content entries contain field values only
-    es: { language: 'Español', title: 'Oferta' },
+    es: {
+      // @ts-expect-error language is not a declared field
+      language: 'Español',
+      title: 'Oferta',
+    },
   },
   variants: { default: 'es' },
-  render() {
-    return null
-  },
+  render: () => null,
 })

@@ -8,8 +8,10 @@ defineTemplate({
     title: field.text({ label: 'Título' }),
   },
   content: {
-    // @ts-expect-error content.es.title must be string, not number
-    es: { title: 42 },
+    es: {
+      // @ts-expect-error content.es.title must be string, not number
+      title: 42,
+    },
   },
   variants: { default: 'es' },
   render() {

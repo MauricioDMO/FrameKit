@@ -1,5 +1,13 @@
 import { defineTemplate, field } from '@mauriciodmo/framekit'
-import type { InferTemplateData, TemplateRenderProps } from '@mauriciodmo/framekit'
+import type { InferTemplateData, TemplateAssetManifest, TemplateRenderProps } from '@mauriciodmo/framekit'
+
+export const templateAssets = {
+  common: { logo: '/images/logo.svg' },
+  variants: {
+    moon: { background: '/images/moon-background.png' },
+    fjord: { background: '/images/fjord-background.png' },
+  },
+} satisfies TemplateAssetManifest
 
 export const template = defineTemplate({
   meta: {
@@ -13,7 +21,7 @@ export const template = defineTemplate({
   fields: {
     title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
     accentColor: field.color({ label: 'Color', defaultValue: '#173d31' }),
-    image: field.image({ label: 'Image' }),
+    image: field.image({ label: 'Image', scope: 'variant' }),
     alignment: field.choice({
       label: 'Alignment',
       options: [
@@ -27,29 +35,24 @@ export const template = defineTemplate({
     showLogo: field.boolean({ label: 'Show logo' }),
   },
   content: {
-    moon: { title: 'Oferta', image: '/images/moon.png', count: 15, showLogo: true },
-    fjord: { title: 'Offer', image: '/images/fjord.png', count: 20, showLogo: false },
+    moon: { title: 'Oferta', image: '/images/moon.png', alignment: 'center', count: 15, showLogo: true },
+    fjord: { title: 'Offer', image: '/images/fjord.png', alignment: 'left', count: 20, showLogo: false },
   },
   variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
-  render({ data, variant, width, height }) {
+  render({ data, assets, variant, width, height }) {
     const title: string = data.title
     const image: string = data.image
     const alignment: 'left' | 'center' | 'right' = data.alignment
     const count: number = data.count
     const showLogo: boolean = data.showLogo
+    const commonLogo: string = assets.common.logo
+    const variantBackground: string = assets.variants[variant].background
     const variantKey: 'moon' | 'fjord' = variant
     const dimension: number = width + height
 
     // @ts-expect-error data keys come from fields
     String(data.missing)
 
-    void title
-    void image
-    void alignment
-    void count
-    void showLogo
-    void variantKey
-    void dimension
     return null
   },
 })
@@ -77,8 +80,3 @@ type HeightAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['height'],
   1080
 >>
-
-void (null as unknown as DataAssertion)
-void (null as unknown as PropsAssertion)
-void (null as unknown as WidthAssertion)
-void (null as unknown as HeightAssertion)

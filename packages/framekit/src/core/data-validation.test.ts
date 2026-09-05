@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import { defineTemplate, field, validateTemplateData } from '../index'
 
+import { isValidColor } from './validation/data'
+
 function createDefinition() {
   return defineTemplate({
     meta: { title: 'Data validation' },
@@ -27,6 +29,21 @@ function createDefinition() {
     variants: { default: 'en' },
     render: () => null,
   })
+}
+
+const validData = {
+  requiredText: 'Ready',
+  optionalText: '',
+  limitedText: 'okay',
+  validNumber: 12.5,
+  tooSmall: 10,
+  tooLarge: 20,
+  steppedNumber: 4,
+  invalidNumber: 13,
+  requiredImage: '/assets/images/hero.webp',
+  optionalImage: '',
+  requiredColor: '#AABBCC',
+  optionalColor: '',
 }
 
 function createChoiceDefinition() {
@@ -66,6 +83,21 @@ function createBooleanDefinition() {
     render: () => null,
   })
 }
+
+describe('isValidColor', () => {
+  it.each([
+    ['black boundary', '#000000', true],
+    ['white boundary', '#FFFFFF', true],
+    ['mixed-case hex', '#aBc123', true],
+    ['missing hash', '000000', false],
+    ['five digits', '#00000', false],
+    ['seven digits', '#0000000', false],
+    ['non-hex digit', '#00000g', false],
+    ['empty value', '', false],
+  ])('handles the %s color case', (_name, value, expected) => {
+    expect(isValidColor(value)).toBe(expected)
+  })
+})
 
 describe('validateTemplateData', () => {
   it('rejects required empty values but accepts optional empty values', () => {
@@ -153,27 +185,43 @@ describe('validateTemplateData', () => {
     })
   })
 
+  it.each([
+    ['number', 42],
+    ['boolean', true],
+  ] as const)('rejects a %s value for text fields without coercion', (_type, value) => {
+    expect(validateTemplateData(createDefinition(), { ...validData, requiredText: value })).toEqual({
+      requiredText: { code: 'required' },
+    })
+  })
+
+  it.each([
+    ['number', 42],
+    ['boolean', true],
+  ] as const)('rejects a %s value for image fields without coercion', (_type, value) => {
+    expect(validateTemplateData(createDefinition(), { ...validData, requiredImage: value })).toEqual({
+      requiredImage: { code: 'required' },
+    })
+  })
+
+  it.each([
+    ['number', 42],
+    ['boolean', true],
+  ] as const)('rejects a %s value for color fields without coercion', (_type, value) => {
+    expect(validateTemplateData(createDefinition(), { ...validData, requiredColor: value })).toEqual({
+      requiredColor: { code: 'invalid_color' },
+    })
+  })
+
   it('measures text limits without trimming whitespace or newlines', () => {
     const definition = createDefinition()
-    const baseData = {
-      requiredText: 'Ready',
-      optionalText: '',
-      validNumber: 12,
-      tooSmall: 10,
-      tooLarge: 20,
-      steppedNumber: 4,
-      invalidNumber: 13,
-      requiredImage: '/assets/images/hero.webp',
-      optionalImage: '',
-      requiredColor: '#AABBCC',
-      optionalColor: '',
-    }
 
-    expect(validateTemplateData(definition, { ...baseData, limitedText: 'a\n' })).toEqual({})
-    expect(validateTemplateData(definition, { ...baseData, limitedText: 'a' })).toEqual({ limitedText: { code: 'text_too_short', minLength: 2 } })
-    expect(validateTemplateData(definition, { ...baseData, limitedText: 'abcd\n' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
-    expect(validateTemplateData(definition, { ...baseData, limitedText: ' ' })).toEqual({ limitedText: { code: 'text_too_short', minLength: 2 } })
-    expect(validateTemplateData(definition, { ...baseData, limitedText: '     ' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
+    expect(validateTemplateData(definition, { ...validData, limitedText: 'ab' })).toEqual({})
+    expect(validateTemplateData(definition, { ...validData, limitedText: 'a\n' })).toEqual({})
+    expect(validateTemplateData(definition, { ...validData, limitedText: 'a' })).toEqual({ limitedText: { code: 'text_too_short', minLength: 2 } })
+    expect(validateTemplateData(definition, { ...validData, limitedText: 'abcd' })).toEqual({})
+    expect(validateTemplateData(definition, { ...validData, limitedText: 'abcd\n' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
+    expect(validateTemplateData(definition, { ...validData, limitedText: ' ' })).toEqual({ limitedText: { code: 'text_too_short', minLength: 2 } })
+    expect(validateTemplateData(definition, { ...validData, limitedText: '     ' })).toEqual({ limitedText: { code: 'text_too_long', maxLength: 4 } })
   })
 
   it('accepts only declared choice strings without coercion or recovery', () => {
@@ -220,6 +268,50 @@ describe('validateTemplateData', () => {
       validNumber: { code: 'invalid_number' },
       steppedNumber: { code: 'invalid_step', step: 2 },
     })
+  })
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['-Infinity', Number.NEGATIVE_INFINITY],
+  ] as const)('rejects %s numeric data', (_name, value) => {
+    expect(validateTemplateData(createDefinition(), { ...validData, validNumber: value })).toEqual({
+      validNumber: { code: 'invalid_number' },
+    })
+  })
+
+  it('accepts a negative minimum and enforces its inclusive boundary', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Negative minimum validation' },
+      width: 100,
+      height: 100,
+      fields: {
+        value: field.number({ label: 'Value', defaultValue: -1, min: -2, max: 2, step: 1 }),
+      },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(validateTemplateData(definition, { value: -2 })).toEqual({})
+    expect(validateTemplateData(definition, { value: 2 })).toEqual({})
+    expect(validateTemplateData(definition, { value: -3 })).toEqual({
+      value: { code: 'number_too_small', min: -2 },
+    })
+  })
+
+  it('rejects a negative numeric step during definition validation', () => {
+    expect(() => defineTemplate({
+      meta: { title: 'Negative step validation' },
+      width: 100,
+      height: 100,
+      fields: {
+        value: field.number({ label: 'Value', defaultValue: 1, step: -1 }),
+      },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })).toThrow('fields.value.step must be a finite positive number')
   })
 
   it('does not grow step tolerance with the quotient magnitude', () => {

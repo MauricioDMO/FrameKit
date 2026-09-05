@@ -8,8 +8,11 @@ defineTemplate({
     title: field.text({ label: 'Título' }),
   },
   content: {
-    // @ts-expect-error foo is not declared in fields
-    es: { foo: 'bar' },
+    es: {
+      title: 'bar',
+      // @ts-expect-error foo is not declared in fields
+      foo: 'bar',
+    },
   },
   variants: { default: 'es' },
   render() {

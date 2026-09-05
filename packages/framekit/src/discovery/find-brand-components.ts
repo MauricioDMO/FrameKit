@@ -20,16 +20,25 @@ function stripMarkdown(value: string): string {
 
 function readDescription(readme: string, readmePath: string): string {
   const paragraph: string[] = []
+  let inFence = false
 
   for (const rawLine of readme.split(/\r?\n/)) {
     const line = rawLine.trim()
+
+    if (line.startsWith('```')) {
+      if (paragraph.length > 0 && !inFence) return stripMarkdown(paragraph.join(' '))
+      inFence = !inFence
+      continue
+    }
+
+    if (inFence) continue
 
     if (!line) {
       if (paragraph.length > 0) return stripMarkdown(paragraph.join(' '))
       continue
     }
 
-    if (line.startsWith('#') || line.startsWith('```') || /^[-*]\s/.test(line) || /^\d+[.)]\s/.test(line)) {
+    if (line.startsWith('#') || /^[-*]\s/.test(line) || /^\d+[.)]\s/.test(line)) {
       if (paragraph.length > 0) return stripMarkdown(paragraph.join(' '))
       continue
     }

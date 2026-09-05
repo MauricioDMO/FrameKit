@@ -35,7 +35,6 @@ defineTemplate({
   variants: { default: 'en' },
   render({ data }) {
     const value: boolean = data.showLogo
-    void value
     return null
   },
 })

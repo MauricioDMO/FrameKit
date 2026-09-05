@@ -4,6 +4,6 @@ import { field } from '@mauriciodmo/framekit'
 import { fields } from '@mauriciodmo/framekit'
 
 // @ts-expect-error textarea is not a canonical field kind
-field.textarea({ label: 'Legacy textarea' })
+void field.textarea
 
 void fields

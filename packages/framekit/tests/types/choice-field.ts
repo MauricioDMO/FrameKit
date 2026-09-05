@@ -1,4 +1,5 @@
 import { defineTemplate, field } from '@mauriciodmo/framekit'
+import type { InferTemplateData } from '@mauriciodmo/framekit'
 
 const alignment = field.choice({
   label: 'Alignment',
@@ -20,6 +21,24 @@ type Expect<Value extends true> = Value
 type OptionValuesAssertion = Expect<Equal<
   typeof alignment.options[number]['value'],
   'left' | 'center' | 'right'
+>>
+
+export const choiceTemplate = defineTemplate({
+  meta: { title: 'Choice template' },
+  width: 100,
+  height: 100,
+  fields: { alignment },
+  content: { en: { alignment: 'center' } },
+  variants: { default: 'en' },
+  render({ data }) {
+    const value: 'left' | 'center' | 'right' = data.alignment
+    return value
+  },
+})
+
+type DataAssertion = Expect<Equal<
+  InferTemplateData<typeof choiceTemplate>,
+  { alignment: 'left' | 'center' | 'right' }
 >>
 
 field.choice({
@@ -51,5 +70,3 @@ defineTemplate({
   variants: { default: 'en' },
   render: () => null,
 })
-
-void (null as unknown as OptionValuesAssertion)

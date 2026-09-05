@@ -35,7 +35,6 @@ defineTemplate({
   variants: { default: 'en' },
   render({ data }) {
     const count: number = data.count
-    void count
     return null
   },
 })

@@ -8,10 +8,19 @@ export const templateBase = defineTemplateBase({
   fields: {
     title: field.text({ label: 'Title' }),
     accentColor: field.color({ label: 'Accent' }),
+    alignment: field.choice({
+      label: 'Alignment',
+      options: [
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' },
+        { value: 'right', label: 'Right' },
+      ],
+      defaultValue: 'center',
+    }),
   },
   content: {
-    aurora: { title: 'Northern light' },
-    desert: { title: 'Open horizon' },
+    aurora: { title: 'Northern light', alignment: 'center' },
+    desert: { title: 'Open horizon', alignment: 'left' },
   },
   variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } },
 })
@@ -25,7 +34,7 @@ type Expect<Value extends true> = Value
 
 type DataAssertion = Expect<Equal<
   InferTemplateData<typeof templateBase>,
-  { title: string; accentColor: string }
+  { title: string; accentColor: string; alignment: 'left' | 'center' | 'right' }
 >>
 type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof templateBase>['variant'],
@@ -39,8 +48,3 @@ type HeightAssertion = Expect<Equal<
   TemplateRenderProps<typeof templateBase>['height'],
   800
 >>
-
-void (null as unknown as DataAssertion)
-void (null as unknown as PropsAssertion)
-void (null as unknown as WidthAssertion)
-void (null as unknown as HeightAssertion)

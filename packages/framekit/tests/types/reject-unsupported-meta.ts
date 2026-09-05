@@ -1,53 +1,57 @@
 import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 defineTemplate({
-  // @ts-expect-error revision is not part of template metadata
-  meta: { title: 'Invalid template', revision: 1 },
+  meta: {
+    title: 'Invalid template',
+    // @ts-expect-error revision is not part of template metadata
+    revision: 1,
+  },
   width: 1080,
   height: 1080,
   fields: { title: field.text({ label: 'Title' }) },
   content: { en: { title: 'Test' } },
   variants: { default: 'en' },
-  render() {
-    return null
-  },
+  render: () => null,
 })
 
 defineTemplate({
-  // @ts-expect-error status is not part of template metadata
-  meta: { title: 'Invalid template', status: 'draft' },
+  meta: {
+    title: 'Invalid template',
+    // @ts-expect-error status is not part of template metadata
+    status: 'draft',
+  },
   width: 1080,
   height: 1080,
   fields: { title: field.text({ label: 'Title' }) },
   content: { en: { title: 'Test' } },
   variants: { default: 'en' },
-  render() {
-    return null
-  },
+  render: () => null,
 })
 
 defineTemplate({
-  // @ts-expect-error keywords is not part of template metadata
-  meta: { title: 'Invalid template', keywords: ['social'] },
+  meta: {
+    title: 'Invalid template',
+    // @ts-expect-error keywords is not part of template metadata
+    keywords: ['social'],
+  },
   width: 1080,
   height: 1080,
   fields: { title: field.text({ label: 'Title' }) },
   content: { en: { title: 'Test' } },
   variants: { default: 'en' },
-  render() {
-    return null
-  },
+  render: () => null,
 })
 
 defineTemplate({
-  // @ts-expect-error order is not part of template metadata
-  meta: { title: 'Invalid template', order: 1 },
+  meta: {
+    title: 'Invalid template',
+    // @ts-expect-error order is not part of template metadata
+    order: 1,
+  },
   width: 1080,
   height: 1080,
   fields: { title: field.text({ label: 'Title' }) },
   content: { en: { title: 'Test' } },
   variants: { default: 'en' },
-  render() {
-    return null
-  },
+  render: () => null,
 })

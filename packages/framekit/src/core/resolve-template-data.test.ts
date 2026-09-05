@@ -82,7 +82,7 @@ describe('resolveTemplateData', () => {
       render: () => null,
     })
 
-    expect(resolveTemplateData(definition, 'en', { title: 'Edited title' })).toMatchObject({
+    expect(resolveTemplateData(definition, 'en', { title: 'Edited title' })).toEqual({
       backgroundImage: '/assets/images/backgrounds/forest.svg',
       accentColor: '#b9f8d2',
       eyebrow: 'Digital studio / 2026',
@@ -112,17 +112,50 @@ describe('resolveTemplateData', () => {
     })
   })
 
-  it('rejects numeric strings at content and edit boundaries', () => {
-    expect(() => defineTemplate({
+  it('rejects invalid content values at the resolver boundary', () => {
+    const definition = defineTemplate({
       meta: { title: 'Number resolution' },
       width: 100,
       height: 100,
       fields: { count: field.number({ label: 'Count', defaultValue: 1 }) },
-      content: { en: { count: '2' as unknown as number } },
+      content: { en: {} },
       variants: { default: 'en' },
       render: () => null,
-    })).toThrow('content.en.count must be a number')
+    })
 
+    for (const count of ['2' as unknown as number, Number.NaN]) {
+      const invalidDefinition = {
+        ...definition,
+        content: { en: { count } },
+      } as unknown as typeof definition
+
+      expect(() => resolveTemplateData(invalidDefinition, 'en', {})).toThrow('content.en.count must be a number')
+    }
+  })
+
+  it.each([
+    ['boolean', { showLogo: 'true' }, 'edits.showLogo must be a boolean'],
+    ['number', { count: '2' }, 'edits.count must be a number'],
+    ['text', { title: 2 }, 'edits.title must be a string'],
+  ])('rejects invalid %s edit values at the resolver boundary', (_kind, edits, error) => {
+    const definition = defineTemplate({
+      meta: { title: 'Edit resolution' },
+      width: 100,
+      height: 100,
+      fields: {
+        showLogo: field.boolean({ label: 'Show logo' }),
+        count: field.number({ label: 'Count', defaultValue: 1 }),
+        title: field.text({ label: 'Title' }),
+      },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(() => resolveTemplateData(definition, 'en', edits as never)).toThrow(error)
+  })
+
+  it('rejects non-finite number edits', () => {
     const definition = defineTemplate({
       meta: { title: 'Number edit resolution' },
       width: 100,
@@ -133,7 +166,7 @@ describe('resolveTemplateData', () => {
       render: () => null,
     })
 
-    expect(() => resolveTemplateData(definition, 'en', { count: '2' as unknown as number })).toThrow('edits.count must be a number')
+    expect(() => resolveTemplateData(definition, 'en', { count: Number.NaN })).toThrow('edits.count must be a number')
     expect(() => resolveTemplateData(definition, 'en', { count: Infinity })).toThrow('edits.count must be a number')
   })
 
@@ -142,6 +175,7 @@ describe('resolveTemplateData', () => {
     expect(resolveTemplateData(extractedTemplate, 'aurora', {})).toEqual({
       title: 'Northern light',
       accentColor: '',
+      alignment: 'center',
     })
   })
 
@@ -151,7 +185,7 @@ describe('resolveTemplateData', () => {
       width: 100,
       height: 100,
       fields: {
-        hero: field.image({ label: 'Hero' }),
+        hero: field.image({ label: 'Hero', scope: 'variant' }),
         background: field.image({ label: 'Background', scope: 'common' }),
       },
       content: { en: {}, es: {} },
@@ -159,15 +193,92 @@ describe('resolveTemplateData', () => {
       render: () => null,
     })
 
-    expect(resolveTemplateData(definition, 'en', {}, {
+    expect(resolveTemplateData(definition, 'en', {
+      hero: '/edited/hero.svg',
+      background: '/edited/background.svg',
+    }, {
       common: { hero: '/common/hero.svg', background: '/common/background.svg' },
-      variants: { en: { hero: '/en/hero.webp' } },
+      variants: { en: { hero: '/en/hero.webp', background: '/en/background.webp' } },
     })).toEqual({ hero: '/en/hero.webp', background: '/common/background.svg' })
 
-    expect(resolveTemplateData(definition, 'es', {}, {
+    expect(resolveTemplateData(definition, 'es', {
+      hero: '/edited/hero.svg',
+      background: '/edited/background.svg',
+    }, {
       common: { hero: '/common/hero.svg', background: '/common/background.svg' },
       variants: {},
     })).toEqual({ hero: '/common/hero.svg', background: '/common/background.svg' })
+  })
+
+  it('applies falsy boolean, number, and text edits', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Falsy edits' },
+      width: 100,
+      height: 100,
+      fields: {
+        showLogo: field.boolean({ label: 'Show logo', defaultValue: true }),
+        count: field.number({ label: 'Count', defaultValue: 2 }),
+        title: field.text({ label: 'Title', defaultValue: 'Default', required: false }),
+      },
+      content: { en: { showLogo: true, count: 1, title: 'Variant' } },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    expect(resolveTemplateData(definition, 'en', { title: 'Edited' })).toEqual({
+      showLogo: true,
+      count: 1,
+      title: 'Edited',
+    })
+    expect(resolveTemplateData(definition, 'en', { showLogo: false, count: 0, title: '' })).toEqual({
+      showLogo: false,
+      count: 0,
+      title: '',
+    })
+  })
+
+  it('rejects edits that are not plain objects', () => {
+    const definition = defineTemplate({
+      meta: { title: 'Edit shape' },
+      width: 100,
+      height: 100,
+      fields: { title: field.text({ label: 'Title' }) },
+      content: { en: {} },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+
+    for (const edits of [null, [], new Date()]) {
+      expect(() => resolveTemplateData(definition, 'en', edits as never)).toThrow('edits must be a plain object')
+    }
+  })
+
+  it('does not mutate the definition, edits, or assets', () => {
+    const definition = defineTemplate({
+      meta: { title: 'No mutation' },
+      width: 100,
+      height: 100,
+      fields: {
+        hero: field.image({ label: 'Hero' }),
+        title: field.text({ label: 'Title', defaultValue: 'Default' }),
+      },
+      content: { en: { title: 'Variant' } },
+      variants: { default: 'en' },
+      render: () => null,
+    })
+    const edits = { title: 'Edited' }
+    const assets = {
+      common: { hero: '/common/hero.svg' },
+      variants: { en: { hero: '/en/hero.svg' } },
+    }
+    const originalContent = structuredClone(definition.content)
+    const originalEdits = structuredClone(edits)
+    const originalAssets = structuredClone(assets)
+
+    expect(resolveTemplateData(definition, 'en', edits, assets)).toEqual({ hero: '/en/hero.svg', title: 'Edited' })
+    expect(definition.content).toEqual(originalContent)
+    expect(edits).toEqual(originalEdits)
+    expect(assets).toEqual(originalAssets)
   })
 
   it('rejects unknown variants and edit keys instead of silently resolving them', () => {

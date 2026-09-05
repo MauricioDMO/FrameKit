@@ -25,7 +25,11 @@ describe('validateTemplateDefinition', () => {
     ['missing metadata', { meta: undefined }, 'meta must be a plain object'],
     ['missing metadata title', { meta: {} }, 'meta.title must be a non-empty string'],
     ['empty metadata title', { meta: { title: '  ' } }, 'meta.title must be a non-empty string'],
+    ['non-plain fields', { fields: [] }, 'fields must be a plain object'],
     ['missing variants', { variants: undefined }, 'variants must be a plain object'],
+    ['non-plain variants', { variants: [] }, 'variants must be a plain object'],
+    ['empty variants', { variants: {} }, 'variants.default must be a non-empty string'],
+    ['non-plain content', { content: [] }, 'content must be a plain object'],
     ['unknown top-level property', { version: 1 }, 'definition contains unknown property "version"'],
   ])('rejects a %s', (_name, definition, error) => {
     const candidate = definition === null || Array.isArray(definition) ? definition : { ...validDefinition(), ...definition }
@@ -33,7 +37,7 @@ describe('validateTemplateDefinition', () => {
   })
 
   it('accepts optional metadata', () => {
-    const result = validateTemplateDefinition({
+    const definition = {
       ...validDefinition(),
       meta: {
         title: 'Social card',
@@ -41,9 +45,19 @@ describe('validateTemplateDefinition', () => {
         marketingDescription: 'Present an offer and motivate an action',
         tags: ['social', 'promotion'],
       },
-    })
+    }
 
-    expect(result.success).toBe(true)
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
+  })
+
+  it('accepts empty fields', () => {
+    const definition = {
+      ...validDefinition(),
+      fields: {},
+      content: { en: {} },
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
   it.each([
@@ -75,6 +89,7 @@ describe('validateTemplateDefinition', () => {
     ['invalid required', { kind: 'text', label: 'Title', required: 1 }, 'fields.title.required must be a boolean'],
     ['invalid default', { kind: 'text', label: 'Title', defaultValue: 1 }, 'fields.title.defaultValue must be a string'],
     ['empty choice options', { kind: 'choice', label: 'Alignment', options: [], defaultValue: 'center' }, 'fields.title.options must be a non-empty array'],
+    ['non-array choice options', { kind: 'choice', label: 'Alignment', options: {}, defaultValue: 'center' }, 'fields.title.options must be a non-empty array'],
     ['non-object choice option', { kind: 'choice', label: 'Alignment', options: [null], defaultValue: 'center' }, 'fields.title.options[0] must be a plain object'],
     ['empty choice option value', { kind: 'choice', label: 'Alignment', options: [{ value: ' ', label: 'Blank' }], defaultValue: ' ' }, 'fields.title.options[0].value must be a non-empty string'],
     ['empty choice option label', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: ' ' }], defaultValue: 'left' }, 'fields.title.options[0].label must be a non-empty string'],
@@ -83,11 +98,13 @@ describe('validateTemplateDefinition', () => {
     ['unknown choice default', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'right' }, 'fields.title.defaultValue must match an option value'],
     ['required on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', required: false }, 'fields.title cannot define required'],
     ['control on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', control: 'select' }, 'fields.title cannot define control'],
+    ['step on choice', { kind: 'choice', label: 'Alignment', options: [{ value: 'left', label: 'Left' }], defaultValue: 'left', step: 1 }, 'fields.title cannot define step'],
     ['invalid boolean default', { kind: 'boolean', label: 'Show logo', defaultValue: 'true' }, 'fields.title.defaultValue must be a boolean'],
     ['null boolean default', { kind: 'boolean', label: 'Show logo', defaultValue: null }, 'fields.title.defaultValue must be a boolean'],
     ['placeholder on boolean', { kind: 'boolean', label: 'Show logo', placeholder: 'yes' }, 'fields.title cannot define placeholder'],
     ['required on boolean', { kind: 'boolean', label: 'Show logo', required: false }, 'fields.title cannot define required'],
     ['control on boolean', { kind: 'boolean', label: 'Show logo', control: 'checkbox' }, 'fields.title cannot define control'],
+    ['step on boolean', { kind: 'boolean', label: 'Show logo', step: 1 }, 'fields.title cannot define step'],
     ['control on text', { kind: 'text', label: 'Title', control: 'slider' }, 'fields.title cannot define control'],
     ['step on text', { kind: 'text', label: 'Title', step: 2 }, 'fields.title cannot define step'],
     ['missing number default', { kind: 'number', label: 'Count' }, 'fields.title.defaultValue is required'],
@@ -112,6 +129,7 @@ describe('validateTemplateDefinition', () => {
     ['reversed text lengths', { kind: 'text', label: 'Title', minLength: 5, maxLength: 4 }, 'fields.title.minLength must be less than or equal to maxLength'],
     ['text lengths on non-text', { kind: 'color', label: 'Color', minLength: 1 }, 'fields.title cannot define minLength or maxLength'],
     ['invalid image scope', { kind: 'image', label: 'Image', scope: 'locale' }, 'fields.title.scope is invalid'],
+    ['limits on image', { kind: 'image', label: 'Image', min: 0 }, 'fields.title cannot define min or max'],
     ['scope on non-image', { kind: 'text', label: 'Title', scope: 'common' }, 'fields.title.scope is only valid for image fields'],
   ])('rejects %s descriptors', (_name, field, error) => {
     expect(validateTemplateDefinition({
@@ -134,10 +152,13 @@ describe('validateTemplateDefinition', () => {
     })).toEqual({ success: false, error })
   })
 
-  it('accepts a valid choice descriptor', () => {
-    expect(validateTemplateDefinition({
+  it('accepts string content values', () => {
+    const definition = {
       ...validDefinition(),
       fields: {
+        title: { kind: 'text', label: 'Title' },
+        color: { kind: 'color', label: 'Color' },
+        image: { kind: 'image', label: 'Image', scope: 'variant' },
         alignment: {
           kind: 'choice',
           label: 'Alignment',
@@ -148,24 +169,40 @@ describe('validateTemplateDefinition', () => {
           defaultValue: 'center',
         },
       },
-      content: { en: { alignment: 'center' } },
-    }).success).toBe(true)
+      content: { en: { title: 'Hello', color: '#ffffff', image: 'logo.png', alignment: 'center' } },
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
   it('accepts boolean descriptors and content values', () => {
-    expect(validateTemplateDefinition({
+    const definition = {
       ...validDefinition(),
-      fields: { showLogo: { kind: 'boolean', label: 'Show logo', defaultValue: false } },
+      fields: { showLogo: { kind: 'boolean', label: 'Show logo' } },
       content: { en: { showLogo: true } },
-    }).success).toBe(true)
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
   it('accepts numeric descriptors and content values', () => {
-    expect(validateTemplateDefinition({
+    const definition = {
       ...validDefinition(),
       fields: { opacity: { kind: 'number', label: 'Opacity', defaultValue: 100, min: 0, max: 100, step: 5, control: 'slider' } },
       content: { en: { opacity: 50 } },
-    }).success).toBe(true)
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
+  })
+
+  it('accepts numeric content at inclusive limits', () => {
+    const definition = {
+      ...validDefinition(),
+      fields: { count: { kind: 'number', label: 'Count', defaultValue: 10, min: 10, max: 20 } },
+      content: { en: { count: 10 }, max: { count: 20 } },
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
   it.each([
@@ -187,9 +224,13 @@ describe('validateTemplateDefinition', () => {
     })
   })
 
-  it('rejects a missing render function', () => {
+  it.each([
+    ['missing', undefined],
+    ['non-function', 'not a function'],
+  ])('rejects a %s render', (_name, render) => {
     const definition: Record<string, unknown> = validDefinition()
-    delete definition.render
+    if (render === undefined) delete definition.render
+    else definition.render = render
 
     expect(validateTemplateDefinition(definition)).toEqual({
       success: false,
@@ -199,12 +240,15 @@ describe('validateTemplateDefinition', () => {
 
   it.each([
     ['empty content', { content: {} }, 'content must have at least one entry'],
+    ['reserved language field', { fields: { language: { kind: 'text', label: 'Language' } } }, 'fields.language is reserved'],
     ['unknown content key', { content: { en: { missing: 'value' } } }, 'content.en contains unknown field key "missing"'],
     ['content metadata', { content: { en: { language: 'English' } } }, 'content.en contains unknown field key "language"'],
     ['string boolean content', { fields: { showLogo: { kind: 'boolean', label: 'Show logo' } }, content: { en: { showLogo: 'true' } } }, 'content.en.showLogo must be a boolean'],
     ['numeric boolean content', { fields: { showLogo: { kind: 'boolean', label: 'Show logo' } }, content: { en: { showLogo: 1 } } }, 'content.en.showLogo must be a boolean'],
     ['string number content', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 1 } }, content: { en: { count: '1' } } }, 'content.en.count must be a number'],
     ['non-finite number content', { fields: { count: { kind: 'number', label: 'Count', defaultValue: 1 } }, content: { en: { count: Infinity } } }, 'content.en.count must be a number'],
+    ['empty default variant', { variants: { default: '  ' } }, 'variants.default must be a non-empty string'],
+    ['non-string default variant', { variants: { default: 1 } }, 'variants.default must be a non-empty string'],
     ['unknown default variant', { variants: { default: 'fr' } }, 'variants.default "fr" is not defined in content'],
     ['unsupported variant property', { variants: { default: 'en', mode: 'language' } }, 'variants contains unknown property "mode"'],
     ['unknown variant label', { variants: { default: 'en', labels: { fr: 'French' } } }, 'variants.labels contains unknown variant key "fr"'],
@@ -217,6 +261,7 @@ describe('validateTemplateDefinition', () => {
 
   it.each([
     ['non-object labels', [], 'variants.labels must be a plain object'],
+    ['empty label', { en: '  ' }, 'variants.labels.en must be a non-empty string'],
     ['non-string label', { en: 1 }, 'variants.labels.en must be a non-empty string'],
   ])('rejects invalid variant labels: %s', (_name, labels, error) => {
     expect(validateTemplateDefinition({

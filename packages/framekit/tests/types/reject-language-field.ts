@@ -1,6 +1,6 @@
 import { defineTemplate, field } from '@mauriciodmo/framekit'
 
-// @ts-expect-error fields.language is reserved
+// @ts-expect-error defineTemplate rejects the reserved fields.language property
 defineTemplate({
   meta: { title: 'Invalid template' },
   width: 1080,
@@ -12,7 +12,5 @@ defineTemplate({
     es: {},
   },
   variants: { default: 'es' },
-  render() {
-    return null
-  },
+  render: () => null,
 })
