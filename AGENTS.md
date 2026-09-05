@@ -19,6 +19,16 @@
 - Build a workspace with `pnpm --filter <workspace> build`; build `@mauriciodmo/framekit` before Studio or a generated consumer.
 - After changing any `package.json`, run `pnpm install` at the root, then `pnpm build`.
 
+## Tests and Imports
+
+- New tests belong under the nearest `__tests__/` directory, not beside the implementation file. Mirror the production domain below it, for example `src/core/validation/__tests__/definition/` and `src/core/validation/__tests__/fields/`.
+- Keep shared test fixtures inside the relevant `__tests__/` tree. Do not place test-only helpers in production source directories.
+- Vitest discovers nested `*.test.ts` and `*.test.tsx` files recursively. Do not add per-directory test configuration unless the environment genuinely differs.
+- In package tests, use the configured `@/*` alias for package-local source imports instead of long `../../` chains. `@/*` maps to `src/*` in `packages/framekit/`, `packages/create-framekit/`, `apps/studio/`, and the generated template.
+- Keep TypeScript and the test runner aligned when adding an alias: configure both `compilerOptions.paths` and the runner's resolver. A TypeScript-only alias is not enough at runtime.
+- Use supported package imports such as `@mauriciodmo/framekit` for consumer-facing or generated-project code. Do not import `packages/framekit/src/*` from a consumer.
+- Preserve the existing relative-import style in implementation code unless the package's build configuration also supports the new alias.
+
 ## Generated Files
 
 - Linted JavaScript and TypeScript use the ESLint Standard contract: two spaces, single quotes, no semicolons, no trailing commas, and a final newline. Existing Next, TypeScript, and Tailwind rules remain active.
