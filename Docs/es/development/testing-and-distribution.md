@@ -18,6 +18,20 @@ lane de CI construye los paquetes públicos antes de esos checks.
 - `pnpm lint` — ejecuta ESLint en todos los workspaces
 - `pnpm build` — reconstruye todos los workspaces completamente; el paquete central se construye primero, luego todos los workspaces dependientes
 
+`pnpm lint` es el gate completo de lint del repositorio. El hook de pre-commit lo
+ejecuta antes de `pnpm sync:skills` y después añade explícitamente las copias de
+skills sincronizadas. JavaScript y TypeScript bajo lint usan dos espacios,
+comillas simples, sin punto y coma, sin comas finales y con salto de línea final;
+las reglas de Next, TypeScript y Tailwind permanecen activas. ESLint no formatea
+Markdown, YAML, JSON, CSS ni output generado.
+
+El output generado y de compilación ignorado es desechable y nunca debe editarse
+manualmente. Las rutas canónicas ignoradas son `**/.framekit/`, `**/.next/`,
+`**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/` y
+`**/src/generated/framekit/`. `Docs/skills/` es la fuente autoritativa; las
+copias rastreadas en `.agents/skills` solo se actualizan mediante
+`pnpm sync:skills`.
+
 ## Qué se prueba
 
 Las siguientes áreas están cubiertas por el conjunto de pruebas:

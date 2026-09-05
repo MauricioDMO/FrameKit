@@ -18,6 +18,18 @@ before those checks.
 - `pnpm lint` — runs ESLint across all workspaces
 - `pnpm build` — full rebuild of all workspaces; the core package is built first, then all dependent workspaces
 
+`pnpm lint` is the full repository lint gate. The pre-commit hook runs it before
+`pnpm sync:skills`, then explicitly stages the synchronized skill copies. Linted
+JavaScript and TypeScript use two spaces, single quotes, no semicolons, no
+trailing commas, and a final newline; Next, TypeScript, and Tailwind rules remain
+active. ESLint does not format Markdown, YAML, JSON, CSS, or generated output.
+
+Ignored generated and build output is disposable and must never be hand-edited.
+The canonical ignored paths are `**/.framekit/`, `**/.next/`, `**/build/`,
+`**/dist/`, `**/out/`, `**/public/__framekit/`, and
+`**/src/generated/framekit/`. `Docs/skills/` is authoritative; the tracked
+`.agents/skills` copies are refreshed only by `pnpm sync:skills`.
+
 ## What Is Tested
 
 The following areas are covered by the test suite:

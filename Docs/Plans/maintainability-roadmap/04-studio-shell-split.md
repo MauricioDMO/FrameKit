@@ -206,7 +206,6 @@ Phases 1–3 have supplied the shared repository checks:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm format:check
 pnpm check:runtime
 pnpm --filter @mauriciodmo/framekit lint
 pnpm --filter @mauriciodmo/framekit test

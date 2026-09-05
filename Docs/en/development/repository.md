@@ -40,6 +40,12 @@ The root `package.json` defines repository-wide scripts and a focused developmen
 
 - `pnpm dev` — builds the public `@mauriciodmo/framekit` package first, then starts Studio. Do not run `pnpm dev` from inside a package directory; always run it from the repository root.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` — all recurse into every workspace that defines the corresponding script.
+- `pnpm lint` is the complete recursive ESLint check. The pre-commit hook runs it before `pnpm sync:skills` and explicitly stages the two synchronized skill-copy locations after it passes.
+
+Linted JavaScript and TypeScript follow the ESLint Standard contract: two spaces,
+single quotes, no semicolons, no trailing commas, and a final newline. The
+existing Next, TypeScript, and Tailwind rules remain active. ESLint does not
+format Markdown, YAML, JSON, CSS, or generated output.
 
 ## Package-first build reason
 
@@ -77,7 +83,11 @@ The following paths are produced during development:
 | `.framekit/next/`                  | Next.js build output including the Studio standalone server                                  | Ignored                                                      |
 | `packages/framekit/dist/`          | Built JavaScript (ESM), type declarations (`.d.ts`), and `styles.css` from the public package | Ignored                                                      |
 
-All generated directories are gitignored via `**/.framekit/`, `**/src/generated/framekit/`, `**/dist/`, and Next.js-specific patterns in `.next/`. The generated registry is disposable and must be regenerated before commands that import it.
+All generated directories are gitignored via `**/.framekit/`, `**/.next/`,
+`**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/`, and
+`**/src/generated/framekit/`. The generated registry is disposable and must be
+regenerated before commands that import it. Never hand-edit ignored generated or
+build output.
 
 ## What belongs where
 

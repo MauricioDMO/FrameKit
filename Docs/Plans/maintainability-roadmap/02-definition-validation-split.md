@@ -164,16 +164,16 @@ and the facade order only.
 ## Implementation steps
 
 1. **Capture the baseline.** Phase 1 is a sequencing prerequisite, so capture
-    the baseline after its shared formatting check exists. Run the shared clean
-    install/runtime checks first, then the current monolithic definition and data
+   the baseline after its shared ESLint Standard check exists. Run the shared
+   clean install/runtime/lint checks first, then the current monolithic definition and data
     tests, package typecheck/build, and Studio generation integration test. Build
     FrameKit before the Studio test because Studio consumes the package build.
     From the repository root, the baseline commands are:
 
    ```sh
    pnpm install --frozen-lockfile
-   pnpm format:check
    pnpm check:runtime
+   pnpm lint
    pnpm --filter @mauriciodmo/framekit exec vitest run \
      src/core/definition-validation.test.ts \
      src/core/data-validation.test.ts
@@ -297,7 +297,6 @@ From the repository root, after the focused checks pass:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm format:check
 pnpm check:runtime
 pnpm --filter @mauriciodmo/framekit lint
 pnpm --filter @mauriciodmo/framekit test

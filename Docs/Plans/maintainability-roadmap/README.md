@@ -58,10 +58,11 @@ preserved, update the plan or obtain separate approval before implementation.
 Across all phases, use kebab-case file names, PascalCase React component names,
 and `useSomething` names for hooks. Keep runtime tests colocated with the code
 they exercise; keep compile-time type tests under `tests/types/`. Use `index.ts`
-only for re-exports. The formatting contract is two spaces, no semicolons,
-single quotes in JavaScript and TypeScript, trailing commas, and 120 columns.
-Phase 1's formatter enforces only the formatting portion of this contract; it
-does not add naming, file-placement, or test-organization rules.
+only for re-exports. The ESLint Standard contract is two spaces, no semicolons,
+single quotes in JavaScript and TypeScript, no trailing commas, and a final
+newline for linted source files. ESLint enforces only the code-style and lint
+portion of this contract; it does not format Markdown, YAML, JSON, CSS, or add
+naming, file-placement, or test-organization rules.
 
 ## Current baseline
 
@@ -71,18 +72,19 @@ The repository is a private pnpm `11.14.0` monorepo with public packages
 `typecheck`, and `build` commands, and the child workspaces own their ESLint
 configuration. The root has Husky, but its pre-commit hook currently performs
 skill synchronization and explicitly stages the synchronized copies; it does
-not format staged files. In the Ubuntu CI job, the runtime contract is checked
+not run the recursive lint. In the Ubuntu CI job, the runtime contract is checked
 before installation; after a frozen-lockfile install, FrameKit and the creator
 are built, then lint, test, type-check, workspace-build, and package-content
 checks run. The Windows smoke job also builds both public packages, runs the
 discovery/codegen and creator tests, type-checks the workspace, creates and
 installs a generated consumer, runs `framekit generate` and `framekit check`,
-and inspects both package contents. CI currently has no format check.
+and inspects both package contents. CI currently has no separate formatting check;
+it already runs the full recursive `pnpm lint` gate.
 
 The existing `.gitignore` covers the principal FrameKit and Next.js generated
-paths. The first phase makes the editor, Git checkout, formatter, and written
-repository guidance agree on those conventions. Later phases build on that
-baseline without changing runtime contracts.
+paths. The first phase adds the shared ESLint Standard contract and makes the
+pre-commit hook run the full recursive lint before skill synchronization. Later
+phases build on that baseline without changing runtime contracts.
 
 ## Ordered PRs
 
@@ -90,7 +92,7 @@ Implement and merge these PRs in order:
 
 | PR | Plan | Result | Depends on |
 |---:|---|---|---|
-| 1 | [Repository formatting and checks](./01-repository-formatting-and-checks.md) | Tooling/configuration first, then the one-time format in a separate second commit | Current baseline |
+| 1 | [ESLint Standard and pre-commit checks](./01-repository-formatting-and-checks.md) | ESLint configuration first, then the one-time lint fix in a separate second commit | Current baseline |
 | 2 | [Definition validation split](./02-definition-validation-split.md) | Coherent internal validation ownership with the public facade unchanged | PR 1 |
 | 3 | [Editor orchestration](./03-editor-orchestration.md) | Smaller editor coordinator with existing state, controls, preview, and export owners reused | PRs 1-2 |
 | 4 | [Studio shell split](./04-studio-shell-split.md) | Internal Studio resource, state, settings, and shell ownership split | PRs 1-3 |
@@ -103,9 +105,9 @@ configuration.
 
 ## Sequencing and dependencies
 
-PR 1 is the foundation: later diffs need a deterministic format and a cheap
-failure signal. PR 2 separates validation ownership without changing its public
-facade. PR 3 then separates editor presentation from orchestration while
+PR 1 is the foundation: later diffs need a deterministic lint/style contract and
+a cheap failure signal. PR 2 separates validation ownership without changing its
+public facade. PR 3 then separates editor presentation from orchestration while
 retaining existing state and export owners. PR 4 applies the same ownership
 discipline to the Studio shell. PR 5 centralizes repeated visual values behind a
 bounded, documented semantic CSS contract. PR 6 is last because import-boundary
@@ -130,7 +132,6 @@ the checks that its files affect and the full repository checks before review:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm format:check
 pnpm check:runtime
 pnpm --filter @mauriciodmo/framekit build
 pnpm --filter @mauriciodmo/create-framekit build
@@ -176,17 +177,17 @@ their phase documents; root checks and package dry-runs do not replace it.
 ## Review and rollback strategy
 
 Review one phase as one PR. Reviewers should first inspect the file list, then
-the semantic diff, then the command output. Formatting-only changes must not be
+the semantic diff, then the command output. Lint-fix-only changes must not be
 mixed with behavior fixes, dependency upgrades unrelated to the phase, or
 generated artifacts. Preserve the existing explicit skill-copy staging in the
 pre-commit hook while reviewing PR 1. Phase 1 remains one PR but must contain
-two commits: tooling and formatting configuration first, then the repository-wide
-Prettier result. Review the first commit without formatting noise before
+two commits: ESLint Standard configuration and hook enforcement first, then the
+one-time ESLint style fix. Review the first commit without lint-fix noise before
 reviewing the mechanical second commit.
 
 If a phase fails review or its exit gate, revert that PR as one unit and leave
-later phases untouched. PR 1's formatter configuration and one-time formatting
-can be reverted without a runtime migration; the existing workspace ESLint,
+later phases untouched. PR 1's ESLint configuration and one-time lint fix can be
+reverted without a runtime migration; the existing workspace ESLint,
 tests, type checks, builds, exports, and package layout remain the rollback
 baseline. Do not solve a failed gate by weakening the check or committing its
 generated output.

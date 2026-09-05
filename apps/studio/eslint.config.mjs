@@ -1,17 +1,23 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
-import tailwindcss from 'eslint-plugin-tailwindcss';
+import { defineConfig, globalIgnores } from 'eslint/config'
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import tailwindcss from 'eslint-plugin-tailwindcss'
+import standard from '../../scripts/eslint-standard.mjs'
+
+const nextConfig = nextVitals.map((config) => config.plugins?.import
+  ? { ...config, plugins: { ...config.plugins, import: standard.plugins.import } }
+  : config)
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
+  standard,
+  ...nextConfig,
   ...nextTs,
   {
     ...tailwindcss.configs.recommended,
     settings: {
       tailwindcss: {
-        cssConfigPath: './src/app/globals.css',
-      },
+        cssConfigPath: './src/app/globals.css'
+      }
     },
     rules: {
       'tailwindcss/no-contradicting-classname': 'warn',
@@ -22,10 +28,10 @@ const eslintConfig = defineConfig([
       'tailwindcss/no-arbitrary-value': 'off',
       'tailwindcss/no-custom-classname': [
         'warn',
-        { whitelist: ['studio-select(?:--dark)?'] },
+        { whitelist: ['studio-select(?:--dark)?'] }
       ],
       'tailwindcss/no-unnecessary-arbitrary-value': 'off'
-    },
+    }
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([
@@ -34,8 +40,8 @@ const eslintConfig = defineConfig([
     'src/generated/framekit/**',
     'out/**',
     'build/**',
-    'next-env.d.ts',
-  ]),
-]);
+    'next-env.d.ts'
+  ])
+])
 
-export default eslintConfig;
+export default eslintConfig

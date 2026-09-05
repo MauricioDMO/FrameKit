@@ -18,8 +18,9 @@
 - **Sequencing dependency:** Phase 4 must be merged first, as promised by the
   ordered roadmap.
 - **Shared-check dependency:** Phase 1 must also be merged before running the
-  full gate below because it supplies the repository `format:check` script. The
-  current pre-roadmap checkout does not define that script.
+  full gate below because it supplies the shared ESLint Standard configuration
+  and pre-commit lint gate. The current pre-roadmap checkout does not enforce
+  those rules.
 - **Code dependency:** None on Phase 4's runtime behavior; token consumers must
   follow the shell ownership present after Phase 4.
 - `DESIGN.md` as palette evidence and the current product-shell classes.
@@ -456,12 +457,11 @@ and canonical template already import the published stylesheet path.
 ## Tests and commands
 
 Run from the repository root after Phases 1-4 have merged. Phase 1 supplies the
-`format:check` script used by this shared gate; it is not available in the
-current pre-roadmap checkout:
+ESLint Standard configuration used by this shared gate; it is not available in
+the current pre-roadmap checkout:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm format:check
 pnpm check:runtime
 rg -n --glob '*.tsx' --glob '*.css' --glob '!**/*.test.*' \
   '#[0-9A-Fa-f]{3,8}\b|%23[0-9A-Fa-f]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\([^)]*\)|\b(?:white|black)(?:/[0-9]+)?\b' \

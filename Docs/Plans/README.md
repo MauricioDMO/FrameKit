@@ -294,22 +294,21 @@ Las primeras cinco fases se ejecutan consecutivamente antes del servidor.
 La fase 6 no se incluye todavía porque debe establecer las fronteras
 arquitectónicas después de que exista la superficie definitiva `./server`.
 
-### 2.1 Fase 1: Repository Formatting and Checks
+### 2.1 Fase 1: ESLint Standard y checks de pre-commit
 
 Plan:
 [01-repository-formatting-and-checks.md](./maintainability-roadmap/01-repository-formatting-and-checks.md).
 
 * [ ] Validar el baseline contra el checkout actual.
-* [ ] Añadir EditorConfig, Git attributes y configuración mínima de Prettier.
-* [ ] Definir ignores para outputs generados y sincronizados.
-* [ ] Añadir solamente `prettier` y `lint-staged`.
-* [ ] Añadir `format` y `format:check`.
-* [ ] Preservar ESLint como lint completo.
+* [ ] Definir la configuración compartida de ESLint con las reglas de Standard.
+* [ ] Mantener ESLint 9, Next, TypeScript y Tailwind sin degradar sus versiones.
+* [ ] No añadir Prettier, `lint-staged`, scripts de formato ni un lint separado
+  para el template generado.
+* [ ] Hacer que Husky ejecute `pnpm lint` completo antes de cada commit.
 * [ ] Preservar `pnpm sync:skills` y staging explícito en Husky.
-* [ ] Añadir el format check temprano en CI.
+* [ ] Mantener `pnpm lint` como gate completo de CI.
 * [ ] Actualizar instrucciones y documentación EN/ES.
-* [ ] Separar tooling/configuración del formato mecánico.
-* [ ] Ejecutar una sola aplicación global de Prettier.
+* [ ] Separar tooling/configuración de la aplicación mecánica de ESLint `--fix`.
 * [ ] Confirmar que no hay cambios lógicos ni generated output.
 * [ ] Ejecutar el hard exit gate completo.
 * [ ] Marcar la fase 1 como completada.
@@ -744,7 +743,6 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 
 ### Repository gates
 
-* [ ] `pnpm format:check` pasa.
 * [x] `pnpm check:runtime` pasa.
 * [x] `pnpm lint` pasa.
 * [x] `pnpm test` pasa.

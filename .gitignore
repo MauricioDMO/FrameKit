@@ -15,16 +15,14 @@ node_modules
 /playwright-report/
 /test-results/
 
-# next.js
-/.next/
-/apps/studio/.next/
-/apps/studio/out/
-/examples/*/.next/
-/examples/*/out/
-
-# production
-/build
+# generated and build output
+**/.framekit/
+**/.next/
+**/build/
 **/dist/
+**/out/
+**/public/__framekit/
+**/src/generated/framekit/
 
 # misc
 .DS_Store
@@ -48,8 +46,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# framekit generated files and Next output
-**/.framekit/
-**/src/generated/framekit/
-**/public/__framekit/

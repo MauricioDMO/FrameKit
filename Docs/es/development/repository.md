@@ -40,6 +40,12 @@ El `package.json` raíz define scripts para todo el repositorio y un script de d
 
 - `pnpm dev` — primero compila el paquete público `@mauriciodmo/framekit` y luego inicia Studio. No ejecutes `pnpm dev` desde dentro de un directorio de paquete; siempre ejecútalo desde la raíz del repositorio.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` — se ejecutan recursivamente en cada espacio de trabajo que defina el script correspondiente.
+- `pnpm lint` es la comprobación recursiva completa de ESLint. El hook de pre-commit lo ejecuta antes de `pnpm sync:skills` y, si pasa, añade explícitamente las dos ubicaciones de copias sincronizadas de skills.
+
+JavaScript y TypeScript bajo lint siguen el contrato ESLint Standard: dos
+espacios, comillas simples, sin punto y coma, sin comas finales y con salto de
+línea final. Las reglas existentes de Next, TypeScript y Tailwind permanecen
+activas. ESLint no formatea Markdown, YAML, JSON, CSS ni output generado.
 
 ## Razón de la compilación primero del paquete
 
@@ -77,7 +83,11 @@ Las siguientes rutas se producen durante el desarrollo:
 | `.framekit/next/`                  | Salida de compilación de Next.js, incluyendo el servidor standalone de Studio                    | Ignorado                                                               |
 | `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                               |
 
-Los directorios generados están en `.gitignore` mediante `**/.framekit/`, `**/src/generated/framekit/`, `**/dist/` y patrones específicos de Next.js en `.next/`. El registro generado es desechable y debe regenerarse antes de ejecutar comandos que lo importen.
+Los directorios generados están en `.gitignore` mediante `**/.framekit/`,
+`**/.next/`, `**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/` y
+`**/src/generated/framekit/`. El registro generado es desechable y debe
+regenerarse antes de ejecutar comandos que lo importen. Nunca edites manualmente
+output generado o de compilación ignorado.
 
 ## Qué pertenece a cada lugar
 

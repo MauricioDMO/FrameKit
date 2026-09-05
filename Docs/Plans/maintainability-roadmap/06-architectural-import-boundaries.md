@@ -29,20 +29,27 @@ workspace is not proof that a packed package works outside the workspace.
 
 ### ESLint and command coverage
 
+Phase 1 establishes the shared ESLint Standard base configuration and the
+full-repository pre-commit lint gate. The workspace-specific baseline below
+describes the existing Next, TypeScript, Tailwind, and file-target behavior that
+Phase 6 must preserve. Phase 6 adds only its `no-restricted-imports` rules and
+its documented creator lint-target extension; it does not add another lint
+plugin, checker, or dependency.
+
 The three existing flat configurations are:
 
-- `packages/framekit/eslint.config.mjs` currently spreads
-  `eslint-config-next/typescript` and has no local rules. Its package script
-  runs `eslint src scripts tsdown.config.ts`.
-- `apps/studio/eslint.config.mjs` currently combines the Next and Tailwind
-  configurations and explicitly ignores `.framekit/**`,
+- `packages/framekit/eslint.config.mjs` imports the shared Standard base before
+  spreading `eslint-config-next/typescript`. Its package script runs
+  `eslint src scripts tsdown.config.ts eslint.config.mjs`.
+- `apps/studio/eslint.config.mjs` imports the shared Standard base before
+  combining the Next and Tailwind configurations and explicitly ignores `.framekit/**`,
   `src/generated/framekit/**`, and Next/build output. Its package script runs
   `eslint .`.
-- `packages/create-framekit/eslint.config.mjs` currently spreads
-  `eslint-config-next` and disables only
-  `@next/next/no-html-link-for-pages`. Its package script currently runs
-  `eslint src tsdown.config.ts`; it does not currently visit
-  `template/src/**`.
+- `packages/create-framekit/eslint.config.mjs` imports the shared Standard base
+  before spreading `eslint-config-next` and disables only
+  `@next/next/no-html-link-for-pages`. Its package script runs
+  `eslint src tsdown.config.ts eslint.config.mjs`; it does not visit
+  `template/src/**` until this phase.
 
 Generated registries are written to `src/generated/framekit/**`, not to
 `.framekit/**`. The Studio config already ignores both generated locations
@@ -404,7 +411,7 @@ source unless the existing package script visits that directory. Make this
 minimal script-only wiring change in `packages/create-framekit/package.json`:
 
 ```json
-"lint": "eslint src template/src tsdown.config.ts"
+"lint": "eslint src template/src tsdown.config.ts eslint.config.mjs"
 ```
 
 Do not add a template package, a template-specific ESLint config, or another
@@ -529,13 +536,12 @@ Run from the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm format:check
 pnpm check:runtime
 pnpm --filter @mauriciodmo/framekit build
 pnpm --filter @mauriciodmo/create-framekit build
-pnpm --filter @mauriciodmo/framekit exec eslint src scripts tsdown.config.ts
+pnpm --filter @mauriciodmo/framekit exec eslint src scripts tsdown.config.ts eslint.config.mjs
 pnpm --filter studio exec eslint .
-pnpm --filter @mauriciodmo/create-framekit exec eslint src template/src tsdown.config.ts
+pnpm --filter @mauriciodmo/create-framekit exec eslint src template/src tsdown.config.ts eslint.config.mjs
 pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/core/define-template.ts
 pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/editor/framekit-navigation.tsx
 pnpm --filter studio exec eslint --print-config 'src/app/editor/[[...slug]]/page.tsx'
@@ -558,9 +564,9 @@ separate Node/pnpm portability check; it must not be replaced by, or merged
 with, ESLint. The canonical-consumer commands from Phase 5 must also be run
 after building the public packages; they are not replaced by `pnpm lint`.
 
-Phase 1 is a mandatory sequencing prerequisite, so `pnpm format:check` above is
-part of the Phase 6 gate even though the current pre-roadmap checkout does not
-define that script yet.
+Phase 1 is a mandatory sequencing prerequisite, so its ESLint Standard
+configuration and pre-commit lint gate are part of the Phase 6 foundation. There
+is no separate repository-wide format command in this roadmap.
 
 ## Exit gate
 
@@ -590,8 +596,8 @@ Phase 6 is complete only when:
   direct `packages/framekit/src/**` or sibling `framekit/src/**` import;
 - `packages/framekit/package.json` exports and `tsdown.config.ts` entries are
   unchanged, and no new public export or package split was introduced;
-- `pnpm format:check`, `pnpm check:runtime`, tests, type checks, builds, package
-  dry-runs, and `git diff --check` pass; and
+- `pnpm lint`, `pnpm check:runtime`, tests, type checks, builds, package dry-runs,
+  and `git diff --check` pass; and
 - the diff contains no generated output, source refactor, custom checker,
   fixture package, or unrelated configuration change.
 

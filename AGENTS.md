@@ -14,19 +14,22 @@
 - Install with `pnpm install --frozen-lockfile`.
 - Run `pnpm dev` only from the repository root. It builds `@mauriciodmo/framekit` before starting Studio because workspace consumers resolve its built `dist/` files.
 - Repository checks: `pnpm lint`, `pnpm test`, `pnpm typecheck`, and `pnpm build`.
+- `pnpm lint` is the full recursive ESLint check and runs before skill synchronization in the pre-commit hook.
 - Focused checks: `pnpm --filter @mauriciodmo/framekit test`, `pnpm --filter studio test`, and `pnpm --filter @mauriciodmo/create-framekit test`.
 - Build a workspace with `pnpm --filter <workspace> build`; build `@mauriciodmo/framekit` before Studio or a generated consumer.
 - After changing any `package.json`, run `pnpm install` at the root, then `pnpm build`.
 
 ## Generated Files
 
-- Do not hand-edit `packages/framekit/dist/`, `**/.framekit/`, or `**/src/generated/framekit/`; they are ignored build/codegen output.
+- Linted JavaScript and TypeScript use the ESLint Standard contract: two spaces, single quotes, no semicolons, no trailing commas, and a final newline. Existing Next, TypeScript, and Tailwind rules remain active.
+- Do not hand-edit `packages/framekit/dist/`, `**/.framekit/`, `**/dist/`, `**/.next/`, `**/out/`, `**/build/`, `**/public/__framekit/`, or `**/src/generated/framekit/`; they are ignored build/codegen output.
 - Run `framekit generate` after adding or removing template files or directories. Templates are discovered under `src/templates/**/template.tsx`.
 - Run `framekit check` for definition errors; `framekit build` runs this check before the Next.js build. Run `framekit start` only after a successful build.
 
 ## Skills Synchronization
 
 - Never edit `.agents/skills/` or `packages/create-framekit/template/.agents/skills/` directly. Husky synchronizes these copies from `Docs/skills/` via `pnpm sync:skills` during pre-commit.
+- The pre-commit hook must retain `pnpm sync:skills` and explicit staging of both synchronized skill-copy locations after the full lint passes.
 - When a skill must change, edit its source under `Docs/skills/` and let synchronization regenerate the copies.
 
 ## Distribution
