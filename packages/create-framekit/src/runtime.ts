@@ -8,7 +8,7 @@ import type { PackageManager } from './prompts.js'
 type Version = readonly [number, number, number]
 
 function parseVersion(value: string): Version | undefined {
-  const match = value.trim().match(/^v?(\d+)\.(\d+)\.(\d+)/)
+  const match = value.trim().match(/^v?(\d+)\.(\d+)\.(\d+)$/)
   if (!match) return undefined
   return [Number(match[1]), Number(match[2]), Number(match[3])]
 }
