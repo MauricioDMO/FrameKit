@@ -299,6 +299,9 @@ arquitectónicas después de que exista la superficie definitiva `./server`.
 Plan:
 [01-repository-formatting-and-checks.md](./maintainability-roadmap/01-repository-formatting-and-checks.md).
 
+Estado de implementación: completada en `7dddcbe` y `bec66a7`; permanece
+abierta hasta que el exit gate completo pase.
+
 * [ ] Validar el baseline contra el checkout actual.
 * [ ] Definir la configuración compartida de ESLint con las reglas de Standard.
 * [ ] Mantener ESLint 9, Next, TypeScript y Tailwind sin degradar sus versiones.
@@ -318,6 +321,13 @@ Plan:
 Plan:
 [02-definition-validation-split.md](./maintainability-roadmap/02-definition-validation-split.md).
 
+Estado de implementación: completada en `3f97724`; permanece abierta hasta que
+el exit gate completo pase.
+
+La verificación enfocada, lint, typecheck, builds y empaquetado pasan. El gate
+compartido queda pendiente porque `pnpm test` agota el timeout de 5 segundos en
+dos tests existentes de FrameKit durante la ejecución recursiva.
+
 * [ ] Confirmar los casos y el orden de errores del validator actual.
 * [ ] Extraer utilidades comunes una sola vez.
 * [ ] Separar metadata, dimensiones, fields, variants y composición.
@@ -333,6 +343,9 @@ Plan:
 
 Plan:
 [03-editor-orchestration.md](./maintainability-roadmap/03-editor-orchestration.md).
+
+Estado de implementación: implementada en el checkout actual; permanece abierta
+hasta que el exit gate completo pase.
 
 * [ ] Confirmar el contrato público actual de `FrameKitEditor`.
 * [ ] Extraer solamente `EditorHeader`.

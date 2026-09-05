@@ -1,6 +1,7 @@
 # Maintainability Roadmap
 
-- **Status:** Proposed.
+- **Status:** In progress; phases 1 through 3 are implemented, with exit-gate verification pending.
+- **Next:** Close the shared verification gate, then start Phase 4 - Studio Shell Split.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,

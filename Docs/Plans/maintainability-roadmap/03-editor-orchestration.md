@@ -2,7 +2,7 @@
 
 ## Status
 
-- **Status:** Proposed; not yet implemented.
+- **Status:** Implemented; exit-gate verification pending.
 - **PR boundary:** One behavior-preserving editor refactor, separate from Phase
   2's validation split.
 - **Public API:** `FrameKitEditor` and the existing `./editor` exports remain
@@ -296,13 +296,13 @@ into header/dialog tests.
 
 Add these colocated tests without snapshots:
 
-- `packages/framekit/src/editor/components/editor-header.test.tsx`
+- `packages/framekit/src/editor/components/__tests__/editor-header.test.tsx`
   - renders the title and localized action names;
   - hides the metadata trigger when `hasMetadata` is false;
   - invokes metadata/reset/export/copy callbacks;
   - disables only export/copy while exporting and uses the generating label;
   - preserves the dialog relationship attributes and button types.
-- `packages/framekit/src/editor/components/template-metadata-dialog.test.tsx`
+- `packages/framekit/src/editor/components/__tests__/template-metadata-dialog.test.tsx`
   - renders description, marketing description, and ordered tags;
   - omits optional sections when absent and renders nothing when closed;
   - focuses the close button after opening;
@@ -322,8 +322,8 @@ Run these while implementing:
 
 ```sh
 pnpm --filter @mauriciodmo/framekit exec vitest run \
-  src/editor/components/editor-header.test.tsx \
-  src/editor/components/template-metadata-dialog.test.tsx \
+  src/editor/components/__tests__/editor-header.test.tsx \
+  src/editor/components/__tests__/template-metadata-dialog.test.tsx \
   src/editor/framekit-editor.test.tsx \
   src/editor/export-template.test.ts \
   src/editor/state/editor-state.test.ts \

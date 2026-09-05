@@ -2,7 +2,9 @@
 
 ## Status
 
-- **Status:** Proposed; not yet implemented.
+- **Status:** Implemented; exit gate pending.
+- **Implementation:** `7dddcbe` adds the ESLint Standard configuration and
+  pre-commit enforcement; `bec66a7` applies the mechanical lint fixes.
 - **PR boundary:** One behavior-preserving lint and repository-tooling PR
   containing exactly two reviewable commits.
 

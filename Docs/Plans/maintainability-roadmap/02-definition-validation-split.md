@@ -2,7 +2,9 @@
 
 ## Status
 
-- **Status:** Proposed; not yet implemented.
+- **Status:** Implemented; exit gate pending.
+- **Implementation:** `3f97724` splits validation ownership and relocates the
+  behavior tests without changing the public facade.
 - **PR boundary:** One behavior-preserving refactor. Do not combine this phase
   with the editor orchestration split in Phase 3.
 - **Public API:** No additions, removals, or renamed exports.
@@ -265,12 +267,17 @@ Run these first while implementing:
 
 ```sh
 pnpm --filter @mauriciodmo/framekit exec vitest run \
-  src/core/validation/definition.test.ts \
-  src/core/validation/metadata.test.ts \
-  src/core/validation/dimensions.test.ts \
-  src/core/validation/fields.test.ts \
-  src/core/validation/variants.test.ts \
-  src/core/validation/composition.test.ts \
+  src/core/validation/__tests__/definition/definition.test.ts \
+  src/core/validation/__tests__/definition/metadata.test.ts \
+  src/core/validation/__tests__/definition/dimensions.test.ts \
+  src/core/validation/__tests__/definition/variants.test.ts \
+  src/core/validation/__tests__/definition/composition.test.ts \
+  src/core/validation/__tests__/fields/index.test.ts \
+  src/core/validation/__tests__/fields/choice.test.ts \
+  src/core/validation/__tests__/fields/image.test.ts \
+  src/core/validation/__tests__/fields/number.test.ts \
+  src/core/validation/__tests__/fields/primitive.test.ts \
+  src/core/validation/__tests__/fields/text.test.ts \
   src/core/data-validation.test.ts
 pnpm --filter studio test -- src/test/framekit/generation.integration.test.ts
 pnpm --filter @mauriciodmo/framekit typecheck
