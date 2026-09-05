@@ -22,7 +22,7 @@ export default defineConfig({
       PORT: '3000',
       NEXT_TELEMETRY_DISABLED: '1',
     },
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 })

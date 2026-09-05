@@ -13,8 +13,8 @@ import type { EditorMessages } from './types'
 import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 
 vi.mock('./export-template', () => ({
-  copyTemplate: vi.fn(),
-  exportTemplate: vi.fn(),
+  copyTemplate: vi.fn().mockResolvedValue(undefined),
+  exportTemplate: vi.fn().mockResolvedValue(undefined),
 }))
 
 const messages: EditorMessages = {
@@ -161,7 +161,7 @@ describe('FrameKitEditor controls', () => {
   it('uses generic variant wording and falls back to the variant key', () => {
     renderEditor()
 
-    const selector = screen.getAllByRole('combobox')[0]
+    const selector = screen.getByRole('combobox', { name: messages.variantLabel })
     expect(screen.getByText(messages.variantLabel)).toBeTruthy()
     expect(Array.from((selector as HTMLSelectElement).options).map((option) => [option.value, option.textContent])).toEqual([
       ['en', 'English'],
@@ -196,6 +196,7 @@ describe('FrameKitEditor controls', () => {
 
     expect(screen.getByText(messages.errorInvalidNumber)).toBeTruthy()
     expect(screen.getByText(messages.errorRequired)).toBeTruthy()
+    expect(exportTemplate).not.toHaveBeenCalled()
     expect((invalidNumber as HTMLInputElement).value).toBe('')
     expect(screen.getByText('logo-on:1')).toBeTruthy()
     await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en).toEqual({ title: '' }))
@@ -214,7 +215,7 @@ describe('FrameKitEditor controls', () => {
     expect(screen.queryByText(messages.errorInvalidNumber)).toBeNull()
   })
 
-  it('renders slider numbers with native constraints and a visible value', () => {
+  it('renders slider numbers with native constraints and a visible value', async () => {
     renderEditor()
 
     const slider = screen.getByRole('slider', { name: 'Slider number' })
@@ -227,6 +228,7 @@ describe('FrameKitEditor controls', () => {
 
     expect((slider as HTMLInputElement).value).toBe('70')
     expect(screen.getByText('70')).toBeTruthy()
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en.sliderNumber).toBe(70))
   })
 
   it('shows the native normalized value for decimal sliders', () => {
@@ -244,7 +246,7 @@ describe('FrameKitEditor controls', () => {
     expect(screen.getByText(String(value))).toBeTruthy()
   })
 
-  it('renders choice fields as ordered native selects without required behavior', () => {
+  it('renders choice fields as ordered native selects without required behavior', async () => {
     renderEditor()
 
     const alignment = screen.getByRole('combobox', { name: 'Alignment' })
@@ -259,6 +261,7 @@ describe('FrameKitEditor controls', () => {
 
     fireEvent.change(alignment, { target: { value: 'right' } })
     expect((alignment as HTMLSelectElement).value).toBe('right')
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('framekit:social/campaign:v2')!).dataByVariant.en.alignment).toBe('right'))
   })
 
   it('does not pass a bare hash when clearing an optional color', async () => {
@@ -372,7 +375,7 @@ describe('FrameKitEditor controls', () => {
     renderEditor()
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
     expect(screen.getAllByText(messages.errorRequired)).not.toHaveLength(0)
-    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'fr' } })
+    fireEvent.change(screen.getByRole('combobox', { name: messages.variantLabel }), { target: { value: 'fr' } })
     expect(screen.queryByText(messages.errorRequired)).toBeNull()
   })
 
@@ -449,6 +452,31 @@ describe('FrameKitEditor controls', () => {
     await waitFor(() => expect(copyTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 100, 100))
   })
 
+  it('shows generating and ignores a second export click while export is pending', async () => {
+    let resolvePending!: () => void
+    const pending = new Promise<void>((resolve) => {
+      resolvePending = resolve
+    })
+    vi.mocked(exportTemplate).mockImplementationOnce(() => pending)
+    renderEditor()
+
+    const button = screen.getByRole('button', { name: messages.downloadPng }) as HTMLButtonElement
+    fireEvent.click(button)
+
+    expect(button.disabled).toBe(true)
+    expect(button.textContent).toContain(messages.generating)
+    expect(exportTemplate).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100)
+
+    fireEvent.click(button)
+    expect(exportTemplate).toHaveBeenCalledTimes(1)
+
+    resolvePending()
+    await waitFor(() => {
+      expect(button.disabled).toBe(false)
+      expect(button.textContent).toContain(messages.downloadPng)
+    })
+  })
+
   it.each([
     ['download', messages.downloadPng, 'export'],
     ['copy', messages.copyPng, 'copy'],
@@ -474,8 +502,8 @@ describe('FrameKitEditor controls', () => {
     }
   })
 
-  it('shows a localized accessible error when image upload fails', async () => {
-    const fetchMock = vi.fn().mockRejectedValue(new Error('private upload failure'))
+  it('shows a localized accessible error when image upload response is not ok', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 413 })
     vi.stubGlobal('fetch', fetchMock)
 
     try {
@@ -497,10 +525,19 @@ describe('FrameKitEditor controls', () => {
       expect(input.getAttribute('aria-invalid')).toBe('true')
       expect(input.getAttribute('aria-describedby')).toBe('logo-error')
       expect(screen.getByText(messages.imageUploadError).id).toBe('logo-error')
-      expect(fetchMock).toHaveBeenCalledWith('/__framekit/assets', expect.objectContaining({
+      expect((input as HTMLInputElement).value).toBe('')
+      expect(fetchMock).toHaveBeenCalledWith('/__framekit/assets', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-      }))
+        body: JSON.stringify({
+          templateSlug: 'social/campaign',
+          variant: 'en',
+          fieldKey: 'logo',
+          filename: 'logo.png',
+          mimeType: 'image/png',
+          data: 'aW1hZ2U=',
+        }),
+      })
     } finally {
       vi.unstubAllGlobals()
     }

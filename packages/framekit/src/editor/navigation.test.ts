@@ -72,4 +72,26 @@ describe('manifest navigation', () => {
       },
     ])
   })
+
+  it('sorts template children by title rather than slug', () => {
+    expect(manifestToNavigation([
+      { slug: 'catalog/zulu', meta: { title: 'Alpha' }, segments: ['catalog', 'zulu'] },
+      { slug: 'catalog/alpha', meta: { title: 'Zulu' }, segments: ['catalog', 'alpha'] },
+    ])).toMatchObject([{
+      type: 'folder',
+      title: 'Catalog',
+      children: [
+        { type: 'template', slug: 'catalog/zulu', title: 'Alpha' },
+        { type: 'template', slug: 'catalog/alpha', title: 'Zulu' },
+      ],
+    }])
+  })
+
+  it('does not mutate the manifest', () => {
+    const before = manifest.map((entry) => ({ ...entry, meta: { ...entry.meta }, segments: [...entry.segments] }))
+
+    manifestToNavigation(manifest)
+
+    expect(manifest).toEqual(before)
+  })
 })
