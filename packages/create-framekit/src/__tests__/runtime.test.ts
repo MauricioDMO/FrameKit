@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { assertSupportedNodeRuntime, assertSupportedPackageManager } from './runtime'
+import { assertSupportedNodeRuntime, assertSupportedPackageManager } from '@/runtime'
 
 const temporaryDirectories: string[] = []
 const initialCwd = process.cwd()

@@ -9,6 +9,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "types": ["node", "vitest/globals"]
   },
   "include": ["src/**/*.ts", "tsdown.config.ts"]

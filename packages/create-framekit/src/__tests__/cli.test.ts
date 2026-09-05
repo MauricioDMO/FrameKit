@@ -4,8 +4,8 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { main } from './cli'
-import { createProject, updateSkills } from './project'
+import { main } from '@/cli'
+import { createProject, updateSkills } from '@/project'
 
 const temporaryDirectories: string[] = []
 const initialCwd = process.cwd()
@@ -138,11 +138,14 @@ async function expectProjectFiles (
   expect(packageJson.dependencies['@mauriciodmo/framekit']).toBeTypeOf('string')
   await expect(readFile(path.join(destination, '.gitignore'), 'utf8')).resolves.toContain('.framekit')
   await expect(readFile(path.join(destination, '_gitignore'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+  await expect(readFile(path.join(destination, 'AGENTS.md'), 'utf8')).resolves.toContain(
+    'FrameKit is a React and Next.js toolkit'
+  )
   await expect(readFile(path.join(destination, 'src', 'templates', 'example', 'template.tsx'), 'utf8')).resolves.toContain('defineTemplate')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).resolves.toContain("redirect('/editor')")
 
   const skills = (await readdir(path.join(destination, '.agents', 'skills'))).sort()
-  expect(skills).toEqual(['fk-brand', 'fk-setup', 'fk-studio', 'fk-templates'])
+  expect(skills).toEqual(['fk-brand', 'fk-overview', 'fk-setup', 'fk-studio', 'fk-templates'])
   for (const skill of skills) {
     await expect(readFile(path.join(destination, '.agents', 'skills', skill, 'SKILL.md'), 'utf8')).resolves.toContain(`name: ${skill}`)
   }
@@ -368,6 +371,7 @@ describe('create-framekit', () => {
       expect((await readdir(path.join(project, '.agents', 'skills'))).sort()).toEqual([
         'custom-skill',
         'fk-brand',
+        'fk-overview',
         'fk-setup',
         'fk-studio',
         'fk-templates'
