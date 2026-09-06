@@ -1,4 +1,4 @@
-import type { EditorMessages } from '../../../editor/types'
+import type { EditorMessages } from '@/editor/types'
 import enMessages from './en'
 import esMessages from './es'
 
