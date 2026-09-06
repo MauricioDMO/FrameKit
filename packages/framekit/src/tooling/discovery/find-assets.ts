@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 
-import type { TemplateAssetManifest } from '../types'
+import type { TemplateAssetManifest } from '../../types'
 
 const imageExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.svg', '.webp'])
 const assetNamePattern = /^[A-Za-z0-9][A-Za-z0-9._-]*$/

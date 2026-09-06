@@ -2,7 +2,7 @@ import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import path from 'node:path'
 
-import { findTemplates } from '../discovery/find-templates'
+import { findTemplates } from '../tooling/discovery/find-templates'
 
 const maxAssetBytes = 8_000_000
 const maxRequestBytes = 12_000_000

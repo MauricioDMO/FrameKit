@@ -6,7 +6,7 @@ import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { findTemplateAssets } from './find-assets'
+import { findTemplateAssets } from '@/tooling/discovery/find-assets'
 
 async function withTempDirectory<T> (prefix: string, callback: (root: string) => Promise<T>): Promise<T> {
   const root = await mkdtemp(path.join(os.tmpdir(), prefix))

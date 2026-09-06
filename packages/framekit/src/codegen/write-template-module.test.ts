@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { findTemplates } from '../discovery/find-templates'
+import { findTemplates } from '@/tooling/discovery/find-templates'
 import { writeTemplateModule } from './write-template-module'
 
 const execFileAsync = promisify(execFile)
