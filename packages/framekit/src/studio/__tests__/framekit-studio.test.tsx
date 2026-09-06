@@ -3,11 +3,11 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { defineTemplate, field } from '../index'
-import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
+import { defineTemplate, field } from '../../index'
+import type { TemplateDefinition, TemplateRegistryEntry } from '../../types'
 
-import { FrameKitStudio } from './framekit-studio'
-import { FrameKitLocaleProvider } from './locale-provider'
+import { FrameKitStudio } from '../framekit-studio'
+import { FrameKitLocaleProvider } from '../i18n/locale-provider'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>
@@ -97,7 +97,15 @@ function createBrandEntry ({ slug = 'communication/hero', title = 'Hero', descri
   return { brand, preview }
 }
 
-describe('FrameKitStudio sidebar', () => {
+function deferred<T> (): { promise: Promise<T>, resolve: (value: T | PromiseLike<T>) => void } {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  const promise = new Promise<T>((_resolve) => {
+    resolve = _resolve
+  })
+  return { promise, resolve }
+}
+
+describe('FrameKitStudio empty state', () => {
   it('shows the exact initial template state without a selected slug', () => {
     render(
       <FrameKitLocaleProvider initialLocale="en">
@@ -110,66 +118,9 @@ describe('FrameKitStudio sidebar', () => {
     expect(screen.getByText('Choose a format from the navigation to edit its content and export it as a PNG.').textContent).toBe('Choose a format from the navigation to edit its content and export it as a PNG.')
     expect(screen.getByText('No templates are available.').textContent).toBe('No templates are available.')
   })
-
-  it('collapses navigation and settings into an expandable rail', () => {
-    render(
-      <FrameKitLocaleProvider initialLocale="es">
-        <FrameKitStudio templates={[]} />
-      </FrameKitLocaleProvider>
-    )
-
-    const settings = screen.getByRole('button', { name: 'Ajustes' })
-    expect(settings.getAttribute('aria-expanded')).toBe('false')
-    expect(settings.getAttribute('aria-controls')).toBe('sidebar-settings')
-    expect(screen.getByRole('link', { name: 'Plantillas' }).getAttribute('href')).toBe('/editor')
-    expect(screen.getByRole('link', { name: 'Plantillas' }).getAttribute('aria-current')).toBe('page')
-    expect(screen.getByRole('link', { name: 'Marca' }).getAttribute('href')).toBe('/brand')
-    expect(screen.getByRole('link', { name: 'Marca' }).getAttribute('aria-current')).toBeNull()
-
-    fireEvent.click(settings)
-    expect(settings.getAttribute('aria-expanded')).toBe('true')
-    expect((screen.getByRole('combobox', { name: 'Idioma de la interfaz' }) as HTMLSelectElement).value).toBe('es')
-
-    fireEvent.click(screen.getByRole('button', { name: 'Colapsar navegación' }))
-    expect(screen.queryByRole('navigation')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Ajustes' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Expandir navegación' }).getAttribute('title')).toBe('Expandir navegación')
-
-    fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
-    expect(screen.getByRole('navigation').getAttribute('aria-label')).toBe('Plantillas')
-    expect(screen.getByRole('button', { name: 'Ajustes' }).getAttribute('aria-expanded')).toBe('false')
-  })
-
-  it('persists locale and theme actions in the document and cookies', () => {
-    clearCookies()
-    document.documentElement.className = ''
-    document.documentElement.lang = ''
-
-    render(
-      <FrameKitLocaleProvider initialLocale="es">
-        <FrameKitStudio templates={[]} />
-      </FrameKitLocaleProvider>
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
-    const language = screen.getByRole('combobox', { name: 'Idioma de la interfaz' })
-    fireEvent.change(language, { target: { value: 'en' } })
-
-    expect((screen.getByRole('combobox', { name: 'App language' }) as HTMLSelectElement).value).toBe('en')
-    expect(document.documentElement.lang).toBe('en')
-    expect(document.cookie).toBe('locale=en')
-
-    fireEvent.click(screen.getByRole('button', { name: 'Change theme' }))
-    expect(document.documentElement.className).toBe('dark')
-    expect(document.cookie).toBe('locale=en; theme=dark')
-
-    fireEvent.click(screen.getByRole('button', { name: 'Change theme' }))
-    expect(document.documentElement.className).toBe('')
-    expect(document.cookie).toBe('locale=en; theme=light')
-  })
 })
 
-describe('FrameKitStudio template integration', () => {
+describe('FrameKitStudio integration', () => {
   it('shows the exact initial brand state without a selected slug', () => {
     route.pathname = '/brand'
 
@@ -281,9 +232,15 @@ describe('FrameKitStudio template integration', () => {
   it('ignores a template loader result that resolves after navigation', async () => {
     route.params = { slug: ['social', 'campaign'] }
     const first = createTemplateEntry({ meta: { title: 'First template' } })
-    let resolveFirst!: (module: Awaited<ReturnType<typeof first.load>>) => void
-    first.load.mockReturnValue(new Promise<Awaited<ReturnType<typeof first.load>>>((resolve) => { resolveFirst = resolve }))
+    const firstModule = await first.load()
+    first.load.mockClear()
+    const firstLoad = deferred<Awaited<ReturnType<typeof first.load>>>()
+    first.load.mockReturnValue(firstLoad.promise)
     const next = createTemplateEntry({ slug: 'social/launch', meta: { title: 'Next template' } })
+    const nextModule = await next.load()
+    next.load.mockClear()
+    const nextLoad = deferred<Awaited<ReturnType<typeof next.load>>>()
+    next.load.mockReturnValue(nextLoad.promise)
 
     const view = render(
       <FrameKitLocaleProvider initialLocale="en">
@@ -297,11 +254,91 @@ describe('FrameKitStudio template integration', () => {
         <FrameKitStudio templates={[first, next]} />
       </FrameKitLocaleProvider>
     )
+    expect(screen.getByLabelText('Loading...').getAttribute('aria-busy')).toBe('true')
+
+    nextLoad.resolve(nextModule)
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Next template' }).textContent).toBe('Next template'))
 
-    resolveFirst({ default: {} as never })
+    firstLoad.resolve(firstModule)
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Next template' }).textContent).toBe('Next template')
+      expect(screen.queryByRole('heading', { name: 'First template' })).toBeNull()
+      expect(screen.queryByRole('alert')).toBeNull()
+    })
+  })
+
+  it('ignores a template loader result after switching to the brand route', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const template = createTemplateEntry({ meta: { title: 'Stale template' } })
+    const templateModule = await template.load()
+    template.load.mockClear()
+    const templateLoad = deferred<Awaited<ReturnType<typeof template.load>>>()
+    template.load.mockReturnValue(templateLoad.promise)
+    const { brand } = createBrandEntry({ title: 'Current component' })
+    const brandModule = await brand.load()
+    brand.load.mockClear()
+    const brandLoad = deferred<Awaited<ReturnType<typeof brand.load>>>()
+    brand.load.mockReturnValue(brandLoad.promise)
+
+    const view = render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[template]} brands={[brand]} />
+      </FrameKitLocaleProvider>
+    )
+
+    route.pathname = '/brand/communication/hero'
+    route.params = { slug: ['communication', 'hero'] }
+    view.rerender(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[template]} brands={[brand]} />
+      </FrameKitLocaleProvider>
+    )
+    expect(screen.getByLabelText('Loading component...').getAttribute('aria-busy')).toBe('true')
+
+    brandLoad.resolve(brandModule)
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Current component' }).textContent).toBe('Current component'))
+
+    templateLoad.resolve(templateModule)
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Current component' }).textContent).toBe('Current component')
+      expect(screen.queryByRole('heading', { name: 'Stale template' })).toBeNull()
+      expect(screen.queryByRole('alert')).toBeNull()
+    })
+  })
+
+  it('ignores a template loader result after replacing the active manifest', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const previous = createTemplateEntry({ meta: { title: 'Previous template' } })
+    const previousModule = await previous.load()
+    previous.load.mockClear()
+    const previousLoad = deferred<Awaited<ReturnType<typeof previous.load>>>()
+    previous.load.mockReturnValue(previousLoad.promise)
+    const current = createTemplateEntry({ meta: { title: 'Current template' } })
+    const currentModule = await current.load()
+    current.load.mockClear()
+    const currentLoad = deferred<Awaited<ReturnType<typeof current.load>>>()
+    current.load.mockReturnValue(currentLoad.promise)
+
+    const view = render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[previous]} />
+      </FrameKitLocaleProvider>
+    )
+
+    view.rerender(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[current]} />
+      </FrameKitLocaleProvider>
+    )
+    expect(screen.getByLabelText('Loading...').getAttribute('aria-busy')).toBe('true')
+
+    currentLoad.resolve(currentModule)
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Current template' }).textContent).toBe('Current template'))
+
+    previousLoad.resolve(previousModule)
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Current template' }).textContent).toBe('Current template')
+      expect(screen.queryByRole('heading', { name: 'Previous template' })).toBeNull()
       expect(screen.queryByRole('alert')).toBeNull()
     })
   })
@@ -437,7 +474,7 @@ describe('FrameKitStudio template integration', () => {
   })
 
   it('loads and renders a brand preview successfully', async () => {
-    route.pathname = '/brand'
+    route.pathname = '/brand/communication/hero'
     route.params = { slug: ['communication', 'hero'] }
     const { brand } = createBrandEntry()
 

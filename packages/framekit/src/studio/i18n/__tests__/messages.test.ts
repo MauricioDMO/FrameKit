@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getFrameKitLocale } from './messages'
+import { getFrameKitLocale } from '../messages'
 
 describe('getFrameKitLocale', () => {
   it.each([
