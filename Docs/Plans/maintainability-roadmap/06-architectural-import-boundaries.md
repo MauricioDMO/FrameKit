@@ -94,9 +94,9 @@ The current static imports describe this intended direction:
 - `src/studio/**` uses core/types and editor modules. The current Studio
   implementation imports `FrameKitEditor`, navigation, and editor message
   types; this is the allowed upward composition direction.
-- `src/cli/**` uses discovery, codegen, core/types, and the dev-server path.
-  `cli/dev.ts` importing `../dev/**` is intentional and must remain valid.
-- `src/dev/**`, `src/codegen/**`, and `src/discovery/**` use Node/tooling
+- `src/tooling/cli/**` uses discovery, codegen, core/types, and the dev-server path.
+  `tooling/cli/dev.ts` importing `../dev/**` is intentional and must remain valid.
+- `src/tooling/dev/**`, `src/tooling/codegen/**`, and `src/tooling/discovery/**` use Node/tooling
   dependencies and foundational contracts. They do not currently import the
   editor or Studio implementation.
 - Node built-ins currently use `node:*` specifiers and occur in the CLI, dev,
@@ -117,12 +117,12 @@ The current static imports describe this intended direction:
 
 The scan found no current static import or re-export declaration that violates
 the boundaries below. Several apparent matches are generated source strings,
-not imports in the module being linted: for example, `cli/check.ts`, codegen
-modules, and `codegen/write-template-module.test.ts` emit or assert source
+not imports in the module being linted: for example, `tooling/cli/check.ts`, tooling
+modules, and `tooling/codegen/__tests__/write-template-module.test.ts` emit or assert source
 containing `@mauriciodmo/framekit` imports. ESLint must not be made to treat
 those strings as runtime edges.
 
-There are also deliberate dynamic imports. `editor/export-template.ts` loads
+There are also deliberate dynamic imports. `editor/export/export-template.ts` loads
 the browser-only `modern-screenshot` dependency; generated registries load
 consumer-local templates or brand components; and the generation integration
 tests dynamically load temporary fixture modules. None is a current dynamic
@@ -143,10 +143,10 @@ not a request to introduce new imports.
 
 | Layer | May import | Must not import |
 | --- | --- | --- |
-| Foundation: `types.ts`, `core/**`, `markdown/**`, root core entry | External React types and foundation-local modules; no Node built-ins | `editor`/`editor.ts`, `studio`/`studio.ts`/`studio-root.ts`, and all `cli/**`, `codegen/**`, `discovery/**`, and `dev`/`dev.ts` tooling modules |
-| Editor: `editor/**`, `editor.ts` | Foundation, React/browser APIs, and the legitimate Next navigation imports; no Node built-ins | `studio`/`studio.ts`/`studio-root.ts` and all `cli/**`, `codegen/**`, `discovery/**`, and `dev`/`dev.ts` tooling modules |
-| Studio: `studio/**`, `studio.ts`, `studio-root.ts` | Foundation and Editor, React, and Next (including the server-only `next/headers` used by `studio/root.tsx`); no Node built-ins | All `cli/**`, `codegen/**`, `discovery/**`, and `dev`/`dev.ts` tooling modules |
-| Tooling: `codegen/**`, `discovery/**`, `dev/**`, `dev.ts`, `cli/**`, `cli.test.ts` | Foundation and Node/tooling dependencies; CLI may compose the dev-server and codegen/discovery paths | Editor and Studio implementation modules and entries |
+| Foundation: `types.ts`, `core/**`, `markdown/**`, root core entry | External React types and foundation-local modules; no Node built-ins | `editor`/`editor.ts`, `studio`/`studio.ts`/`studio-root.ts`, and all `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
+| Editor: `editor/**`, `editor.ts` | Foundation, React/browser APIs, and the legitimate Next navigation imports; no Node built-ins | `studio`/`studio.ts`/`studio-root.ts` and all `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
+| Studio: `studio/**`, `studio.ts`, `studio-root.ts` | Foundation and Editor, React, and Next (including the server-only `next/headers` used by `studio/root.tsx`); no Node built-ins | All `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
+| Tooling: `tooling/codegen/**`, `tooling/discovery/**`, `tooling/dev/**`, `dev.ts`, `tooling/cli/**`, `tooling/cli/__tests__/cli.test.ts` | Foundation and Node/tooling dependencies; CLI may compose the dev-server and codegen/discovery paths | Editor and Studio implementation modules and entries |
 | Consumers: `apps/studio/src/**` and generated-template source | Supported public package entries, `@framekit/generated/**`, and consumer-local modules | Direct FrameKit source paths (`packages/framekit/src/**` or the canonical template's relative sibling spelling) and every unsupported FrameKit subpath |
 
 The public package entries remain separate boundaries:
@@ -155,14 +155,14 @@ The public package entries remain separate boundaries:
 - `src/editor.ts` exposes the Editor entry only.
 - `src/studio.ts` and `src/studio-root.ts` expose Studio entries only.
 - `src/dev.ts` exposes development/codegen/discovery functionality.
-- `src/cli/index.ts` is the CLI build entry, not a supported package export.
+- `src/tooling/cli/index.ts` is the CLI build entry, not a supported package export.
 
 The rules enforce the prohibited static source-layer edges and all static Node
 built-in specifier spellings in the foundation, editor, and Studio
 implementation globs. They do not ban React, Next, Node from tooling, test
 libraries, or all external packages. The consumer rule permits the public
 `./dev` entry because it is an existing supported export; that does not make the
-implementation's `src/dev/**` modules browser-compatible.
+implementation's `src/tooling/dev/**` modules browser-compatible.
 
 ## Exact ESLint rule map
 
@@ -307,12 +307,12 @@ opposite dependency edge. It permits the current CLI-to-dev-server direction.
 ```js
 {
   files: [
-    'src/codegen/**/*.{ts,tsx}',
-    'src/discovery/**/*.{ts,tsx}',
-    'src/dev/**/*.{ts,tsx}',
+    'src/tooling/codegen/**/*.{ts,tsx}',
+    'src/tooling/discovery/**/*.{ts,tsx}',
+    'src/tooling/dev/**/*.{ts,tsx}',
     'src/dev.ts',
-    'src/cli/**/*.{ts,tsx}',
-    'src/cli.test.ts',
+    'src/tooling/cli/**/*.{ts,tsx}',
+    'src/tooling/cli/__tests__/cli.test.ts',
   ],
   rules: {
     'no-restricted-imports': ['error', {
@@ -462,10 +462,10 @@ These are intentional and must survive the rule addition:
 1. `ReactNode` in `src/types.ts` and the corresponding React type use in
    `src/core/define-template.ts` remain valid. This plan does not impose a
    blanket React or external-dependency ban.
-2. `src/editor/framekit-navigation.tsx` may continue to import
+2. `src/editor/navigation/framekit-navigation.tsx` may continue to import
    `next/link` and `next/navigation`. Next.js use is legitimate in that editor
    component.
-3. `apps/studio/src/test/framekit/generation.integration.test.ts` may import
+3. `apps/studio/src/__tests__/framekit/generation.integration.test.ts` may import
    `@mauriciodmo/framekit/dev`; `./dev` is a supported public entry and is the
    existing test/codegen utility path. Tests may continue to import their test
    libraries and local test utilities.
@@ -482,7 +482,7 @@ These are intentional and must survive the rule addition:
    `@mauriciodmo/framekit/dev`, and `@mauriciodmo/framekit/styles.css`.
 6. CLI-to-dev-server composition remains valid. The rule blocks the reverse
    direction from foundation, editor, Studio, and tooling UI boundaries; it
-   does not block `src/cli/**` from importing `src/dev/**`. The built-in
+   does not block `src/tooling/cli/**` from importing `src/tooling/dev/**`. The built-in
    restriction applies only to foundation, editor, and Studio implementation
    globs; both bare and `node:` built-ins remain valid in tooling and in
    consumer/test files outside those globs, and `next/headers` remains valid in
@@ -543,7 +543,7 @@ pnpm --filter @mauriciodmo/framekit exec eslint src scripts tsdown.config.ts esl
 pnpm --filter studio exec eslint .
 pnpm --filter @mauriciodmo/create-framekit exec eslint src template/src tsdown.config.ts eslint.config.mjs
 pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/core/define-template.ts
-pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/editor/framekit-navigation.tsx
+pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/editor/navigation/framekit-navigation.tsx
 pnpm --filter studio exec eslint --print-config 'src/app/editor/[[...slug]]/page.tsx'
 pnpm --filter @mauriciodmo/create-framekit exec eslint --print-config 'template/src/app/editor/[[...slug]]/page.tsx'
 pnpm --filter @mauriciodmo/framekit exec vitest run scripts/architecture-boundaries.test.ts

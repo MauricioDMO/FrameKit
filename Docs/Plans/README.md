@@ -331,7 +331,7 @@ dos tests existentes de FrameKit durante la ejecución recursiva.
 * [ ] Confirmar los casos y el orden de errores del validator actual.
 * [ ] Extraer utilidades comunes una sola vez.
 * [ ] Separar metadata, dimensiones, fields, variants y composición.
-* [ ] Mantener `definition.ts` como facade pública de secuenciación.
+* [ ] Mantener `definition/index.ts` como facade pública de secuenciación.
 * [ ] Preservar mensajes, primer error, narrowing y orden de inserción.
 * [ ] Mantener sin cambios exports públicos y tipos.
 * [ ] Redistribuir tests sin duplicar la matriz.

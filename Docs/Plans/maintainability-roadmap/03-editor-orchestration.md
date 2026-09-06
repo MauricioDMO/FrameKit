@@ -73,16 +73,16 @@ recreated:
 
 | Existing owner | Current responsibility | Phase 3 treatment |
 |---|---|---|
-| `components/editor-controls.tsx`: `EditorControls` | Variant selector, field descriptor projection, field rendering, field error/upload callbacks | Reuse unchanged. Do not make a second controls component. |
+| `controls/editor-controls.tsx`: `EditorControls` | Variant selector, field descriptor projection, field rendering, field error/upload callbacks | Reuse unchanged. Do not make a second controls component. |
 | `components/template-preview.tsx`: `TemplatePreview` | Fit/actual/custom view, resize observation, wheel zoom, pointer drag, preview accessibility | Reuse unchanged. Do not move preview state into the orchestrator or new header/dialog files. |
 | `state/editor-state.ts` | Pure state shape, persistence filtering, rebasing, variant selection/reset, field updates | Reuse unchanged. |
 | `state/use-editor-state.ts`: `useEditorState` | React state/persistence effects and editor callbacks | Reuse unchanged. Do not create another hook. |
-| `core/resolve-template-data.ts`: `resolveTemplateData` | Canonical default/content/edit/asset resolution | Reuse unchanged; keep the resolver call and its failure fallback in the orchestrator. |
+| `core/template-data/resolve-template-data.ts`: `resolveTemplateData` | Canonical default/content/edit/asset resolution | Reuse unchanged; keep the resolver call and its failure fallback in the orchestrator. |
 | `core/validation/data.ts`: `validateTemplateData` | Canonical resolved-data validation and error descriptors | Reuse unchanged; keep validation sequencing and localized translation in the orchestrator. |
-| `export-template.ts`: `exportTemplate`, `copyTemplate`, private `renderTemplate` | Font readiness, cloned untransformed capture, browser download, clipboard write | Reuse unchanged. Do not recreate or wrap these in a new export helper. |
+| `export/export-template.ts`: `exportTemplate`, `copyTemplate`, private `renderTemplate` | Font readiness, cloned untransformed capture, browser download, clipboard write | Reuse unchanged. Do not recreate or wrap these in a new export helper. |
 | `validation.ts`: `translateValidationError` | Localized field error text | Reuse unchanged. |
-| `fields/editor-field.tsx`, `fields/registry.ts`, `fields/shared.tsx`, and all field components | Field dispatch and text/color/number/image/choice/boolean controls | Reuse unchanged. |
-| `framekit-navigation.tsx` and `navigation.ts` | Sidebar navigation and persisted folder state | Reuse unchanged. |
+| `controls/fields/editor-field.tsx`, `controls/fields/registry.ts`, `controls/fields/shared.tsx`, and all field components | Field dispatch and text/color/number/image/choice/boolean controls | Reuse unchanged. |
+| `navigation/framekit-navigation.tsx` and `navigation/navigation.ts` | Sidebar navigation and persisted folder state | Reuse unchanged. |
 
 ## Current-to-target file and symbol map
 
@@ -100,26 +100,26 @@ from `packages/framekit/src/editor.ts`.
 | `framekit-editor.tsx`: `changeFieldValidation`, `uploadImage`, `runExport`, `exportPng`, `copyPng` | Same file and symbols | Keep shared validation, upload, export, error, focus, and retry semantics in the orchestrator. |
 | `framekit-editor.tsx`: exact render wrapper and `definition.render` invocation | Same file | Keep `exportRef`, wrapper dimensions, assets object, selected variant cast, width/height, and render props unchanged. |
 | `editor.ts`: `FrameKitEditor`, `FrameKitNavigation`, navigation helpers/types exports | Same file and exports | Do not add header/dialog exports or change `./editor` public surface. |
-| `components/editor-controls.tsx`: `EditorControls` | Same file and symbol | No change; existing control owner remains the only controls implementation. |
+| `controls/editor-controls.tsx`: `EditorControls` | Same file and symbol | No change; existing control owner remains the only controls implementation. |
 | `components/template-preview.tsx`: `TemplatePreview`, `getFittedView`, `fitToView`, `showActualSize`, `zoomAtPointer`, `handlePointerDown`, `handlePointerMove`, `endDrag` | Same file and symbols | No change; existing preview owner remains the only preview implementation. |
 | `state/use-editor-state.ts`: `useEditorState`, nested `changeVariant`, `clearVariant`, `changeField` | Same file and symbols | No change to persistence hydration, `v2` storage key, rebasing, reset version, errors, or callbacks. |
 | `state/editor-state.ts`: `EditorState`, `storageKey`, `getInitialState`, `filterFieldData`, `rebaseState`, `loadPersistedState`, `selectVariant`, `resetVariant`, `updateField` | Same file and symbols | No change. Preserve malformed-storage filtering and immutability behavior. |
-| `export-template.ts`: `renderTemplate`, `exportTemplate`, `copyTemplate` | Same file and symbols | No change. Preserve fonts-ready, clone/removal, untransformed capture, filename, PNG size/scale, and clipboard semantics. |
+| `export/export-template.ts`: `renderTemplate`, `exportTemplate`, `copyTemplate` | Same file and symbols | No change. Preserve fonts-ready, clone/removal, untransformed capture, filename, PNG size/scale, and clipboard semantics. |
 | `validation.ts`: `translateValidationError` | Same file and symbol | No change to localized messages or interpolation. |
-| `fields/registry.ts`: `fieldComponents` | Same file and symbol | No change; retain the single field-kind dispatch registry. |
-| `fields/editor-field.tsx`: `EditorField` | Same file and symbol | No change; retain the label/container/error wiring. |
-| `fields/shared.tsx`: `controlClass`, `FieldLabel` | Same file and symbols | No change; retain shared field presentation primitives. |
-| `fields/components/text-field.tsx`: `TextField` | Same file and symbol | No change. |
-| `fields/components/number-field.tsx`: `NumberField`, `normalizeSliderValue`, `decimalPlaces` | Same file and symbols | No change; retain draft values, validation, slider normalization, and decimal handling. |
-| `fields/components/color-field.tsx`: `ColorField` | Same file and symbol | No change; retain picker throttling and text/picker synchronization. |
-| `fields/components/image-field.tsx`: `ImageField` | Same file and symbol | No change; retain upload callback, file reset, loading, and image-error behavior. |
-| `fields/components/choice-field.tsx`: `ChoiceField` | Same file and symbol | No change; retain native select behavior. Unknown persisted choice overrides are discarded during hydration by `state/editor-state.ts` per #17. |
-| `fields/components/boolean-field.tsx`: `BooleanField` | Same file and symbol | No change; retain real boolean values and switch accessibility. |
-| `framekit-navigation.tsx`: `FrameKitNavigation`, `FrameKitNavigationTree`, private `NavigationNode`, `NavigationFolder`, `readNavigationState`, `persistNavigationState`, `NavigationState`, and `navigationStorageKey` | Same file and symbols | No change; retain persisted folder state, pathname selection, nesting, and navigation accessibility. |
-| `navigation.ts`: `TemplateRegistryEntry`, `TemplateNavigationFolder`, `TemplateNavigationItem`, `TemplateNavigationNode`, `humanizeSegment`, `manifestToNavigation` | Same file and symbols | No change; retain registry-to-tree sorting and href generation. |
+| `controls/fields/registry.ts`: `fieldComponents` | Same file and symbol | No change; retain the single field-kind dispatch registry. |
+| `controls/fields/editor-field.tsx`: `EditorField` | Same file and symbol | No change; retain the label/container/error wiring. |
+| `controls/fields/shared.tsx`: `controlClass`, `FieldLabel` | Same file and symbols | No change; retain shared field presentation primitives. |
+| `controls/fields/text-field.tsx`: `TextField` | Same file and symbol | No change. |
+| `controls/fields/number-field.tsx`: `NumberField`, `normalizeSliderValue`, `decimalPlaces` | Same file and symbols | No change; retain draft values, validation, slider normalization, and decimal handling. |
+| `controls/fields/color-field.tsx`: `ColorField` | Same file and symbol | No change; retain picker throttling and text/picker synchronization. |
+| `controls/fields/image-field.tsx`: `ImageField` | Same file and symbol | No change; retain upload callback, file reset, loading, and image-error behavior. |
+| `controls/fields/choice-field.tsx`: `ChoiceField` | Same file and symbol | No change; retain native select behavior. Unknown persisted choice overrides are discarded during hydration by `state/editor-state.ts` per #17. |
+| `controls/fields/boolean-field.tsx`: `BooleanField` | Same file and symbol | No change; retain real boolean values and switch accessibility. |
+| `navigation/framekit-navigation.tsx`: `FrameKitNavigation`, `FrameKitNavigationTree`, private `NavigationNode`, `NavigationFolder`, `readNavigationState`, `persistNavigationState`, `NavigationState`, and `navigationStorageKey` | Same file and symbols | No change; retain persisted folder state, pathname selection, nesting, and navigation accessibility. |
+| `navigation/navigation.ts`: `TemplateRegistryEntry`, `TemplateNavigationFolder`, `TemplateNavigationItem`, `TemplateNavigationNode`, `humanizeSegment`, `manifestToNavigation` | Same file and symbols | No change; retain registry-to-tree sorting and href generation. |
 | `editor/types.ts`: `EditorMessages`, `TemplateField`, `ImageFieldLabels`, `EditorFieldProps` | Same file and types | No change; the new private components consume existing message types and `TemplateMeta` only, with no new public types. |
-| `framekit-editor.test.tsx` | Same file | Retain the existing editor wiring, control, validation, state, render, and copy tests. Update only imports or test setup required by the new internal children; do not replace them with snapshots. |
-| `export-template.test.ts`, `framekit-navigation.test.tsx`, `navigation.test.ts`, `state/editor-state.test.ts` | Same files | Retain unchanged unless a compile-only import path requires a mechanical update. Their existing owners stay intact. |
+| `__tests__/framekit-editor.test.tsx` | Same file | Retain the existing editor wiring, control, validation, state, render, and copy tests. Update only imports or test setup required by the new internal children; do not replace them with snapshots. |
+| `export/__tests__/export-template.test.ts`, `navigation/__tests__/framekit-navigation.test.tsx`, `navigation/__tests__/navigation.test.ts`, `state/__tests__/editor-state.test.ts` | Same files | Retain unchanged unless a compile-only import path requires a mechanical update. Their existing owners stay intact. |
 | `studio/framekit-studio.tsx`: `FrameKitStudio` | Same file and symbol | No change. Studio continues to validate loaded definitions and render `FrameKitEditor` with the same props. |
 
 ## Target component contracts
@@ -278,14 +278,14 @@ whether the dialog is open, without duplicating lifecycle code.
 
 No existing test needs to be replaced by a snapshot or a new suite:
 
-- `framekit-editor.test.tsx` stays the high-level contract suite. Its metadata
+- `__tests__/framekit-editor.test.tsx` stays the high-level contract suite. Its metadata
   open/close test remains useful because it proves header-to-dialog wiring;
   controls, validation/error, local-persistence, render-output, and copy-wiring
   coverage remain in this file. Its colocated `EditorField` and `NumberField`
   characterization cases also remain unless an import becomes unavailable.
-- `export-template.test.ts` remains the capture/copy-helper suite.
-- `state/editor-state.test.ts` remains the pure persistence/state suite.
-- `framekit-navigation.test.tsx` and `navigation.test.ts` remain the navigation
+- `export/__tests__/export-template.test.ts` remains the capture/copy-helper suite.
+- `state/__tests__/editor-state.test.ts` remains the pure persistence/state suite.
+- `navigation/__tests__/framekit-navigation.test.tsx` and `navigation/__tests__/navigation.test.ts` remain the navigation
   suites.
 
 Only mechanical import/setup changes are acceptable if extraction makes a
@@ -324,13 +324,13 @@ Run these while implementing:
 pnpm --filter @mauriciodmo/framekit exec vitest run \
   src/editor/components/__tests__/editor-header.test.tsx \
   src/editor/components/__tests__/template-metadata-dialog.test.tsx \
-  src/editor/framekit-editor.test.tsx \
-  src/editor/export-template.test.ts \
-  src/editor/state/editor-state.test.ts \
-  src/editor/framekit-navigation.test.tsx \
-  src/editor/navigation.test.ts
+  src/editor/__tests__/framekit-editor.test.tsx \
+  src/editor/export/__tests__/export-template.test.ts \
+  src/editor/state/__tests__/editor-state.test.ts \
+  src/editor/navigation/__tests__/framekit-navigation.test.tsx \
+  src/editor/navigation/__tests__/navigation.test.ts
 pnpm --filter @mauriciodmo/framekit build
-pnpm --filter studio test -- src/test/framekit/generation.integration.test.ts
+pnpm --filter studio test -- src/__tests__/framekit/generation.integration.test.ts
 ```
 
 The focused run must prove both new component boundaries and the unchanged

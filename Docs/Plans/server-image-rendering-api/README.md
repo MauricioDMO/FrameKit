@@ -94,11 +94,11 @@ template model:
 
 - `packages/framekit/src/editor/framekit-editor.tsx` resolves data and invokes
   `definition.render(...)` inside an exact-size wrapper used by Studio.
-- `packages/framekit/src/editor/export-template.ts` exports PNG in the browser
+- `packages/framekit/src/editor/export/export-template.ts` exports PNG in the browser
   with `modern-screenshot` after `document.fonts.ready`.
-- `packages/framekit/src/core/resolve-template-data.ts` applies defaults,
+- `packages/framekit/src/core/template-data/resolve-template-data.ts` applies defaults,
   variant content, edits, and matching image assets.
-- `packages/framekit/src/dev/asset-upload.ts` already contains useful byte limits,
+- `packages/framekit/src/tooling/dev/asset-upload.ts` already contains useful byte limits,
   strict base64 validation, raster MIME checks, and signature checks.
 - generated `templates.ts` modules expose summaries, asset manifests, and lazy
   loaders through the `templates` registry.

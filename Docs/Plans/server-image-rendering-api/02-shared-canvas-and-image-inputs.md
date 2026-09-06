@@ -291,7 +291,7 @@ packages/framekit/src/shared/raster-image.ts
 packages/framekit/src/shared/raster-image.test.ts
 packages/framekit/src/server/image-input.ts
 packages/framekit/src/server/image-input.test.ts
-packages/framekit/src/dev/asset-upload.ts
+packages/framekit/src/tooling/dev/asset-upload.ts
 ```
 
 The shared raster helper should remain internal unless an actual public consumer

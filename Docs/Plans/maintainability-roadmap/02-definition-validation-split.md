@@ -20,7 +20,7 @@
 ## Goal
 
 Split the monolithic runtime definition validator into the smallest coherent
-internal modules while leaving `definition.ts` as the stable composer and
+internal modules while leaving `definition/index.ts` as the stable composer and
 facade. The split is organizational only: callers still use
 `validateTemplateBase` and `validateTemplateDefinition`, and the validator
 still returns the first error in the same order with the same exact message.
@@ -35,13 +35,13 @@ surface or one-line compatibility modules:
 - variants owns the `variants` container guard, declaration, and label checks;
 - composition owns the `content` container guard, emptiness, cross-references,
   content values, and numeric content constraints;
-- `definition.ts` owns only the root object guard, unknown top-level properties,
+- `definition/index.ts` owns only the root object guard, unknown top-level properties,
   sequencing through the public facade, result narrowing, and the extra
   `render` check for full definitions.
 
 ## Current baseline
 
-`packages/framekit/src/core/validation/definition.ts` currently contains the
+`packages/framekit/src/core/validation/definition/index.ts` currently contains the
 plain-object guard, private `ValidationResult` union, top-level key set,
 metadata validation, dimension validation, every field-kind branch, variant
 validation, content/field cross-validation, and the final render-function
@@ -77,30 +77,30 @@ generation integration test also exercises the package-root import.
 
 The target names below are implementation names, not new public entry points.
 For the definition validators, the existing export path is
-`definition.ts` → `validation/index.ts` → package-root `src/index.ts`; the
+`definition/index.ts` → `validation/index.ts` → package-root `src/index.ts`; the
 extracted helpers do not participate in it.
 
 | Current file / symbols | Target file / symbols | Change and ownership |
 |---|---|---|
-| `core/validation/definition.ts`: `isPlainObject` | `core/validation/utils.ts`: `isPlainObject` | Move the shared plain-object predicate once; keep it internal and do not export it from the package root. |
-| `core/validation/definition.ts`: `ValidationResult` | `core/validation/definition.ts`: `ValidationResult` | Keep the private discriminated union with the same `success`, `definition`, and `error` members so public declaration output and control-flow narrowing remain equivalent. |
-| `definition.ts`: root guard and `DEFINITION_KEYS` | `definition.ts`: root guard and `DEFINITION_KEYS` | Keep root shape and top-level key ownership in the composer because it defines the complete definition contract, including the permitted `render` key. |
-| `definition.ts`: `meta` guard, `META_KEYS`, metadata checks | `metadata.ts`: `META_KEYS`, `validateMetadata` | Move the `meta` container guard and all current metadata checks without changing their order or messages. The helper should return a failure message (or no failure), not a new public result type. |
-| `definition.ts`: width/height checks | `dimensions.ts`: `validateDimensions` | Move width first and height second, including positive, finite, integer checks and exact messages. |
-| `definition.ts`: `fields` guard, reserved-key check, `FIELD_KINDS`, field loop and per-kind branches | `fields.ts`: `FIELD_KINDS`, `validateFields` and private descriptor helpers | Move the `fields` container guard, `fields.language` diagnostic, and complete descriptor validation, including choice options, boolean restrictions, number limits/steps, text lengths, image scope, and cross-kind property rejection. Preserve field insertion order. |
-| `definition.ts`: `variants` guard, `VARIANT_KEYS`, variant declaration and labels | `variants.ts`: `VARIANT_KEYS`, `validateVariants` | Move the `variants` container guard and all declaration-level checks: allowed keys, default string, labels shape, and label strings. Content membership checks stay in composition because they require `content`. |
-| `definition.ts`: content shape, field-key set, default/label membership, value types, `validateNumberValue` mapping | `composition.ts`: `validateComposition` | Own the `content` container guard and emptiness check plus the relationships among `content`, `fields`, and already-validated variants. Preserve content insertion order and the current numeric error-message mapping. |
-| `definition.ts`: `validateTemplateBase` | `definition.ts`: `validateTemplateBase` | Retain the public facade. It performs top-level checks, invokes helpers in the current sequence, short-circuits on the first message, and returns the original value narrowed to `TemplateBase`. |
-| `definition.ts`: `validateTemplateDefinition` | `definition.ts`: `validateTemplateDefinition` | Retain the public facade. It calls `validateTemplateBase` first and checks `render` only after all base checks succeed. |
-| `core/validation/data.ts`: `isValidColor`, `isValidNumberStep`, `validateNumberValue`, `validateTemplateData`, `TemplateDataValidationError` | `core/validation/data.ts`: same symbols | No definition-split move. `fields.ts` may continue using `isValidNumberStep`; `composition.ts` may continue using `validateNumberValue`. Data validation remains separate. `isValidColor` remains available from the existing internal validation barrel because the editor imports it there; `isValidNumberStep` and `validateNumberValue` remain data-module internals. |
+| `core/validation/definition/index.ts`: `isPlainObject` | `core/validation/utils.ts`: `isPlainObject` | Move the shared plain-object predicate once; keep it internal and do not export it from the package root. |
+| `core/validation/definition/index.ts`: `ValidationResult` | `core/validation/definition/index.ts`: `ValidationResult` | Keep the private discriminated union with the same `success`, `definition`, and `error` members so public declaration output and control-flow narrowing remain equivalent. |
+| `definition/index.ts`: root guard and `DEFINITION_KEYS` | `definition/index.ts`: root guard and `DEFINITION_KEYS` | Keep root shape and top-level key ownership in the composer because it defines the complete definition contract, including the permitted `render` key. |
+| `definition/index.ts`: `meta` guard, `META_KEYS`, metadata checks | `definition/metadata.ts`: `META_KEYS`, `validateMetadata` | Move the `meta` container guard and all current metadata checks without changing their order or messages. The helper should return a failure message (or no failure), not a new public result type. |
+| `definition/index.ts`: width/height checks | `definition/dimensions.ts`: `validateDimensions` | Move width first and height second, including positive, finite, integer checks and exact messages. |
+| `definition/index.ts`: `fields` guard, reserved-key check, `FIELD_KINDS`, field loop and per-kind branches | `validation/fields/index.ts`: `validateFields` and private descriptor helpers | Move the `fields` container guard, `fields.language` diagnostic, and complete descriptor validation, including choice options, boolean restrictions, number limits/steps, text lengths, image scope, and cross-kind property rejection. Preserve field insertion order. |
+| `definition/index.ts`: `variants` guard, `VARIANT_KEYS`, variant declaration and labels | `definition/variants.ts`: `VARIANT_KEYS`, `validateVariants` | Move the `variants` container guard and all declaration-level checks: allowed keys, default string, labels shape, and label strings. Content membership checks stay in composition because they require `content`. |
+| `definition/index.ts`: content shape, field-key set, default/label membership, value types, `validateNumberValue` mapping | `definition/composition.ts`: `validateComposition` | Own the `content` container guard and emptiness check plus the relationships among `content`, `fields`, and already-validated variants. Preserve content insertion order and the current numeric error-message mapping. |
+| `definition/index.ts`: `validateTemplateBase` | `definition/index.ts`: `validateTemplateBase` | Retain the public facade. It performs top-level checks, invokes helpers in the current sequence, short-circuits on the first message, and returns the original value narrowed to `TemplateBase`. |
+| `definition/index.ts`: `validateTemplateDefinition` | `definition/index.ts`: `validateTemplateDefinition` | Retain the public facade. It calls `validateTemplateBase` first and checks `render` only after all base checks succeed. |
+| `core/validation/data.ts`: `isValidColor`, `isValidNumberStep`, `validateNumberValue`, `validateTemplateData`, `TemplateDataValidationError` | `core/validation/data.ts`: same symbols | No definition-split move. `fields/index.ts` may continue using `isValidNumberStep`; `definition/composition.ts` may continue using `validateNumberValue`. Data validation remains separate. `isValidColor` remains available from the existing internal validation barrel because the editor imports it there; `isValidNumberStep` and `validateNumberValue` remain data-module internals. |
 | `core/validation/index.ts`: existing exports | `core/validation/index.ts`: same exports | Keep the exact export list and paths: definition validators, `isValidColor`, and `validateTemplateData` as values, plus `TemplateDataValidationError` as a type. For validation, the package root re-exports only `validateTemplateBase`, `validateTemplateData`, `validateTemplateDefinition`, and `TemplateDataValidationError`; do not expose helper modules or change either barrel. |
 | `core/define-template.ts`: `defineTemplateBase`, `defineTemplate`, `assertValid` | Same file and symbols | No semantic change. The import may remain `./validation`; success returns and thrown error text must be unchanged. |
 | `src/index.ts`: root validation/type/field exports | Same file and exports | No export change. In particular, preserve root imports of `validateTemplateBase`, `validateTemplateDefinition`, and `validateTemplateData`. |
 | `src/types.ts`: `TemplateBase`, `TemplateDefinition`, `TemplateInput`, field/meta/variant types | Same file and types | No type-model change. Runtime splitting must not weaken or strengthen generic inference, `NoLanguageFields`, content narrowing, or render props. |
-| `core/definition-validation.test.ts`: all current cases | `core/validation/definition.test.ts`, `metadata.test.ts`, `dimensions.test.ts`, `fields.test.ts`, `variants.test.ts`, `composition.test.ts` | Move cases by behavior as mapped below. Remove the monolithic file only after every case has a destination and the focused suite passes. |
+| Current definition-validation cases | `core/validation/__tests__/definition/definition.test.ts`, `metadata.test.ts`, `dimensions.test.ts`, `composition.test.ts`, and `core/validation/__tests__/fields/index.test.ts` | Keep cases colocated by behavior, with every case assigned to a current focused suite. |
 | `tests/types/*.ts`: valid/rejection fixtures | Same fixture files | Retain all fixtures and their `@ts-expect-error` assertions. They are compile-time contracts, not candidates for runtime-test consolidation. |
-| `apps/studio/src/test/framekit/generation.integration.test.ts` | Same file | Retain generated-loader and public-root validation coverage unchanged; it proves the split does not break the supported consumer path. |
-| Existing indirect consumers/tests: `packages/framekit/src/cli/check.ts`, `packages/framekit/src/codegen/collect-template-summaries.ts`, `packages/framekit/src/core/data-validation.test.ts`, `packages/framekit/src/core/resolve-template-data.test.ts`, `packages/framekit/src/core/get-variants.test.ts`, and `packages/framekit/src/core/fields.test.ts` | Same files | Do not move or rewrite them. The CLI/codegen files generate package-root validation imports, while the package tests continue covering their existing owners and any `defineTemplate` setup. |
+| `apps/studio/src/__tests__/framekit/generation.integration.test.ts` | Same file | Retain generated-loader and public-root validation coverage unchanged; it proves the split does not break the supported consumer path. |
+| Existing indirect consumers/tests: `packages/framekit/src/tooling/cli/check.ts`, `packages/framekit/src/tooling/codegen/collect-template-summaries.ts`, `packages/framekit/src/core/__tests__/data-validation.test.ts`, `packages/framekit/src/core/__tests__/resolve-template-data.test.ts`, `packages/framekit/src/core/__tests__/get-variants.test.ts`, and `packages/framekit/src/core/__tests__/fields.test.ts` | Same files | Do not move or rewrite them. The CLI/codegen files generate package-root validation imports, while the package tests continue covering their existing owners and any `defineTemplate` setup. |
 
 `utils.ts` is a real shared primitive used by multiple validators, not a
 compatibility wrapper. No `metadata/index.ts`, `fields/index.ts`, or other
@@ -116,26 +116,26 @@ new focused files must keep the helpers private: moved and characterization
 tests exercise `validateTemplateBase` or `validateTemplateDefinition` through
 the public root rather than exporting helpers solely to unit-test them.
 
-| Current test cases in `definition-validation.test.ts` | Destination |
+| Current definition-validation cases | Destination |
 |---|---|
-| `non-object definition`; `array definition`; `missing metadata`; `missing metadata title`; `empty metadata title`; `missing variants`; `unknown top-level property` | `validation/definition.test.ts` for top-level sequencing/facade failures. |
-| `accepts optional metadata`; invalid `description`; invalid `marketingDescription`; invalid `tags`; invalid `tag value`; unsupported metadata properties `revision`, `status`, `keywords`, `order` | `validation/metadata.test.ts`. |
-| Field cases `non-object descriptor`; `array descriptor`; `unknown kind`; `removed textarea kind`; `empty label`; `invalid placeholder`; `invalid required`; `invalid default` | `validation/fields.test.ts`. |
-| Choice cases `empty choice options`; `non-object choice option`; `empty choice option value`; `empty choice option label`; `duplicate choice option values`; `missing choice default`; `unknown choice default`; `required on choice`; `control on choice` | `validation/fields.test.ts`. |
-| Boolean cases `invalid boolean default`; `null boolean default`; `placeholder on boolean`; `required on boolean`; `control on boolean` | `validation/fields.test.ts`. |
-| Cross-kind cases `control on text`; `step on text`; `limits on non-number`; `text lengths on non-text`; `scope on non-image` | `validation/fields.test.ts`. |
-| Number descriptor cases `missing number default`; `string number default`; `non-finite number default`; `required on number`; `invalid number control`; `non-finite minimum`; `non-finite maximum`; `reversed limits`; `non-finite step`; `non-positive step`; `slider without minimum`; `slider without maximum`; `default below minimum`; `default above maximum`; `default outside step` | `validation/fields.test.ts`. |
-| Number factory cases `required`; `null step`; `null control` under `rejects number factory parameters` | `validation/fields.test.ts`; keep the `field.number(... as never)` construction because it verifies runtime validation of factory output. |
-| `accepts a valid choice descriptor`; `accepts boolean descriptors and content values`; `accepts numeric descriptors and content values` | `validation/fields.test.ts` as positive descriptor coverage. Keep enough content in each fixture to prove the descriptor can be composed. |
-| Text cases `non-finite minimum length`; `negative minimum length`; `fractional maximum length`; `reversed text lengths` | `validation/fields.test.ts`. |
-| Image cases `invalid image scope` | `validation/fields.test.ts`. |
-| `below minimum`; `above maximum`; `outside step`; `outside step at a large magnitude` under `rejects numeric content` | `validation/composition.test.ts`; retain the large-magnitude case to protect the `validateNumberValue` integration and exact `content.en.count` messages. |
-| Decimal `width`; decimal `height` | `validation/dimensions.test.ts`. |
-| Missing render function | `validation/definition.test.ts`; it must remain after all base checks. |
-| `empty content`; `unknown content key`; `content metadata`; `string boolean content`; `numeric boolean content`; `string number content`; `non-finite number content` | `validation/composition.test.ts`. |
-| `unsupported variant property` | `validation/variants.test.ts`. |
-| `unknown default variant`; `unknown variant label` | `validation/composition.test.ts`; these are content-membership checks that require the already-validated `content` object. |
-| Invalid variant labels `non-object labels`; `non-string label` | `validation/variants.test.ts`. |
+| `non-object definition`; `array definition`; `missing metadata`; `missing metadata title`; `empty metadata title`; `missing variants`; `unknown top-level property` | `validation/__tests__/definition/definition.test.ts` for top-level sequencing/facade failures. |
+| `accepts optional metadata`; invalid `description`; invalid `marketingDescription`; invalid `tags`; invalid `tag value`; unsupported metadata properties `revision`, `status`, `keywords`, `order` | `validation/__tests__/definition/metadata.test.ts`. |
+| Field cases `non-object descriptor`; `array descriptor`; `unknown kind`; `removed textarea kind`; `empty label`; `invalid placeholder`; `invalid required`; `invalid default` | `validation/__tests__/fields/index.test.ts`. |
+| Choice cases `empty choice options`; `non-object choice option`; `empty choice option value`; `empty choice option label`; `duplicate choice option values`; `missing choice default`; `unknown choice default`; `required on choice`; `control on choice` | `validation/__tests__/fields/choice.test.ts`. |
+| Boolean cases `invalid boolean default`; `null boolean default`; `placeholder on boolean`; `required on boolean`; `control on boolean` | `validation/__tests__/fields/primitive.test.ts`. |
+| Cross-kind cases `control on text`; `step on text`; `limits on non-number`; `text lengths on non-text`; `scope on non-image` | `validation/__tests__/fields/index.test.ts`. |
+| Number descriptor cases `missing number default`; `string number default`; `non-finite number default`; `required on number`; `invalid number control`; `non-finite minimum`; `non-finite maximum`; `reversed limits`; `non-finite step`; `non-positive step`; `slider without minimum`; `slider without maximum`; `default below minimum`; `default above maximum`; `default outside step` | `validation/__tests__/fields/number.test.ts`. |
+| Number factory cases `required`; `null step`; `null control` under `rejects number factory parameters` | `validation/__tests__/fields/number.test.ts`; keep the `field.number(... as never)` construction because it verifies runtime validation of factory output. |
+| `accepts a valid choice descriptor`; `accepts boolean descriptors and content values`; `accepts numeric descriptors and content values` | `validation/__tests__/fields/index.test.ts` as positive descriptor coverage. Keep enough content in each fixture to prove the descriptor can be composed. |
+| Text cases `non-finite minimum length`; `negative minimum length`; `fractional maximum length`; `reversed text lengths` | `validation/__tests__/fields/text.test.ts`. |
+| Image cases `invalid image scope` | `validation/__tests__/fields/image.test.ts`. |
+| `below minimum`; `above maximum`; `outside step`; `outside step at a large magnitude` under `rejects numeric content` | `validation/__tests__/definition/composition.test.ts`; retain the large-magnitude case to protect the `validateNumberValue` integration and exact `content.en.count` messages. |
+| Decimal `width`; decimal `height` | `validation/__tests__/definition/dimensions.test.ts`. |
+| Missing render function | `validation/__tests__/definition/definition.test.ts`; it must remain after all base checks. |
+| `empty content`; `unknown content key`; `content metadata`; `string boolean content`; `numeric boolean content`; `string number content`; `non-finite number content` | `validation/__tests__/definition/composition.test.ts`. |
+| `unsupported variant property` | `validation/__tests__/definition/variants.test.ts`. |
+| `unknown default variant`; `unknown variant label` | `validation/__tests__/definition/composition.test.ts`; these are content-membership checks that require the already-validated `content` object. |
+| Invalid variant labels `non-object labels`; `non-string label` | `validation/__tests__/definition/variants.test.ts`. |
 
 The `unknown default variant` and `unknown variant label` cases must still run
 after declaration-level `variants` checks and before content entry validation,
@@ -177,11 +177,12 @@ and the facade order only.
    pnpm check:runtime
    pnpm lint
    pnpm --filter @mauriciodmo/framekit exec vitest run \
-     src/core/definition-validation.test.ts \
-     src/core/data-validation.test.ts
+     src/core/validation/__tests__/definition \
+     src/core/validation/__tests__/fields \
+     src/core/__tests__/data-validation.test.ts
    pnpm --filter @mauriciodmo/framekit typecheck
    pnpm --filter @mauriciodmo/framekit build
-   pnpm --filter studio test -- src/test/framekit/generation.integration.test.ts
+    pnpm --filter studio test -- src/__tests__/framekit/generation.integration.test.ts
    ```
 
    Record the current test count if useful for review, but do not alter
@@ -193,7 +194,7 @@ and the facade order only.
 3. **Extract metadata and dimensions.** Move the `meta` container guard and
    current metadata checks verbatim into `metadata.ts`, and the dimension checks
    into `dimensions.ts`. Helpers should report only the first message for their
-   responsibility; `definition.ts` remains responsible for converting a message
+    responsibility; `definition/index.ts` remains responsible for converting a message
    into `{ success: false, error }`.
 4. **Extract fields as one coherent validator.** Move the `fields` container
    guard, reserved-key check, `FIELD_KINDS`, field loop, and all per-kind checks
@@ -213,7 +214,7 @@ and the facade order only.
    rather than validating them a second time.
 7. **Rebuild the facade in the current order.** Keep `ValidationResult`, the
    root object guard, top-level unknown-key loop, and both exported functions in
-   `definition.ts`.
+    `definition/index.ts`.
    Invoke the new helpers in the exact baseline sequence and stop immediately
    on the first returned message. Keep the final render check solely in
    `validateTemplateDefinition`.
@@ -278,8 +279,8 @@ pnpm --filter @mauriciodmo/framekit exec vitest run \
   src/core/validation/__tests__/fields/number.test.ts \
   src/core/validation/__tests__/fields/primitive.test.ts \
   src/core/validation/__tests__/fields/text.test.ts \
-  src/core/data-validation.test.ts
-pnpm --filter studio test -- src/test/framekit/generation.integration.test.ts
+  src/core/__tests__/data-validation.test.ts
+pnpm --filter studio test -- src/__tests__/framekit/generation.integration.test.ts
 pnpm --filter @mauriciodmo/framekit typecheck
 ```
 
@@ -333,7 +334,7 @@ Phase 2 is complete when:
 
 - the monolithic definition validator has been split into coherent internal
   ownership for metadata, dimensions, fields, variants, and composition;
-- `definition.ts` remains the stable composer/facade and no unnecessary
+- `definition/index.ts` remains the stable composer/facade and no unnecessary
   forwarding files or public exports were added;
 - every current definition-validation case has moved to a colocated behavior
   test with the same assertion, and the small facade/order additions pass;
@@ -349,7 +350,7 @@ Phase 2 is complete when:
 
 Revert the single PR as one unit if any error string, ordering, declaration
 output, root export, or consumer behavior changes. The safest rollback is to
-restore `definition.ts` and the original monolithic test; do not leave callers
+restore `definition/index.ts` and the current focused test suites; do not leave callers
 pointing at internal helper modules.
 
 ### Review checklist
