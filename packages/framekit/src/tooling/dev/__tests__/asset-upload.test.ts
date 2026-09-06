@@ -8,7 +8,7 @@ import { Readable } from 'node:stream'
 
 import { describe, expect, it, vi } from 'vitest'
 
-import { handleAssetUpload } from './asset-upload'
+import { handleAssetUpload } from '@/tooling/dev/asset-upload'
 
 const templateSlug = 'social/post'
 const variant = 'es'

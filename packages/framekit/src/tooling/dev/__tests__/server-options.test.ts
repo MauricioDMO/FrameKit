@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getServerOptions } from './server-options'
+import { getServerOptions } from '@/tooling/dev/server-options'
 
 describe('server options', () => {
   it('uses localhost and port 3000 by default', () => {

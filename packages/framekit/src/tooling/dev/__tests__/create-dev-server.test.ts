@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events'
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDevServer } from './create-dev-server'
+import { createDevServer } from '@/tooling/dev/create-dev-server'
 
 const mocks = vi.hoisted(() => ({
   app: {
@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('node:http', () => ({ createServer: mocks.createServer }))
 vi.mock('next', () => ({ default: mocks.next }))
 vi.mock('@/tooling/codegen/write-template-module', () => ({ writeTemplateModule: mocks.writeTemplateModule }))
-vi.mock('./watch-templates', () => ({ watchTemplates: mocks.watchTemplates }))
+vi.mock('@/tooling/dev/watch-templates', () => ({ watchTemplates: mocks.watchTemplates }))
 
 const options = { projectRoot: '/tmp/framekit', hostname: '127.0.0.1', port: 0 }
 

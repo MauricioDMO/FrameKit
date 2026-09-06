@@ -7,7 +7,7 @@ import path from 'node:path'
 import chokidar, { type FSWatcher } from 'chokidar'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { watchTemplates, type TemplateWatcher } from './watch-templates'
+import { watchTemplates, type TemplateWatcher } from '@/tooling/dev/watch-templates'
 
 const originalWatch = chokidar.watch
 const activeWatchers: TemplateWatcher[] = []
