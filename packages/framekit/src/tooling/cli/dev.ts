@@ -1,7 +1,7 @@
 import process from 'node:process'
 
-import { createDevServer } from '../dev/create-dev-server'
-import { getServerOptions } from '../dev/server-options'
+import { createDevServer } from '../../dev/create-dev-server'
+import { getServerOptions } from '../../dev/server-options'
 
 export async function dev (projectRoot: string): Promise<never> {
   const { hostname, port } = getServerOptions(process.env)
