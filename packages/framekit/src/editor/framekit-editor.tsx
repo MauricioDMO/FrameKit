@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
-import { resolveTemplateData } from '../core/resolve-template-data'
+import { resolveTemplateData } from '../core/template-data/resolve-template-data'
 import { validateTemplateData } from '../core/validation'
 import type { TemplateDataValidationError } from '../core/validation'
 import type { ImageFieldScope, InferTemplateData, TemplateBase, TemplateRegistryEntry, TemplateRenderProps } from '../types'

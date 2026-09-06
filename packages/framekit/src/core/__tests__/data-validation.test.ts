@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, field, validateTemplateData } from '../index'
+import { defineTemplate, field, validateTemplateData } from '@/index'
 
-import { isValidColor } from './validation/data'
+import { isValidColor } from '@/core/validation/data'
 
 function createDefinition () {
   return defineTemplate({

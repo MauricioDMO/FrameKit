@@ -72,7 +72,7 @@ async function addFrameKitRuntime (root: string): Promise<void> {
     exports: './index.js'
   }))
   const validationModule = new URL('../../../core/validation/index.ts', import.meta.url).href
-  const resolveTemplateDataModule = new URL('../../../core/resolve-template-data.ts', import.meta.url).href
+  const resolveTemplateDataModule = new URL('../../../core/template-data/resolve-template-data.ts', import.meta.url).href
   await writeFile(path.join(directory, 'index.js'), [
     `export { validateTemplateDefinition, validateTemplateData } from ${JSON.stringify(validationModule)}`,
     `export { resolveTemplateData } from ${JSON.stringify(resolveTemplateDataModule)}`

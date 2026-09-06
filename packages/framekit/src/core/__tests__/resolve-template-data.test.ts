@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, field, resolveTemplateData } from '../index'
+import { defineTemplate, field, resolveTemplateData } from '@/index'
 
-import { extractedTemplate } from '../../tests/types/extracted-template'
+import { extractedTemplate } from '../../../tests/types/extracted-template'
 
 describe('resolveTemplateData', () => {
   it('resolves defaults, variant content, and edits in order', () => {

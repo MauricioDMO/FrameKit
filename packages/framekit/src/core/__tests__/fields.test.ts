@@ -1,4 +1,4 @@
-import * as api from '../index'
+import * as api from '@/index'
 import { describe, expect, it } from 'vitest'
 
 describe('field factories', () => {

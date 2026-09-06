@@ -1,4 +1,4 @@
-import type { FieldDescriptor } from '../types'
+import type { FieldDescriptor } from '../../types'
 
 type DefaultValues<Fields extends Record<string, FieldDescriptor>> = {
   -readonly [Key in keyof Fields]: Fields[Key] extends { kind: 'number' }

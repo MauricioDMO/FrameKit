@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, field, getVariants } from '../index'
+import { defineTemplate, field, getVariants } from '@/index'
 
 describe('getVariants', () => {
   it('returns the content variant keys', () => {
