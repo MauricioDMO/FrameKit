@@ -1,3 +1,5 @@
+import { FrameKitStudioMessages } from '@/studio'
+
 const esMessages = {
   metadata: { title: 'FrameKit', description: 'Editor de imágenes basado en plantillas React' },
   sidebar: {
@@ -81,6 +83,6 @@ const esMessages = {
     description: 'Esta ruta no corresponde a una plantilla disponible en el catálogo.',
     backToEditor: 'Volver al editor'
   }
-}
+} satisfies FrameKitStudioMessages
 
 export default esMessages

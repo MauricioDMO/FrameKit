@@ -1,3 +1,5 @@
+import { FrameKitStudioMessages } from '@/studio'
+
 const enMessages = {
   metadata: { title: 'FrameKit', description: 'A React template-based image editor' },
   sidebar: {
@@ -81,6 +83,6 @@ const enMessages = {
     description: 'This route does not match a template available in the catalog.',
     backToEditor: 'Back to editor'
   }
-}
+} satisfies FrameKitStudioMessages
 
 export default enMessages
