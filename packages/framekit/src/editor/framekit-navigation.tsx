@@ -105,10 +105,10 @@ function NavigationNode ({
       <Link
         href={node.href}
         aria-current={selected ? 'page' : undefined}
-        className={`mb-0.5 flex items-center gap-1 rounded-lg py-1.5 pr-3 text-sm transition focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none ${
+        className={`mb-0.5 flex items-center gap-1 rounded-lg py-1.5 pr-3 text-sm transition focus:ring-2 focus:ring-inset focus:ring-fk-mint-200 focus:outline-none ${
           selected
-            ? 'bg-white/10 font-bold text-[#f5f7ee]'
-            : 'text-[#bed0c6] hover:bg-white/8 hover:text-white'
+            ? 'bg-white/10 font-bold text-fk-sage-100'
+            : 'text-fk-sage-200 hover:bg-white/10 hover:text-white'
         }`}
         style={{ paddingLeft: 17 + level * 12 }}
       >
@@ -149,14 +149,14 @@ function NavigationFolder ({
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex w-full items-center gap-1 rounded-lg py-1.5 pr-3 text-left text-sm font-semibold text-[#d7e2dc] transition hover:bg-white/8 focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none"
+        className="flex w-full items-center gap-1 rounded-lg py-1.5 pr-3 text-left text-sm font-semibold text-white transition hover:bg-white/10 focus:ring-2 focus:ring-inset focus:ring-fk-mint-200 focus:outline-none"
         style={{ paddingLeft: 10 + level * 12 }}
       >
         <IconChevronRight
           size={15}
           className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
         />
-        <IconFolder size={16} className="shrink-0 text-[#86a998]" />
+        <IconFolder size={16} className="shrink-0 text-fk-sage-300" />
         <span className="truncate">{node.title}</span>
       </button>
 
@@ -164,7 +164,7 @@ function NavigationFolder ({
         <div className="relative">
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute top-0 bottom-1 w-px bg-[#86a998]/25"
+            className="pointer-events-none absolute top-0 bottom-1 w-px bg-fk-sage-300/25"
             style={{ left: 17 + level * 12 }}
           />
           {node.children.map((child) => (

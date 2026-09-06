@@ -51,7 +51,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
   try {
     resolvedData = resolveTemplateData(definition, selectedVariant, userEdits as Partial<InferTemplateData<Definition>> & Record<string, string | number | boolean>, assets)
   } catch {
-    return <div role="alert" className="flex min-h-[60vh] items-center justify-center p-8 text-[#17221d] dark:text-[#e6eee9]">{messages.dataError}</div>
+    return <div role="alert" className="flex min-h-[60vh] items-center justify-center p-8 text-fk-forest-400 dark:text-fk-sage-100">{messages.dataError}</div>
   }
 
   function changeFieldValidation (key: string, error?: TemplateDataValidationError) {
@@ -124,7 +124,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
   }
 
   return (
-    <div className="flex min-h-screen flex-col text-[#17221d] xl:h-full xl:min-h-0 dark:text-[#e6eee9]">
+    <div className="flex min-h-screen flex-col text-fk-forest-400 dark:text-fk-sage-100 xl:h-full xl:min-h-0">
       <EditorHeader title={template.meta.title} messages={messages} hasMetadata={hasMetadata} exporting={exporting} onOpenMetadata={() => setMetadataOpen(true)} onReset={clearVariant} onExport={exportPng} onCopy={copyPng} />
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
         <EditorControls key={resetVersion} definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onFieldValidationError={changeFieldValidation} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />

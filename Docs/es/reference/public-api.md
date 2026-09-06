@@ -281,6 +281,23 @@ O mediante un enlace CSS en el layout:
 import "@mauriciodmo/framekit/styles.css";
 ```
 
+### Paleta de colores publicada
+
+Después de importar la hoja de estilos, los consumidores pueden sobrescribir
+estas 15 variables numéricas de paleta:
+
+```text
+--color-fk-forest-100 ... --color-fk-forest-400
+--color-fk-mint-100 ... --color-fk-mint-300
+--color-fk-sage-100 ... --color-fk-sage-400
+--color-fk-ivory-100 ... --color-fk-ivory-400
+```
+
+Generan las utilities correspondientes, como `bg-fk-forest-300` y
+`text-fk-sage-400`. La paleta se comparte entre todas las superficies y estados
+de Studio/editor; no existen variables públicas específicas para botones,
+indicadores de carga, toggles o pickers.
+
 ---
 
 ## Dependencias Paralelas

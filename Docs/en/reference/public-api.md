@@ -271,6 +271,23 @@ Or via a CSS link in your layout:
 import "@mauriciodmo/framekit/styles.css";
 ```
 
+### Published color palette
+
+After importing the stylesheet, consumers may override these 15 numeric
+palette variables:
+
+```text
+--color-fk-forest-100 ... --color-fk-forest-400
+--color-fk-mint-100 ... --color-fk-mint-300
+--color-fk-sage-100 ... --color-fk-sage-400
+--color-fk-ivory-100 ... --color-fk-ivory-400
+```
+
+They generate the matching utilities such as `bg-fk-forest-300` and
+`text-fk-sage-400`. The palette is shared by all Studio/editor surfaces and
+states; component-specific variables for buttons, loading indicators, toggles,
+or pickers are not part of the API.
+
 ---
 
 ## Peer Dependencies

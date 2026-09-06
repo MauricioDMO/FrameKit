@@ -17,11 +17,11 @@ export function BooleanField ({ field, value, onChange, error }: EditorFieldProp
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-full bg-[#d6d5ce] transition-colors peer-checked:bg-[#39775f] peer-focus-visible:ring-3 peer-focus-visible:ring-[#39775f]/20 dark:bg-white/20 dark:peer-checked:bg-[#77c99a]"
+        className="pointer-events-none absolute inset-0 rounded-full bg-fk-ivory-400 transition-colors peer-checked:bg-fk-mint-300 peer-focus-visible:ring-3 peer-focus-visible:ring-fk-mint-300/20 dark:bg-white/20"
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute top-1 left-1 size-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5 dark:bg-[#e6eee9] dark:peer-checked:bg-[#10271f]"
+        className="pointer-events-none absolute top-1 left-1 size-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5 peer-checked:bg-white dark:bg-fk-sage-100 dark:peer-checked:bg-fk-forest-400"
       />
     </span>
   )

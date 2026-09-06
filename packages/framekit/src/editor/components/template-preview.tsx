@@ -102,14 +102,14 @@ export function TemplatePreview ({ width, height, label, actualSizeLabel, fitToV
   }
 
   return (
-    <section ref={containerRef} aria-label={label} className="relative flex min-h-130 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-[#d9d7cf] p-6 shadow-inner dark:border-white/10 dark:bg-[#2a3931]">
+    <section ref={containerRef} aria-label={label} className="relative flex min-h-130 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-black/5 bg-fk-ivory-300 p-6 shadow-inner dark:border-white/10 dark:bg-fk-forest-100">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#4f5e56_0.7px,transparent_0.7px)] bg-size-[16px_16px] opacity-30 dark:opacity-50" />
       <div ref={stageRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={endDrag} onPointerCancel={endDrag} className={`absolute inset-0 touch-none select-none ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}>
-        <div className="absolute top-0 left-0 shadow-[0_24px_60px_rgba(25,35,30,0.24)]" style={{ width, height, transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`, transformOrigin: 'top left', visibility: viewReady ? 'visible' : 'hidden' }}>{children}</div>
+        <div className="absolute top-0 left-0 shadow-2xl" style={{ width, height, transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`, transformOrigin: 'top left', visibility: viewReady ? 'visible' : 'hidden' }}>{children}</div>
       </div>
-      <div className="absolute right-4 bottom-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#24342c]">
-        <button type="button" onClick={showActualSize} aria-label={actualSizeLabel} aria-pressed={viewMode === 'actual'} className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition ${viewMode === 'actual' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><IconMaximize size={14} />100%</button>
-        <button type="button" onClick={fitToView} aria-label={fitToViewLabel} aria-pressed={viewMode === 'fit'} className={`inline-flex items-center gap-1.5 border-l border-black/10 px-3 py-2 text-xs font-bold transition ${viewMode === 'fit' ? 'bg-[#173d31] text-white' : 'text-[#4e5a53] hover:bg-[#efeee9] dark:text-[#d7e2dc] dark:hover:bg-[#2d4036]'}`}><IconMinimize size={14} />{fitToViewLabel}</button>
+      <div className="absolute right-4 bottom-4 z-10 flex overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-fk-forest-200">
+        <button type="button" onClick={showActualSize} aria-label={actualSizeLabel} aria-pressed={viewMode === 'actual'} className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition ${viewMode === 'actual' ? 'bg-fk-forest-300 text-white' : 'text-fk-sage-400 hover:bg-fk-ivory-200 dark:text-fk-sage-100 dark:hover:bg-fk-forest-100'}`}><IconMaximize size={14} />100%</button>
+        <button type="button" onClick={fitToView} aria-label={fitToViewLabel} aria-pressed={viewMode === 'fit'} className={`inline-flex items-center gap-1.5 border-l border-black/10 px-3 py-2 text-xs font-bold transition dark:border-white/10 ${viewMode === 'fit' ? 'bg-fk-forest-300 text-white' : 'text-fk-sage-400 hover:bg-fk-ivory-200 dark:text-fk-sage-100 dark:hover:bg-fk-forest-100'}`}><IconMinimize size={14} />{fitToViewLabel}</button>
       </div>
     </section>
   )

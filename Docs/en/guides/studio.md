@@ -85,6 +85,21 @@ Studio applies a dark or light theme. The initial theme is read from the `theme`
 
 The theme can be toggled through the Settings panel. The preference is stored in a one-year cookie so it persists across sessions.
 
+### Customizing the shell
+
+Import the published stylesheet, then override one of the shared numeric palette
+variables in your global CSS. For example:
+
+```css
+:root {
+  --color-fk-forest-300: #245c48;
+}
+```
+
+See the [public API reference](../reference/public-api.md#published-color-palette)
+for the complete palette. Component-specific variables are intentionally not
+provided.
+
 ## States
 
 Studio displays different states depending on what is happening:

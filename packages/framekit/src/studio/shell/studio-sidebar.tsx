@@ -30,14 +30,14 @@ function SidebarCollapsed ({ messages, onToggleSidebar }: { messages: SidebarMes
         onClick={onToggleSidebar}
         aria-label={messages.expandLabel}
         title={messages.expandLabel}
-        className="inline-flex h-20.5 w-full shrink-0 items-center justify-center border-b border-white/10 text-[#c8f7d9] transition hover:bg-white/8 focus:ring-2 focus:ring-inset focus:ring-[#c8f7d9] focus:outline-none"
+        className="inline-flex h-20.5 w-full shrink-0 items-center justify-center border-b border-white/10 text-fk-mint-200 transition hover:bg-white/10 focus:ring-2 focus:ring-inset focus:ring-fk-mint-200 focus:outline-none"
       >
         <span className="flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10">
           <IconLayoutSidebarLeftExpand size={18} />
         </span>
       </button>
       <div className="hidden min-h-0 flex-1 items-center justify-center overflow-hidden lg:flex">
-        <span aria-hidden="true" className="-rotate-90 whitespace-nowrap text-[10px] font-black tracking-[0.28em] text-[#91ae9f] select-none">
+        <span aria-hidden="true" className="-rotate-90 whitespace-nowrap text-[10px] font-black tracking-[0.28em] text-fk-sage-300 select-none">
           F R A M E K I T
         </span>
       </div>
@@ -49,10 +49,10 @@ function SidebarHeader ({ messages, onToggleSidebar }: { messages: SidebarMessag
   return (
     <header className="flex h-20.5 shrink-0 items-center gap-3 border-b border-white/10 px-5">
       <div className="flex min-w-0 items-center gap-3">
-        <FrameKitLogo aria-hidden="true" className="size-10" />
+        <FrameKitLogo aria-hidden="true" className="size-10 text-white" />
         <div>
           <p className="font-black tracking-[-0.02em]">FrameKit</p>
-          <p className="mt-0.5 text-[11px] tracking-[0.16em] text-[#91ae9f] uppercase">
+          <p className="mt-0.5 text-[11px] tracking-[0.16em] text-fk-sage-300 uppercase">
             {messages.workshop}
           </p>
         </div>
@@ -62,7 +62,7 @@ function SidebarHeader ({ messages, onToggleSidebar }: { messages: SidebarMessag
         onClick={onToggleSidebar}
         aria-label={messages.collapseLabel}
         title={messages.collapseLabel}
-        className="ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[#c8f7d9] transition hover:bg-white/10 focus:ring-2 focus:ring-[#c8f7d9] focus:outline-none"
+        className="ml-auto inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-fk-mint-200 transition hover:bg-white/10 focus:ring-2 focus:ring-fk-mint-200 focus:outline-none"
       >
         <IconLayoutSidebarLeftCollapse size={18} />
       </button>

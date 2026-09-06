@@ -368,45 +368,43 @@ fase. Su extracción a `TemplateCanvas` pertenece al paso 2 del plan de servidor
 Plan:
 [04-studio-shell-split.md](./maintainability-roadmap/04-studio-shell-split.md).
 
-Estado de implementación: presente en el checkout desde `0e5c4c5`; permanece
-abierta hasta que el exit gate completo pase.
+Estado de implementación: completada en el checkout desde `0e5c4c5`.
 
-La verificación enfocada de Studio, lint, typecheck, builds y consumer aislado
-pasa. El gate compartido queda bloqueado porque `pnpm test` agota el timeout de
-5 segundos en tres tests existentes de FrameKit.
+La verificación enfocada de Studio, lint, tests, typecheck, builds y consumer
+aislado pasa.
 
-* [ ] Confirmar el contrato público actual de `FrameKitStudio`.
-* [ ] Extraer `useStudioResource`.
-* [ ] Preservar cancelación de promises obsoletas.
-* [ ] Extraer estados loading, empty, not-found y error.
-* [ ] Extraer settings y preservar ownership de theme/locale.
-* [ ] Extraer el shell/sidebar sin cambiar rutas.
-* [ ] Mantener route detection y composición en la facade.
-* [ ] Preservar validación y comprobación de dimensiones.
-* [ ] Preservar exports `./studio` y `./studio/root`.
-* [ ] Cubrir races, errores, settings, accessibility y contenido ready.
-* [ ] Verificar Studio y consumer generado aislado.
-* [ ] Ejecutar checks completos.
-* [ ] Marcar la fase 4 como completada.
+* [x] Confirmar el contrato público actual de `FrameKitStudio`.
+* [x] Extraer `useStudioResource`.
+* [x] Preservar cancelación de promises obsoletas.
+* [x] Extraer estados loading, empty, not-found y error.
+* [x] Extraer settings y preservar ownership de theme/locale.
+* [x] Extraer el shell/sidebar sin cambiar rutas.
+* [x] Mantener route detection y composición en la facade.
+* [x] Preservar validación y comprobación de dimensiones.
+* [x] Preservar exports `./studio` y `./studio/root`.
+* [x] Cubrir races, errores, settings, accessibility y contenido ready.
+* [x] Verificar Studio y consumer generado aislado.
+* [x] Ejecutar checks completos.
+* [x] Marcar la fase 4 como completada.
 
 ### 2.5 Fase 5: Published Design Tokens
 
 Plan:
 [05-design-tokens.md](./maintainability-roadmap/05-design-tokens.md).
 
-* [ ] Revalidar el plan contra el código posterior a la fase 4.
-* [ ] Mantener `styles.css` como único export de estilos.
-* [ ] Publicar exactamente los roles `--fk-*` aprobados por el plan.
-* [ ] Mantener palette, aliases y registros Tailwind como privados.
-* [ ] Migrar chrome del Editor y Studio sin tocar artwork de templates.
-* [ ] Mantener el render wrapper sin estilos de chrome del producto.
-* [ ] Añadir el contract test de estilos.
-* [ ] Clasificar los colores raw restantes.
-* [ ] Actualizar documentación pública EN/ES.
-* [ ] Verificar light/dark, desktop/mobile y consumer aislado.
-* [ ] Ejecutar tarball smoke.
-* [ ] Pasar el exit gate de la fase 5.
-* [ ] Marcar la fase 5 como completada.
+* [x] Revalidar el plan contra el código posterior a la fase 4.
+* [x] Mantener `styles.css` como único export de estilos.
+* [x] Publicar una paleta numérica compacta de colores Tailwind.
+* [x] Evitar aliases y clases de color específicos por componente.
+* [x] Migrar chrome del Editor y Studio sin tocar artwork de templates.
+* [x] Mantener el render wrapper sin estilos de chrome del producto.
+* [x] Añadir el contract test de estilos.
+* [x] Clasificar los colores raw restantes.
+* [x] Actualizar documentación pública EN/ES.
+* [x] Verificar light/dark, desktop/mobile y consumer aislado.
+* [x] Ejecutar tarball smoke.
+* [x] Pasar el exit gate de la fase 5.
+* [x] Marcar la fase 5 como completada.
 
 La fase 5 no espera al servidor porque su contrato es visual y depende de la
 estructura estabilizada por las fases anteriores, no de `./server`.

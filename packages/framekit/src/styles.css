@@ -4,6 +4,24 @@
 @source "./editor";
 @source "./studio";
 
+@theme {
+  --color-fk-forest-100: #304a3e;
+  --color-fk-forest-200: #243c31;
+  --color-fk-forest-300: #173d31;
+  --color-fk-forest-400: #10271f;
+  --color-fk-mint-100: #e5f2e9;
+  --color-fk-mint-200: #c8f7d9;
+  --color-fk-mint-300: #77c99a;
+  --color-fk-sage-100: #e6eee9;
+  --color-fk-sage-200: #b8c8be;
+  --color-fk-sage-300: #91ae9f;
+  --color-fk-sage-400: #59665f;
+  --color-fk-ivory-100: #faf9f5;
+  --color-fk-ivory-200: #f0eee7;
+  --color-fk-ivory-300: #d9d7cf;
+  --color-fk-ivory-400: #cbd5ce;
+}
+
 .studio-editor-scrollbar {
   scrollbar-width: none;
 }
@@ -34,7 +52,7 @@
 }
 
 .studio-select--dark option {
-  color: #10271f;
+  color: var(--color-fk-forest-400);
 }
 
 @supports (appearance: base-select) {
@@ -72,11 +90,11 @@
 
   .studio-select::picker(select) {
     margin-top: 0.375rem;
-    border: 1px solid #d6d5ce;
+    border: 1px solid var(--color-fk-ivory-400);
     border-radius: 0.75rem;
-    background: #fbfaf6;
-    box-shadow: 0 12px 30px rgb(23 34 29 / 15%);
-    color: #17221d;
+    background: var(--color-fk-ivory-100);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-fk-forest-400);
     padding: 0.25rem;
   }
 
@@ -88,23 +106,23 @@
 
   .studio-select option:hover,
   .studio-select option:focus {
-    background: #e5f2e9;
+    background: var(--color-fk-mint-100);
   }
 
   .studio-select option:checked {
-    background: #c8f7d9;
-    color: #10271f;
+    background: var(--color-fk-mint-200);
+    color: var(--color-fk-forest-400);
   }
 
   .studio-select option::checkmark {
-    color: #39775f;
+    color: var(--color-fk-forest-300);
     margin-left: auto;
     order: 1;
   }
 
   .studio-select--dark::picker(select) {
     border-color: rgb(255 255 255 / 20%);
-    background: #173d31;
+    background: var(--color-fk-forest-300);
     color: white;
   }
 
@@ -117,7 +135,7 @@
   }
 
   .studio-select--dark option:checked {
-    background: #c8f7d9;
-    color: #10271f;
+    background: var(--color-fk-mint-200);
+    color: var(--color-fk-forest-400);
   }
 }

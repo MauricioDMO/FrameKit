@@ -17,15 +17,15 @@ interface EditorControlsProps {
 
 export function EditorControls ({ definition, messages, selectedVariant, data, errors, onVariantChange, onFieldChange, onFieldValidationError, onImageUpload }: EditorControlsProps) {
   return (
-    <aside className="studio-editor-scrollbar rounded-2xl border border-black/8 bg-[#faf9f5] p-4 shadow-[0_6px_24px_rgba(45,53,48,0.05)] xl:min-h-0 xl:overflow-y-auto dark:border-white/10 dark:bg-[#1d2923]">
+    <aside className="studio-editor-scrollbar rounded-2xl border border-black/8 bg-fk-ivory-100 p-4 shadow-md dark:border-white/10 dark:bg-fk-forest-200 xl:min-h-0 xl:overflow-y-auto">
       <div className="flex items-baseline justify-between border-b border-black/8 pb-3 dark:border-white/10">
         <h2 className="font-black tracking-tight">{messages.content}</h2>
-        <span className="text-xs text-[#5f6963] dark:text-[#b8c8be]">{definition.width} × {definition.height}</span>
+        <span className="text-xs text-fk-sage-400 dark:text-fk-sage-200">{definition.width} × {definition.height}</span>
       </div>
       <div className="mt-4 space-y-4">
         <label className="block select-none">
-          <span className="mb-1.5 block select-none text-[11px] font-bold tracking-widest text-[#59665f] uppercase dark:text-[#b8c8be]">{messages.variantLabel}</span>
-          <select value={selectedVariant} onChange={(event) => onVariantChange(event.target.value)} className="studio-select w-full rounded-xl border border-[#d6d5ce] bg-[#fbfaf6] px-3 py-2 text-sm font-bold text-[#17221d] transition outline-none focus:border-[#39775f] focus:ring-3 focus:ring-[#39775f]/10 dark:border-white/15 dark:bg-[#24342c] dark:text-[#e6eee9]">
+          <span className="mb-1.5 block select-none text-[11px] font-bold tracking-widest text-fk-sage-400 uppercase dark:text-fk-sage-200">{messages.variantLabel}</span>
+          <select value={selectedVariant} onChange={(event) => onVariantChange(event.target.value)} className="studio-select w-full rounded-xl border border-fk-ivory-400 bg-fk-ivory-100 px-3 py-2 text-sm font-bold text-fk-forest-400 transition outline-none focus:border-fk-mint-300 focus:ring-3 focus:ring-fk-mint-300/10 dark:border-white/15 dark:bg-fk-forest-200 dark:text-fk-sage-100">
             {Object.keys(definition.content).map((value) => <option key={value} value={value}>{definition.variants.labels?.[value] ?? value}</option>)}
           </select>
         </label>

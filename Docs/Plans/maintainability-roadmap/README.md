@@ -1,7 +1,7 @@
 # Maintainability Roadmap
 
-- **Status:** In progress; phases 1 through 4 are implemented, but the Phase 4 shared exit gate is blocked by three existing FrameKit test timeouts.
-- **Next:** Clear the shared test gate, rerun Phase 4 verification, then start Phase 5 - Published Design Tokens.
+- **Status:** In progress; phases 1 through 5 are implemented and the Phase 5 shared exit gate passes.
+- **Next:** Start Phase 6 - Architectural Import Boundaries.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,
@@ -24,11 +24,9 @@ Every phase preserves all of the following:
 
 - Runtime behavior, tests' intended behavior, existing public JavaScript/type and
   component APIs, package exports, and package boundaries do not change. Phase 5
-  may add only its documented, bounded set of consumer-facing `--fk-*` theme
-  roles through the existing `./styles.css` export. Component- and state-specific
-  aliases, palette constants, Tailwind registrations, and generated utility
-  classes remain private implementation details. It does not add a stylesheet
-  entry or JavaScript export.
+  may expose only its documented, bounded numeric color palette through the
+  existing `./styles.css` export. Component- and state-specific aliases are not
+  added. It does not add a stylesheet entry or JavaScript export.
 - The supported `@mauriciodmo/framekit` exports remain `.`, `./editor`,
   `./studio`, `./studio/root`, `./dev`, and `./styles.css`.
 - No consumer imports `packages/framekit/src/*` directly.
@@ -199,9 +197,8 @@ The roadmap is complete only when all six PR exit gates pass, the shared
 verification commands pass on a clean install, and the final diff confirms:
 
 - no runtime or existing public JavaScript/type/component API behavior changed;
-  the only permitted published-surface addition is Phase 5's documented small
-  set of consumer-facing `--fk-*` theme roles through the existing
-  `./styles.css` export;
+  the only permitted published-surface addition is Phase 5's documented compact
+  numeric color palette through the existing `./styles.css` export;
 - the six supported exports and current package ownership are unchanged;
 - generated/build paths remain ignored and no generated file was hand-edited;
 - `Docs/skills/` remains the source and synchronized skill copies are produced
@@ -209,9 +206,8 @@ verification commands pass on a clean install, and the final diff confirms:
 - English and Spanish repository/testing guidance matches the implemented
   commands;
 - the shipped package README plus bilingual public API references and Studio
-  guides document Phase 5's public theme-role contract without presenting
-  component/state aliases, palette constants, Tailwind registrations, or
-  generated utilities as supported API; and
+  guides document Phase 5's numeric color-palette contract without presenting
+  component/state aliases or generated component-specific utilities as API; and
 - package and isolated-consumer verification still succeeds where applicable.
 
 This is a hard gate, not a target for a later cleanup PR.

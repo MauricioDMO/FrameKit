@@ -143,6 +143,32 @@ import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
+### Published color palette
+
+After importing `@mauriciodmo/framekit/styles.css`, consumers may override the
+compact numeric palette used by the reusable Studio/editor chrome:
+
+```text
+--color-fk-forest-100 ... --color-fk-forest-400
+--color-fk-mint-100 ... --color-fk-mint-300
+--color-fk-sage-100 ... --color-fk-sage-400
+--color-fk-ivory-100 ... --color-fk-ivory-400
+```
+
+The corresponding Tailwind utilities are named `bg-fk-forest-300`,
+`text-fk-sage-400`, and so on. Override a palette value after the stylesheet
+import, for example:
+
+```css
+:root {
+  --color-fk-forest-300: #245c48;
+}
+```
+
+The palette is intentionally shared across surfaces, text, actions, focus, and
+states. There are no supported component-specific variables for buttons,
+loading indicators, toggles, or pickers.
+
 The root entry also exports the public validators, resolvers, field descriptors,
 structured validation errors, and the exact `TemplateMeta` type. Metadata
 requires a non-empty `title`; only `description`, `marketingDescription`, and

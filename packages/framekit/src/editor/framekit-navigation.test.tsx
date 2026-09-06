@@ -144,7 +144,7 @@ describe('FrameKitNavigation', () => {
     const link = screen.getByRole('link', { name: 'Other' })
     expect(link.getAttribute('href')).toBe('/editor/catalog/category/other')
     expect(link.getAttribute('aria-current')).toBeNull()
-    expect(link.className).not.toContain('bg-white/10')
+    expect(link.className).not.toContain('font-bold')
   })
 
   it('keeps selected templates subdued and draws scope lines only for folders', () => {
@@ -154,7 +154,7 @@ describe('FrameKitNavigation', () => {
     expect(link.getAttribute('href')).toBe('/editor/catalog/category/first')
     expect(link.getAttribute('aria-current')).toBe('page')
     expect(link.className).toContain('bg-white/10')
-    expect(link.className).not.toContain('bg-[#c8f7d9]')
+    expect(link.className).not.toContain('bg-fk-mint-200')
     expect(link.querySelector('span[aria-hidden="true"]')).toBeNull()
     expect(link.style.paddingLeft).toBe('41px')
     const scopeLine = document.querySelector('div.relative > span[aria-hidden="true"]')

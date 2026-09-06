@@ -11,8 +11,8 @@ type SidebarMessages = FrameKitStudioMessages['sidebar']
 
 function NavigationTabs ({ isBrand, messages }: { isBrand: boolean, messages: SidebarMessages }) {
   const baseClasses = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-center text-xs font-bold transition'
-  const activeClasses = 'bg-[#c8f7d9] text-[#10271f]'
-  const inactiveClasses = 'text-[#bed0c6] hover:bg-white/8 hover:text-white'
+  const activeClasses = 'bg-fk-mint-200 text-fk-forest-400'
+  const inactiveClasses = 'text-fk-sage-200 hover:bg-white/10 hover:text-white'
 
   return (
     <div className="grid grid-cols-2 gap-1 border-b border-white/10 p-3">
@@ -42,7 +42,7 @@ export function SidebarNavigation ({ isBrand, navigation, messages }: { isBrand:
       <NavigationTabs isBrand={isBrand} messages={messages} />
       <nav aria-label={messages.navigationLabel} className="max-h-[38vh] overflow-y-auto p-3 lg:max-h-none lg:min-h-0 lg:flex-1">
         {navigation.length === 0
-          ? <p className="px-3 py-4 text-sm text-[#91ae9f]">{isBrand ? messages.noBrands : messages.noTemplates}</p>
+          ? <p className="px-3 py-4 text-sm text-fk-sage-300">{isBrand ? messages.noBrands : messages.noTemplates}</p>
           : <FrameKitNavigationTree nodes={navigation} />}
       </nav>
     </>

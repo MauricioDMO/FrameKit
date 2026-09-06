@@ -2,7 +2,7 @@
 
 ## Status
 
-- **Status:** Implemented in the current checkout; phase-specific Studio checks pass, but the shared exit gate is blocked by three existing FrameKit test timeouts.
+- **Status:** Implemented in the current checkout; phase-specific Studio checks and the shared exit gate pass.
 - **PR boundary:** One behavior-preserving Studio refactor, separate from
   Phase 5's token migration.
 - **Public API:** `FrameKitStudio`, `./studio`, and `./studio/root` remain

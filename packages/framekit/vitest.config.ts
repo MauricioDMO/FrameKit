@@ -11,5 +11,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: './vitest.setup.ts',
+    // Child-process-heavy tests need room for their tsx subprocesses.
+    maxWorkers: 4
   },
 })

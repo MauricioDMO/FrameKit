@@ -15,7 +15,7 @@ export async function FrameKitStudioRoot ({ children, htmlClassName = '' }: { ch
       <head>
         <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="m-0 min-h-full bg-[#f0eee7] font-[Arial,Helvetica,sans-serif] text-[#17221d] dark:bg-[#17221d] dark:text-[#e6eee9]">
+      <body className="m-0 min-h-full bg-fk-ivory-200 font-[Arial,Helvetica,sans-serif] text-fk-forest-400 dark:bg-fk-forest-400 dark:text-fk-sage-100">
         <FrameKitLocaleProvider initialLocale={locale}>{children}</FrameKitLocaleProvider>
       </body>
     </html>

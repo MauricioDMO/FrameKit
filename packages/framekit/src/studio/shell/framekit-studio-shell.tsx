@@ -43,8 +43,8 @@ export function FrameKitStudioShell ({
   const sidebarHeightClass = sidebarCollapsed ? 'h-20.5 lg:h-screen' : ''
 
   return (
-    <div className={`min-h-screen bg-[#f0eee7] lg:grid ${sidebarCollapseClass} xl:h-dvh xl:min-h-0 xl:overflow-hidden dark:bg-[#17221d]`}>
-      <aside className={`flex flex-col border-b border-white/10 bg-[#10271f] text-white lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 ${sidebarHeightClass}`}>
+    <div className={`min-h-screen bg-fk-ivory-200 lg:grid dark:bg-fk-forest-400 ${sidebarCollapseClass} xl:h-dvh xl:min-h-0 xl:overflow-hidden`}>
+      <aside className={`flex flex-col border-b border-white/10 bg-fk-forest-400 text-white lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 ${sidebarHeightClass}`}>
         <StudioSidebar
           isBrand={isBrand}
           navigation={navigation}

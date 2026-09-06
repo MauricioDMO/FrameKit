@@ -50,11 +50,11 @@ export function ColorField ({ field, value, onChange, error, colorPickerLabel }:
             setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })
             schedulePickerUpdate(nextValue)
           }} className="sr-only peer" />
-       <label htmlFor={pickerId} aria-label={`${colorPickerLabel ?? field.label}: ${field.label}`} className="h-10 w-16 shrink-0 cursor-pointer select-none rounded-xl border border-[#d6d5ce] p-1 peer-focus-visible:ring-3 peer-focus-visible:ring-[#39775f]/20 peer-focus-visible:outline-none dark:border-white/15">
+       <label htmlFor={pickerId} aria-label={`${colorPickerLabel ?? field.label}: ${field.label}`} className="h-10 w-16 shrink-0 cursor-pointer select-none rounded-xl border border-fk-ivory-400 p-1 peer-focus-visible:ring-3 peer-focus-visible:ring-fk-mint-300/20 peer-focus-visible:outline-none dark:border-white/15">
         <span aria-hidden="true" className="block size-full rounded-lg" style={{ backgroundColor: pickerState.pickerValue }} />
       </label>
       <div className={`${controlClass} flex h-10 items-center gap-1 px-3 py-0`}>
-        <span aria-hidden="true" className="text-base text-[#59665f] dark:text-[#b8c8be]">#</span>
+         <span aria-hidden="true" className="text-base text-fk-sage-400 dark:text-fk-sage-200">#</span>
         <input name={`${field.key}-value`} type="text" required={field.required} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={error ? `${field.key}-error` : undefined} maxLength={6} pattern="[\da-fA-F]{6}" value={hexValue} onChange={(event) => {
           cancelPendingPickerUpdate()
           const hex = event.target.value.replace(/^#+/, '')

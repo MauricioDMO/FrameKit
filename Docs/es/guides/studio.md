@@ -85,6 +85,21 @@ Studio aplica un tema claro u oscuro. El tema inicial se lee de la cookie `theme
 
 El tema se puede cambiar a través del panel de Ajustes. La preferencia se almacena en una cookie con vigencia de un año para que persista entre sesiones.
 
+### Personalizar el shell
+
+Importa la hoja de estilos publicada y sobrescribe una variable numérica de la
+paleta compartida en tu CSS global. Por ejemplo:
+
+```css
+:root {
+  --color-fk-forest-300: #245c48;
+}
+```
+
+Consulta la [referencia de la API pública](../reference/public-api.md#paleta-de-colores-publicada)
+para ver la paleta completa. No se proporcionan variables específicas para cada
+componente.
+
 ## Estados
 
 Studio muestra diferentes estados según lo que esté ocurriendo:
