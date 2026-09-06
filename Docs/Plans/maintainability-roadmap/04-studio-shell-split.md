@@ -2,7 +2,7 @@
 
 ## Status
 
-- **Status:** Proposed; not yet implemented.
+- **Status:** Implemented in the current checkout; phase-specific Studio checks pass, but the shared exit gate is blocked by three existing FrameKit test timeouts.
 - **PR boundary:** One behavior-preserving Studio refactor, separate from
   Phase 5's token migration.
 - **Public API:** `FrameKitStudio`, `./studio`, and `./studio/root` remain
@@ -34,9 +34,9 @@ facade remains the implementation behind `FrameKitStudio` and continues to
 select `/editor` versus `/brand`, load the selected resource, and compose the
 editor or brand catalog.
 
-## Current baseline
+## Pre-phase 4 baseline
 
-- `packages/framekit/src/studio/framekit-studio.tsx` currently combines route
+- Before this phase, `packages/framekit/src/studio/framekit-studio.tsx` combined route
   interpretation, locale consumption, sidebar/settings state, async template
   and brand loading, template validation, content-state selection, and all
   sidebar/state markup.
@@ -63,24 +63,24 @@ editor or brand catalog.
 
 | Current symbol/file | Target owner | Required change |
 | --- | --- | --- |
-| `FrameKitStudioBrand`, `TemplateRegistryEntry`, and the props union in `studio/framekit-studio.tsx` | `studio/framekit-studio.tsx` | Keep the brand type and consume the canonical registry entry directly in the facade. Keep the same public Studio exports through `studio.ts`. |
+| `FrameKitStudioBrand` and the props union in `studio/types.ts`; `TemplateRegistryEntry` in `../types.ts` | `studio/framekit-studio.tsx` | Keep the brand type and consume the canonical registry entry directly in the facade. Keep the same public Studio exports through `studio.ts`. |
 | `emptyTemplates`, `emptyBrands`, and `navigation` in `FrameKitStudio` | `studio/framekit-studio.tsx` | Keep stable empty defaults and compute `manifestToNavigation(isBrand ? brands : templates, isBrand ? '/brand' : '/editor')` in the facade; pass the resulting tree to the shell. |
 | `useParams`, `usePathname`, `slug`, `isBrand`, and `messages` in `FrameKitStudio` | `studio/framekit-studio.tsx` | Keep route and locale interpretation in the facade; do not make the shell infer route kind or create a second locale lookup. |
-| `LoadState` and the `useEffect` in `FrameKitStudio` | New `studio/use-studio-resource.ts` | Move the route-kind-aware load state and effect into `useStudioResource`. Keep the `loading`, `not-found`, `error`, `invalid`, and both `ready` shapes. Preserve cancellation cleanup, template validation, and registry dimension comparison. |
+| `LoadState` and the `useEffect` in `FrameKitStudio` | New `studio/resource/use-studio-resource.ts` | Move the route-kind-aware load state and effect into `useStudioResource`. Keep the `loading`, `not-found`, `error`, `invalid`, and both `ready` shapes. Preserve cancellation cleanup, template validation, and registry dimension comparison. |
 | `sidebarCollapsed` state and the value needed by `FrameKitEditor` | `studio/framekit-studio.tsx` | Keep this state in the facade because it is an input to the editor. Pass the value and an `onToggleSidebar` callback to the shell. |
 | `settingsOpen`, `setSettingsOpen`, and the sidebar JSX in `FrameKitStudio` | New `studio/framekit-studio-shell.tsx` | `FrameKitStudioShell` owns the outer grid, `<aside>`, route tabs, navigation slot, collapsed rail, footer, and `<main>{children}</main>`. Its sidebar toggle closes settings exactly as today. |
-| `toggleTheme` and the settings popup JSX | New `studio/framekit-settings.tsx` | `FrameKitStudioSettings` owns the settings popup and theme cookie/class toggle. It accepts locale, messages, and an `onLocaleChange` callback; it does not create a second locale provider. |
-| `LoadingState`, `EmptyState`, `NotFoundState`, `MessageState` | New `studio/studio-states.tsx` | Move these private components. Pass the already-read messages from the facade; do not make the state file discover a different locale or add fallback copy. |
+| `toggleTheme` and the settings popup JSX | New `studio/shell/sidebar-settings.tsx` | `FrameKitStudioSettings` owns the settings popup and theme cookie/class toggle. It accepts locale, messages, and an `onLocaleChange` callback; it does not create a second locale provider. |
+| `LoadingState`, `EmptyState`, `NotFoundState`, `MessageState` | New `studio/states/studio-states.tsx` | Move these private components. Pass the already-read messages from the facade; do not make the state file discover a different locale or add fallback copy. |
 | `FrameKitNavigationTree` and `manifestToNavigation` | Existing `editor/framekit-navigation.tsx` and `editor/navigation.ts` | Reuse without moving or duplicating them. The shell receives the computed navigation and renders the existing tree. |
-| `FrameKitBrandCatalog` | Existing `studio/brand-catalog.tsx` | Reuse unchanged in this phase; the facade still passes the loaded component and `messages.brand`. |
-| `content` selection chain in `FrameKitStudio` | `studio/framekit-studio.tsx` plus `studio/studio-states.tsx` | Keep the discriminated ordering: empty route, loading, ready template, ready brand, invalid, error, then not-found. The facade supplies `children` to the shell. |
-| `useFrameKitLocale` / `FrameKitLocaleProvider` | Existing `studio/locale-provider.tsx` | Keep the provider boundary and cookie behavior unchanged. `FrameKitStudio` reads the locale/messages once and passes messages to extracted owners; the settings owner delegates locale changes to the provider callback rather than writing a second locale cookie. |
+| `FrameKitBrandCatalog` | Existing `studio/brand/brand-catalog.tsx` | Reuse unchanged in this phase; the facade still passes the loaded component and `messages.brand`. |
+| `content` selection chain in `FrameKitStudio` | `studio/framekit-studio.tsx` plus `studio/states/studio-states.tsx` | Keep the discriminated ordering: empty route, loading, ready template, ready brand, invalid, error, then not-found. The facade supplies `children` to the shell. |
+| `useFrameKitLocale` / `FrameKitLocaleProvider` | Existing `studio/i18n/locale-provider.tsx` | Keep the provider boundary and cookie behavior unchanged. `FrameKitStudio` reads the locale/messages once and passes messages to extracted owners; the settings owner delegates locale changes to the provider callback rather than writing a second locale cookie. |
 | `FrameKitStudioRoot` | Existing `studio/root.tsx`, re-exported by `studio-root.ts` | No ownership change. Preserve the theme bootstrap, `lang`, `locale`, and theme cookies. |
 | `FrameKitStudio` composition | Existing `studio/framekit-studio.tsx` | Retain route derivation, `useStudioResource`, content discriminant, editor/brand selection, and shell composition. It should no longer contain sidebar/settings/state markup. |
 | First-party route pages | `apps/studio/src/app/editor/[[...slug]]/page.tsx`, `apps/studio/src/app/brand/[[...slug]]/page.tsx` | No API adapter. Continue passing generated `templates` and `brands` directly. |
 | Canonical-template route pages | `packages/create-framekit/template/src/app/editor/[[...slug]]/page.tsx`, `packages/create-framekit/template/src/app/brand/[[...slug]]/page.tsx` | No API adapter. Continue passing the generated single-manifest prop directly. |
 | Export surfaces | `packages/framekit/src/studio.ts`, `packages/framekit/src/studio-root.ts`, `packages/framekit/package.json` | No export or package condition change. `./studio` still exposes `FrameKitStudio`, public manifest types, and messages; `./studio/root` still exposes `FrameKitStudioRoot`. |
-| Existing tests | `studio/framekit-studio.test.tsx`, `studio/brand-catalog.test.tsx`, `editor/framekit-navigation.test.tsx`, `tests/types/studio-props.ts` | Extend these existing suites at the public facade/component boundary. Prefer `studio/framekit-studio.test.tsx` for route/resource races, settings/collapse interaction, and the observable content branches (empty route, loading, not-found, invalid, loader error for both kinds, ready template, and ready brand); retain the brand/navigation and type-union coverage. No new focused test files are prescribed because the existing integration boundary can exercise the extracted owners. |
+| Existing tests | `studio/__tests__/framekit-studio.test.tsx`, `studio/brand/__tests__/brand-catalog.test.tsx`, `editor/framekit-navigation.test.tsx`, `tests/types/studio-props.ts` | Extend these existing suites at the public facade/component boundary. Prefer `studio/__tests__/framekit-studio.test.tsx` for route/resource races, settings/collapse interaction, and the observable content branches (empty route, loading, not-found, invalid, loader error for both kinds, ready template, and ready brand); retain the brand/navigation and type-union coverage. No new focused test files are prescribed because the existing integration boundary can exercise the extracted owners. |
 
 ### Target internal interfaces
 
@@ -129,18 +129,18 @@ does not own or recreate locale state.
 1. Record the current focused test baseline and inspect the public declaration
    output for `./studio` and `./studio/root`. Do not begin by changing an
    export or renaming a public type.
-2. Add `studio/use-studio-resource.ts`. Move the current `LoadState` and
+2. Add `studio/resource/use-studio-resource.ts`. Move the current `LoadState` and
    effect logic with the two explicit branches. Keep the dependency set
    equivalent to `[slug, isBrand, templates, brands]`, the initial loading
    state, the no-slug no-load path, and the not-found path. Return the cleanup
    that marks the request cancelled before starting another one; do not add a
    cache, abort-controller contract, retry policy, or global loading store.
-3. Add `studio/studio-states.tsx` and move the four current private state
+3. Add `studio/states/studio-states.tsx` and move the four current private state
    components. Pass `messages` from the facade so empty, loading, not-found,
    and alert text remains localized and unchanged. Preserve `aria-busy`,
    `aria-label`, `role="alert"`, route-specific back links, and the current
    light/dark class behavior.
-4. Add `studio/framekit-settings.tsx`. Move the settings panel markup and
+4. Add `studio/shell/sidebar-settings.tsx`. Move the settings panel markup and
    `toggleTheme` behavior. Preserve the `sidebar-settings` id, `aria-controls`,
    `aria-expanded`, 44px minimum button target, theme cookie, and document
    `dark` class toggle. Route the language select through the

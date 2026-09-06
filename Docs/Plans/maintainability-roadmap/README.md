@@ -1,7 +1,7 @@
 # Maintainability Roadmap
 
-- **Status:** In progress; phases 1 through 3 are implemented, but their shared exit gate is blocked by existing FrameKit test timeouts.
-- **Next:** Clear the shared test gate, rerun verification, then start Phase 4 - Studio Shell Split.
+- **Status:** In progress; phases 1 through 4 are implemented, but the Phase 4 shared exit gate is blocked by three existing FrameKit test timeouts.
+- **Next:** Clear the shared test gate, rerun Phase 4 verification, then start Phase 5 - Published Design Tokens.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,

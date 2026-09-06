@@ -368,6 +368,13 @@ fase. Su extracción a `TemplateCanvas` pertenece al paso 2 del plan de servidor
 Plan:
 [04-studio-shell-split.md](./maintainability-roadmap/04-studio-shell-split.md).
 
+Estado de implementación: presente en el checkout desde `0e5c4c5`; permanece
+abierta hasta que el exit gate completo pase.
+
+La verificación enfocada de Studio, lint, typecheck, builds y consumer aislado
+pasa. El gate compartido queda bloqueado porque `pnpm test` agota el timeout de
+5 segundos en tres tests existentes de FrameKit.
+
 * [ ] Confirmar el contrato público actual de `FrameKitStudio`.
 * [ ] Extraer `useStudioResource`.
 * [ ] Preservar cancelación de promises obsoletas.
