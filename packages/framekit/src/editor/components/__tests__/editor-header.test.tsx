@@ -5,7 +5,7 @@ import type { ComponentProps } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { EditorHeader } from '../editor-header'
-import type { EditorMessages } from '../../types'
+import type { EditorMessages } from '@/editor/types'
 
 const messages = {
   templateEditor: 'Template editor',

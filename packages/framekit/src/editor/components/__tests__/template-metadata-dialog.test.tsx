@@ -4,8 +4,8 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { TemplateMetadataDialog } from '../template-metadata-dialog'
-import type { EditorMessages } from '../../types'
-import type { TemplateMeta } from '../../../types'
+import type { EditorMessages } from '@/editor/types'
+import type { TemplateMeta } from '@/types'
 
 const messages = {
   metadataLabel: 'Metadata',

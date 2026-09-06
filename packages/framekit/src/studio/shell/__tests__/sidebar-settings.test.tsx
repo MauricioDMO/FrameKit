@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { frameKitMessages } from '../../i18n/messages'
+import { frameKitMessages } from '@/studio/i18n/messages'
 import { FrameKitStudioSettings } from '../sidebar-settings'
 
 afterEach(cleanup)

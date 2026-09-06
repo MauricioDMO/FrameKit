@@ -3,11 +3,11 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { defineTemplate, field } from '../../index'
-import type { TemplateDefinition, TemplateRegistryEntry } from '../../types'
+import { defineTemplate, field } from '@/index'
+import type { TemplateDefinition, TemplateRegistryEntry } from '@/types'
 
 import { FrameKitStudio } from '../framekit-studio'
-import { FrameKitLocaleProvider } from '../i18n/locale-provider'
+import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>

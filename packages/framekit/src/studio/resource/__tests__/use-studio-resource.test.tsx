@@ -3,9 +3,9 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { defineTemplate, field } from '../../../index'
-import type { TemplateRegistryEntry } from '../../../types'
-import type { FrameKitStudioBrand } from '../../types'
+import { defineTemplate, field } from '@/index'
+import type { TemplateRegistryEntry } from '@/types'
+import type { FrameKitStudioBrand } from '@/studio/types'
 import { useStudioResource, type StudioResourceInput } from '../use-studio-resource'
 
 afterEach(cleanup)

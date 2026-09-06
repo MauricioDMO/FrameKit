@@ -60,7 +60,7 @@ jobs:
       - name: Build creator
         run: pnpm --filter @mauriciodmo/create-framekit build
       - name: Run discovery and codegen tests
-        run: pnpm --filter @mauriciodmo/framekit exec vitest run src/discovery src/codegen
+        run: pnpm --filter @mauriciodmo/framekit exec vitest run src/tooling/discovery src/tooling/codegen
       - name: Run creator tests
         run: pnpm --filter @mauriciodmo/create-framekit exec vitest run --testTimeout=30000
       - name: Type-check workspace

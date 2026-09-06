@@ -3,7 +3,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { frameKitMessages } from '../../i18n/messages'
+import { frameKitMessages } from '@/studio/i18n/messages'
 import { EmptyState, LoadingState, MessageState, NotFoundState } from '../studio-states'
 
 afterEach(cleanup)
