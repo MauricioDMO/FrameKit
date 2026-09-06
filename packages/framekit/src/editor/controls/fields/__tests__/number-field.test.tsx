@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { NumberField } from './number-field'
+import { NumberField } from '@/editor/controls/fields/number-field'
 
 const field = {
   key: 'opacity',

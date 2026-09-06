@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import { validateNumberValue } from '../../../core/validation/data'
-import { controlClass } from '../shared'
+import { controlClass } from './shared'
 import type { EditorFieldProps } from '../../types'
 
 function decimalPlaces (value: number): number {

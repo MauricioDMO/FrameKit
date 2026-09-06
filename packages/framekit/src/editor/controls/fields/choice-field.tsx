@@ -1,4 +1,4 @@
-import { controlClass } from '../shared'
+import { controlClass } from './shared'
 import type { EditorFieldProps } from '../../types'
 
 export function ChoiceField ({ field, value, onChange, error }: EditorFieldProps) {

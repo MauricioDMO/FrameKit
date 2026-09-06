@@ -7,8 +7,8 @@ import { defineTemplate, field } from '../index'
 
 import { FrameKitEditor } from './framekit-editor'
 import { copyTemplate, exportTemplate } from './export-template'
-import { EditorField } from './fields/editor-field'
-import { NumberField } from './fields/components/number-field'
+import { EditorField } from '@/editor/controls/fields/editor-field'
+import { NumberField } from '@/editor/controls/fields/number-field'
 import type { EditorMessages } from './types'
 import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
 

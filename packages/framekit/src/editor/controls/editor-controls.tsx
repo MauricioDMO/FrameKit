@@ -1,6 +1,6 @@
 import type { TemplateBase } from '../../types'
 import type { TemplateDataValidationError } from '../../core/validation'
-import { EditorField } from '../fields'
+import { EditorField } from './fields'
 import type { EditorMessages } from '../types'
 
 interface EditorControlsProps {

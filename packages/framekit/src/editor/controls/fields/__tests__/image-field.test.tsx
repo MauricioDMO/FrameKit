@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { ImageField } from './image-field'
+import { ImageField } from '@/editor/controls/fields/image-field'
 
 const field = { key: 'logo', type: 'image' as const, required: true, label: 'Logo' }
 const imageLabels = {

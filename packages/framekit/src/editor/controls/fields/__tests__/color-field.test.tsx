@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { ColorField } from './color-field'
+import { ColorField } from '@/editor/controls/fields/color-field'
 
 const field = { key: 'accentColor', type: 'color' as const, required: true, label: 'Accent color' }
 const optionalField = { ...field, required: false }
