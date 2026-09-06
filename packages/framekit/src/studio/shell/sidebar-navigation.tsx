@@ -3,8 +3,8 @@
 import { IconStack2, IconTag } from '@tabler/icons-react'
 import Link from 'next/link'
 
-import { FrameKitNavigationTree } from '../../editor/framekit-navigation'
-import type { TemplateNavigationNode } from '../../editor/navigation'
+import { FrameKitNavigationTree } from '@/editor/navigation/framekit-navigation'
+import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
 import type { FrameKitStudioMessages } from '../i18n/messages'
 
 type SidebarMessages = FrameKitStudioMessages['sidebar']

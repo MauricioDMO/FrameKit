@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 
-import type { TemplateNavigationNode } from '../../editor/navigation'
+import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
 import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
 import { StudioSidebar } from './studio-sidebar'
 

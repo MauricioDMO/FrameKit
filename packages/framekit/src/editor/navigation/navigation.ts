@@ -1,4 +1,4 @@
-import type { TemplateRegistryEntry } from '../types'
+import type { TemplateRegistryEntry } from '../../types'
 
 interface BrandManifestEntry {
   slug: string

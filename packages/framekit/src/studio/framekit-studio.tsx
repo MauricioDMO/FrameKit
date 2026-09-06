@@ -5,7 +5,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { FrameKitEditor } from '../editor/framekit-editor'
-import { manifestToNavigation } from '../editor/navigation'
+import { manifestToNavigation } from '@/editor/navigation/navigation'
 import type { TemplateRegistryEntry } from '../types'
 import { FrameKitBrandCatalog } from './brand/brand-catalog'
 import { useFrameKitLocale } from './i18n/locale-provider'

@@ -3,8 +3,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { FrameKitNavigation, FrameKitNavigationTree } from './framekit-navigation'
-import type { TemplateNavigationNode } from './navigation'
+import { FrameKitNavigation, FrameKitNavigationTree } from '@/editor/navigation/framekit-navigation'
+import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>

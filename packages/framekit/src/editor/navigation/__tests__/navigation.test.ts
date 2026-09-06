@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { humanizeSegment, manifestToNavigation } from './navigation'
+import { humanizeSegment, manifestToNavigation } from '@/editor/navigation/navigation'
 
 const manifest = [
   { slug: 'redes-sociales/instagram/promocion-cuadrada', meta: { title: 'Promocion Cuadrada' }, segments: ['redes-sociales', 'instagram', 'promocion-cuadrada'] },

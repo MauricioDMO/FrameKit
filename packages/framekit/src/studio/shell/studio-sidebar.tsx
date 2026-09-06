@@ -2,7 +2,7 @@
 
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from '@tabler/icons-react'
 
-import type { TemplateNavigationNode } from '../../editor/navigation'
+import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
 import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
 import { FrameKitLogo } from './framekit-logo'
 import { SidebarFooter } from './sidebar-footer'
