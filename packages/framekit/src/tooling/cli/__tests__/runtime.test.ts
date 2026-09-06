@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { assertSupportedRuntime } from './runtime'
+import { assertSupportedRuntime } from '@/tooling/cli/runtime'
 
 describe('runtime requirements', () => {
   afterEach(() => {

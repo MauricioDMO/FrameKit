@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { findTemplateAssets } from '../discovery/find-assets'
 import type { DiscoveredTemplate } from '../discovery/types'
-import type { TemplateAssetManifest } from '../types'
+import type { TemplateAssetManifest } from '@/types'
 import { generate } from './generate'
 import { runChild } from './run-child'
 

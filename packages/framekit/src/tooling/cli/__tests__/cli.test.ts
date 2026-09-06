@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-const cliFile = fileURLToPath(new URL('./cli/index.ts', import.meta.url))
+const cliFile = fileURLToPath(new URL('../index.ts', import.meta.url))
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))
 const temporaryRoots: string[] = []
 const validTemplateSource = `export default {
@@ -71,8 +71,8 @@ async function addFrameKitRuntime (root: string): Promise<void> {
     type: 'module',
     exports: './index.js'
   }))
-  const validationModule = new URL('./core/validation/index.ts', import.meta.url).href
-  const resolveTemplateDataModule = new URL('./core/resolve-template-data.ts', import.meta.url).href
+  const validationModule = new URL('../../../core/validation/index.ts', import.meta.url).href
+  const resolveTemplateDataModule = new URL('../../../core/resolve-template-data.ts', import.meta.url).href
   await writeFile(path.join(directory, 'index.js'), [
     `export { validateTemplateDefinition, validateTemplateData } from ${JSON.stringify(validationModule)}`,
     `export { resolveTemplateData } from ${JSON.stringify(resolveTemplateDataModule)}`

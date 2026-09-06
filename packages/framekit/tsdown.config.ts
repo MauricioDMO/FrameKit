@@ -7,7 +7,7 @@ export default defineConfig({
     studio: 'src/studio.ts',
     'studio-root': 'src/studio-root.ts',
     dev: 'src/dev.ts',
-    cli: 'src/cli/index.ts'
+    cli: 'src/tooling/cli/index.ts'
   },
   format: ['esm'],
   dts: true,

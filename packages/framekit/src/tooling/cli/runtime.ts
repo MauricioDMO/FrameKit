@@ -1,4 +1,4 @@
-import manifest from '../../package.json'
+import manifest from '../../../package.json'
 
 type Version = readonly [number, number, number]
 
