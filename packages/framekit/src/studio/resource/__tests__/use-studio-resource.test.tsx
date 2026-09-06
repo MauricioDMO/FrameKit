@@ -57,6 +57,14 @@ function createBrandEntry () {
   return brand
 }
 
+function deferred<T> (): { promise: Promise<T>, resolve: (value: T | PromiseLike<T>) => void } {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  const promise = new Promise<T>((_resolve) => {
+    resolve = _resolve
+  })
+  return { promise, resolve }
+}
+
 describe('useStudioResource', () => {
   it('returns not-found without invoking a loader for an unknown template', async () => {
     render(<ResourceProbe slug="missing" isBrand={false} templates={[]} brands={[]} />)
@@ -100,5 +108,25 @@ describe('useStudioResource', () => {
     render(<ResourceProbe slug={entry.slug} isBrand={false} templates={[entry]} brands={[]} />)
 
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('error:template'))
+  })
+
+  it('does not update after a brand loader is unmounted', async () => {
+    const brand = createBrandEntry()
+    const brandModule = await brand.load()
+    brand.load.mockClear()
+    const brandLoad = deferred<Awaited<ReturnType<typeof brand.load>>>()
+    brand.load.mockReturnValue(brandLoad.promise)
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      const view = render(<ResourceProbe slug={brand.slug} isBrand templates={[]} brands={[brand]} />)
+      view.unmount()
+      brandLoad.resolve(brandModule)
+      await brandLoad.promise
+      await Promise.resolve()
+      expect(consoleError).not.toHaveBeenCalled()
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })

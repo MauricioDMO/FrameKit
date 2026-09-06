@@ -135,6 +135,23 @@ describe('FrameKitStudio integration', () => {
     expect(screen.getByText('No brand components are available.').textContent).toBe('No brand components are available.')
   })
 
+  it('closes settings when the production shell collapses and expands', () => {
+    render(
+      <FrameKitLocaleProvider initialLocale="es">
+        <FrameKitStudio templates={[]} />
+      </FrameKitLocaleProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
+    expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Colapsar navegación' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
+
+    expect(screen.getByRole('button', { name: 'Ajustes' }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByRole('combobox', { name: 'Idioma de la interfaz' })).toBeNull()
+  })
+
   it('shows the localized loading state while the template loader is pending', () => {
     route.params = { slug: ['social', 'campaign'] }
     const entry = createTemplateEntry()
@@ -302,6 +319,47 @@ describe('FrameKitStudio integration', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Current component' }).textContent).toBe('Current component')
       expect(screen.queryByRole('heading', { name: 'Stale template' })).toBeNull()
+      expect(screen.queryByRole('alert')).toBeNull()
+    })
+  })
+
+  it('ignores a brand loader result after switching to the template route', async () => {
+    route.pathname = '/brand/communication/hero'
+    route.params = { slug: ['communication', 'hero'] }
+    const { brand } = createBrandEntry({ title: 'Stale component' })
+    const brandModule = await brand.load()
+    brand.load.mockClear()
+    const brandLoad = deferred<Awaited<ReturnType<typeof brand.load>>>()
+    brand.load.mockReturnValue(brandLoad.promise)
+    const template = createTemplateEntry({ meta: { title: 'Current template' } })
+    const templateModule = await template.load()
+    template.load.mockClear()
+    const templateLoad = deferred<Awaited<ReturnType<typeof template.load>>>()
+    template.load.mockReturnValue(templateLoad.promise)
+
+    const view = render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[template]} brands={[brand]} />
+      </FrameKitLocaleProvider>
+    )
+
+    route.pathname = '/editor/social/campaign'
+    route.params = { slug: ['social', 'campaign'] }
+    view.rerender(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[template]} brands={[brand]} />
+      </FrameKitLocaleProvider>
+    )
+    expect(screen.getByLabelText('Loading...').getAttribute('aria-busy')).toBe('true')
+
+    templateLoad.resolve(templateModule)
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Current template' }).textContent).toBe('Current template'))
+
+    brandLoad.resolve(brandModule)
+    await brandLoad.promise
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Current template' }).textContent).toBe('Current template')
+      expect(screen.queryByRole('heading', { name: 'Stale component' })).toBeNull()
       expect(screen.queryByRole('alert')).toBeNull()
     })
   })
