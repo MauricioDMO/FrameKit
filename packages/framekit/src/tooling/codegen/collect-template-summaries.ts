@@ -4,8 +4,8 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
-import type { DiscoveredTemplate } from '../tooling/discovery/types'
-import type { TemplateMeta, TemplateRegistryEntry, TemplateVariants } from '../types'
+import type { DiscoveredTemplate } from '../discovery/types'
+import type { TemplateMeta, TemplateRegistryEntry, TemplateVariants } from '../../types'
 
 const execFileAsync = promisify(execFile)
 const require = createRequire(import.meta.url)

@@ -3,7 +3,7 @@ import type { Duplex } from 'node:stream'
 
 import next from 'next'
 
-import { writeTemplateModule } from '../codegen/write-template-module'
+import { writeTemplateModule } from '../tooling/codegen/write-template-module'
 import { handleAssetUpload } from './asset-upload'
 import { watchTemplates, type TemplateWatcher } from './watch-templates'
 

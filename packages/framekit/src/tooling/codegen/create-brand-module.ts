@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import type { DiscoveredBrandComponent } from '../tooling/discovery/types'
+import type { DiscoveredBrandComponent } from '../discovery/types'
 
 function importPathForPreview (component: DiscoveredBrandComponent, outputDirectory: string): string {
   const previewPath = path.join(component.absolutePath, 'preview')

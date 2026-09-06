@@ -1,7 +1,7 @@
 import path from 'node:path'
 
-import type { DiscoveredTemplate } from '../tooling/discovery/types'
-import type { TemplateAssetManifest } from '../types'
+import type { DiscoveredTemplate } from '../discovery/types'
+import type { TemplateAssetManifest } from '../../types'
 import type { TemplateSummary } from './collect-template-summaries'
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }

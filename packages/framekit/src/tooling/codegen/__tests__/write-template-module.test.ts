@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { findTemplates } from '@/tooling/discovery/find-templates'
-import { writeTemplateModule } from './write-template-module'
+import { writeTemplateModule } from '@/tooling/codegen/write-template-module'
 
 const execFileAsync = promisify(execFile)
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))

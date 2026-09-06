@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('node:http', () => ({ createServer: mocks.createServer }))
 vi.mock('next', () => ({ default: mocks.next }))
-vi.mock('../codegen/write-template-module', () => ({ writeTemplateModule: mocks.writeTemplateModule }))
+vi.mock('@/tooling/codegen/write-template-module', () => ({ writeTemplateModule: mocks.writeTemplateModule }))
 vi.mock('./watch-templates', () => ({ watchTemplates: mocks.watchTemplates }))
 
 const options = { projectRoot: '/tmp/framekit', hostname: '127.0.0.1', port: 0 }
