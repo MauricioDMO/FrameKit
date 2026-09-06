@@ -5,17 +5,17 @@ defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    title: field.text({ label: 'Título' }),
+    title: field.text({ label: 'Título' })
   },
   content: {
     es: {
       title: 'bar',
       // @ts-expect-error foo is not declared in fields
-      foo: 'bar',
-    },
+      foo: 'bar'
+    }
   },
   variants: { default: 'es' },
-  render() {
+  render () {
     return null
-  },
+  }
 })

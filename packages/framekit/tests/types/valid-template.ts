@@ -5,8 +5,8 @@ export const templateAssets = {
   common: { logo: '/images/logo.svg' },
   variants: {
     moon: { background: '/images/moon-background.png' },
-    fjord: { background: '/images/fjord-background.png' },
-  },
+    fjord: { background: '/images/fjord-background.png' }
+  }
 } satisfies TemplateAssetManifest
 
 export const template = defineTemplate({
@@ -14,7 +14,7 @@ export const template = defineTemplate({
     title: 'Valid template',
     description: 'A valid template for type tests',
     marketingDescription: 'Present a clear offer',
-    tags: ['social', 'promotion'],
+    tags: ['social', 'promotion']
   },
   width: 1080,
   height: 1080,
@@ -27,19 +27,19 @@ export const template = defineTemplate({
       options: [
         { value: 'left', label: 'Left' },
         { value: 'center', label: 'Center' },
-        { value: 'right', label: 'Right' },
+        { value: 'right', label: 'Right' }
       ],
-      defaultValue: 'center',
+      defaultValue: 'center'
     }),
     count: field.number({ label: 'Count', defaultValue: 10, min: 0, max: 100, step: 5 }),
-    showLogo: field.boolean({ label: 'Show logo' }),
+    showLogo: field.boolean({ label: 'Show logo' })
   },
   content: {
     moon: { title: 'Oferta', image: '/images/moon.png', alignment: 'center', count: 15, showLogo: true },
-    fjord: { title: 'Offer', image: '/images/fjord.png', alignment: 'left', count: 20, showLogo: false },
+    fjord: { title: 'Offer', image: '/images/fjord.png', alignment: 'left', count: 20, showLogo: false }
   },
   variants: { default: 'moon', labels: { moon: 'Lunar', fjord: 'Fjordic' } },
-  render({ data, assets, variant, width, height }) {
+  render ({ data, assets, variant, width, height }) {
     const title: string = data.title
     const image: string = data.image
     const alignment: 'left' | 'center' | 'right' = data.alignment
@@ -53,8 +53,18 @@ export const template = defineTemplate({
     // @ts-expect-error data keys come from fields
     String(data.missing)
 
-    return null
-  },
+    return [
+      title,
+      image,
+      alignment,
+      count,
+      showLogo,
+      commonLogo,
+      variantBackground,
+      variantKey,
+      dimension
+    ]
+  }
 })
 
 type Equal<Left, Right> =
@@ -64,19 +74,19 @@ type Equal<Left, Right> =
     : false
 type Expect<Value extends true> = Value
 
-type DataAssertion = Expect<Equal<
+export type DataAssertion = Expect<Equal<
   InferTemplateData<typeof template>,
   { title: string; accentColor: string; image: string; alignment: 'left' | 'center' | 'right'; count: number; showLogo: boolean }
 >>
-type PropsAssertion = Expect<Equal<
+export type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['variant'],
   'moon' | 'fjord'
 >>
-type WidthAssertion = Expect<Equal<
+export type WidthAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['width'],
   1080
 >>
-type HeightAssertion = Expect<Equal<
+export type HeightAssertion = Expect<Equal<
   TemplateRenderProps<typeof template>['height'],
   1080
 >>

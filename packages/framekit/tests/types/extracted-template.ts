@@ -5,5 +5,5 @@ import { templateBase } from './extracted-definition'
 
 export const extractedTemplate = defineTemplate({
   ...templateBase,
-  render: ExtractedArtwork,
+  render: ExtractedArtwork
 })

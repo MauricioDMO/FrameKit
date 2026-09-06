@@ -13,16 +13,16 @@ export const templateBase = defineTemplateBase({
       options: [
         { value: 'left', label: 'Left' },
         { value: 'center', label: 'Center' },
-        { value: 'right', label: 'Right' },
+        { value: 'right', label: 'Right' }
       ],
-      defaultValue: 'center',
-    }),
+      defaultValue: 'center'
+    })
   },
   content: {
     aurora: { title: 'Northern light', alignment: 'center' },
-    desert: { title: 'Open horizon', alignment: 'left' },
+    desert: { title: 'Open horizon', alignment: 'left' }
   },
-  variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } },
+  variants: { default: 'aurora', labels: { aurora: 'Aurora', desert: 'Desert' } }
 })
 
 type Equal<Left, Right> =
@@ -32,19 +32,19 @@ type Equal<Left, Right> =
     : false
 type Expect<Value extends true> = Value
 
-type DataAssertion = Expect<Equal<
+export type DataAssertion = Expect<Equal<
   InferTemplateData<typeof templateBase>,
   { title: string; accentColor: string; alignment: 'left' | 'center' | 'right' }
 >>
-type PropsAssertion = Expect<Equal<
+export type PropsAssertion = Expect<Equal<
   TemplateRenderProps<typeof templateBase>['variant'],
   'aurora' | 'desert'
 >>
-type WidthAssertion = Expect<Equal<
+export type WidthAssertion = Expect<Equal<
   TemplateRenderProps<typeof templateBase>['width'],
   1200
 >>
-type HeightAssertion = Expect<Equal<
+export type HeightAssertion = Expect<Equal<
   TemplateRenderProps<typeof templateBase>['height'],
   800
 >>

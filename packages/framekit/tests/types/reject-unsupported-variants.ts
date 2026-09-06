@@ -1,13 +1,11 @@
 import { defineTemplate, defineTemplateBase } from '@mauriciodmo/framekit'
 import type { TemplateVariants } from '@mauriciodmo/framekit'
 
-const unsupported: TemplateVariants = {
+export const unsupported: TemplateVariants = {
   default: 'en',
   // @ts-expect-error mode is not part of the variant contract
-  mode: 'language',
+  mode: 'language'
 }
-
-void unsupported
 
 defineTemplate({
   meta: { title: 'Invalid variant property' },
@@ -18,9 +16,9 @@ defineTemplate({
   variants: {
     default: 'en',
     // @ts-expect-error unsupported variant properties are rejected by the factory
-    mode: 'language',
+    mode: 'language'
   },
-  render: () => null,
+  render: () => null
 })
 
 defineTemplateBase({
@@ -32,8 +30,8 @@ defineTemplateBase({
   variants: {
     default: 'en',
     // @ts-expect-error unsupported variant properties are rejected by the base factory
-    fallback: 'en',
-  },
+    fallback: 'en'
+  }
 })
 
 defineTemplate({
@@ -47,10 +45,10 @@ defineTemplate({
     labels: {
       en: 'English',
       // @ts-expect-error labels must name a content variant
-      fr: 'French',
-    },
+      fr: 'French'
+    }
   },
-  render: () => null,
+  render: () => null
 })
 
 defineTemplate({
@@ -61,7 +59,7 @@ defineTemplate({
   content: { en: {} },
   variants: {
     // @ts-expect-error default must name a content variant
-    default: 'es',
+    default: 'es'
   },
-  render: () => null,
+  render: () => null
 })

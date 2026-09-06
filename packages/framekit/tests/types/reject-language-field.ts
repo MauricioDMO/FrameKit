@@ -6,11 +6,11 @@ defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    language: field.text({ label: 'Idioma' }),
+    language: field.text({ label: 'Idioma' })
   },
   content: {
-    es: {},
+    es: {}
   },
   variants: { default: 'es' },
-  render: () => null,
+  render: () => null
 })

@@ -5,16 +5,16 @@ defineTemplate({
   width: 1080,
   height: 1080,
   fields: {
-    title: field.text({ label: 'Título' }),
+    title: field.text({ label: 'Título' })
   },
   content: {
     es: {
       // @ts-expect-error content.es.title must be string, not number
-      title: 42,
-    },
+      title: 42
+    }
   },
   variants: { default: 'es' },
-  render() {
+  render () {
     return null
-  },
+  }
 })

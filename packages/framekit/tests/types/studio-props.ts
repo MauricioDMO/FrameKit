@@ -13,7 +13,7 @@ const templateEntry = {
   variants: template.variants,
   variantKeys: ['moon', 'fjord'],
   assets: templateAssets,
-  load: async () => ({ default: template }),
+  load: async () => ({ default: template })
 } satisfies TemplateRegistryEntry
 
 const templates = [templateEntry] satisfies readonly TemplateRegistryEntry[]
@@ -22,7 +22,7 @@ const brands = [{
   title: 'Example brand',
   segments: ['example-brand'],
   description: 'An example brand fixture.',
-  load: async () => ({ default: () => null }),
+  load: async () => ({ default: () => null })
 }] satisfies readonly FrameKitStudioBrand[]
 
 FrameKitStudio({ templates })

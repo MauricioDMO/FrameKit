@@ -6,9 +6,9 @@ const alignment = field.choice({
   options: [
     { value: 'left', label: 'Left' },
     { value: 'center', label: 'Center' },
-    { value: 'right', label: 'Right' },
+    { value: 'right', label: 'Right' }
   ],
-  defaultValue: 'center',
+  defaultValue: 'center'
 })
 
 type Equal<Left, Right> =
@@ -18,7 +18,7 @@ type Equal<Left, Right> =
     : false
 type Expect<Value extends true> = Value
 
-type OptionValuesAssertion = Expect<Equal<
+export type OptionValuesAssertion = Expect<Equal<
   typeof alignment.options[number]['value'],
   'left' | 'center' | 'right'
 >>
@@ -30,13 +30,13 @@ export const choiceTemplate = defineTemplate({
   fields: { alignment },
   content: { en: { alignment: 'center' } },
   variants: { default: 'en' },
-  render({ data }) {
+  render ({ data }) {
     const value: 'left' | 'center' | 'right' = data.alignment
     return value
-  },
+  }
 })
 
-type DataAssertion = Expect<Equal<
+export type DataAssertion = Expect<Equal<
   InferTemplateData<typeof choiceTemplate>,
   { alignment: 'left' | 'center' | 'right' }
 >>
@@ -45,7 +45,7 @@ field.choice({
   label: 'Alignment',
   options: [{ value: 'left', label: 'Left' }],
   // @ts-expect-error the default must be one of the declared option values
-  defaultValue: 'right',
+  defaultValue: 'right'
 })
 
 field.choice({
@@ -53,7 +53,7 @@ field.choice({
   options: [{ value: 'left', label: 'Left' }],
   defaultValue: 'left',
   // @ts-expect-error choice has no required option
-  required: false,
+  required: false
 })
 
 defineTemplate({
@@ -64,9 +64,9 @@ defineTemplate({
   content: {
     en: {
       // @ts-expect-error choice content values must match declared option values
-      alignment: 'justify',
-    },
+      alignment: 'justify'
+    }
   },
   variants: { default: 'en' },
-  render: () => null,
+  render: () => null
 })

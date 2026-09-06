@@ -65,7 +65,7 @@
     "directory": "packages/framekit"
   },
   "scripts": {
-    "lint": "eslint src scripts tsdown.config.ts eslint.config.mjs",
+    "lint": "eslint src scripts tests vitest.config.ts vitest.setup.ts tsdown.config.ts eslint.config.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tests/types/tsconfig.json",
     "build:js": "tsdown",

@@ -1,13 +1,15 @@
 class TestResizeObserver implements ResizeObserver {
-  constructor(callback: ResizeObserverCallback) {
-    void callback
+  private readonly callback: ResizeObserverCallback
+
+  constructor (callback: ResizeObserverCallback) {
+    this.callback = callback
   }
 
-  observe() {}
+  observe () {}
 
-  unobserve() {}
+  unobserve () {}
 
-  disconnect() {}
+  disconnect () {}
 }
 
 globalThis.ResizeObserver = TestResizeObserver

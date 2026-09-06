@@ -4,7 +4,7 @@ import type { templateBase } from './extracted-definition'
 
 export type ExtractedArtworkProps = TemplateRenderProps<typeof templateBase>
 
-export function ExtractedArtwork({ data, assets, variant, width, height }: ExtractedArtworkProps) {
+export function ExtractedArtwork ({ data, assets, variant, width, height }: ExtractedArtworkProps) {
   const title: string = data.title
   const alignment: 'left' | 'center' | 'right' = data.alignment
   const logo: string = assets.common.logo

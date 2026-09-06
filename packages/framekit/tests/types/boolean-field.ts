@@ -5,25 +5,25 @@ field.boolean({ label: 'Show logo', defaultValue: true })
 field.boolean({
   label: 'Show logo',
   // @ts-expect-error boolean defaults cannot be strings
-  defaultValue: 'true',
+  defaultValue: 'true'
 })
 
 field.boolean({
   label: 'Show logo',
   // @ts-expect-error boolean fields do not accept required
-  required: false,
+  required: false
 })
 
 field.boolean({
   label: 'Show logo',
   // @ts-expect-error boolean fields do not accept control
-  control: 'checkbox',
+  control: 'checkbox'
 })
 
 field.boolean({
   label: 'Show logo',
   // @ts-expect-error boolean fields do not accept placeholder
-  placeholder: 'yes',
+  placeholder: 'yes'
 })
 
 defineTemplate({
@@ -33,10 +33,10 @@ defineTemplate({
   fields: { showLogo: field.boolean({ label: 'Show logo' }) },
   content: { en: { showLogo: true } },
   variants: { default: 'en' },
-  render({ data }) {
+  render ({ data }) {
     const value: boolean = data.showLogo
-    return null
-  },
+    return value
+  }
 })
 
 defineTemplate({
@@ -47,9 +47,9 @@ defineTemplate({
   content: {
     en: {
       // @ts-expect-error boolean content values cannot be strings
-      showLogo: 'true',
-    },
+      showLogo: 'true'
+    }
   },
   variants: { default: 'en' },
-  render: () => null,
+  render: () => null
 })
