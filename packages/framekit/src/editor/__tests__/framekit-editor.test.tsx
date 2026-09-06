@@ -3,16 +3,16 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { defineTemplate, field } from '../index'
+import { defineTemplate, field } from '@/index'
 
-import { FrameKitEditor } from './framekit-editor'
-import { copyTemplate, exportTemplate } from './export-template'
+import { FrameKitEditor } from '@/editor/framekit-editor'
+import { copyTemplate, exportTemplate } from '@/editor/export/export-template'
 import { EditorField } from '@/editor/controls/fields/editor-field'
 import { NumberField } from '@/editor/controls/fields/number-field'
-import type { EditorMessages } from './types'
-import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
+import type { EditorMessages } from '@/editor/types'
+import type { TemplateDefinition, TemplateRegistryEntry } from '@/types'
 
-vi.mock('./export-template', () => ({
+vi.mock('@/editor/export/export-template', () => ({
   copyTemplate: vi.fn().mockResolvedValue(undefined),
   exportTemplate: vi.fn().mockResolvedValue(undefined)
 }))

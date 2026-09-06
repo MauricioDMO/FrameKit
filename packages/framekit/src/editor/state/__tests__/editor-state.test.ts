@@ -2,9 +2,9 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { defineTemplate, field } from '../../index'
+import { defineTemplate, field } from '@/index'
 
-import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, updateField } from './editor-state'
+import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, updateField } from '@/editor/state/editor-state'
 
 const definition = defineTemplate({
   meta: { title: 'Editor state' },

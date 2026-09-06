@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { domToPng } from 'modern-screenshot'
 
-import { copyTemplate, exportTemplate } from './export-template'
+import { copyTemplate, exportTemplate } from '@/editor/export/export-template'
 
 vi.mock('modern-screenshot', () => ({
   domToPng: vi.fn().mockResolvedValue('data:image/png;base64,AAAA')
