@@ -32,8 +32,10 @@ API key and is not a second public rendering API.
 ## Route location
 
 ```text
-src/app/__framekit/render/[id]/page.tsx
-src/app/__framekit/render/[id]/render-client.tsx
+packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
+packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
+apps/studio/src/app/__framekit/render/[id]/page.tsx
+apps/studio/src/app/__framekit/render/[id]/render-client.tsx
 ```
 
 The reserved `__framekit` namespace aligns with existing generated assets/dev
@@ -56,8 +58,8 @@ The server page performs only the secure handoff:
 
 1. Read the generated `id` route parameter.
 2. Read exactly one `x-framekit-render-token` request header.
-3. Call `loadRenderRequest(id, token)` from
-   `@mauriciodmo/framekit/server`.
+3. Call `loadRenderRequest(id, token)` from the existing
+   `@mauriciodmo/framekit/server` facade; Step 3 will add this helper.
 4. Treat malformed ID, missing header, missing job, wrong token, and expired job
    as the same not-found state.
 5. Pass only the returned `ResolvedRenderPayload` to `RenderClient`.
@@ -180,6 +182,10 @@ Do not use arbitrary sleeps.
 The private route inherits the consumer's root layout/global CSS because
 FrameKit templates need the same Tailwind/styles/font environment as Studio.
 
+The reusable package owns server behavior; the generated application and
+`apps/studio` own these Next.js routes and their generated-registry integration.
+Do not move the routes into `packages/framekit/src/server/`.
+
 Prevent application chrome from affecting capture:
 
 - render no Studio shell/navigation;
@@ -261,6 +267,10 @@ packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.t
 apps/studio/src/app/__framekit/render/[id]/page.tsx
 apps/studio/src/app/__framekit/render/[id]/render-client.tsx
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. FrameKit package tests use their owning package paths;
+Studio integration coverage remains under `apps/studio/src/__tests__/`.
 
 No `src/instrumentation.ts` is required solely for browser shutdown in v1.
 

@@ -123,9 +123,11 @@ deleteRenderJob(
 
 These functions can be synchronous because the store has no I/O.
 
-`renderTemplateImage` uses create/delete internally. `loadRenderRequest` must be
-available through the supported `./server` entry because the generated private
-Next.js page consumes it.
+The planned `renderTemplateImage` will use create/delete internally. The current
+`./server` entry exports only the Step 1 contracts, authentication helper,
+configuration parser, and error model. `loadRenderRequest` is planned for that
+entry in Step 3 because the generated private Next.js page consumes it; the job
+store and renderer are not implemented yet.
 
 ## ID and token generation
 
@@ -251,9 +253,13 @@ It must not reveal whether ID or token was the incorrect part.
 
 ```text
 packages/framekit/src/server/render-job.ts
-packages/framekit/src/server/render-job.test.ts
+packages/framekit/src/server/__tests__/render-job.test.ts
 packages/framekit/src/server.ts
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. Compile-time type fixtures remain under
+`packages/framekit/tests/types/`.
 
 No temp directory, file permissions, stale-file scanner, or filesystem test
 fixture is required.

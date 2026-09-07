@@ -1,11 +1,17 @@
 # Server Image Rendering API
 
-- **Status:** Proposed; not yet implemented.
+- **Status:** Step 1 implemented and verified; Steps 2-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
 - **Primary package:** `@mauriciodmo/framekit`.
 - **Canonical consumer:** `packages/create-framekit/template/`.
+
+The current supported package facades are `.`, `./editor`, `./studio`,
+`./studio/root`, `./dev`, `./server`, and `./styles.css`. The `./server` facade
+currently exports only the Step 1 contracts, errors, configuration parser, and
+Bearer authentication helper. This plan does not propose `server/*`, `browser`,
+`auth`, or `shared` public subpaths.
 
 ## Purpose of this plan
 
@@ -29,8 +35,8 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement the phases in order. A phase is complete only when its focused tests
-and exit gate pass.
+Implement the remaining phases in order. Step 1 is complete in the current
+checkout; a phase is complete only when its focused tests and exit gate pass.
 
 | Step | Plan | Main result | Depends on |
 |---:|---|---|---|
@@ -108,8 +114,9 @@ template model:
   `.framekit/next`.
 - `framekit build` already copies `public` and Next static assets beside the
   discovered standalone server.
-- the public package currently has no `./server` export, Playwright runtime,
-  image API route, or production Dockerfile.
+- Server Image Rendering remains incomplete: the public package has the Step 1
+  `./server` export, but there is no Playwright runtime, image API route, or
+  production Dockerfile yet.
 
 Studio's existing `modern-screenshot` export remains functional. The server API
 is additive in the first implementation.
@@ -120,10 +127,10 @@ is additive in the first implementation.
 
 | Concern | Owner | Why |
 |---|---|---|
-| Public request types, configuration, auth helpers, and stable render errors | `@mauriciodmo/framekit/server` | One reusable server contract |
-| In-memory render-job store | `@mauriciodmo/framekit/server` | Public route and private page share one implementation |
-| Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` | Browser fixes ship with FrameKit |
-| Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` plus shared raster helper | Browser never needs external network access |
+| Public request types, configuration, auth helpers, and stable render errors | `@mauriciodmo/framekit/server` (Step 1) | One reusable server contract |
+| In-memory render-job store | `@mauriciodmo/framekit/server` (later step) | Public route and private page share one implementation |
+| Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` (later step) | Browser fixes ship with FrameKit |
+| Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` (later step) plus shared raster helper | Browser never needs external network access |
 | Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
 | Public App Router route | Generated application | Next.js routes belong to the consumer |
 | Private render page | Generated application | It imports the consumer-generated template registry |
@@ -159,6 +166,12 @@ Client
 
 No generated application may import `packages/framekit/src/*`. Shared behavior
 must cross supported package exports.
+
+The FrameKit server package owns reusable server-rendering behavior. The generated
+application and `apps/studio` own their Next.js routes and generated-registry
+integration; routes must not move into `packages/framekit/src/server/`. Keep
+`packages/create-framekit/src/` small and limited to scaffolding concerns; do not
+add `services/`, `utils/`, `lib/`, or `commands/` layers.
 
 ## End-to-end lifecycle
 
@@ -303,9 +316,11 @@ FRAMEKIT_RENDER_TIMEOUT_MS
 
 Rules:
 
-- `FRAMEKIT_API_KEY` is required in production.
+- `FRAMEKIT_API_KEY` is required by the current parser in every environment;
+  production therefore fails closed.
 - `FRAMEKIT_INTERNAL_ORIGIN` is loopback-only, normally
-  `http://127.0.0.1:3000` in Docker.
+  `http://127.0.0.1:3000` in Docker; the current parser also requires it in
+  every environment.
 - `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is a comma-separated exact-host allowlist used
   only by the Node.js remote-image fetcher.
 - an empty host allowlist disables remote HTTPS image overrides.
@@ -328,35 +343,90 @@ renders and deleted in `finally`.
 
 ```text
 packages/framekit/src/
-  server.ts
+  index.ts                         # current root facade
+  editor.ts                        # current editor facade
+  studio.ts                        # current Studio facade
+  studio-root.ts                   # current Studio root facade
+  dev.ts                           # current development facade
+  server.ts                        # current Step 1 facade; later steps extend it
+  core/
+    fields/
+    template-data/
+    validation/
+    __tests__/
+  markdown/
+  shared/
+    raster-image.ts                # future cross-domain raster helper
+    __tests__/
+      raster-image.test.ts
+  editor/
+    components/
+      template-canvas.tsx          # preserve this location
+      __tests__/
+        template-canvas.test.tsx
+    controls/
+    export/
+    navigation/
+      framekit-navigation.tsx
+    state/
+  studio/
+  tooling/
+    cli/
+    codegen/
+    discovery/
+    dev/
   server/
+    auth.ts
     browser.ts
     config.ts
     errors.ts
+    http-errors.ts
     image-input.ts
     render-image.ts
     render-job.ts
     request-body.ts
-  shared/
-    raster-image.ts
-  editor/components/
-    template-canvas.tsx
+    __tests__/
 
 packages/create-framekit/template/
   Dockerfile
   .dockerignore
+  src/app/page.tsx
+  src/app/layout.tsx
+  src/app/globals.css
+  src/app/editor/[[...slug]]/page.tsx
+  src/app/brand/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
   src/app/__framekit/render/[id]/page.tsx
   src/app/__framekit/render/[id]/render-client.tsx
 
 apps/studio/
+  src/app/page.tsx
+  src/app/layout.tsx
+  src/app/globals.css
+  src/app/editor/[[...slug]]/page.tsx
+  src/app/brand/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
   src/app/__framekit/render/[id]/page.tsx
   src/app/__framekit/render/[id]/render-client.tsx
+  src/__tests__/framekit/generation.integration.test.ts
+
+tests/e2e/
+  # root Playwright E2E coverage remains here
 ```
 
-Focused tests live beside their owning modules. Generated files under
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. FrameKit server tests use
+`packages/framekit/src/server/__tests__/`; the shared raster test is
+`packages/framekit/src/shared/__tests__/raster-image.test.ts`; and the canvas
+test is `packages/framekit/src/editor/components/__tests__/template-canvas.test.tsx`.
+Compile-time type fixtures remain under `packages/framekit/tests/types/`, and
+root Playwright E2E remains under `tests/e2e/`. Generated files under
 `src/generated/framekit/` are regenerated, never hand-edited.
+
+`shared/` is reserved for legitimate cross-domain functionality consumed by
+`packages/framekit/src/tooling/dev/asset-upload.ts` and
+`packages/framekit/src/server/image-input.ts`; it is not a generic
+`utils/`/`helpers/`/`common/` dumping ground.
 
 ## Execution rules
 

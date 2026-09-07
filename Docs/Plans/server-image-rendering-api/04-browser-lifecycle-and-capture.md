@@ -308,13 +308,18 @@ behavior requires a documented implementation.
 
 ```text
 packages/framekit/src/server/browser.ts
-packages/framekit/src/server/browser.test.ts
+packages/framekit/src/server/__tests__/browser.test.ts
 packages/framekit/src/server/render-image.ts
-packages/framekit/src/server/render-image.test.ts
+packages/framekit/src/server/__tests__/render-image.test.ts
 packages/framekit/src/server.ts
 packages/framekit/package.json
 pnpm-lock.yaml
 ```
+
+Runtime tests live under `packages/framekit/src/server/__tests__/` and mirror
+the production server domain. Compile-time type fixtures remain under
+`packages/framekit/tests/types/`; root Playwright E2E remains under
+`tests/e2e/`.
 
 No startup instrumentation file is required by this step.
 

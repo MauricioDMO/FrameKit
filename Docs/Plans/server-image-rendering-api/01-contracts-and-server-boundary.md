@@ -1,5 +1,7 @@
 # Step 1 - Contracts and Server Boundary
 
+- **Status:** Implemented and verified in the current checkout.
+
 ## Goal
 
 Establish the stable server vocabulary and package boundary before adding image
@@ -24,7 +26,7 @@ This step is intentionally executable without Chromium.
 - Public request and internal resolved-payload types independent of Next.js.
 - One discriminated render-error model with stable codes.
 - A constant-time Bearer authentication helper.
-- Initial package build/export wiring for `@mauriciodmo/framekit/server`.
+- Package build/export wiring for the `@mauriciodmo/framekit/server` facade.
 - Focused tests and public-import type fixtures.
 
 ## Boundary design
@@ -50,10 +52,10 @@ The server package remains responsible for:
 - the in-memory render-job store;
 - browser and capture orchestration.
 
-No type in `./server` may reference `packages/create-framekit/template`,
+No type in the `./server` facade may reference `packages/create-framekit/template`,
 `apps/studio`, or `@framekit/generated/*`.
 
-## Proposed public types
+## Public types
 
 Names may change during implementation, but the separation must remain and the
 public surface should stay small.
@@ -161,15 +163,16 @@ enter the render payload, Map job, browser state, page request, or logs.
 
 ### `FRAMEKIT_API_KEY`
 
-- Required in production.
-- Reject an absent or empty value.
+- The current parser rejects an absent or empty value for every environment
+  record; production therefore fails closed.
 - Do not trim the configured key or incoming token; accidental whitespace should
   fail rather than silently change a secret.
 - Never include the key value in an error/log.
 
 ### `FRAMEKIT_INTERNAL_ORIGIN`
 
-- Required in production for the initial implementation.
+- The current parser requires this value for every environment record; it is
+  therefore required in production for the initial implementation.
 - Parse with `new URL(...)`.
 - Permit only `http:` on loopback.
 - Accept `127.0.0.1`, `[::1]`, or `localhost`; examples should use
@@ -178,8 +181,9 @@ enter the render payload, Map job, browser state, page request, or logs.
 - Preserve an explicit port.
 - Normalize a trailing slash before private render URLs are constructed.
 
-Development may derive a loopback origin in the thin application adapter if the
-explicit value is absent, but production must fail closed.
+If development later derives a loopback origin in a thin application adapter, it
+must do so before calling this strict parser; the parser does not read `NODE_ENV`
+or provide a fallback.
 
 ### `FRAMEKIT_ALLOWED_IMAGE_HOSTS`
 
@@ -243,7 +247,7 @@ JWT, OAuth, scopes, and persistence are out of scope.
 
 ## Server-only export rules
 
-Add a supported import:
+The supported import is:
 
 ```typescript
 import {
@@ -252,6 +256,10 @@ import {
   // later: renderTemplateImage, loadRenderRequest
 } from '@mauriciodmo/framekit/server'
 ```
+
+The current facade exports only the completed Step 1 symbols shown above. Later
+steps may add the renderer and job helpers; do not add or document `server/*`,
+`browser`, `auth`, or `shared` public subpaths.
 
 Rules:
 
@@ -270,14 +278,18 @@ Rules:
 ```text
 packages/framekit/src/server.ts
 packages/framekit/src/server/config.ts
-packages/framekit/src/server/config.test.ts
+packages/framekit/src/server/__tests__/config.test.ts
 packages/framekit/src/server/errors.ts
 packages/framekit/src/server/auth.ts
-packages/framekit/src/server/auth.test.ts
+packages/framekit/src/server/__tests__/auth.test.ts
 packages/framekit/tests/types/server-api.ts
 packages/framekit/package.json
 packages/framekit/tsdown.config.ts
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. Compile-time type fixtures remain under
+`packages/framekit/tests/types/`.
 
 Use fewer source files if config/auth/errors remain clear together; do not create
 interfaces for speculative implementations.
@@ -288,7 +300,7 @@ interfaces for speculative implementations.
 2. Add `ResolvedRenderPayload` and configuration contracts.
 3. Implement strict pure environment parsing.
 4. Implement the constant-time Bearer helper.
-5. Create `src/server.ts` and export only completed symbols.
+5. Create `packages/framekit/src/server.ts` and export only completed symbols.
 6. Wire `./server` into tsdown and `package.json`.
 7. Add positive/negative tests and supported-import type fixture.
 8. Build the package and inspect client/server dependency boundaries.
@@ -297,8 +309,9 @@ interfaces for speculative implementations.
 
 - Every documented error code is accepted and arbitrary strings are rejected.
 - `ResolvedRenderPayload` contains only serializable render values and assets.
-- Missing API key fails closed in production.
-- Development fallback rules do not leak into production configuration.
+- Missing API key fails closed in every environment.
+- The pure parser stays strict regardless of `NODE_ENV`; any development
+  fallback remains outside the parser.
 - Internal origin accepts loopback with a port and rejects public hosts,
   credentials, paths, queries, and fragments.
 - Host allowlist parsing normalizes case/whitespace and rejects wildcard/scheme/
@@ -313,10 +326,13 @@ interfaces for speculative implementations.
 
 ## Exit gate
 
-Step 1 is complete when:
+Step 1 is complete and verified in the current checkout:
 
-- the server-only public boundary builds and typechecks without Next.js route
-  objects or Chromium;
-- auth/config/error behavior is deterministic and covered by focused tests;
-- the final render payload contract represents already-resolved data;
-- existing package entry points still build without depending on `./server`.
+- [x] The server-only public boundary builds and typechecks without Next.js
+  route objects or Chromium.
+- [x] Auth/config/error behavior is deterministic and covered by focused tests.
+- [x] The final render payload contract represents already-resolved data.
+- [x] Existing package entry points still build without depending on `./server`.
+
+This exit gate covers only Step 1. Image inputs, render jobs, browser capture,
+routes, packaging, Docker, and rollout remain pending in Steps 2-8.

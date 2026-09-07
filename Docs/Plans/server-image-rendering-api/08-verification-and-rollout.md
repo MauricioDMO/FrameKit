@@ -8,7 +8,7 @@ distribution; update documentation; and define a safe additive rollout.
 
 ## Depends on
 
-- Steps 1-7 complete with focused exit gates.
+- Completion of Steps 1-7 with passing focused exit gates.
 - Built public package tarballs.
 - An isolated creator-generated consumer outside the workspace.
 
@@ -28,6 +28,15 @@ distribution; update documentation; and define a safe additive rollout.
 ## Verification strategy
 
 Keep four distinct levels; passing one does not imply the others.
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. FrameKit server tests use
+`packages/framekit/src/server/__tests__/`; the shared raster and canvas tests use
+`packages/framekit/src/shared/__tests__/raster-image.test.ts` and
+`packages/framekit/src/editor/components/__tests__/template-canvas.test.tsx`.
+Compile-time type fixtures remain under `packages/framekit/tests/types/`, Studio
+integration tests under `apps/studio/src/__tests__/`, and root Playwright E2E
+under `tests/e2e/`.
 
 | Level | Proves | Does not prove |
 |---|---|---|
@@ -330,7 +339,10 @@ Update:
 
 - generated template README;
 - placeholder `.env.example`;
-- supported package imports including `./server`;
+- current supported package imports, including the existing `./server` import
+  for the Step 1 contracts, authentication, configuration, and errors; jobs,
+  browser, routes, image fetching, Docker, and rollout remain future work, and
+  no server/browser/auth/shared public subpaths are proposed;
 - note that Dockerfile is pnpm-specific initially;
 - note that Studio client export remains available;
 - note that server-rendered templates should package fonts/styles/assets locally

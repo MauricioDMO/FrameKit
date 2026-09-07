@@ -2,23 +2,24 @@
 
 ## Goal
 
-Make the server renderer a valid public package feature and produce a generated
+Make the future server renderer a valid public package feature and produce a generated
 consumer Docker image containing the matching Chromium headless shell, required
 system libraries, Next.js standalone server, and no embedded secrets.
 
-The final runtime uses in-memory jobs only; no writable render-job directory or
-persistent volume is required.
+The planned final runtime uses in-memory jobs only; no writable render-job
+directory or persistent volume is required.
 
 ## Depends on
 
-- Steps 1-6 implemented and passing focused exit gates.
+- Completion of Steps 1-6 with passing focused exit gates.
 - Current public package build, creator copy behavior, and standalone production
   build.
 - Repository Node/pnpm requirements.
 
 ## Deliverables
 
-- Final `@mauriciodmo/framekit/server` export/declarations.
+- Final `@mauriciodmo/framekit/server` export/declarations, extending the
+  current Step 1-only facade with the completed server-rendering runtime.
 - One compatible pinned `playwright-core` version across package development,
   canonical generated app, Studio, and lockfile.
 - No Chromium download during ordinary dependency installation.
@@ -52,7 +53,7 @@ persistent volume is required.
 
 ## Package export and build
 
-Final manifest shape:
+Target manifest shape after the server-rendering feature is complete:
 
 ```json
 {
@@ -75,7 +76,12 @@ Required checks:
   repository-local path enters package tarball;
 - public type fixtures compile against package exports, not source aliases.
 
-Update public import documentation only when implementation is ready to ship.
+The `./server` export currently exists for the Step 1 contracts, authentication,
+configuration, and errors. This step extends it with the completed
+server-rendering runtime; jobs, browser, routes, image fetching, Docker, and
+rollout remain future work until their respective steps pass. Update public import
+documentation for later capabilities only when this proposed feature is ready
+to ship; do not document server/browser/auth/shared subpaths.
 
 ## Generated application integration
 
@@ -84,9 +90,9 @@ Add to `packages/create-framekit/template/`:
 ```text
 Dockerfile
 .dockerignore
-src/app/api/v1/images/route.ts
-src/app/__framekit/render/[id]/page.tsx
-src/app/__framekit/render/[id]/render-client.tsx
+packages/create-framekit/template/src/app/api/v1/images/route.ts
+packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
+packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
 ```
 
 No browser-shutdown `src/instrumentation.ts` is required by the v1 design.
@@ -100,6 +106,11 @@ Creator-focused assertions:
 - generated app can install, generate, check, and build.
 
 Do not hand-edit generated registry files while adding routes.
+
+The reusable package owns server behavior. The generated application and
+`apps/studio` own Next.js routes and generated-registry integration; routes stay
+out of `packages/framekit/src/server/`. Keep `packages/create-framekit/src/`
+small and do not add `services/`, `utils/`, `lib/`, or `commands/` directories.
 
 ## Docker stages
 
@@ -274,7 +285,7 @@ Final copied server must contain/resolve:
 - `.framekit/next/static` in expected location;
 - copied `public` and generated template assets;
 - public/private route chunks;
-- `@mauriciodmo/framekit/server` runtime code;
+- `@mauriciodmo/framekit/server` runtime code produced by Steps 1-7;
 - `playwright-core` runtime JavaScript;
 - access to matching browser executable under `PLAYWRIGHT_BROWSERS_PATH`;
 - no workspace symlink that points outside the image.
@@ -302,11 +313,16 @@ packages/framekit/tests/types/server-api.ts
 packages/create-framekit/template/package.json
 packages/create-framekit/template/Dockerfile
 packages/create-framekit/template/.dockerignore
-packages/create-framekit/src/*.test.ts
+packages/create-framekit/src/__tests__/runtime.test.ts
+packages/create-framekit/src/__tests__/cli.test.ts
 apps/studio/package.json
 pnpm-lock.yaml
-AGENTS.md
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. Compile-time type fixtures remain under
+`packages/framekit/tests/types/`; root Playwright E2E remains under
+`tests/e2e/`.
 
 ## Implementation sequence
 

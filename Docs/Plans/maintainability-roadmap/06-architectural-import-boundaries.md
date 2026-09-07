@@ -1,644 +1,208 @@
 # Phase 6 - Architectural Import Boundaries
 
-- **Status:** Proposed; implement after Phase 5 has passed its exit gate.
-- **Depends on:** [Phase 5 - Published semantic design tokens](./05-design-tokens.md).
-- **Audience:** FrameKit maintainers implementing the final maintainability PR.
+- **Status:** Proposed and deferred; not started.
+- **Depends on:** Server Image Rendering steps 1-8 and the server gate.
+- **Audience:** FrameKit maintainers planning the final maintainability phase.
 
 ## Goal
 
-Make the intended package and source-layer direction executable with the existing
-ESLint flat configurations. Use only ESLint's built-in `no-restricted-imports`
-rule, scoped to the smallest useful file globs. Do not add an architecture
-framework, a custom plugin, a second boundary checker, or a new dependency.
-Treat bare and `node:`-prefixed Node built-ins identically, and protect the
-configuration with a runnable negative contract test.
+Define the package-entry and source-layer boundaries after the Server Image
+Rendering plan has completed. This is a planning document, not approval to
+enforce rules against the pre-server checkout. Phase 6 must be implemented only
+once the final graph has been re-inventoried and revalidated after Server Step 8.
+This documentation update requests no ESLint, configuration, or source
+implementation.
 
-This phase is a behavior-preserving configuration and import-cleanup PR. It does
-not change the public export map, tsdown entry map, runtime behavior, generated
-output, or package ownership.
+The phase remains behavior-preserving. It must not introduce a package split,
+change runtime behavior, hand-edit generated output, or make the current
+checkout claim that the later server-rendering capabilities already exist.
 
-## Phase 5 dependency
+## Execution order
 
-Do not start the implementation until Phases 1-5 have passed their exit gates.
-Before adding restrictions, verify the existing source/generated distinction,
-canonical consumer workflow, and supported public imports. The final Phase 6
-review must still run the canonical isolated-consumer workflow; linting a
-workspace is not proof that a packed package works outside the workspace.
+The global execution order is:
 
-## Current baseline
-
-### ESLint and command coverage
-
-Phase 1 establishes the shared ESLint Standard base configuration and the
-full-repository pre-commit lint gate. The workspace-specific baseline below
-describes the existing Next, TypeScript, Tailwind, and file-target behavior that
-Phase 6 must preserve. Phase 6 adds only its `no-restricted-imports` rules and
-its documented creator lint-target extension; it does not add another lint
-plugin, checker, or dependency.
-
-The three existing flat configurations are:
-
-- `packages/framekit/eslint.config.mjs` imports the shared Standard base before
-  spreading `eslint-config-next/typescript`. Its package script runs
-  `eslint src scripts tsdown.config.ts eslint.config.mjs`.
-- `apps/studio/eslint.config.mjs` imports the shared Standard base before
-  combining the Next and Tailwind configurations and explicitly ignores `.framekit/**`,
-  `src/generated/framekit/**`, and Next/build output. Its package script runs
-  `eslint .`.
-- `packages/create-framekit/eslint.config.mjs` imports the shared Standard base
-  before spreading `eslint-config-next` and disables only
-  `@next/next/no-html-link-for-pages`. Its package script runs
-  `eslint src tsdown.config.ts eslint.config.mjs`; it does not visit
-  `template/src/**` until this phase.
-
-Generated registries are written to `src/generated/framekit/**`, not to
-`.framekit/**`. The Studio config already ignores both generated locations
-(`src/generated/framekit/**` and `.framekit/**`). The creator config has no such
-generated-source ignore: when its lint target is extended to `template/src`, it
-will also lint an existing `template/src/generated/framekit/**` registry. The
-generated `.framekit/**` directory is outside that target. Neither location may
-be hand-edited.
-
-The root script is `pnpm -r --if-present lint`, so `pnpm lint` executes the
-lint scripts of the three workspaces. The creator lint target must include
-`template/src` in this phase; otherwise the generated consumer source is not
-covered by the rule even if the flat-config override exists.
-
-The current CI Ubuntu `verify` job runs `pnpm lint` on Node.js `22.13.0` and
-`24`, after building both public packages. That makes the boundary rules merge
-gates in both Linux matrix lanes. The current Windows smoke job does not run
-workspace lint and must not be described as doing so.
-
-The requested scope names `scripts/check-runtime-imports.mjs`, but that file is
-not present in this checkout. The actual root mapping is:
-
-```json
-"check:runtime": "node scripts/check-runtime-contract.mjs"
+```text
+Maintainability 1 → 2 → 3 → 4 → 5
+    ↓
+Server Image Rendering 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+    ↓
+Server gate
+    ↓
+Maintainability 6
 ```
 
-`check-runtime-contract.mjs` checks Node.js/pnpm manifests, documentation, and
-the CI runtime matrix. It is a distinct runtime-portability contract, not an
-import-boundary checker. Keep `pnpm check:runtime` unchanged and do not duplicate
-its work with a new script.
+Do not start Phase 6 after Phase 5 alone. The eight server steps and the server
+gate must complete first. Until then, this document remains a plan and no
+ESLint rule, ESLint configuration, architecture test, source import, export,
+package manifest, or build entry is changed for Phase 6.
 
-### Import graph observed before enforcement
+## Current exports and the server facade
 
-The current static imports describe this intended direction:
+The current `@mauriciodmo/framekit` package exposes these six non-server entries:
 
-- `packages/framekit/src/types.ts` and `src/core/**` use foundational types and
-  core modules. `types.ts` has a legitimate `import type { ReactNode } from
-  'react'`; `core/define-template.ts` has the same legitimate React type use.
-- `src/editor/**` uses core/types and its editor-local modules. The editor's
-  `framekit-navigation.tsx` legitimately imports `next/link` and
-  `next/navigation`.
-- `src/studio/**` uses core/types and editor modules. The current Studio
-  implementation imports `FrameKitEditor`, navigation, and editor message
-  types; this is the allowed upward composition direction.
-- `src/tooling/cli/**` uses discovery, codegen, core/types, and the dev-server path.
-  `tooling/cli/dev.ts` importing `../dev/**` is intentional and must remain valid.
-- `src/tooling/dev/**`, `src/tooling/codegen/**`, and `src/tooling/discovery/**` use Node/tooling
-  dependencies and foundational contracts. They do not currently import the
-  editor or Studio implementation.
-- Node built-ins currently use `node:*` specifiers and occur in the CLI, dev,
-  codegen, and discovery implementation/test paths, not in the foundation,
-  editor, or Studio implementation paths. A bare built-in such as `fs` is the
-  same dependency and must not bypass enforcement. `src/studio/root.tsx` is the
-  intentional Next server boundary and imports `next/headers`; that is not a
-  Node built-in import.
-- `apps/studio/src/**` and
-  `packages/create-framekit/template/src/**` use the published FrameKit
-  entries, generated `@framekit/generated/**` modules, and their own source.
-  The generated registries under `template/src/generated/framekit/**` also use
-  the published root type and dynamic relative imports of consumer templates.
-  No current consumer static import uses `packages/framekit/src/**` or an
-  unsupported `@mauriciodmo/framekit` subpath.
-- `packages/create-framekit/src/**` currently uses Node and its own local
-  modules; it has no FrameKit source-tree import.
+- `@mauriciodmo/framekit` (`.`)
+- `@mauriciodmo/framekit/editor` (`./editor`)
+- `@mauriciodmo/framekit/studio` (`./studio`)
+- `@mauriciodmo/framekit/studio/root` (`./studio/root`)
+- `@mauriciodmo/framekit/dev` (`./dev`)
+- `@mauriciodmo/framekit/styles.css` (`./styles.css`)
 
-The scan found no current static import or re-export declaration that violates
-the boundaries below. Several apparent matches are generated source strings,
-not imports in the module being linted: for example, `tooling/cli/check.ts`, tooling
-modules, and `tooling/codegen/__tests__/write-template-module.test.ts` emit or assert source
-containing `@mauriciodmo/framekit` imports. ESLint must not be made to treat
-those strings as runtime edges.
+`@mauriciodmo/framekit/server` (`./server`) is currently available as the Step 1
+server facade. It exports only the Step 1 contracts, authentication helper,
+configuration parser, and error model. Jobs, browser, image fetching, routes,
+Docker, and rollout remain future work in Server Steps 2-8. Phase 6 consumes
+the final post-server contract after those steps and the server gate rather than
+creating or pre-approving it.
 
-There are also deliberate dynamic imports. `editor/export/export-template.ts` loads
-the browser-only `modern-screenshot` dependency; generated registries load
-consumer-local templates or brand components; and the generation integration
-tests dynamically load temporary fixture modules. None is a current dynamic
-import of an unsupported FrameKit public subpath. `no-restricted-imports` does
-not inspect `import()` expressions, so this phase makes no claim to enforce
-dynamic-import boundaries. Keep that limitation explicit rather than adding a
-second checker.
+The intended facade files in the final graph are:
 
-The current package contract is also explicit. `packages/framekit/package.json`
-exports exactly `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, and
-`./styles.css`. `packages/framekit/tsdown.config.ts` has matching public entries
-plus the internal `cli` build entry. Phase 6 preserves both facts.
+```text
+src/index.ts
+src/editor.ts
+src/studio.ts
+src/studio-root.ts
+src/dev.ts
+src/server.ts             # current facade; Step 1 only
+```
 
-## Allowed dependency direction
+The five existing TypeScript facades retain their current responsibilities.
+`server.ts` is the current facade and currently exports only the Step 1
+contracts, authentication helper, configuration parser, and error model; later
+server steps extend it. `index.ts` remains the root foundation entry;
+`editor.ts`, `studio.ts`, `studio-root.ts`, and `dev.ts` remain separate
+boundaries rather than becoming a single barrel.
 
-Use this direction as the review model. An arrow means “may import from”; it is
-not a request to introduce new imports.
+## Post-server architecture baseline
 
-| Layer | May import | Must not import |
+Phase 6 must plan against the final graph, not the current six-entry graph. The
+baseline must include all of the following nodes and their real static and
+dynamic edges after Server Step 8:
+
+| Ownership | Post-server scope |
+| --- | --- |
+| Foundation | `types.ts`, `core/**`, `markdown/**`, and foundation-safe modules under `shared/**` |
+| Product UI | `editor/**`, `editor.ts`, `studio/**`, `studio.ts`, and `studio-root.ts` |
+| Server runtime | `server/**`, `server.ts`, render-job and browser lifecycle code, and server-only dependencies |
+| Tooling | `tooling/**`, `dev.ts`, CLI, code generation, discovery, and development server code |
+| Consumers | `apps/studio/src/**` and the generated consumer under `packages/create-framekit/template/src/**`, including public and private server routes |
+| Scaffolding | `packages/create-framekit/src/**` and the generated-project template outside its consumer runtime |
+
+The final graph must explicitly account for:
+
+- `TemplateCanvas`, extracted by Server Step 2 and exposed through the approved
+  `./editor` boundary, without preview scaling, Studio shell, theme, or product
+  chrome;
+- `shared/raster-image.ts`, whose ownership and allowed dependents must be
+  confirmed from the post-server implementation rather than assumed here;
+- the consumer public image API route and private render route in the canonical
+  generated consumer and in Studio, with their server-only status and route
+  boundaries recorded;
+- Node and Playwright dependencies used by server-only runtime, browser capture,
+  packaging, or verification code, without contaminating reusable client
+  bundles; and
+- generated registries, template loaders, aliases, build entries, and package
+  exports as they actually exist after the server work.
+
+## Ownership and direction model
+
+The following is the future review model. An arrow means “may import from”; it
+does not authorize an import in the current checkout. The exact final file globs,
+specifier patterns, exceptions, and enforcement mechanism remain unapproved
+until the post-server inventory is complete.
+
+| Ownership | May depend on | Future constraints to preserve |
 | --- | --- | --- |
-| Foundation: `types.ts`, `core/**`, `markdown/**`, root core entry | External React types and foundation-local modules; no Node built-ins | `editor`/`editor.ts`, `studio`/`studio.ts`/`studio-root.ts`, and all `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
-| Editor: `editor/**`, `editor.ts` | Foundation, React/browser APIs, and the legitimate Next navigation imports; no Node built-ins | `studio`/`studio.ts`/`studio-root.ts` and all `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
-| Studio: `studio/**`, `studio.ts`, `studio-root.ts` | Foundation and Editor, React, and Next (including the server-only `next/headers` used by `studio/root.tsx`); no Node built-ins | All `tooling/cli/**`, `tooling/codegen/**`, `tooling/discovery/**`, and `tooling/dev/**`/`dev.ts` tooling modules |
-| Tooling: `tooling/codegen/**`, `tooling/discovery/**`, `tooling/dev/**`, `dev.ts`, `tooling/cli/**`, `tooling/cli/__tests__/cli.test.ts` | Foundation and Node/tooling dependencies; CLI may compose the dev-server and codegen/discovery paths | Editor and Studio implementation modules and entries |
-| Consumers: `apps/studio/src/**` and generated-template source | Supported public package entries, `@framekit/generated/**`, and consumer-local modules | Direct FrameKit source paths (`packages/framekit/src/**` or the canonical template's relative sibling spelling) and every unsupported FrameKit subpath |
+| **Foundation** (`types.ts`, `core/**`, `markdown/**`, foundation-safe `shared/**`) | Foundation-local modules and permitted external React types | Must not depend on Editor, Studio, Server runtime, Tooling, Node built-ins, or server-only packages. |
+| **Product UI** (`editor/**`, `studio/**`, and their facades) | Foundation/shared modules, React/browser APIs, and the legitimate Next boundaries | Editor must not depend on Studio, Server runtime, or Tooling. Reusable/client Studio must not depend on Server runtime or Tooling; its explicit Next server boundary remains distinct. |
+| **Server runtime** (`server/**`, `server.ts`) | Foundation/shared modules and server-only Node/Playwright dependencies | Must not depend on Editor implementation, Studio, or Tooling. Server-only dependencies must not leak into client/editor/Studio bundles. The current `./server` entry is server-only; later capabilities become available only after their steps ship. |
+| **Tooling** (`tooling/**`, `dev.ts`, CLI and build/codegen paths) | Foundation/shared contracts and Node/tooling dependencies; CLI may compose development-server, discovery, and codegen paths | Must remain separate from Product UI and Server runtime. Existing CLI-to-development-server composition is not a reverse edge into Editor or Studio. |
+| **Consumers** (Studio app and generated consumer routes/source) | Supported package entries, generated aliases, and consumer-local modules | Must not import `packages/framekit/src/**`, sibling source spellings, or unsupported package subpaths. Server routes may use the current `./server` entry only in server-only contexts and only for implemented capabilities. |
+| **Scaffolding** (`create-framekit/src/**` and template ownership) | Its own Node CLI code and the supported public FrameKit package entries used by generated projects | Must not import FrameKit source directly or turn template generation into a second package/runtime boundary. Generated output remains generated and is never hand-edited. |
 
-The public package entries remain separate boundaries:
+Consumer private render routes will compose the `./server` contract, once the
+corresponding job and browser capabilities are implemented, with `TemplateCanvas`
+through the public `./editor` contract, not through a `packages/framekit/src/**`
+path. The `server/**` runtime itself does not import the Editor implementation.
+The `./server` contract is a separate server-only boundary and is never made
+available to client components merely because a consumer has a server route.
 
-- `src/index.ts` exposes foundation functionality only.
-- `src/editor.ts` exposes the Editor entry only.
-- `src/studio.ts` and `src/studio-root.ts` expose Studio entries only.
-- `src/dev.ts` exposes development/codegen/discovery functionality.
-- `src/tooling/cli/index.ts` is the CLI build entry, not a supported package export.
+## Required post-server inventory
 
-The rules enforce the prohibited static source-layer edges and all static Node
-built-in specifier spellings in the foundation, editor, and Studio
-implementation globs. They do not ban React, Next, Node from tooling, test
-libraries, or all external packages. The consumer rule permits the public
-`./dev` entry because it is an existing supported export; that does not make the
-implementation's `src/tooling/dev/**` modules browser-compatible.
+Immediately after Server Step 8 and before Phase 6 implementation, re-run the
+actual dependency inventory. Revalidate, at minimum:
 
-## Exact ESLint rule map
+1. Every static import and re-export across `core`, `markdown`, `shared`,
+   `editor`, `studio`, `server`, `tooling`, consumers, and scaffolding.
+2. Dynamic imports, generated source strings, generated registries, and ignored
+   output separately from static module edges.
+3. The six existing entries, the current `./server` entry, all facade files,
+   build entries, and the package contents of both public packages.
+4. `TemplateCanvas` and `shared/raster-image.ts` ownership, including whether
+   any public consumption is direct or only through a facade.
+5. The public API and private render consumer routes, their client/server
+   boundaries, and every Node or Playwright dependency they reach.
+6. The nearest relevant `__tests__/` placement for runtime tests, while
+   retaining `packages/framekit/tests/types/` for compile-time type fixtures.
 
-Append the following file-scoped overrides to
-`packages/framekit/eslint.config.mjs`, after the existing `...nextTs` entries.
-The patterns intentionally use module-specifier globs rather than a resolver or
-filesystem graph. `no-restricted-imports` is an existing ESLint core rule.
+Do not carry forward the pre-server inventory by assumption. If the actual graph
+differs from this model, update the plan or obtain an architecture decision
+before choosing restrictions. Phase 6 must not present exact final ESLint
+patterns as already approved for the post-server graph.
 
-Before the config array, import `builtinModules` from `node:module` and derive
-the bare-specifier restriction list from the running supported Node version.
-Use a separate `node:*` pattern for every prefixed built-in, including
-prefix-only modules such as `node:test` that older supported Node versions do
-not consistently expose through `builtinModules`. This avoids a partial
-handwritten list and keeps Node 22/24 enforcement equivalent:
+## Enforcement planning
 
-```js
-import { builtinModules } from 'node:module'
+After the inventory is approved, select the smallest existing enforcement
+mechanism that can express the verified static boundaries. The likely candidate
+is ESLint's built-in `no-restricted-imports`, but its file globs, module-specifier
+patterns, Node built-in coverage, server-only exceptions, consumer exceptions,
+and generated-source treatment are deliberately not fixed by this plan.
 
-const restrictedBareNodeImports = builtinModules
-  .filter((moduleName) => !moduleName.startsWith('node:'))
-  .map((name) => ({
-    name,
-    message: 'Node.js built-ins are not allowed in reusable FrameKit code.',
-  }))
-```
+The eventual contract must consider both bare and `node:`-prefixed Node built-in
+spellings, preserve legitimate React and Next imports, keep Tooling's Node
+dependencies valid, and avoid pretending that ESLint covers dynamic imports or
+generated source strings. A negative/positive contract test may be added only
+after the graph and rule map are approved; it must assert the relevant rule
+identity rather than merely observe any lint failure.
 
-Use this exact list as `paths: restrictedBareNodeImports` in each of the three
-foundation/editor/Studio rule objects below. Add a separate first pattern group
-for `node:*`; keep the remaining pattern group responsible only for source-layer
-direction. Together they cover bare imports, prefixed imports, prefix-only
-built-ins, and subpaths such as `fs/promises` on both supported Node lanes.
+The future implementation may correct actual violations within the approved
+direction, but it must not weaken a boundary with broad allow-lists, rewrite
+barrels, split packages, or add a second architecture checker. None of that
+implementation is part of the current pre-server work.
 
-### `packages/framekit/eslint.config.mjs`
+## Planned verification after Server Step 8
 
-#### Foundation and root entry
+The final Phase 6 gate should require, as applicable to the approved graph:
 
-```js
-{
-  files: [
-    'src/core/**/*.{ts,tsx}',
-    'src/types.ts',
-    'src/markdown/**/*.{ts,tsx}',
-    'src/index.ts',
-  ],
-  rules: {
-    'no-restricted-imports': ['error', {
-      paths: restrictedBareNodeImports,
-      patterns: [{
-        group: ['node:*'],
-        message: 'Node.js built-ins are not allowed in reusable FrameKit code.',
-      }, {
-        group: [
-          '**/editor', '**/editor.*', '**/editor/**',
-          '**/studio', '**/studio.*', '**/studio/**',
-          '**/studio-root', '**/studio-root.*', '**/studio-root/**',
-          '**/cli', '**/cli.*', '**/cli/**',
-          '**/codegen', '**/codegen.*', '**/codegen/**',
-          '**/discovery', '**/discovery.*', '**/discovery/**',
-          '**/dev', '**/dev.*', '**/dev/**',
-          '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/editor/**',
-          '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/**',
-          '@mauriciodmo/framekit/studio/root',
-          '@mauriciodmo/framekit/cli', '@mauriciodmo/framekit/cli/**',
-          '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/dev/**',
-        ],
-        message: 'Foundation and the root entry must not import upper layers or tooling modules.',
-      }],
-    }],
-  },
-}
-```
+- all eight server exit gates and the server gate are complete before Phase 6;
+- the post-server inventory and ownership map are reviewed against the checkout;
+- current six-entry consumers remain valid, while server consumers use the
+  supported `./server` entry only for capabilities actually shipped by the
+  completed server plan;
+- `TemplateCanvas` is consumed through `./editor` and server-only dependencies
+  remain out of client/editor/Studio bundles;
+- the approved static boundary contract rejects prohibited direction, direct
+  source imports, unsupported package subpaths, and forbidden Node built-ins in
+  reusable client-facing layers, while preserving approved exceptions;
+- dynamic imports and generated strings are inventoried separately from what the
+  static rule enforces;
+- runtime tests live under the nearest relevant `__tests__/` directory and
+  compile-time fixtures remain under `packages/framekit/tests/types/`;
+- package exports, build entries, generated output, isolated consumers, and the
+  server routes pass their relevant checks; and
+- no source, ESLint/configuration, package, export, or generated-file change is
+  smuggled into the documentation-only pre-server update.
 
-This covers `src/types.ts` without restricting its valid React type import.
+Phase 6 remains incomplete until this future gate passes. The server plan and
+the global tracker remain the authorities for whether Server Image Rendering or
+its gate has completed.
 
-#### Editor and editor entry
+## Out of scope for this planning update
 
-```js
-{
-  files: ['src/editor/**/*.{ts,tsx}', 'src/editor.ts'],
-  rules: {
-    'no-restricted-imports': ['error', {
-      paths: restrictedBareNodeImports,
-      patterns: [{
-        group: ['node:*'],
-        message: 'Node.js built-ins are not allowed in reusable FrameKit code.',
-      }, {
-        group: [
-          '**/studio', '**/studio.*', '**/studio/**',
-          '**/studio-root', '**/studio-root.*', '**/studio-root/**',
-          '**/cli', '**/cli.*', '**/cli/**',
-          '**/codegen', '**/codegen.*', '**/codegen/**',
-          '**/discovery', '**/discovery.*', '**/discovery/**',
-          '**/dev', '**/dev.*', '**/dev/**',
-          '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/**',
-          '@mauriciodmo/framekit/studio/root',
-          '@mauriciodmo/framekit/cli', '@mauriciodmo/framekit/cli/**',
-          '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/dev/**',
-        ],
-        message: 'Editor modules must not import Studio or tooling modules.',
-      }],
-    }],
-  },
-}
-```
-
-#### Studio and Studio entries
-
-```js
-{
-  files: [
-    'src/studio/**/*.{ts,tsx}',
-    'src/studio.ts',
-    'src/studio-root.ts',
-  ],
-  rules: {
-    'no-restricted-imports': ['error', {
-      paths: restrictedBareNodeImports,
-      patterns: [{
-        group: ['node:*'],
-        message: 'Node.js built-ins are not allowed in reusable FrameKit code.',
-      }, {
-        group: [
-          '**/cli', '**/cli.*', '**/cli/**',
-          '**/codegen', '**/codegen.*', '**/codegen/**',
-          '**/discovery', '**/discovery.*', '**/discovery/**',
-          '**/dev', '**/dev.*', '**/dev/**',
-          '@mauriciodmo/framekit/cli', '@mauriciodmo/framekit/cli/**',
-          '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/dev/**',
-        ],
-        message: 'Studio modules must not import tooling modules.',
-      }],
-    }],
-  },
-}
-```
-
-#### Tooling reverse-edge guard
-
-This small companion override keeps a future tooling change from creating the
-opposite dependency edge. It permits the current CLI-to-dev-server direction.
-
-```js
-{
-  files: [
-    'src/tooling/codegen/**/*.{ts,tsx}',
-    'src/tooling/discovery/**/*.{ts,tsx}',
-    'src/tooling/dev/**/*.{ts,tsx}',
-    'src/dev.ts',
-    'src/tooling/cli/**/*.{ts,tsx}',
-    'src/tooling/cli/__tests__/cli.test.ts',
-  ],
-  rules: {
-    'no-restricted-imports': ['error', {
-      patterns: [{
-        group: [
-          '**/editor', '**/editor.*', '**/editor/**',
-          '**/studio', '**/studio.*', '**/studio/**',
-          '**/studio-root', '**/studio-root.*', '**/studio-root/**',
-          '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/editor/**',
-          '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/**',
-          '@mauriciodmo/framekit/studio/root',
-        ],
-        message: 'Tooling modules must not import editor or Studio implementation modules.',
-      }],
-    }],
-  },
-}
-```
-
-No `allowTypeImports` option is used. A type-only import from an upper layer is
-still an architectural dependency; the legitimate React type imports do not
-match any restricted pattern.
-
-### Consumer public-entry guard
-
-Add the following override to `apps/studio/eslint.config.mjs`. Add the same
-`rules` object to `packages/create-framekit/eslint.config.mjs`, but use the
-template-source glob shown below: `packages/create-framekit/src/**` is the
-scaffolding CLI, while `template/src/**` is the generated consumer source.
-
-```js
-{
-  files: ['src/**/*.{js,jsx,ts,tsx}'], // apps/studio
-  rules: {
-    'no-restricted-imports': ['error', {
-      patterns: [{
-        group: [
-          '@mauriciodmo/framekit/*',
-          '@mauriciodmo/framekit/**',
-          'packages/framekit/src',
-          'packages/framekit/src/**',
-          '**/packages/framekit/src',
-          '**/packages/framekit/src/**',
-          'framekit/src',
-          'framekit/src/**',
-          '**/framekit/src',
-          '**/framekit/src/**',
-          '!@mauriciodmo/framekit/editor',
-          '!@mauriciodmo/framekit/studio',
-          '!@mauriciodmo/framekit/studio/root',
-          '!@mauriciodmo/framekit/dev',
-          '!@mauriciodmo/framekit/styles.css',
-        ],
-        message: 'Consumers may use only supported @mauriciodmo/framekit entry points; never import FrameKit source directly.',
-      }],
-    }],
-  },
-}
-```
-
-In `packages/create-framekit/eslint.config.mjs`, use this file selector with the
-same `rules` object:
-
-```js
-files: ['template/src/**/*.{js,jsx,ts,tsx}'],
-```
-
-The negated patterns are last because ESLint applies pattern exceptions in
-order. The root package name is not matched by the `/*` or `/**` patterns, so
-`@mauriciodmo/framekit` remains allowed. The only allowed subpaths are exactly
-`editor`, `studio`, `studio/root`, `dev`, and `styles.css`; `studio/*`, `cli`,
-`server`, `dist/*`, and any other subpath remain errors. The rule also catches
-monorepo-relative spellings through `packages/framekit/src/**` and from the
-canonical template through its sibling `framekit/src/**`, without trying to
-resolve aliases. `@framekit/generated/**` is a separate TypeScript
-path alias from the consumer `tsconfig.json`, not a FrameKit package subpath or
-new public export, so it is intentionally not in this group. The rule checks
-static import and re-export declarations; it does not replace a resolver or
-inspect arbitrary generated source strings or runtime `import()` expressions.
-
-In `apps/studio/eslint.config.mjs`, keep the existing
-`globalIgnores([...])` block, including `.framekit/**` and
-`src/generated/framekit/**`. Do not replace it with an import exception. The
-`@framekit/generated/**` alias used by generated registries does not match the
-FrameKit package patterns and remains valid. In the creator config, linting
-`template/src` visits `template/src/generated/framekit/**` when that generated
-registry exists, but does not visit the sibling `.framekit/**` directory. The
-registry is therefore covered as generated consumer source without adding an
-ignore, fixture, or second checker; it remains generated output and must not be
-edited by hand.
-
-### Creator lint target
-
-The public-entry override in the creator config is inert for generated template
-source unless the existing package script visits that directory. Make this
-minimal script-only wiring change in `packages/create-framekit/package.json`:
-
-```json
-"lint": "eslint src template/src tsdown.config.ts eslint.config.mjs"
-```
-
-Do not add a template package, a template-specific ESLint config, or another
-boundary command. The existing creator flat config remains the sole config for
-both `src/**` and `template/src/**`.
-
-### Executable boundary contract
-
-Add `packages/framekit/scripts/architecture-boundaries.test.ts`. Use the
-already-installed `eslint` package's Node API; do not write fixture files or add
-a test dependency. Create one `ESLint` instance for each existing workspace
-config and call `lintText` with virtual source plus an absolute `filePath` so the
-real flat-config globs are exercised.
-
-The test must assert `no-restricted-imports` errors for:
-
-- both `import 'fs'` and `import 'node:fs'` from a virtual foundation file;
-- both `fs/promises` spellings, proving built-in subpaths cannot bypass the
-  restriction;
-- `node:test`, proving prefix-only built-ins are retained without inventing a
-  bare equivalent;
-- one representative prohibited edge for each package rule: foundation to
-  editor, editor to Studio, Studio to tooling, and tooling to editor;
-- an unsupported `@mauriciodmo/framekit/server` import in both consumer
-  configs;
-- realistic direct-source imports from each virtual route: a
-  `../../../../../packages/framekit/src/index` spelling from first-party Studio
-  and `../../../../../../framekit/src/index` from the canonical template.
-
-It must also assert no boundary-rule error for:
-
-- Node built-ins from virtual CLI, codegen, discovery, dev, script, and
-  tooling-test paths outside the reusable implementation globs;
-- the legitimate React type, Next navigation, and `next/headers` imports;
-- all six supported public package imports and `@framekit/generated/**` in both
-  consumer configs.
-
-Assert the expected `ruleId`, not only a non-empty message list, so parser or
-unrelated lint failures cannot make a negative case pass accidentally. Keep
-normal workspace lint as the broad integration gate; this small test is the
-regression check that proves the restrictions themselves reject and allow the
-intended examples.
-
-## Accepted existing exceptions
-
-These are intentional and must survive the rule addition:
-
-1. `ReactNode` in `src/types.ts` and the corresponding React type use in
-   `src/core/define-template.ts` remain valid. This plan does not impose a
-   blanket React or external-dependency ban.
-2. `src/editor/navigation/framekit-navigation.tsx` may continue to import
-   `next/link` and `next/navigation`. Next.js use is legitimate in that editor
-   component.
-3. `apps/studio/src/__tests__/framekit/generation.integration.test.ts` may import
-   `@mauriciodmo/framekit/dev`; `./dev` is a supported public entry and is the
-   existing test/codegen utility path. Tests may continue to import their test
-   libraries and local test utilities.
-4. `apps/studio` continues to ignore its generated `.framekit/**` and
-   `src/generated/framekit/**` paths through the existing global ignores. The
-   creator's `template/src` lint target intentionally includes
-   `template/src/generated/framekit/**` when present, so generated registries
-   are checked without being hand-edited; generated `.framekit/**` remains
-   outside that target. Generated `@framekit/generated/**` imports are a
-   separate consumer alias and are not restricted by the public-entry rule.
-5. The six supported package imports remain valid everywhere consumers need
-   them: `@mauriciodmo/framekit`, `@mauriciodmo/framekit/editor`,
-   `@mauriciodmo/framekit/studio`, `@mauriciodmo/framekit/studio/root`,
-   `@mauriciodmo/framekit/dev`, and `@mauriciodmo/framekit/styles.css`.
-6. CLI-to-dev-server composition remains valid. The rule blocks the reverse
-   direction from foundation, editor, Studio, and tooling UI boundaries; it
-   does not block `src/tooling/cli/**` from importing `src/tooling/dev/**`. The built-in
-   restriction applies only to foundation, editor, and Studio implementation
-   globs; both bare and `node:` built-ins remain valid in tooling and in
-   consumer/test files outside those globs, and `next/headers` remains valid in
-   `studio/root.tsx`.
-
-No current static violation needs an exception. If the first lint run exposes
-one, classify it as Phase 6 implementation work and fix the import or its layer
-before merge. Do not silently add it to an allow list or weaken a file glob.
-
-## Numbered implementation steps
-
-1. Confirm the Phase 5 exit gate and re-run the static import inventory above
-   against the post-refactor tree. Separate actual import declarations from
-   generated strings, test fixtures, and ignored output.
-2. Derive `restrictedBareNodeImports` from `node:module`, add the `node:*`
-   pattern, then add the three foundation/editor/Studio overrides and the small
-   tooling reverse-edge override to `packages/framekit/eslint.config.mjs`
-   exactly as mapped above. Preserve the Next config spread and all existing
-   package lint targets.
-3. Add the consumer public-entry override to
-   `apps/studio/eslint.config.mjs`, preserving Tailwind settings and all current
-   generated/build ignores.
-4. Add the same consumer rules to
-   `packages/create-framekit/eslint.config.mjs` with the
-   `template/src/**/*.{js,jsx,ts,tsx}` selector, then extend only its existing
-   lint target to include `template/src`.
-5. Add `packages/framekit/scripts/architecture-boundaries.test.ts` with the
-   negative and positive ESLint API cases above. Keep it source-text-only: no
-   fixture package, generated file, or new dependency.
-6. Run the package-local ESLint commands before changing imports. If a real
-   violation exists, fix it within the established direction using existing
-   modules; do not refactor packages, split files, rewrite barrels, or add
-   public exports. Record any necessary import move in the Phase 6 PR review.
-7. Run the architecture contract test, verify the merged rule for
-   representative files with `eslint --print-config`, then run the complete
-   workspace lint. Confirm that test utilities, Next navigation, generated
-   aliases, the `next/headers` server boundary, and all six supported public
-   imports remain accepted. Confirm that bare and `node:` built-ins are rejected
-   in reusable static imports and accepted in tooling. Keep deliberate dynamic
-   imports unchanged; do not treat them as covered by ESLint.
-8. Build FrameKit before Studio, run the existing tests/type checks, and repeat
-   the Phase 5 canonical-consumer checks. Inspect the package export map and
-   tsdown entries to prove that this phase changed enforcement only.
-9. Review the diff for accidental generated output, source refactors, package
-   manifest changes other than the creator lint target, or changes to
-   `check:runtime`.
-
-## Verification commands
-
-Run from the repository root:
-
-```bash
-pnpm install --frozen-lockfile
-pnpm check:runtime
-pnpm --filter @mauriciodmo/framekit build
-pnpm --filter @mauriciodmo/create-framekit build
-pnpm --filter @mauriciodmo/framekit exec eslint src scripts tsdown.config.ts eslint.config.mjs
-pnpm --filter studio exec eslint .
-pnpm --filter @mauriciodmo/create-framekit exec eslint src template/src tsdown.config.ts eslint.config.mjs
-pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/core/define-template.ts
-pnpm --filter @mauriciodmo/framekit exec eslint --print-config src/editor/navigation/framekit-navigation.tsx
-pnpm --filter studio exec eslint --print-config 'src/app/editor/[[...slug]]/page.tsx'
-pnpm --filter @mauriciodmo/create-framekit exec eslint --print-config 'template/src/app/editor/[[...slug]]/page.tsx'
-pnpm --filter @mauriciodmo/framekit exec vitest run scripts/architecture-boundaries.test.ts
-pnpm lint
-pnpm test
-pnpm typecheck
-pnpm build
-pnpm --filter @mauriciodmo/framekit pack --dry-run
-pnpm --filter @mauriciodmo/create-framekit pack --dry-run
-git diff --check
-```
-
-`pnpm lint` is the executable repository gate: it recursively invokes the
-three existing workspace lint scripts, and the creator script now includes the
-canonical generated-template source. CI's Ubuntu matrix already runs that
-same command in both supported Node lanes. `check:runtime` remains the
-separate Node/pnpm portability check; it must not be replaced by, or merged
-with, ESLint. The canonical-consumer commands from Phase 5 must also be run
-after building the public packages; they are not replaced by `pnpm lint`.
-
-Phase 1 is a mandatory sequencing prerequisite, so its ESLint Standard
-configuration and pre-commit lint gate are part of the Phase 6 foundation. There
-is no separate repository-wide format command in this roadmap.
-
-## Exit gate
-
-Phase 6 is complete only when:
-
-- Phases 1-5 have passed, and the Phase 5 canonical-consumer gate passes;
-- the exact file globs and `no-restricted-imports` maps above are present in the
-  three existing flat configs, with no new plugin or dependency;
-- `pnpm lint` passes, including `template/src/**` through the existing creator
-  lint script, and the CI Ubuntu matrix executes that gate;
-- no current static import or re-export declaration violates the foundation,
-  editor, Studio, tooling, or consumer direction, or every discovered
-  violation has been corrected as Phase 6 work rather than hidden as an
-  exception;
-- the architecture contract test proves that bare, prefixed, and subpath Node
-  built-ins are rejected in foundation, editor, and Studio implementation
-  globs; Node built-ins remain valid in tooling, and `next/headers` remains
-  valid in `studio/root.tsx`;
-- dynamic `import()` expressions and generated source strings have been
-  inventoried separately and are not described as ESLint-enforced boundaries;
-- React type imports, Next navigation, test utilities, generated aliases and
-  ignored generated output remain valid;
-- consumers use only the package specifiers
-  `@mauriciodmo/framekit`, `@mauriciodmo/framekit/editor`,
-  `@mauriciodmo/framekit/studio`, `@mauriciodmo/framekit/studio/root`,
-  `@mauriciodmo/framekit/dev`, and `@mauriciodmo/framekit/styles.css`, with no
-  direct `packages/framekit/src/**` or sibling `framekit/src/**` import;
-- `packages/framekit/package.json` exports and `tsdown.config.ts` entries are
-  unchanged, and no new public export or package split was introduced;
-- `pnpm lint`, `pnpm check:runtime`, tests, type checks, builds, package dry-runs,
-  and `git diff --check` pass; and
-- the diff contains no generated output, source refactor, custom checker,
-  fixture package, or unrelated configuration change.
-
-Failure of any item blocks merge.
-
-## Rollback and review guidance
-
-Review this as one final roadmap PR. Review the file list first, then inspect
-the rule patterns and their file globs, then inspect the lint output. Confirm
-that every accepted exception is explained by the current graph rather than by
-an `eslint-disable` or broad negated pattern.
-
-If a rule creates a false positive, first verify whether the import is actually
-one of the accepted paths. Narrow the affected file glob or pattern only when
-the current architecture proves that it is legitimate; do not add a blanket
-React, Next, Node, test, or type-import allowance. In particular, do not exempt
-all Node imports to accommodate a consumer or test: keep the narrow
-built-in rule on the FrameKit foundation/editor/Studio implementation globs and
-scope any genuinely server-only exception to its actual file. If the direction
-itself is wrong, stop and obtain a separate architecture decision instead of
-weakening the policy in this phase.
-
-If the exit gate fails, revert the Phase 6 PR as one unit. No runtime, data, or
-public-export migration is required. Leave Phases 1-5 untouched and retain
-`check:runtime` as the runtime portability baseline.
-
-## Out of scope
-
-- Source refactoring beyond correcting an actual Phase 6 import violation.
-- A package split, dependency substitution, barrel rewrite, or new public
-  export.
-- A custom ESLint plugin, custom architecture framework, fixture package, or
-  second boundary checker.
-- A blanket Node, React, Next.js, test-utility, or type-only-import ban; the
-  complete built-in restriction in the documented reusable FrameKit globs is
-  the only Node/browser enforcement in this phase.
-- Enforcement for dynamic `import()` expressions or arbitrary generated source
-  strings.
-- Changes to `check:runtime`, `scripts/check-runtime-contract.mjs`, or any
-  replacement `scripts/check-runtime-imports.mjs`.
-- Hand-editing `packages/framekit/dist/`, `.framekit/`, generated registries,
-  Next output, or any other generated/build directory.
-- New consumer compatibility guarantees, new package entry points, or changes
-  to the six supported imports.
+- Starting or implementing Phase 6 before Server Step 8 and the server gate.
+- Editing source, ESLint/configuration, package manifests, build entries,
+  exports, architecture tests, routes, dependencies, or generated output.
+- Claiming the full Server Image Rendering capability is currently available
+  before its jobs, browser, route, packaging, and rollout steps are complete.
+- Treating the pre-server six-entry graph as the final architecture.
+- Adding a package split, custom architecture framework, second boundary checker,
+  or unrelated cleanup.

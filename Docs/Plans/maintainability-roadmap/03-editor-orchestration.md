@@ -281,7 +281,7 @@ No existing test needs to be replaced by a snapshot or a new suite:
 - `__tests__/framekit-editor.test.tsx` stays the high-level contract suite. Its metadata
   open/close test remains useful because it proves header-to-dialog wiring;
   controls, validation/error, local-persistence, render-output, and copy-wiring
-  coverage remain in this file. Its colocated `EditorField` and `NumberField`
+  coverage remain in this file. Its local `EditorField` and `NumberField`
   characterization cases also remain unless an import becomes unavailable.
 - `export/__tests__/export-template.test.ts` remains the capture/copy-helper suite.
 - `state/__tests__/editor-state.test.ts` remains the pure persistence/state suite.
@@ -294,7 +294,8 @@ into header/dialog tests.
 
 ### Added focused tests
 
-Add these colocated tests without snapshots:
+Add these focused tests under the owning `components/__tests__/` directory,
+without snapshots:
 
 - `packages/framekit/src/editor/components/__tests__/editor-header.test.tsx`
   - renders the title and localized action names;

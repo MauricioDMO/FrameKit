@@ -120,6 +120,13 @@ Transport-specific error mapping remains in the caller:
 - development upload preserves its current behavior/messages;
 - server request-image preparation maps to semantic rendering errors.
 
+`shared/` is reserved for this legitimate cross-domain raster functionality,
+consumed by `packages/framekit/src/tooling/dev/asset-upload.ts` and
+`packages/framekit/src/server/image-input.ts`. Do not turn it into a generic
+`utils/`, `helpers/`, or `common/` directory. Keep `TemplateCanvas` at
+`packages/framekit/src/editor/components/template-canvas.tsx`; do not introduce
+an `editor/canvas/` domain.
+
 ## Part C - API image source parsing
 
 Image fields supplied through the public API can use three source classes.
@@ -284,15 +291,20 @@ kept both as the original URL and a second base64 edit.
 
 ```text
 packages/framekit/src/editor/components/template-canvas.tsx
-packages/framekit/src/editor/components/template-canvas.test.tsx
+packages/framekit/src/editor/components/__tests__/template-canvas.test.tsx
 packages/framekit/src/editor/framekit-editor.tsx
 packages/framekit/src/editor.ts
 packages/framekit/src/shared/raster-image.ts
-packages/framekit/src/shared/raster-image.test.ts
+packages/framekit/src/shared/__tests__/raster-image.test.ts
 packages/framekit/src/server/image-input.ts
-packages/framekit/src/server/image-input.test.ts
+packages/framekit/src/server/__tests__/image-input.test.ts
 packages/framekit/src/tooling/dev/asset-upload.ts
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. Compile-time type fixtures remain under
+`packages/framekit/tests/types/`; root Playwright E2E remains under
+`tests/e2e/`.
 
 The shared raster helper should remain internal unless an actual public consumer
 needs byte-level primitives.

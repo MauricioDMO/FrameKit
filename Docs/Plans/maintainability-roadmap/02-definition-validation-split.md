@@ -97,7 +97,7 @@ extracted helpers do not participate in it.
 | `core/define-template.ts`: `defineTemplateBase`, `defineTemplate`, `assertValid` | Same file and symbols | No semantic change. The import may remain `./validation`; success returns and thrown error text must be unchanged. |
 | `src/index.ts`: root validation/type/field exports | Same file and exports | No export change. In particular, preserve root imports of `validateTemplateBase`, `validateTemplateDefinition`, and `validateTemplateData`. |
 | `src/types.ts`: `TemplateBase`, `TemplateDefinition`, `TemplateInput`, field/meta/variant types | Same file and types | No type-model change. Runtime splitting must not weaken or strengthen generic inference, `NoLanguageFields`, content narrowing, or render props. |
-| Current definition-validation cases | `core/validation/__tests__/definition/definition.test.ts`, `metadata.test.ts`, `dimensions.test.ts`, `composition.test.ts`, and `core/validation/__tests__/fields/index.test.ts` | Keep cases colocated by behavior, with every case assigned to a current focused suite. |
+| Current definition-validation cases | `core/validation/__tests__/definition/definition.test.ts`, `metadata.test.ts`, `dimensions.test.ts`, `composition.test.ts`, and `core/validation/__tests__/fields/index.test.ts` | Keep cases grouped by behavior under the current focused `__tests__/` suites, with every case assigned to one suite. |
 | `tests/types/*.ts`: valid/rejection fixtures | Same fixture files | Retain all fixtures and their `@ts-expect-error` assertions. They are compile-time contracts, not candidates for runtime-test consolidation. |
 | `apps/studio/src/__tests__/framekit/generation.integration.test.ts` | Same file | Retain generated-loader and public-root validation coverage unchanged; it proves the split does not break the supported consumer path. |
 | Existing indirect consumers/tests: `packages/framekit/src/tooling/cli/check.ts`, `packages/framekit/src/tooling/codegen/collect-template-summaries.ts`, `packages/framekit/src/core/__tests__/data-validation.test.ts`, `packages/framekit/src/core/__tests__/resolve-template-data.test.ts`, `packages/framekit/src/core/__tests__/get-variants.test.ts`, and `packages/framekit/src/core/__tests__/fields.test.ts` | Same files | Do not move or rewrite them. The CLI/codegen files generate package-root validation imports, while the package tests continue covering their existing owners and any `defineTemplate` setup. |
@@ -336,8 +336,9 @@ Phase 2 is complete when:
   ownership for metadata, dimensions, fields, variants, and composition;
 - `definition/index.ts` remains the stable composer/facade and no unnecessary
   forwarding files or public exports were added;
-- every current definition-validation case has moved to a colocated behavior
-  test with the same assertion, and the small facade/order additions pass;
+- every current definition-validation case has moved to a behavior-specific test
+  under the owning `__tests__/` suite with the same assertion, and the small
+  facade/order additions pass;
 - `validateTemplateBase`, `validateTemplateDefinition`, `defineTemplateBase`,
   `defineTemplate`, root exports, generic narrowing, and Studio/codegen
   consumers remain behaviorally compatible;

@@ -32,7 +32,8 @@ invokes the server renderer, and returns PNG bytes or stable JSON failures.
 ## Route location and runtime
 
 ```text
-src/app/api/v1/images/route.ts
+packages/create-framekit/template/src/app/api/v1/images/route.ts
+apps/studio/src/app/api/v1/images/route.ts
 ```
 
 Rules:
@@ -299,6 +300,13 @@ Every JSON error includes `Content-Type: application/json` and
 Canonical template and `apps/studio` routes should differ only in registry import
 and deployment configuration.
 
+The current `@mauriciodmo/framekit/server` facade exports only the Step 1
+contracts, authentication helper, configuration parser, and error model. This
+step plans to extend that facade with reusable server behavior; jobs, browser
+orchestration, image preparation, and route integration remain future work. The
+generated application and `apps/studio` own the Next.js route and registry
+integration; do not move either route into `packages/framekit/src/server/`.
+
 If parsing/error mapping grows into duplicated application code, expose a
 server-package helper that accepts the generated registry/definition loader as a
 dependency. Do not create a Studio-only protocol.
@@ -339,9 +347,15 @@ Never log:
 packages/create-framekit/template/src/app/api/v1/images/route.ts
 apps/studio/src/app/api/v1/images/route.ts
 packages/framekit/src/server/request-body.ts
-packages/framekit/src/server/request-body.test.ts
+packages/framekit/src/server/__tests__/request-body.test.ts
 packages/framekit/src/server/http-errors.ts
 ```
+
+Runtime tests live under the nearest relevant `__tests__/` directory and mirror
+the production domain. FrameKit server tests use
+`packages/framekit/src/server/__tests__/`; compile-time type fixtures remain
+under `packages/framekit/tests/types/`; root Playwright E2E remains under
+`tests/e2e/`.
 
 Image preparation stays in the Step 2 server module. Pure body/error helpers
 belong in the package only when they prevent real duplication.

@@ -1,7 +1,9 @@
 # Maintainability Roadmap
 
 - **Status:** In progress; phases 1 through 5 are implemented and the Phase 5 shared exit gate passes.
-- **Next:** Start Phase 6 - Architectural Import Boundaries.
+- **Next:** After phases 1 through 5 pass their exit gates, execute the eight
+  Server Image Rendering steps and its server gate; Phase 6 remains deferred
+  until they are complete.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,
@@ -27,8 +29,14 @@ Every phase preserves all of the following:
   may expose only its documented, bounded numeric color palette through the
   existing `./styles.css` export. Component- and state-specific aliases are not
   added. It does not add a stylesheet entry or JavaScript export.
-- The supported `@mauriciodmo/framekit` exports remain `.`, `./editor`,
-  `./studio`, `./studio/root`, `./dev`, and `./styles.css`.
+- During phases 1 through 5, the six existing non-server
+  `@mauriciodmo/framekit` exports remain `.`, `./editor`, `./studio`,
+  `./studio/root`, `./dev`, and `./styles.css`. The current `./server` entry is
+  available only as the Step 1 facade for contracts, authentication,
+  configuration, and errors; jobs, browser, routes, image fetching, Docker,
+  and rollout remain future work in Server Steps 2-8. Phase 6 is planned
+  against the post-server graph and must distinguish the six current non-server
+  entries from the eventual server surface.
 - No consumer imports `packages/framekit/src/*` directly.
 - Generated or build output is never hand-edited. This includes
   `packages/framekit/dist/`, `**/.framekit/`, `**/src/generated/framekit/`,
@@ -55,8 +63,9 @@ preserved, update the plan or obtain separate approval before implementation.
 ## Shared code-organization contract
 
 Across all phases, use kebab-case file names, PascalCase React component names,
-and `useSomething` names for hooks. Keep runtime tests colocated with the code
-they exercise; keep compile-time type tests under `tests/types/`. Use `index.ts`
+and `useSomething` names for hooks. Put new tests under the nearest relevant
+`__tests__/` directory, mirroring the production domain; retain FrameKit
+compile-time type fixtures under `packages/framekit/tests/types/`. Use `index.ts`
 only for re-exports. The ESLint Standard contract is two spaces, no semicolons,
 single quotes in JavaScript and TypeScript, no trailing commas, and a final
 newline for linted source files. ESLint enforces only the code-style and lint
@@ -96,7 +105,7 @@ Implement and merge these PRs in order:
 | 3 | [Editor orchestration](./03-editor-orchestration.md) | Smaller editor coordinator with existing state, controls, preview, and export owners reused | PRs 1-2 |
 | 4 | [Studio shell split](./04-studio-shell-split.md) | Internal Studio resource, state, settings, and shell ownership split | PRs 1-3 |
 | 5 | [Published design tokens](./05-design-tokens.md) | A small public theme-role contract with internal visual details kept private and the export unchanged | PRs 1-4 |
-| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Enforced public-entry and package-direction boundaries without changing exports | PRs 1-5 |
+| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Post-server boundary plan covering current entries and the Step 1-only `./server` facade plus its future capabilities | Server steps 1-8 and server gate |
 
 The links above are the complete phase index for this roadmap. A later phase
 must not be folded into an earlier PR merely because both touch documentation or
@@ -109,14 +118,17 @@ a cheap failure signal. PR 2 separates validation ownership without changing its
 public facade. PR 3 then separates editor presentation from orchestration while
 retaining existing state and export owners. PR 4 applies the same ownership
 discipline to the Studio shell. PR 5 centralizes repeated visual values behind a
-bounded, documented semantic CSS contract. PR 6 is last because import-boundary
-checks must describe the stable package and generated-output conventions rather
-than invent a parallel architecture.
+bounded, documented semantic CSS contract. The Server Image Rendering plan is
+then intended to add its final runtime and consumer surface. PR 6 is last because
+import-boundary checks must describe that post-server graph and generated-output
+conventions rather than enforce a pre-server architecture.
 
 Each phase may clarify names or documentation wording, but it may not alter a
 public export, move a package, change generated-template behavior, or change a
-runtime result. If a proposed implementation needs one of those changes, stop
-and split it into a separately approved feature or architecture change.
+runtime result. Phase 6 is not authorized to enforce boundaries yet: after
+Server Step 8, re-inventory and revalidate the actual graph, then obtain the
+approved implementation map. If a proposed implementation needs another public
+export or architecture change, stop and split it into separately approved work.
 
 The `Depends on` section in each phase distinguishes sequencing from code
 dependencies. A sequencing dependency means the preceding phase must be merged
@@ -197,9 +209,13 @@ The roadmap is complete only when all six PR exit gates pass, the shared
 verification commands pass on a clean install, and the final diff confirms:
 
 - no runtime or existing public JavaScript/type/component API behavior changed;
-  the only permitted published-surface addition is Phase 5's documented compact
-  numeric color palette through the existing `./styles.css` export;
-- the six supported exports and current package ownership are unchanged;
+  the only permitted published-surface addition through Phase 5 is its documented
+  compact numeric color palette through the existing `./styles.css` export;
+- the six current non-server exports and current package ownership remain
+  unchanged through Phase 5; the Step 1-only `./server` facade is governed by
+  the Server plan, while jobs, browser, routes, image fetching, Docker, and
+  rollout remain future until their steps pass and the result is revalidated
+  before Phase 6;
 - generated/build paths remain ignored and no generated file was hand-edited;
 - `Docs/skills/` remains the source and synchronized skill copies are produced
   only by `pnpm sync:skills`;

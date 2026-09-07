@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-05.
+* **Última revisión:** 2026-09-06.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -45,6 +45,11 @@ casos de prueba, comandos y exit gates detallados.
 |     3 | Server Image Rendering pasos 1 a 8                    | API, browser, seguridad, Docker y distribución verificadas                    |
 |     4 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
 |     5 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
+
+El estado operativo del servidor es explícito: Server Image Rendering sigue
+incompleto; el paso 1 está implementado y verificado en el checkout actual, y
+los pasos 2 a 8 siguen pendientes. Maintainability fase 6 también sigue
+pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -261,11 +266,11 @@ Issue cerrada:
 
 ### 1.6 Gate de Future
 
-Los gates de implementación versionless de Future están cumplidos y el
-siguiente paso operativo es validar el baseline e iniciar Maintainability fase 1.
-Los dos puntos externos restantes se mantienen explícitos: protección de `main`
-es gobierno del repositorio y el smoke npm es un handoff posterior a publicar
-una versión.
+Los gates de implementación versionless de Future están cumplidos. El bloque
+posterior de Maintainability y su secuencia hacia Server Image Rendering quedan
+regidos por el orden global de este tracker. Los dos puntos externos restantes
+se mantienen explícitos: protección de `main` es gobierno del repositorio y el
+smoke npm es un handoff posterior a publicar una versión.
 
 * [x] `#12` está cerrada.
 * [x] `#17` está cerrada.
@@ -457,16 +462,21 @@ proceso mediante `globalThis + Map`.
 Plan:
 [01-contracts-and-server-boundary.md](./server-image-rendering-api/01-contracts-and-server-boundary.md).
 
-* [ ] Añadir la entrada server-only.
-* [ ] Definir tipos públicos de request, config y error.
-* [ ] Definir un payload interno serializable.
-* [ ] Implementar un parser puro de configuración.
-* [ ] Implementar autenticación Bearer de tiempo constante.
-* [ ] Rechazar configuración insegura en producción.
-* [ ] Mantener secretos fuera de errores y logs.
-* [ ] Verificar que client/editor/studio no incluyan dependencias server.
-* [ ] Añadir tests y type fixture.
-* [ ] Pasar el exit gate del paso 1.
+Estado de implementación: completado en el checkout actual. La entrada
+`./server` exporta los contratos, errores, parser de configuración y helper de
+autenticación de este paso; los pasos 2 a 8 siguen pendientes.
+
+* [x] Añadir la entrada server-only.
+* [x] Definir tipos públicos de request, config y error.
+* [x] Definir un payload interno serializable.
+* [x] Implementar un parser puro de configuración.
+* [x] Implementar autenticación Bearer de tiempo constante.
+* [x] Rechazar configuración insegura; el parser falla cerrado en cualquier
+  entorno.
+* [x] Mantener secretos fuera de errores y logs.
+* [x] Verificar que client/editor/studio no incluyan dependencias server.
+* [x] Añadir tests y type fixture.
+* [x] Pasar el exit gate del paso 1.
 
 ### 3.3 Paso 2: Shared Canvas and Image Inputs
 
