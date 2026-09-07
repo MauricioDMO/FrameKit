@@ -1,0 +1,102 @@
+// @vitest-environment jsdom
+
+import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+import { defineTemplate, field } from '@/index'
+
+import { copyTemplateMock, exportTemplateMock } from './mocks'
+import { renderDefinition, renderEditor } from './fixtures'
+import { messages } from './messages'
+import { setupFrameKitEditorTests } from './setup'
+
+setupFrameKitEditorTests()
+
+describe('FrameKitEditor export', () => {
+  it('does not pass a bare hash when clearing an optional color', async () => {
+    const definition = defineTemplate({
+      meta: { title: 'Optional color editor test' },
+      width: 100,
+      height: 100,
+      fields: { accentColor: field.color({ label: 'Accent color', required: false }) },
+      content: { en: { accentColor: '#abcdef' } },
+      variants: { default: 'en' },
+      render: () => null
+    })
+    const renderer = vi.spyOn(definition, 'render')
+
+    renderDefinition(definition)
+    const input = screen.getByRole('textbox', { name: 'Accent color' })
+    expect((input as HTMLInputElement).value).toBe('abcdef')
+
+    fireEvent.change(input, { target: { value: '' } })
+
+    await waitFor(() => expect(renderer).toHaveBeenLastCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ accentColor: '' })
+    })))
+    fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
+    await waitFor(() => expect(exportTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100))
+  })
+
+  it('copies a valid template PNG', async () => {
+    localStorage.setItem('framekit:social/campaign:v2', JSON.stringify({ selectedVariant: 'en', dataByVariant: { en: { title: 'Ready', invalidNumber: 1, tooSmall: 10, tooLarge: 20, steppedNumber: 4, sliderNumber: 50, accentColor: '#123456' } } }))
+    renderEditor()
+
+    fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))
+
+    await waitFor(() => {
+      expect(copyTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 100, 100)
+      expect(copyTemplateMock.mock.calls[0]?.[0].matches('[data-framekit-render-root]')).toBe(true)
+    })
+  })
+
+  it('shows generating and ignores a second export click while export is pending', async () => {
+    let resolvePending!: () => void
+    const pending = new Promise<void>((resolve) => {
+      resolvePending = resolve
+    })
+    exportTemplateMock.mockImplementationOnce(() => pending)
+    renderEditor()
+
+    const button = screen.getByRole('button', { name: messages.downloadPng }) as HTMLButtonElement
+    fireEvent.click(button)
+
+    expect(button.disabled).toBe(true)
+    expect(button.textContent).toContain(messages.generating)
+    expect(exportTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100)
+
+    fireEvent.click(button)
+    expect(exportTemplateMock).toHaveBeenCalledTimes(1)
+
+    resolvePending()
+    await waitFor(() => {
+      expect(button.disabled).toBe(false)
+      expect(button.textContent).toContain(messages.downloadPng)
+    })
+  })
+
+  it.each([
+    ['download', messages.downloadPng, 'export'],
+    ['copy', messages.copyPng, 'copy']
+  ] as const)('shows the localized alert when %s fails', async (_action, buttonName, actionName) => {
+    const failure = new Error('private export failure')
+    if (actionName === 'export') {
+      exportTemplateMock.mockRejectedValueOnce(failure)
+    } else {
+      copyTemplateMock.mockRejectedValueOnce(failure)
+    }
+
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined)
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      renderEditor()
+      fireEvent.click(screen.getByRole('button', { name: buttonName }))
+
+      await waitFor(() => expect(alert).toHaveBeenCalledWith(messages.exportAlert))
+      expect(consoleError).toHaveBeenCalledWith(messages.exportError, failure)
+    } finally {
+      alert.mockRestore()
+      consoleError.mockRestore()
+    }
+  })
+})

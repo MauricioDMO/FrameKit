@@ -9,6 +9,7 @@ import type { TemplateDataValidationError } from '../core/validation'
 import type { ImageFieldScope, InferTemplateData, TemplateBase, TemplateRegistryEntry, TemplateRenderProps } from '../types'
 import { EditorHeader } from './components/editor-header'
 import { EditorControls } from './controls/editor-controls'
+import { TemplateCanvas } from './components/template-canvas'
 import { TemplateMetadataDialog } from './components/template-metadata-dialog'
 import { TemplatePreview } from './components/template-preview'
 import { copyTemplate, exportTemplate } from './export/export-template'
@@ -129,15 +130,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
         <EditorControls key={resetVersion} definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onFieldValidationError={changeFieldValidation} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
-          <div ref={exportRef} style={{ width: definition.width, height: definition.height }}>
-            {definition.render({
-              data: resolvedData,
-              assets,
-              variant: selectedVariant as TemplateRenderProps<Definition>['variant'],
-              width: definition.width,
-              height: definition.height
-            })}
-          </div>
+          <TemplateCanvas<Definition> definition={definition} data={resolvedData} assets={assets} variant={selectedVariant as TemplateRenderProps<Definition>['variant']} canvasRef={exportRef} />
         </TemplatePreview>
       </div>
       <TemplateMetadataDialog open={metadataOpen} meta={template.meta} messages={messages} onClose={closeMetadata} />
