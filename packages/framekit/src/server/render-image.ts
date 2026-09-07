@@ -18,9 +18,10 @@ function isImageRenderError (error: unknown): error is ImageRenderError {
 }
 
 function isAllowedRequest (url: string, internalOrigin: URL): boolean {
-  if (url.startsWith('data:')) return true
+  if (/^data:/i.test(url)) return true
   try {
-    return new URL(url).origin === internalOrigin.origin
+    const parsed = new URL(url)
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.origin === internalOrigin.origin
   } catch {
     return false
   }
@@ -35,9 +36,9 @@ export async function renderTemplateImage (options: {
   config: ImageRenderRuntimeConfig
   signal?: AbortSignal
 }): Promise<Buffer> {
-  const release = reserveRender(options.config)
-  const job = createRenderJob(options.payload)
-  const renderUrl = new URL(`/__framekit/render/${encodeURIComponent(job.id)}`, options.config.internalOrigin).toString()
+  let release: (() => void) | undefined
+  let job: ReturnType<typeof createRenderJob> | undefined
+  let renderUrl: string | undefined
   const controller = new AbortController()
   let deadline = false
   let context: BrowserContext | undefined
@@ -76,11 +77,25 @@ export async function renderTemplateImage (options: {
   }
 
   try {
-    context = await wait(createRenderContext(options.payload))
-    page = await wait(context.newPage())
+    release = reserveRender(options.config)
+    const createdJob = createRenderJob(options.payload)
+    job = createdJob
+    const privateRenderUrl = new URL(`/__framekit/render/${encodeURIComponent(createdJob.id)}`, options.config.internalOrigin).toString()
+    renderUrl = privateRenderUrl
+
+    const contextPromise = createRenderContext(options.payload)
+    contextPromise.then(value => {
+      if (controller.signal.aborted) value.close().catch(() => undefined)
+    }).catch(() => undefined)
+    context = await wait(contextPromise)
+    const pagePromise = context.newPage()
+    pagePromise.then(value => {
+      if (controller.signal.aborted) value.close().catch(() => undefined)
+    }).catch(() => undefined)
+    page = await wait(pagePromise)
     const primaryPage = page
 
-    await context.route('**/*', async route => {
+    await wait(context.route('**/*', async route => {
       const request = route.request()
       const requestUrl = request.url()
       const navigation = request.isNavigationRequest()
@@ -88,16 +103,16 @@ export async function renderTemplateImage (options: {
         await route.abort()
         return
       }
-      if (!isAllowedRequest(requestUrl, options.config.internalOrigin)) {
+      if (!isAllowedRequest(requestUrl, options.config.internalOrigin) || !['GET', 'HEAD'].includes(request.method().toUpperCase())) {
         await route.abort()
         return
       }
       if (navigation && requestUrl === renderUrl && request.method() === 'GET') {
-        await route.continue({ headers: { ...request.headers(), 'x-framekit-render-token': job.token } })
+        await route.continue({ headers: { ...request.headers(), 'x-framekit-render-token': createdJob.token } })
         return
       }
       await route.continue()
-    })
+    }))
     context.on('page', popup => { popup.close().catch(() => undefined) })
     page.on('download', download => { download.cancel().catch(() => undefined) })
 
@@ -137,6 +152,7 @@ export async function renderTemplateImage (options: {
         }
       }
       await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+      for (const animation of document.getAnimations()) animation.cancel()
     }))
     await wait(page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; }' }))
     const bytes = Buffer.from(await wait(root.screenshot({ type: 'png' })))
@@ -150,7 +166,7 @@ export async function renderTemplateImage (options: {
     clearTimeout(timer)
     options.signal?.removeEventListener('abort', onCallerAbort)
     await closeActive()
-    deleteRenderJob(job.id)
-    release()
+    if (job !== undefined) deleteRenderJob(job.id)
+    release?.()
   }
 }

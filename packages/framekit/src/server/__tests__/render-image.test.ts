@@ -23,14 +23,14 @@ const config: ImageRenderRuntimeConfig = {
 const payload = { template: 'card', variant: 'default', data: {}, assets: {}, width: 1200, height: 630 } as ResolvedRenderPayload
 const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
 
-function fakePage (rootCount = 1, screenshot = png) {
+function fakePage (rootCount = 1, screenshot = png, evaluateInPage = false) {
   const frame = {}
   const page = {
     mainFrame: () => frame,
-    goto: vi.fn(async () => ({ status: () => 200 })),
+    goto: vi.fn(async (): Promise<{ status: () => number }> => ({ status: () => 200 })),
     waitForFunction: vi.fn(async () => ({ jsonValue: async () => 'ready' })),
     locator: vi.fn(() => ({ count: vi.fn(async () => rootCount), screenshot: vi.fn(async () => screenshot) })),
-    evaluate: vi.fn(async () => undefined),
+    evaluate: vi.fn(async (callback?: () => Promise<unknown>) => evaluateInPage && callback !== undefined ? callback() : undefined),
     addStyleTag: vi.fn(async () => undefined),
     on: vi.fn(),
     close: vi.fn(async () => undefined)
@@ -84,6 +84,12 @@ describe('renderTemplateImage', () => {
     const externalRoute = route({ ...privateRequest, url: () => 'https://example.com/image.png', isNavigationRequest: () => false })
     await handler(externalRoute)
     expect(externalRoute.abort).toHaveBeenCalledOnce()
+
+    for (const url of ['BLOB:http://127.0.0.1/image', 'file:///tmp/image', 'ftp://127.0.0.1/image', 'ws://127.0.0.1/socket', 'chrome-extension://id/file']) {
+      const rejectedRoute = route({ ...privateRequest, url: () => url, isNavigationRequest: () => false })
+      await handler(rejectedRoute)
+      expect(rejectedRoute.abort).toHaveBeenCalledOnce()
+    }
   })
 
   it('fails before creating a job when capacity is exhausted', async () => {
@@ -94,6 +100,24 @@ describe('renderTemplateImage', () => {
     expect(mocks.createContext).not.toHaveBeenCalled()
   })
 
+  it('cleans the capacity lease when job setup fails', async () => {
+    const release = vi.fn()
+    mocks.reserve.mockReturnValueOnce(release)
+    mocks.createJob.mockImplementationOnce(() => { throw new Error('job failed') })
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+    expect(release).toHaveBeenCalledOnce()
+    expect(mocks.deleteJob).not.toHaveBeenCalled()
+  })
+
+  it('deletes the job and releases capacity when context setup fails', async () => {
+    const release = vi.fn()
+    mocks.reserve.mockReturnValueOnce(release)
+    mocks.createContext.mockRejectedValueOnce(new Error('context failed'))
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+    expect(mocks.deleteJob).toHaveBeenCalledWith('a'.repeat(64))
+    expect(release).toHaveBeenCalledOnce()
+  })
+
   it.each([
     ['missing render root', 0, png],
     ['invalid PNG', 1, Buffer.from('not png')]
@@ -102,6 +126,51 @@ describe('renderTemplateImage', () => {
     mocks.createContext.mockResolvedValue(fakeContext(page))
     await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
     expect(mocks.deleteJob).toHaveBeenCalled()
+  })
+
+  it('fails immediately on the error marker, multiple roots, and non-success navigation', async () => {
+    const { page: errorPage } = fakePage()
+    errorPage.waitForFunction.mockResolvedValue({ jsonValue: async () => 'error' })
+    mocks.createContext.mockResolvedValue(fakeContext(errorPage))
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+
+    const { page: manyRoots } = fakePage(2)
+    mocks.createContext.mockResolvedValue(fakeContext(manyRoots))
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+
+    const { page: badResponse } = fakePage()
+    badResponse.goto.mockResolvedValue({ status: () => 503 })
+    mocks.createContext.mockResolvedValue(fakeContext(badResponse))
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+  })
+
+  it('waits for images, rejects zero dimensions, and disables CSS and Web Animations', async () => {
+    const decode = vi.fn(async () => undefined)
+    const image = {
+      complete: false,
+      naturalWidth: 20,
+      naturalHeight: 20,
+      decode,
+      addEventListener: vi.fn((event: string, listener: () => void) => { if (event === 'load') listener() })
+    }
+    const animation = { cancel: vi.fn() }
+    vi.stubGlobal('document', {
+      fonts: { ready: Promise.resolve() },
+      querySelector: () => ({ querySelectorAll: () => [image] }),
+      getAnimations: () => [animation]
+    })
+    vi.stubGlobal('requestAnimationFrame', (callback: () => void) => { callback(); return 0 })
+    const { page } = fakePage(1, png, true)
+    mocks.createContext.mockResolvedValue(fakeContext(page))
+    await renderTemplateImage({ payload, config })
+    expect(decode).toHaveBeenCalledOnce()
+    expect(animation.cancel).toHaveBeenCalledOnce()
+    expect(page.addStyleTag).toHaveBeenCalledWith(expect.objectContaining({ content: expect.stringContaining('animation: none') }))
+
+    image.complete = true
+    image.naturalWidth = 0
+    await expect(renderTemplateImage({ payload, config })).rejects.toMatchObject({ code: 'render_failed' })
+    vi.unstubAllGlobals()
   })
 
   it('closes active resources and cleans up on caller abort', async () => {
