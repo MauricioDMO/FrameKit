@@ -108,6 +108,9 @@ importers:
       modern-screenshot:
         specifier: ^4.7.0
         version: 4.7.0
+      playwright-core:
+        specifier: 1.62.1
+        version: 1.62.1
       react:
         specifier: '>=19 <20'
         version: 19.2.4
