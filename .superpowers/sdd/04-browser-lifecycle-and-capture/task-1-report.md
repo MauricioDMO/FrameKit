@@ -23,6 +23,17 @@
 - Focused ESLint: passed.
 - FrameKit package typecheck: passed, including type fixtures.
 
+## Scoped Re-review Fix
+
+- Updated `closeBrowser()` to observe an in-flight launch with a rejection handler. A failed launch now clears launch state and resolves cleanup without a browser to close, while the original `getBrowser()` promise still rejects with the launch error.
+- Added a focused failed-launch cleanup test verifying cleanup resolves, the original error is preserved for the launch caller, and a later call can launch successfully.
+
+## Re-review Verification
+
+- Focused browser Vitest: passed, 6 tests.
+- Focused browser ESLint: passed.
+- FrameKit package typecheck: passed, including type fixtures.
+
 ## Concerns
 
 - Render orchestration, route interception, token scoping, readiness, screenshot validation, timeout, and request-abort cleanup are intentionally deferred to the controller/render task.

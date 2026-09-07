@@ -91,6 +91,20 @@ describe('browser manager', () => {
     expect(chromium.launch).toHaveBeenCalledTimes(2)
   })
 
+  it('cleans up a failed in-flight launch without rejecting closeBrowser', async () => {
+    const error = new Error('launch failed')
+    vi.mocked(chromium.launch).mockRejectedValueOnce(error)
+
+    const launching = getBrowser()
+    await expect(closeBrowser()).resolves.toBeUndefined()
+    await expect(launching).rejects.toBe(error)
+
+    const browser = fakeBrowser()
+    vi.mocked(chromium.launch).mockResolvedValue(browser)
+    await expect(getBrowser()).resolves.toBe(browser)
+    expect(chromium.launch).toHaveBeenCalledTimes(2)
+  })
+
   it('reserves capacity synchronously and releases each lease once', () => {
     const firstRelease = reserveRender(config)
     const secondRelease = reserveRender(config)

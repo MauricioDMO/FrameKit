@@ -91,7 +91,7 @@ export async function closeBrowser (): Promise<void> {
   const browser = state.browser
   state.browser = null
   const closing = (async () => {
-    const launchedBrowser = launching === null ? browser : await launching
+    const launchedBrowser = launching === null ? browser : await launching.catch(() => null)
     if (state.launching === launching) state.launching = null
     if (launchedBrowser !== null) await launchedBrowser.close()
   })().finally(() => {
