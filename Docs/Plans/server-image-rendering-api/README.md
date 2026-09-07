@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 1-2 implemented and verified; Steps 3-8 pending.
+- **Status:** Steps 1-3 implemented and verified; Steps 4-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -58,6 +58,21 @@ passed:
 - `pnpm --filter @mauriciodmo/framekit test -- --testTimeout=15000`: 56 test files, 601 tests.
 - `pnpm --filter @mauriciodmo/framekit typecheck`.
 - `pnpm --filter @mauriciodmo/framekit build`.
+
+## Step 3 verification
+
+Step 3 was implemented and verified on 2026-09-07. The temporary render-job
+store and package checks passed:
+
+- `pnpm --filter @mauriciodmo/framekit test -- render-job`: 57 test files, 606 tests.
+- `pnpm --filter @mauriciodmo/framekit typecheck`.
+- `pnpm --filter @mauriciodmo/framekit build`.
+
+The implementation provides the process-global `Map` handoff through the
+`@mauriciodmo/framekit/server` facade, with independent cryptographic job IDs
+and tokens, timing-safe token checks, 120-second expiry, opportunistic cleanup,
+bounded collision retries, and idempotent deletion. No filesystem or external
+persistent store was introduced.
 
 Each step contains:
 
