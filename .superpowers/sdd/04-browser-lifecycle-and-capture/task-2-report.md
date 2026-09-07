@@ -27,3 +27,13 @@ Verification after fixes:
 - `pnpm exec vitest run src/server/__tests__/render-image.test.ts`: 11 passed
 - `pnpm --filter @mauriciodmo/framekit typecheck`: passed
 - Targeted ESLint: passed with the existing `_options` warning in `src/server/render-job.ts`
+
+## Re-Review Fix
+
+Allowed all exact internal-origin requests regardless of method; only the exact private main-document GET receives the render token. Added coverage proving an internal POST proceeds without the token while external and rejected-scheme requests remain blocked.
+
+Verification:
+
+- `pnpm exec vitest run src/server/__tests__/render-image.test.ts`: 11 passed
+- `pnpm --filter @mauriciodmo/framekit typecheck`: passed
+- Targeted ESLint: passed with the existing `_options` warning in `src/server/render-job.ts`

@@ -81,6 +81,10 @@ describe('renderTemplateImage', () => {
     await handler(assetRoute)
     expect(assetRoute.continue).toHaveBeenCalledWith()
 
+    const internalPostRoute = route({ ...privateRequest, url: () => 'http://127.0.0.1/api/render-state', method: () => 'POST', isNavigationRequest: () => false })
+    await handler(internalPostRoute)
+    expect(internalPostRoute.continue).toHaveBeenCalledWith()
+
     const externalRoute = route({ ...privateRequest, url: () => 'https://example.com/image.png', isNavigationRequest: () => false })
     await handler(externalRoute)
     expect(externalRoute.abort).toHaveBeenCalledOnce()

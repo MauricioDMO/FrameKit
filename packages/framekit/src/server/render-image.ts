@@ -103,7 +103,7 @@ export async function renderTemplateImage (options: {
         await route.abort()
         return
       }
-      if (!isAllowedRequest(requestUrl, options.config.internalOrigin) || !['GET', 'HEAD'].includes(request.method().toUpperCase())) {
+      if (!isAllowedRequest(requestUrl, options.config.internalOrigin)) {
         await route.abort()
         return
       }
