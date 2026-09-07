@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 1-3 implemented and verified; Steps 4-8 pending.
+- **Status:** Steps 1-4 implemented and verified; Steps 5-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -9,9 +9,10 @@
 
 The current supported package facades are `.`, `./editor`, `./studio`,
 `./studio/root`, `./dev`, `./server`, and `./styles.css`. The `./server` facade
-currently exports the Step 1 contracts, errors, configuration parser, Bearer
-authentication helper, and the Step 2 image-input preparation API. This plan
-does not propose `server/*`, `browser`, `auth`, or `shared` public subpaths.
+currently exports the Steps 1-4 contracts, errors, configuration parser, Bearer
+authentication helper, image-input preparation API, temporary render jobs, and
+PNG browser renderer. This plan does not propose `server/*`, `browser`, `auth`,
+or `shared` public subpaths.
 
 ## Purpose of this plan
 
@@ -35,7 +36,7 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement the remaining phases in order. Steps 1 and 2 are complete in the
+Implement the remaining phases in order. Steps 1 through 4 are complete in the
 current checkout; a phase is complete only when its focused tests and exit gate
 pass.
 
@@ -73,6 +74,24 @@ The implementation provides the process-global `Map` handoff through the
 and tokens, timing-safe token checks, 120-second expiry, opportunistic cleanup,
 bounded collision retries, and idempotent deletion. No filesystem or external
 persistent store was introduced.
+
+## Step 4 verification
+
+Step 4 was implemented and verified on 2026-09-07. The browser lifecycle,
+capacity, routing, capture, and cleanup checks passed:
+
+- `pnpm --filter @mauriciodmo/framekit exec vitest run src/server/__tests__/browser.test.ts src/server/__tests__/render-image.test.ts --testTimeout=15000`: 2 test files, 20 tests.
+- `pnpm --filter @mauriciodmo/framekit test -- --testTimeout=15000`: 59 test files, 626 tests.
+- `pnpm --filter @mauriciodmo/framekit typecheck`.
+- `pnpm --filter @mauriciodmo/framekit build`.
+- `pnpm install --frozen-lockfile` completed without a Chromium download.
+
+The implementation shares Chromium through `globalThis`, bounds isolated render
+contexts, restricts browser traffic to the configured internal origin and data
+resources, scopes the private token to the exact render-document request, waits
+for render readiness/fonts/images, captures and verifies PNG bytes, and cleans
+up context, jobs, and capacity on success, failure, timeout, or abort. Real
+Chromium validation remains a later integration gate.
 
 Each step contains:
 
@@ -139,9 +158,9 @@ template model:
   `.framekit/next`.
 - `framekit build` already copies `public` and Next static assets beside the
   discovered standalone server.
-- Server Image Rendering remains incomplete: the public package has the Step 1
-  `./server` export, but there is no Playwright runtime, image API route, or
-  production Dockerfile yet.
+- Server Image Rendering remains incomplete: the public package now includes the
+  Steps 1-4 `./server` contracts, jobs, and Playwright browser/capture runtime,
+  but there is no private/public image API route or production Dockerfile yet.
 
 Studio's existing `modern-screenshot` export remains functional. The server API
 is additive in the first implementation.
@@ -153,9 +172,9 @@ is additive in the first implementation.
 | Concern | Owner | Why |
 |---|---|---|
 | Public request types, configuration, auth helpers, and stable render errors | `@mauriciodmo/framekit/server` (Step 1) | One reusable server contract |
-| In-memory render-job store | `@mauriciodmo/framekit/server` (later step) | Public route and private page share one implementation |
-| Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` (later step) | Browser fixes ship with FrameKit |
-| Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` (later step) plus shared raster helper | Browser never needs external network access |
+| In-memory render-job store | `@mauriciodmo/framekit/server` (Step 3) | Public route and private page share one implementation |
+| Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` (Step 4) | Browser fixes ship with FrameKit |
+| Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` (Step 2) plus shared raster helper | Browser never needs external network access |
 | Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
 | Public App Router route | Generated application | Next.js routes belong to the consumer |
 | Private render page | Generated application | It imports the consumer-generated template registry |
@@ -373,7 +392,7 @@ packages/framekit/src/
   studio.ts                        # current Studio facade
   studio-root.ts                   # current Studio root facade
   dev.ts                           # current development facade
-  server.ts                        # current Step 1-2 facade; later steps extend it
+  server.ts                        # current Step 1-4 facade; later steps extend it
   core/
     fields/
     template-data/
