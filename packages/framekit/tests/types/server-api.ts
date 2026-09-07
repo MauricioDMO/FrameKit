@@ -1,4 +1,4 @@
-import { authenticateBearer, ImageRenderError, parseImageApiConfig } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, ImageRenderError, parseImageApiConfig, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import type {
   ImageApiConfig,
   ImageRenderErrorCode,
@@ -43,5 +43,6 @@ const parsedConfig = parseImageApiConfig({
   FRAMEKIT_INTERNAL_ORIGIN: runtime.internalOrigin.toString()
 })
 const authorized: boolean = authenticateBearer('Bearer secret', parsedConfig.apiKey)
+const rendered: Promise<Buffer> = renderTemplateImage({ payload, config: runtime, signal: new AbortController().signal })
 
-export { payload, errorCode, error, authorized }
+export { payload, errorCode, error, authorized, rendered }

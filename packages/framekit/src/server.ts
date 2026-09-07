@@ -4,5 +4,6 @@ export type { ImageApiConfig, ImageRenderRequest, ImageRenderRuntimeConfig, Reso
 export { ImageRenderError } from './server/errors'
 export type { ImageRenderErrorCode, ImageRenderFailure } from './server/errors'
 export { prepareRenderInputs } from './server/image-input/index'
+export { renderTemplateImage } from './server/render-image'
 export { createRenderJob, deleteRenderJob, loadRenderRequest } from './server/render-job'
 export type { CreatedRenderJob, RenderJobTestOptions } from './server/render-job'
