@@ -75,11 +75,12 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 - Navegación en Studio, cambio de variante, tema claro/oscuro, persistencia local en el navegador, zoom y desplazamiento de la vista previa.
 - Comandos CLI para `generate`, `check`, `dev`, `build` y `start`.
 - Exportación de PNG en el navegador con el ancho y alto declarados por la plantilla.
+- La fachada de servidor `@mauriciodmo/framekit/server`, limitada a los contratos de Step 1 implementados, el parser de configuración, el ayudante de autenticación Bearer y la clase y los tipos de errores de renderizado.
 
 ## Limitaciones conocidas
 
 - Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
-- La exportación actual solo admite PNG en el navegador. La API de generación de imágenes en servidor es trabajo futuro; no hay renderizado del lado del servidor, exportación a GIF/video, otros formatos, control de escala ni DPI.
+- La exportación actual solo admite PNG en el navegador. La fachada de servidor `@mauriciodmo/framekit/server` todavía no proporciona rutas de API de imágenes ni renderizado de imágenes en servidor; no hay renderizado de imágenes del lado del servidor, exportación a GIF/video, otros formatos, control de escala ni DPI.
 - Studio guarda las ediciones en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
 - La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.

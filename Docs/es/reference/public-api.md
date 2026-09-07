@@ -267,6 +267,70 @@ para el contrato de descubrimiento y su uso en `/brand`.
 
 ---
 
+### `@mauriciodmo/framekit/server`
+
+El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
+para los contratos de la API de imágenes del Paso 1. No se debe importar en
+bundles del navegador.
+
+**Exportaciones del entorno de ejecución**
+
+| Exportación            | Descripción                                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
+| `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
+| `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
+
+`parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
+`FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
+loopback (`localhost`, `127.0.0.1` o `[::1]` como host IPv6), con un puerto
+numérico válido opcional, sin una ruta distinta de `/` y sin query, fragmento ni
+credenciales. El esquema HTTP se acepta sin distinguir mayúsculas de
+minúsculas. `FRAMEKIT_ALLOWED_IMAGE_HOSTS` es opcional: acepta nombres de host
+DNS separados por comas, recorta y convierte a minúsculas cada entrada, ignora
+las entradas vacías y deduplica el resultado; un valor vacío o compuesto solo
+por comas produce un conjunto vacío. Cada nombre debe tener como máximo 253
+caracteres y usar la forma de nombre de host DNS. Se rechazan literales IP,
+comodines, puntos finales, puertos, rutas, queries y fragmentos. Las opciones
+opcionales `FRAMEKIT_MAX_CONCURRENT_RENDERS` y
+`FRAMEKIT_RENDER_TIMEOUT_MS` tienen valores predeterminados de `2` y `30000` ms,
+respectivamente, y solo aceptan strings de dígitos decimales en los rangos
+inclusivos `1..32` y `1..120000` ms. Se rechazan signos, puntos decimales,
+exponentes, espacios en blanco, cero y valores superiores al límite
+correspondiente.
+Si la configuración falta o es inválida, lanza `ImageRenderError` con el
+código `api_not_configured`.
+
+`authenticateBearer(authorization, expectedToken)` solo acepta un valor exacto
+`Bearer <token>`: el esquema `Bearer` no distingue mayúsculas de minúsculas,
+pero debe haber exactamente un espacio, un token no vacío sin espacios en
+blanco ni comas y ningún carácter adicional. La comparación del token sí
+distingue mayúsculas de minúsculas. Los valores de autorización ausentes o
+malformados devuelven `false`.
+
+**Exportaciones de tipos**
+
+| Tipo                         | Descripción                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| `ImageApiConfig`             | Configuración analizada que contiene la clave de API y la configuración de ejecución de render     |
+| `ImageRenderRequest`         | Forma de solicitud con `template`, `variant` opcional y datos opcionales                             |
+| `ImageRenderRuntimeConfig`   | Configuración de ejecución con origen loopback, hosts de imagen permitidos, concurrencia y timeout |
+| `ResolvedRenderPayload`      | Datos de render resueltos y serializables con template, variante, datos, assets, width y height     |
+| `ImageRenderErrorCode`       | Unión pública de códigos: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
+| `ImageRenderFailure`         | Forma para construir errores con `code`, `message`, `fields` opcional y `cause` opcional           |
+
+`ImageRenderError` conserva un `cause` opcional en la instancia del error, pero
+`toSafeFailure()` y `toJSON()` lo omiten. Por tanto, la serialización JSON solo
+contiene `code`, `message` y, cuando existe, `fields`; `cause` no es enumerable.
+`fields` solo se admite con el código `invalid_template_data` y debe ser un
+objeto no nulo que no sea un array.
+
+Este punto de entrada solo proporciona contratos. No proporciona rutas,
+obtención de imágenes, ejecución ni trabajos de render, captura en navegador,
+Chromium ni la API completa de renderizado de imágenes.
+
+---
+
 ### `@mauriciodmo/framekit/styles.css`
 
 Importa esta hoja de estilos en el layout de Next.js o en el archivo CSS global para aplicar los estilos base de FrameKit:
@@ -319,6 +383,7 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 | `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                                                                         |
 | `FrameKitStudioRoot`                                     | Servidor           | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                                   |
 | Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor           | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |
+| Punto de entrada `@mauriciodmo/framekit/server`          | Servidor           | Símbolos de configuración, autenticación y contratos de la API de imágenes exclusivos de Node.js/servidor; no incluir en bundles del navegador                |
 
 ---
 

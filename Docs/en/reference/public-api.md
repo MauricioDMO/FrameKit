@@ -257,6 +257,66 @@ modules, and synchronizes template assets under `public/__framekit/templates`.
 
 ---
 
+### `@mauriciodmo/framekit/server`
+
+The server entry point is a Node.js/server-only facade for the Step 1 image API
+contracts. Do not import it into browser bundles.
+
+**Runtime exports**
+
+| Export               | Description                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
+| `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
+| `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
+
+`parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
+`FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
+(`localhost`, `127.0.0.1`, or `[::1]` as the IPv6 host), with an optional valid
+numeric port, no path other than `/`, and no query, fragment, or credentials. The
+HTTP scheme is accepted case-insensitively. `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is
+optional: it accepts comma-separated DNS hostnames, trims and lowercases each
+entry, ignores empty entries, and deduplicates the result; an empty or
+comma-only value produces an empty set. Each hostname must be at most 253
+characters and use the DNS hostname form. IP literals, wildcards, trailing
+dots, ports, paths, queries, and fragments are rejected. The optional
+`FRAMEKIT_MAX_CONCURRENT_RENDERS` and `FRAMEKIT_RENDER_TIMEOUT_MS` settings
+default to `2` and `30000` ms, respectively, and accept only base-10 digit
+strings in the inclusive ranges `1..32` and `1..120000` ms. Signs, decimal
+points, exponents, whitespace, zero, and values above the corresponding limit
+are rejected.
+Missing or invalid configuration throws `ImageRenderError` with the
+`api_not_configured` code.
+
+`authenticateBearer(authorization, expectedToken)` accepts only an exact
+`Bearer <token>` value: the `Bearer` scheme is case-insensitive, but there must
+be exactly one space, a non-empty token with no whitespace or commas, and no
+extra characters. The token comparison itself is case-sensitive. Missing or
+malformed authorization values return `false`.
+
+**Type exports**
+
+| Type                       | Description                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ImageApiConfig`           | Parsed configuration containing the API key and render runtime configuration                      |
+| `ImageRenderRequest`       | Request shape with `template`, optional `variant`, and optional data                                |
+| `ImageRenderRuntimeConfig` | Runtime settings with loopback origin, allowed image hosts, concurrency, and timeout              |
+| `ResolvedRenderPayload`    | Serializable resolved render data with template, variant, data, assets, width, and height        |
+| `ImageRenderErrorCode`     | Public error-code union: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
+| `ImageRenderFailure`       | Error construction shape with `code`, `message`, optional `fields`, and optional `cause`          |
+
+`ImageRenderError` retains an optional `cause` on the error instance, but
+`toSafeFailure()` and `toJSON()` omit it. JSON serialization therefore contains
+only `code`, `message`, and, when present, `fields`; `cause` is not enumerable.
+`fields` is supported only for the `invalid_template_data` code and must be a
+non-null, non-array object.
+
+This entry point provides contracts only. It does not provide routes, image
+fetching, render execution or jobs, browser capture, Chromium, or the complete
+image-rendering API.
+
+---
+
 ### `@mauriciodmo/framekit/styles.css`
 
 Import this stylesheet in your Next.js layout or global CSS file to apply FrameKit's base styles:
@@ -309,6 +369,7 @@ These are peer requirements. The package will emit a warning during installation
 | `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                       |
 | `FrameKitStudioRoot`                                     | Server           | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
 | `@mauriciodmo/framekit/dev` entry points                 | Server           | Dev server, template discovery, code generation, and file watching are all server-side operations  |
+| `@mauriciodmo/framekit/server` entry point               | Server           | Node.js/server-only configuration, authentication, and image API contract symbols; do not bundle for browsers |
 
 ---
 

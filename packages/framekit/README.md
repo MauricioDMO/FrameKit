@@ -2,8 +2,11 @@
 
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
-Studio export is currently browser-based and supports PNG only. A server-side
-image-generation API is future work.
+Studio export is currently browser-based and supports PNG only. The server-only
+`@mauriciodmo/framekit/server` facade currently exposes the implemented Step 1
+contracts, configuration parser, Bearer authentication helper, and render-error
+class and types; image API routes and server-side image rendering remain future
+work.
 
 ## Compatibility
 
@@ -140,8 +143,16 @@ import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 import { FrameKitEditor, FrameKitNavigation } from '@mauriciodmo/framekit/editor'
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
+import { createDevServer } from '@mauriciodmo/framekit/dev'
+import { authenticateBearer, ImageRenderError, parseImageApiConfig } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
+
+The server-only `./server` facade is limited to the implemented Step 1
+contracts, configuration parser, Bearer authentication helper, and the
+render-error class and types. It does not provide image API routes or
+server-side image rendering. Keep the `./dev` and `./server` entry points out
+of browser/client imports.
 
 ### Published color palette
 

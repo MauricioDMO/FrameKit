@@ -1,0 +1,5 @@
+export { authenticateBearer } from './server/auth'
+export { parseImageApiConfig } from './server/config'
+export type { ImageApiConfig, ImageRenderRequest, ImageRenderRuntimeConfig, ResolvedRenderPayload } from './server/config'
+export { ImageRenderError } from './server/errors'
+export type { ImageRenderErrorCode, ImageRenderFailure } from './server/errors'

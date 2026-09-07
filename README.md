@@ -75,11 +75,12 @@ Studio renders this React node in the preview and exports a PNG named after the 
 - Studio navigation, variant switching, light/dark theme, local browser persistence, preview zoom, and pan.
 - CLI commands for `generate`, `check`, `dev`, `build`, and `start`.
 - Client-side PNG export at the template's declared width and height.
+- The server-only `@mauriciodmo/framekit/server` facade with the implemented Step 1 contracts, configuration parser, Bearer authentication helper, and render-error class and types.
 
 ## Known limitations
 
 - Beta software: APIs and generated project details may change between releases.
-- Export currently supports PNG only in the browser. A server-side image-generation API is future work; there is no server-side rendering, GIF/video export, alternate image format, scale, or DPI control.
+- Export currently supports PNG only in the browser. The server-only `@mauriciodmo/framekit/server` facade does not provide image API routes or server-side image rendering yet; there is no server-side image rendering, GIF/video export, alternate image format, scale, or DPI control.
 - Studio stores editor changes in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.
 - The Studio interface is localized to English and Spanish. Template content can define its own variant keys.

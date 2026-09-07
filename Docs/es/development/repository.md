@@ -59,7 +59,7 @@ Esto enlaza el directorio del paquete en disco, mientras sus `exports` apuntan a
 
 Ejecutar `pnpm dev` desde dentro de un directorio de paquete evita este ordenamiento y fallará porque el `dist/` que intenta importar aún no existe.
 
-El paquete público solo exporta `.`, `./editor`, `./studio`, `./studio/root`, `./dev` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. El proyecto generado usa la versión publicada del paquete, no `workspace:*`.
+El paquete público solo exporta `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. La fachada de servidor `./server` solo expone los contratos de Step 1 implementados, el parser de configuración, el ayudante de autenticación Bearer y la clase y los tipos de errores de renderizado; no proporciona rutas de API de imágenes ni renderizado de imágenes en servidor. El proyecto generado usa la versión publicada del paquete, no `workspace:*`.
 
 ## Comandos enfocados en paquetes específicos
 
