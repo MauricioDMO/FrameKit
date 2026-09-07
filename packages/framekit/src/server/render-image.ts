@@ -55,16 +55,18 @@ export async function renderTemplateImage (options: {
   }
 
   const onCallerAbort = (): void => controller.abort()
+  const abortError = (): ImageRenderError => deadline
+    ? new ImageRenderError({ code: 'render_timeout', message: 'Image render timed out' })
+    : failure('Image render aborted')
+
+  if (options.signal?.aborted) throw abortError()
+
   options.signal?.addEventListener('abort', onCallerAbort, { once: true })
   const timer = setTimeout(() => {
     deadline = true
     controller.abort()
   }, options.config.renderTimeoutMs)
   controller.signal.addEventListener('abort', () => { closeActive().catch(() => undefined) }, { once: true })
-
-  const abortError = (): ImageRenderError => deadline
-    ? new ImageRenderError({ code: 'render_timeout', message: 'Image render timed out' })
-    : failure('Image render aborted')
 
   const wait = async <T> (promise: Promise<T>): Promise<T> => {
     if (controller.signal.aborted) throw abortError()
@@ -83,16 +85,19 @@ export async function renderTemplateImage (options: {
     const privateRenderUrl = new URL(`/__framekit/render/${encodeURIComponent(createdJob.id)}`, options.config.internalOrigin).toString()
     renderUrl = privateRenderUrl
 
-    const contextPromise = createRenderContext(options.payload)
+    const contextPromise = createRenderContext(options.payload, options.config.renderTimeoutMs)
     contextPromise.then(value => {
       if (controller.signal.aborted) value.close().catch(() => undefined)
     }).catch(() => undefined)
     context = await wait(contextPromise)
+    await wait(context.routeWebSocket('**/*', websocket => websocket.close()))
     const pagePromise = context.newPage()
     pagePromise.then(value => {
       if (controller.signal.aborted) value.close().catch(() => undefined)
     }).catch(() => undefined)
     page = await wait(pagePromise)
+    page.setDefaultTimeout(options.config.renderTimeoutMs)
+    page.setDefaultNavigationTimeout(options.config.renderTimeoutMs)
     const primaryPage = page
 
     await wait(context.route('**/*', async route => {
@@ -161,7 +166,7 @@ export async function renderTemplateImage (options: {
   } catch (error) {
     if (isImageRenderError(error)) throw error
     if (controller.signal.aborted) throw abortError()
-    throw failure(error instanceof Error ? error.message : 'Image render failed', error)
+    throw failure('Image render failed', error)
   } finally {
     clearTimeout(timer)
     options.signal?.removeEventListener('abort', onCallerAbort)

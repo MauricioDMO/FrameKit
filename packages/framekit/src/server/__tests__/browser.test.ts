@@ -16,7 +16,7 @@ const config: ImageRenderRuntimeConfig = {
   renderTimeoutMs: 30_000
 }
 
-function fakeBrowser (): Browser & { disconnect: () => void } {
+function fakeBrowser (context: object = {}): Browser & { disconnect: () => void } {
   let connected = true
   let disconnected: (() => void) | undefined
   return {
@@ -26,7 +26,7 @@ function fakeBrowser (): Browser & { disconnect: () => void } {
       return undefined as never
     },
     close: vi.fn(async () => { connected = false }),
-    newContext: vi.fn(async () => ({}) as never),
+    newContext: vi.fn(async () => context as never),
     disconnect: () => {
       connected = false
       disconnected?.()
@@ -119,14 +119,41 @@ describe('browser manager', () => {
   })
 
   it('creates isolated trusted-size contexts without shared headers or persistence', async () => {
+    const context = {
+      setDefaultTimeout: vi.fn(),
+      setDefaultNavigationTimeout: vi.fn()
+    }
+    const browserWithContext = fakeBrowser(context)
+    vi.mocked(chromium.launch).mockResolvedValue(browserWithContext)
+
+    await createRenderContext({ width: 1200, height: 630 }, 1_500)
+    expect(chromium.launch).toHaveBeenCalledWith({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      timeout: 1_500
+    })
+    expect(browserWithContext.newContext).toHaveBeenCalledWith({
+      viewport: { width: 1200, height: 630 },
+      deviceScaleFactor: 1,
+      acceptDownloads: false,
+      serviceWorkers: 'block'
+    })
+    expect(context.setDefaultTimeout).toHaveBeenCalledWith(1_500)
+    expect(context.setDefaultNavigationTimeout).toHaveBeenCalledWith(1_500)
+  })
+
+  it('treats a legacy browser state without closing as open', async () => {
+    const globalState = globalThis as typeof globalThis & Record<symbol, unknown>
+    globalState[Symbol.for('framekit.server.browser')] = {
+      browser: null,
+      launching: null,
+      activeRenders: 0
+    }
     const browser = fakeBrowser()
     vi.mocked(chromium.launch).mockResolvedValue(browser)
 
-    await createRenderContext({ width: 1200, height: 630 })
-    expect(browser.newContext).toHaveBeenCalledWith({
-      viewport: { width: 1200, height: 630 },
-      deviceScaleFactor: 1,
-      acceptDownloads: false
-    })
+    await expect(getBrowser()).resolves.toBe(browser)
+    await expect(getBrowser()).resolves.toBe(browser)
+    expect(chromium.launch).toHaveBeenCalledOnce()
   })
 })

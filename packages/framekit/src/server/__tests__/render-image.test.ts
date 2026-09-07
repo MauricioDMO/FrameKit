@@ -27,6 +27,8 @@ function fakePage (rootCount = 1, screenshot = png, evaluateInPage = false) {
   const frame = {}
   const page = {
     mainFrame: () => frame,
+    setDefaultTimeout: vi.fn(),
+    setDefaultNavigationTimeout: vi.fn(),
     goto: vi.fn(async (): Promise<{ status: () => number }> => ({ status: () => 200 })),
     waitForFunction: vi.fn(async () => ({ jsonValue: async () => 'ready' })),
     locator: vi.fn(() => ({ count: vi.fn(async () => rootCount), screenshot: vi.fn(async () => screenshot) })),
@@ -42,6 +44,7 @@ function fakeContext (page: ReturnType<typeof fakePage>['page']) {
   return {
     newPage: vi.fn(async () => page),
     route: vi.fn(),
+    routeWebSocket: vi.fn(),
     on: vi.fn(),
     close: vi.fn(async () => undefined)
   }
@@ -60,6 +63,9 @@ describe('renderTemplateImage', () => {
     mocks.createContext.mockResolvedValue(context)
 
     await expect(renderTemplateImage({ payload, config })).resolves.toEqual(png)
+    expect(mocks.createContext).toHaveBeenCalledWith(payload, config.renderTimeoutMs)
+    expect(page.setDefaultTimeout).toHaveBeenCalledWith(config.renderTimeoutMs)
+    expect(page.setDefaultNavigationTimeout).toHaveBeenCalledWith(config.renderTimeoutMs)
     expect(page.goto).toHaveBeenCalledWith('http://127.0.0.1/__framekit/render/' + 'a'.repeat(64), { waitUntil: 'load' })
     expect(context.close).toHaveBeenCalledOnce()
     expect(mocks.deleteJob).toHaveBeenCalledWith('a'.repeat(64))
@@ -71,6 +77,11 @@ describe('renderTemplateImage', () => {
     mocks.createContext.mockResolvedValue(context)
     await renderTemplateImage({ payload, config })
     const handler = context.route.mock.calls[0][1]
+    expect(context.routeWebSocket).toHaveBeenCalledWith('**/*', expect.any(Function))
+    const websocketHandler = context.routeWebSocket.mock.calls[0][1]
+    const websocket = { close: vi.fn(async () => undefined) }
+    await websocketHandler(websocket)
+    expect(websocket.close).toHaveBeenCalledOnce()
     const route = (request: Record<string, unknown>) => ({ request: () => request, continue: vi.fn(async () => undefined), abort: vi.fn(async () => undefined) })
     const privateRequest = { url: () => 'http://127.0.0.1/__framekit/render/' + 'a'.repeat(64), method: () => 'GET', headers: () => ({ accept: 'text/html' }), isNavigationRequest: () => true, frame: () => frame }
     const privateRoute = route(privateRequest)
@@ -89,7 +100,7 @@ describe('renderTemplateImage', () => {
     await handler(externalRoute)
     expect(externalRoute.abort).toHaveBeenCalledOnce()
 
-    for (const url of ['BLOB:http://127.0.0.1/image', 'file:///tmp/image', 'ftp://127.0.0.1/image', 'ws://127.0.0.1/socket', 'chrome-extension://id/file']) {
+    for (const url of ['BLOB:http://127.0.0.1/image', 'file:///tmp/image', 'ftp://127.0.0.1/image', 'ws://127.0.0.1/socket', 'wss://127.0.0.1/socket', 'chrome-extension://id/file']) {
       const rejectedRoute = route({ ...privateRequest, url: () => url, isNavigationRequest: () => false })
       await handler(rejectedRoute)
       expect(rejectedRoute.abort).toHaveBeenCalledOnce()
@@ -100,6 +111,19 @@ describe('renderTemplateImage', () => {
     const error = new ImageRenderError({ code: 'render_capacity_exhausted', message: 'full' })
     mocks.reserve.mockImplementationOnce(() => { throw error })
     await expect(renderTemplateImage({ payload, config })).rejects.toBe(error)
+    expect(mocks.createJob).not.toHaveBeenCalled()
+    expect(mocks.createContext).not.toHaveBeenCalled()
+  })
+
+  it('fails before reserving capacity when the caller is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(renderTemplateImage({ payload, config, signal: controller.signal })).rejects.toMatchObject({
+      code: 'render_failed',
+      message: 'Image render aborted'
+    })
+    expect(mocks.reserve).not.toHaveBeenCalled()
     expect(mocks.createJob).not.toHaveBeenCalled()
     expect(mocks.createContext).not.toHaveBeenCalled()
   })
@@ -200,5 +224,27 @@ describe('renderTemplateImage', () => {
     await expect(renderTemplateImage({ payload, config: { ...config, renderTimeoutMs: 1 } })).rejects.toMatchObject({ code: 'render_timeout' })
     expect(context.close).toHaveBeenCalled()
     expect(mocks.deleteJob).toHaveBeenCalled()
+  })
+
+  it('keeps unexpected Playwright diagnostics out of the public error', async () => {
+    const diagnostics = new Error('Navigation failed for https://secret.example/render in Chromium')
+    const { page } = fakePage()
+    page.goto.mockRejectedValueOnce(diagnostics)
+    mocks.createContext.mockResolvedValue(fakeContext(page))
+
+    let error: unknown
+    try {
+      await renderTemplateImage({ payload, config })
+    } catch (caught) {
+      error = caught
+    }
+
+    expect(error).toBeInstanceOf(ImageRenderError)
+    const renderError = error as ImageRenderError
+    expect(renderError.code).toBe('render_failed')
+    expect(renderError.message).toBe('Image render failed')
+    expect(renderError.cause).toBe(diagnostics)
+    expect(renderError.toJSON()).toEqual({ code: 'render_failed', message: 'Image render failed' })
+    expect(JSON.stringify(renderError)).not.toContain('secret.example')
   })
 })

@@ -48,20 +48,21 @@ export function reserveRender (config: ImageRenderRuntimeConfig): () => void {
   }
 }
 
-export async function getBrowser (): Promise<Browser> {
+export async function getBrowser (timeout?: number): Promise<Browser> {
   const state = getBrowserState()
-  if (state.closing !== null) {
+  if (state.closing !== null && state.closing !== undefined) {
     await state.closing
-    return getBrowser()
+    return getBrowser(timeout)
   }
   if (state.browser !== null && state.browser.isConnected()) return state.browser
   if (state.launching !== null) return state.launching
 
   const launchPromise = chromium.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    ...(timeout === undefined ? {} : { timeout })
   }).then(browser => {
-    if (state.closing === null) state.browser = browser
+    if (state.closing === null || state.closing === undefined) state.browser = browser
     browser.on('disconnected', () => {
       if (state.browser === browser) state.browser = null
     })
@@ -74,18 +75,27 @@ export async function getBrowser (): Promise<Browser> {
   return launchPromise
 }
 
-export async function createRenderContext (payload: Pick<ResolvedRenderPayload, 'width' | 'height'>): Promise<BrowserContext> {
-  const browser = await getBrowser()
-  return browser.newContext({
+export async function createRenderContext (
+  payload: Pick<ResolvedRenderPayload, 'width' | 'height'>,
+  timeout?: number
+): Promise<BrowserContext> {
+  const browser = await getBrowser(timeout)
+  const context = await browser.newContext({
     viewport: { width: payload.width, height: payload.height },
     deviceScaleFactor: 1,
-    acceptDownloads: false
+    acceptDownloads: false,
+    serviceWorkers: 'block'
   })
+  if (timeout !== undefined) {
+    context.setDefaultTimeout(timeout)
+    context.setDefaultNavigationTimeout(timeout)
+  }
+  return context
 }
 
 export async function closeBrowser (): Promise<void> {
   const state = getBrowserState()
-  if (state.closing !== null) return state.closing
+  if (state.closing !== null && state.closing !== undefined) return state.closing
 
   const launching = state.launching
   const browser = state.browser
