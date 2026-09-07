@@ -27,7 +27,6 @@ type RenderState =
 
 interface RenderErrorBoundaryProps {
   children: ReactNode
-  onError: () => void
 }
 
 interface RenderErrorBoundaryState {
@@ -41,28 +40,33 @@ class RenderErrorBoundary extends Component<RenderErrorBoundaryProps, RenderErro
     return { hasError: true }
   }
 
-  componentDidCatch (): void {
-    this.props.onError()
-  }
-
   render () {
-    return this.state.hasError ? null : this.props.children
+    if (this.state.hasError) {
+      return <main data-framekit-render-state="error" data-framekit-render-error="render_component_failed" />
+    }
+    return this.props.children
   }
 }
 
+interface RenderSnapshot {
+  payload: ResolvedRenderPayload
+  state: RenderState
+}
+
 export function RenderClient ({ payload }: RenderClientProps) {
-  const [state, setState] = useState<RenderState>({ status: 'loading' })
+  const [snapshot, setSnapshot] = useState<RenderSnapshot>({ payload, state: { status: 'loading' } })
+  const state = snapshot.payload === payload ? snapshot.state : { status: 'loading' as const }
 
   useEffect(() => {
     let cancelled = false
-    const setError = (code: RenderErrorCode) => {
-      if (!cancelled) setState({ status: 'error', code })
+    const updateState = (nextState: RenderState) => {
+      if (!cancelled) setSnapshot({ payload, state: nextState })
     }
 
-    setState({ status: 'loading' })
+    updateState({ status: 'loading' })
     const entry = templates.find((candidate) => candidate.slug === payload.template)
     if (!entry) {
-      setError('template_not_found')
+      updateState({ status: 'error', code: 'template_not_found' })
       return () => { cancelled = true }
     }
 
@@ -73,7 +77,7 @@ export function RenderClient ({ payload }: RenderClientProps) {
 
         const result = validateTemplateDefinition(module.default)
         if (!result.success) {
-          setError('invalid_definition')
+          updateState({ status: 'error', code: 'invalid_definition' })
           return
         }
 
@@ -83,23 +87,29 @@ export function RenderClient ({ payload }: RenderClientProps) {
           definition.height !== payload.height ||
           !Object.prototype.hasOwnProperty.call(definition.content, payload.variant)
         ) {
-          setError('job_definition_mismatch')
+          updateState({ status: 'error', code: 'job_definition_mismatch' })
           return
         }
 
-        setState({ status: 'loading', definition })
+        updateState({ status: 'loading', definition })
       })
       .catch(() => {
-        setError('template_load_failed')
+        updateState({ status: 'error', code: 'template_load_failed' })
       })
 
     return () => { cancelled = true }
   }, [payload])
 
   useEffect(() => {
-    if (state.status !== 'loading' || state.definition === undefined) return
-    setState({ status: 'ready', definition: state.definition })
-  }, [state])
+    const snapshotState = snapshot.state
+    if (snapshot.payload !== payload || snapshotState.status !== 'loading' || snapshotState.definition === undefined) return
+    const definition = snapshotState.definition
+    setSnapshot((current) => {
+      const currentState = current.state
+      if (current.payload !== payload || currentState.status !== 'loading' || currentState.definition !== definition) return current
+      return { payload, state: { status: 'ready', definition } }
+    })
+  }, [payload, snapshot])
 
   if (state.status === 'error') {
     return <main data-framekit-render-state="error" data-framekit-render-error={state.code} />
@@ -110,15 +120,15 @@ export function RenderClient ({ payload }: RenderClientProps) {
   }
 
   return (
-    <main data-framekit-render-state={state.status}>
-      <RenderErrorBoundary onError={() => setState({ status: 'error', code: 'render_component_failed' })}>
+    <RenderErrorBoundary>
+      <main data-framekit-render-state={state.status}>
         <TemplateCanvas<TemplateDefinition>
           definition={state.definition}
           data={payload.data}
           assets={payload.assets}
           variant={payload.variant}
         />
-      </RenderErrorBoundary>
-    </main>
+      </main>
+    </RenderErrorBoundary>
   )
 }
