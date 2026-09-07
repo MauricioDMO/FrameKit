@@ -143,6 +143,8 @@ async function expectProjectFiles (
   )
   await expect(readFile(path.join(destination, 'src', 'templates', 'example', 'template.tsx'), 'utf8')).resolves.toContain('defineTemplate')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).resolves.toContain("redirect('/editor')")
+  await expect(readFile(path.join(destination, 'src', 'app', '__framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('loadRenderRequest')
+  await expect(readFile(path.join(destination, 'src', 'app', '__framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).resolves.toContain('TemplateCanvas')
 
   const skills = (await readdir(path.join(destination, '.agents', 'skills'))).sort()
   expect(skills).toEqual(['fk-brand', 'fk-overview', 'fk-setup', 'fk-studio', 'fk-templates'])
