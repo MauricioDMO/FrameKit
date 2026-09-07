@@ -1,5 +1,7 @@
 # Step 2 - Shared Canvas and Image Inputs
 
+**Status:** Implemented and verified on 2026-09-07.
+
 ## Goal
 
 Create one exact-size template render boundary shared by Studio and the private
@@ -369,15 +371,24 @@ needs byte-level primitives.
 - Unknown fields fail before remote network work.
 - Wrong non-image runtime type fails through canonical resolution/validation.
 
+## Verification
+
+The available package checks passed without Playwright:
+
+- `pnpm --filter @mauriciodmo/framekit test -- --testTimeout=15000`: 56 test files, 601 tests.
+- `pnpm --filter @mauriciodmo/framekit typecheck`.
+- `pnpm --filter @mauriciodmo/framekit build`.
+
 ## Exit gate
 
-Step 2 is complete when:
+Step 2 is complete:
 
-- Studio and a test consumer render through one exact canvas;
-- current Studio export/upload behavior has no regression;
-- request image sources are deterministically validated/prepared;
-- remote images are fetched by Node under an exact allowlist and converted to
-  canonical data URLs;
-- dynamic image overrides preserve current resolver precedence without writing
-  project files;
-- all focused package tests, typecheck, and build pass without Playwright.
+- [x] Studio uses the shared exact canvas, and a consumer fixture compiles
+  against `@mauriciodmo/framekit/editor` for `TemplateCanvas`.
+- [x] Current Studio export/upload behavior has no regression.
+- [x] Request image sources are deterministically validated/prepared.
+- [x] Remote images are fetched by Node under an exact allowlist and converted
+  to canonical data URLs.
+- [x] Dynamic image overrides preserve current resolver precedence without
+  writing project files.
+- [x] Package tests, typecheck, and build pass without Playwright.

@@ -129,6 +129,7 @@ separate `slug` or `assets` props.
 | Export                 | Description                                                   |
 | ---------------------- | ------------------------------------------------------------- |
 | `FrameKitEditor`       | React component that renders the template editing interface   |
+| `TemplateCanvas`       | React component that renders a template at its exact dimensions |
 | `FrameKitNavigation`   | React component that renders the template navigation tree     |
 | `humanizeSegment`      | Converts a path segment into a human-readable label           |
 | `manifestToNavigation` | Converts template or brand registry entries into a navigation tree structure |

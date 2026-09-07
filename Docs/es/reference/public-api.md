@@ -132,6 +132,7 @@ props separadas de `slug` ni `assets`.
 | Exportación            | Descripción                                                                    |
 | ---------------------- | ------------------------------------------------------------------------------ |
 | `FrameKitEditor`       | Componente React que renderiza la interfaz de edición de plantillas            |
+| `TemplateCanvas`       | Componente React que renderiza una plantilla con sus dimensiones exactas       |
 | `FrameKitNavigation`   | Componente React que renderiza el árbol de navegación de plantillas            |
 | `humanizeSegment`      | Convierte un segmento de ruta en una etiqueta legible                          |
 | `manifestToNavigation` | Convierte entradas de registro de plantillas o marcas en una estructura de árbol de navegación |

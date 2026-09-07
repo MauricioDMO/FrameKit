@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Step 1 implemented and verified; Steps 2-8 pending.
+- **Status:** Steps 1-2 implemented and verified; Steps 3-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -9,9 +9,9 @@
 
 The current supported package facades are `.`, `./editor`, `./studio`,
 `./studio/root`, `./dev`, `./server`, and `./styles.css`. The `./server` facade
-currently exports only the Step 1 contracts, errors, configuration parser, and
-Bearer authentication helper. This plan does not propose `server/*`, `browser`,
-`auth`, or `shared` public subpaths.
+currently exports the Step 1 contracts, errors, configuration parser, Bearer
+authentication helper, and the Step 2 image-input preparation API. This plan
+does not propose `server/*`, `browser`, `auth`, or `shared` public subpaths.
 
 ## Purpose of this plan
 
@@ -35,8 +35,9 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement the remaining phases in order. Step 1 is complete in the current
-checkout; a phase is complete only when its focused tests and exit gate pass.
+Implement the remaining phases in order. Steps 1 and 2 are complete in the
+current checkout; a phase is complete only when its focused tests and exit gate
+pass.
 
 | Step | Plan | Main result | Depends on |
 |---:|---|---|---|
@@ -48,6 +49,15 @@ checkout; a phase is complete only when its focused tests and exit gate pass.
 | 6 | [Public image API route](./06-public-image-api-route.md) | Authenticated `POST /api/v1/images` returning PNG or structured JSON errors | Steps 1-5 |
 | 7 | [Packaging and Docker](./07-packaging-and-docker.md) | Public server export, Playwright runtime, starter integration, and production image | Steps 1-6 |
 | 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 1-7 |
+
+## Step 2 verification
+
+Step 2 was implemented and verified on 2026-09-07. The available package checks
+passed:
+
+- `pnpm --filter @mauriciodmo/framekit test -- --testTimeout=15000`: 56 test files, 601 tests.
+- `pnpm --filter @mauriciodmo/framekit typecheck`.
+- `pnpm --filter @mauriciodmo/framekit build`.
 
 Each step contains:
 
@@ -348,7 +358,7 @@ packages/framekit/src/
   studio.ts                        # current Studio facade
   studio-root.ts                   # current Studio root facade
   dev.ts                           # current development facade
-  server.ts                        # current Step 1 facade; later steps extend it
+  server.ts                        # current Step 1-2 facade; later steps extend it
   core/
     fields/
     template-data/

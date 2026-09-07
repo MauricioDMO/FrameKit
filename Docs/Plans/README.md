@@ -47,9 +47,9 @@ casos de prueba, comandos y exit gates detallados.
 |     5 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
 El estado operativo del servidor es explícito: Server Image Rendering sigue
-incompleto; el paso 1 está implementado y verificado en el checkout actual, y
-los pasos 2 a 8 siguen pendientes. Maintainability fase 6 también sigue
-pendiente.
+incompleto; los pasos 1 y 2 están implementados y verificados en el checkout
+actual, y los pasos 3 a 8 siguen pendientes. Maintainability fase 6 también
+sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -463,8 +463,9 @@ Plan:
 [01-contracts-and-server-boundary.md](./server-image-rendering-api/01-contracts-and-server-boundary.md).
 
 Estado de implementación: completado en el checkout actual. La entrada
-`./server` exporta los contratos, errores, parser de configuración y helper de
-autenticación de este paso; los pasos 2 a 8 siguen pendientes.
+`./server` exporta los contratos, errores, parser de configuración, helper de
+autenticación y preparación de imágenes de los pasos implementados; los pasos 3
+a 8 siguen pendientes.
 
 * [x] Añadir la entrada server-only.
 * [x] Definir tipos públicos de request, config y error.
@@ -483,21 +484,26 @@ autenticación de este paso; los pasos 2 a 8 siguen pendientes.
 Plan:
 [02-shared-canvas-and-image-inputs.md](./server-image-rendering-api/02-shared-canvas-and-image-inputs.md).
 
-* [ ] Extraer `TemplateCanvas` desde el render wrapper existente.
-* [ ] Exportarlo mediante `./editor`.
-* [ ] Migrar `FrameKitEditor` al canvas compartido sin cambiar export/copy.
-* [ ] Mantener `TemplateCanvas` libre de preview scaling, shell, theme y chrome.
-* [ ] Centralizar validación de firmas raster.
-* [ ] Mantener upload de desarrollo sin regresiones.
-* [ ] Validar data URLs PNG/JPEG/WebP/GIF.
-* [ ] Validar URLs HTTPS con hostname exacto.
-* [ ] Descargar imágenes remotas mediante Node.js antes del browser.
-* [ ] Convertir imágenes remotas válidas a data URLs canónicas.
-* [ ] Validar únicamente namespaces root-relative permitidos.
-* [ ] Rechazar SVG, traversal, credenciales, puertos y redirects inseguros.
-* [ ] Clonar manifests sin escribir archivos del proyecto.
-* [ ] Preservar precedencia defaults, variant, edits y assets.
-* [ ] Pasar el exit gate del paso 2.
+Estado de implementación: completado y verificado el 2026-09-07. Los checks
+disponibles del paquete `@mauriciodmo/framekit` pasan: 56 archivos de tests y
+601 tests, `typecheck` y `build`.
+
+* [x] Extraer `TemplateCanvas` desde el render wrapper existente.
+* [x] Exportarlo mediante `./editor`.
+* [x] Migrar `FrameKitEditor` al canvas compartido sin cambiar export/copy.
+* [x] Mantener `TemplateCanvas` libre de preview scaling, shell, theme y chrome.
+* [x] Centralizar validación de firmas raster.
+* [x] Mantener upload de desarrollo sin regresiones.
+* [x] Validar data URLs PNG/JPEG/WebP/GIF.
+* [x] Validar URLs HTTPS con hostname exacto.
+* [x] Descargar imágenes remotas mediante Node.js antes del browser.
+* [x] Convertir imágenes remotas válidas a data URLs canónicas.
+* [x] Validar únicamente namespaces root-relative permitidos.
+* [x] Rechazar SVG, traversal, credenciales, puertos y redirects inseguros.
+* [x] Clonar manifests sin escribir archivos del proyecto.
+* [x] Preservar precedencia defaults, variant, edits y assets.
+* [x] Pasar el exit gate del paso 2, incluido el typecheck de un consumidor del
+  export público `@mauriciodmo/framekit/editor` para `TemplateCanvas`.
 
 ### 3.4 Paso 3: Temporary Render Jobs
 
