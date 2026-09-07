@@ -27,3 +27,15 @@
 
 - Render orchestration, route interception, token scoping, readiness, screenshot validation, timeout, and request-abort cleanup are intentionally deferred to the controller/render task.
 - `closeBrowser()` is intentionally internal-facing and has no process signal or idle-timer ownership.
+
+## Review Fixes
+
+- Made `closeBrowser()` coordinate with an in-flight launch through shared closing state. Pending callers wait for cleanup, the launched browser is closed, cached state cannot be repopulated, and the next caller performs only a replacement launch after cleanup finishes.
+- Released the successful third capacity lease in the capacity test to prevent render-count leakage between tests.
+- Added an assertion covering `headless: true` and both required no-sandbox launch arguments.
+
+## Fix Verification
+
+- Focused browser Vitest: passed, 5 tests.
+- Focused browser ESLint: passed.
+- FrameKit package typecheck: passed, including type fixtures.

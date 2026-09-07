@@ -48,6 +48,10 @@ describe('browser manager', () => {
     const first = getBrowser()
     const second = getBrowser()
     expect(chromium.launch).toHaveBeenCalledTimes(1)
+    expect(chromium.launch).toHaveBeenCalledWith({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    })
     resolveLaunch(browser)
 
     await expect(first).resolves.toBe(browser)
@@ -66,6 +70,27 @@ describe('browser manager', () => {
     expect(chromium.launch).toHaveBeenCalledTimes(2)
   })
 
+  it('closes an in-flight launch without repopulating state or launching twice', async () => {
+    const browser = fakeBrowser()
+    let resolveLaunch!: (browser: Browser) => void
+    vi.mocked(chromium.launch).mockReturnValue(new Promise(resolve => { resolveLaunch = resolve }))
+
+    const launching = getBrowser()
+    const closing = closeBrowser()
+    const afterClose = getBrowser()
+    expect(chromium.launch).toHaveBeenCalledTimes(1)
+
+    const replacement = fakeBrowser()
+    vi.mocked(chromium.launch).mockResolvedValueOnce(replacement)
+    resolveLaunch(browser)
+    await closing
+    await expect(launching).resolves.toBe(browser)
+    expect(browser.close).toHaveBeenCalledOnce()
+
+    await expect(afterClose).resolves.toBe(replacement)
+    expect(chromium.launch).toHaveBeenCalledTimes(2)
+  })
+
   it('reserves capacity synchronously and releases each lease once', () => {
     const firstRelease = reserveRender(config)
     const secondRelease = reserveRender(config)
@@ -73,7 +98,9 @@ describe('browser manager', () => {
     expect(() => reserveRender(config)).toThrowError(expect.objectContaining({ code: 'render_capacity_exhausted' }))
     firstRelease()
     firstRelease()
-    expect(() => reserveRender(config)).not.toThrow()
+    const thirdRelease = reserveRender(config)
+    expect(thirdRelease).toBeTypeOf('function')
+    thirdRelease()
     secondRelease()
   })
 

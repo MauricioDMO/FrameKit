@@ -8,6 +8,7 @@ const browserStateSymbol = Symbol.for('framekit.server.browser')
 interface BrowserManagerState {
   browser: Browser | null
   launching: Promise<Browser> | null
+  closing: Promise<void> | null
   activeRenders: number
 }
 
@@ -20,6 +21,7 @@ function getBrowserState (): BrowserManagerState {
     globalState[browserStateSymbol] = {
       browser: null,
       launching: null,
+      closing: null,
       activeRenders: 0
     }
   }
@@ -48,6 +50,10 @@ export function reserveRender (config: ImageRenderRuntimeConfig): () => void {
 
 export async function getBrowser (): Promise<Browser> {
   const state = getBrowserState()
+  if (state.closing !== null) {
+    await state.closing
+    return getBrowser()
+  }
   if (state.browser !== null && state.browser.isConnected()) return state.browser
   if (state.launching !== null) return state.launching
 
@@ -55,7 +61,7 @@ export async function getBrowser (): Promise<Browser> {
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   }).then(browser => {
-    state.browser = browser
+    if (state.closing === null) state.browser = browser
     browser.on('disconnected', () => {
       if (state.browser === browser) state.browser = null
     })
@@ -79,8 +85,18 @@ export async function createRenderContext (payload: Pick<ResolvedRenderPayload, 
 
 export async function closeBrowser (): Promise<void> {
   const state = getBrowserState()
+  if (state.closing !== null) return state.closing
+
+  const launching = state.launching
   const browser = state.browser
   state.browser = null
-  state.launching = null
-  if (browser !== null) await browser.close()
+  const closing = (async () => {
+    const launchedBrowser = launching === null ? browser : await launching
+    if (state.launching === launching) state.launching = null
+    if (launchedBrowser !== null) await launchedBrowser.close()
+  })().finally(() => {
+    state.closing = null
+  })
+  state.closing = closing
+  await closing
 }
