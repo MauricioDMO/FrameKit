@@ -128,3 +128,71 @@ was changed to work around the stale install.
   validate the new route end to end.
 - No focused route/component tests were added because the brief explicitly
   limits this task to the two canonical source files.
+
+## Review Fix Report
+
+### Findings Fixed
+
+- Template render failures are now handled by an outer `RenderErrorBoundary`
+  whose fallback directly renders the sole
+  `data-framekit-render-state="error"` marker with
+  `data-framekit-render-error="render_component_failed"`. The ready/loading
+  `<main>` is inside the boundary, so a thrown canvas render cannot leave a
+  ready parent with zero capture roots.
+- Async render state now stores the payload reference with the state. If a
+  retained client instance receives a different payload, the derived state is
+  immediately loading with no capture root until the new payload's entry,
+  definition, dimensions, and variant have been checked. Loader and readiness
+  updates also verify the current payload snapshot.
+
+### Fix Checks
+
+`pnpm --filter @mauriciodmo/create-framekit test`
+
+```text
+Test Files  2 passed (2)
+Tests       30 passed (30)
+```
+
+`pnpm --filter @mauriciodmo/create-framekit typecheck`
+
+```text
+$ tsc --noEmit
+```
+
+`pnpm --filter @mauriciodmo/create-framekit build`
+
+```text
+tsdown: Build start
+tsx scripts/check-dist.ts .: passed
+```
+
+`git diff --check`
+
+```text
+passed with no output
+```
+
+The fix commit hook completed recursive lint and skill synchronization. It
+reported zero errors and the same pre-existing warning at
+`packages/framekit/src/server/render-job.ts:113` for the unused `_options`
+parameter.
+
+The previously recorded canonical-template `tsc` and `framekit check` blocks
+remain unchanged: the ignored standalone template install still lacks the
+current FrameKit `server`, `field`, and editor exports. No dependency manifest
+or generated output was changed to work around it.
+
+### Fix Commit Details
+
+- Parent before fix: `e9548012cb0924ac33ef42819ffc6b6d44f6ea7f`
+- Fix: `32dd0f0f188e2faf554dfbd45369248be325f6d7`
+- Fix implementation file: `packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx`
+- Report update is committed separately after this fix.
+
+### Remaining Concerns
+
+- The canonical template's installed dependencies still need refreshing in a
+  clean consumer install for end-to-end Next/template validation.
+- The fix remains covered by package-level checks only; no permanent route or
+  focused test file was added within the task scope.
