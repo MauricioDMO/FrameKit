@@ -28,6 +28,11 @@
       "import": "./dist/editor.js",
       "default": "./dist/editor.js"
     },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "default": "./dist/client.js"
+    },
     "./studio": {
       "types": "./dist/studio.d.ts",
       "import": "./dist/studio.js",

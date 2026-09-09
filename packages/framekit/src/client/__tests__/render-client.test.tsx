@@ -4,6 +4,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { createRenderClient } from '@/client'
 import { defineTemplate, field } from '@mauriciodmo/framekit'
 import type {
   TemplateAssetManifest,
@@ -12,11 +13,8 @@ import type {
 } from '@mauriciodmo/framekit'
 import type { ResolvedRenderPayload } from '@mauriciodmo/framekit/server'
 
-import { RenderClient } from '@/app/framekit/render/[id]/render-client'
-
-const registryState = vi.hoisted(() => ({ templates: [] as unknown[] }))
-
-vi.mock('@framekit/generated/templates', () => registryState)
+const templates: TemplateRegistryEntry[] = []
+const RenderClient = createRenderClient(templates)
 
 type TestRenderProps = {
   data: { title: string }
@@ -84,7 +82,7 @@ function makeEntry (options: {
 }
 
 function setEntries (...entries: TemplateRegistryEntry[]): void {
-  registryState.templates.splice(0, registryState.templates.length, ...entries)
+  templates.splice(0, templates.length, ...entries)
 }
 
 function deferred<T> (): { promise: Promise<T>, resolve: (value: T) => void } {
@@ -154,10 +152,10 @@ function expectCoarseError (container: HTMLDivElement, code: string): void {
 
 afterEach(() => {
   for (const mounted of mountedRenders.splice(0)) mounted.unmount()
-  registryState.templates.length = 0
+  templates.length = 0
 })
 
-describe('private render client', () => {
+describe('package render client', () => {
   it('starts loading without a capture root', () => {
     const pending = deferred<{ default: TemplateDefinition }>()
     setEntries(makeEntry({ load: () => pending.promise }))

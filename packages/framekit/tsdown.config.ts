@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     editor: 'src/editor.ts',
+    client: 'src/client/index.ts',
     studio: 'src/studio.ts',
     'studio-root': 'src/studio-root.ts',
     dev: 'src/dev.ts',
