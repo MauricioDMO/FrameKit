@@ -115,6 +115,30 @@ production standalone build and starts its server.
 
 ---
 
+### `@mauriciodmo/framekit/client`
+
+The client entry point provides the adapter for the private render page.
+`createRenderClient(templates)` closes over the consumer's generated registry
+and returns the client render component. Keep the factory call in a
+consumer-local module marked `'use client'`:
+
+```tsx
+'use client'
+
+import { createRenderClient } from '@mauriciodmo/framekit/client'
+import { templates } from '@framekit/generated/templates'
+
+export const RenderClient = createRenderClient(templates)
+```
+
+**Runtime exports**
+
+| Export               | Description                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `createRenderClient` | `createRenderClient(templates: readonly TemplateRegistryEntry[])`; returns a client render component backed by the provided registry |
+
+---
+
 ### `@mauriciodmo/framekit/editor`
 
 Provides the `FrameKitEditor` component and supporting navigation utilities for the in-app editing experience.
@@ -261,7 +285,8 @@ modules, and synchronizes template assets under `public/framekit/templates`.
 ### `@mauriciodmo/framekit/server`
 
 The server entry point is a Node.js/server-only facade for the Step 1 image API
-contracts. Do not import it into browser bundles.
+contracts and the private render job/page handoff. Do not import it into browser
+bundles.
 
 **Runtime exports**
 
@@ -270,6 +295,10 @@ contracts. Do not import it into browser bundles.
 | `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
 | `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
+| `createRenderJob`     | `createRenderJob(payload: ResolvedRenderPayload): CreatedRenderJob`; creates a short-lived private render job identifier and token |
+| `loadRenderRequest`   | `loadRenderRequest(id: string, token: string): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
+| `deleteRenderJob`     | `deleteRenderJob(id: string): void`; removes a private render job |
+| `createRenderPage`    | `createRenderPage(RenderClient)`; creates the server page handoff that validates the private render token and passes the resolved payload to the client component |
 
 `parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
 `FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
@@ -312,9 +341,9 @@ only `code`, `message`, and, when present, `fields`; `cause` is not enumerable.
 `fields` is supported only for the `invalid_template_data` code and must be a
 non-null, non-array object.
 
-This entry point provides contracts only. It does not provide routes, image
-fetching, render execution or jobs, browser capture, Chromium, or the complete
-image-rendering API.
+The private render job/page handoff is not the public image API. This entry
+point does not provide public image API routes or a complete public
+image-rendering request/response surface; that public API remains future work.
 
 ---
 
@@ -367,6 +396,7 @@ These are peer requirements. The package will emit a warning during installation
 | Export                                                   | Side             | Reason                                                                                             |
 | -------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Client           | Interactive React components that manage state and respond to user input                           |
+| `@mauriciodmo/framekit/client`                           | Client           | Client-only factory for the private render-page adapter                                             |
 | `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                       |
 | `FrameKitStudioRoot`                                     | Server           | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
 | `@mauriciodmo/framekit/dev` entry points                 | Server           | Dev server, template discovery, code generation, and file watching are all server-side operations  |

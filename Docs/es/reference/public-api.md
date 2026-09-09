@@ -118,6 +118,31 @@ genera; requiere un build standalone de producción y arranca su servidor.
 
 ---
 
+### `@mauriciodmo/framekit/client`
+
+El punto de entrada de cliente proporciona el adaptador para la página privada
+de renderizado. `createRenderClient(templates)` cierra sobre el registro
+generado del consumidor y devuelve el componente de renderizado del cliente.
+Mantén la llamada a la factory en un módulo local del consumidor marcado con
+`'use client'`:
+
+```tsx
+'use client'
+
+import { createRenderClient } from '@mauriciodmo/framekit/client'
+import { templates } from '@framekit/generated/templates'
+
+export const RenderClient = createRenderClient(templates)
+```
+
+**Exportaciones del entorno de ejecución**
+
+| Exportación           | Descripción                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `createRenderClient`  | `createRenderClient(templates: readonly TemplateRegistryEntry[])`; devuelve un componente de renderizado del cliente respaldado por el registro proporcionado |
+
+---
+
 ### `@mauriciodmo/framekit/editor`
 
 Proporciona el componente `FrameKitEditor` y las utilidades de navegación asociadas para la experiencia de edición dentro de la aplicación.
@@ -271,8 +296,8 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para los contratos de la API de imágenes del Paso 1. No se debe importar en
-bundles del navegador.
+para los contratos de la API de imágenes del Paso 1 y el handoff privado de
+trabajo/página de renderizado. No se debe importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
@@ -281,6 +306,10 @@ bundles del navegador.
 | `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
 | `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
+| `createRenderJob`      | `createRenderJob(payload: ResolvedRenderPayload): CreatedRenderJob`; crea un identificador y un token de corta duración para un trabajo privado de renderizado |
+| `loadRenderRequest`    | `loadRenderRequest(id: string, token: string): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
+| `deleteRenderJob`      | `deleteRenderJob(id: string): void`; elimina un trabajo privado de renderizado |
+| `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff de página de servidor que valida el token privado y pasa el payload resuelto al componente cliente |
 
 `parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
 `FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
@@ -326,9 +355,10 @@ contiene `code`, `message` y, cuando existe, `fields`; `cause` no es enumerable.
 `fields` solo se admite con el código `invalid_template_data` y debe ser un
 objeto no nulo que no sea un array.
 
-Este punto de entrada solo proporciona contratos. No proporciona rutas,
-obtención de imágenes, ejecución ni trabajos de render, captura en navegador,
-Chromium ni la API completa de renderizado de imágenes.
+El handoff privado de trabajo/página no es la API pública de imágenes. Este
+punto de entrada no proporciona rutas públicas de la API de imágenes ni una
+superficie pública completa de solicitud/respuesta para renderizar imágenes;
+esa API pública sigue siendo trabajo futuro.
 
 ---
 
@@ -381,6 +411,7 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 | Exportación                                              | Lado               | Razón                                                                                                                                                 |
 | -------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `FrameKitEditor`, `FrameKitStudio`, `FrameKitNavigation` | Cliente            | Componentes React interactivos que gestionan estado y responden a la entrada del usuario                                                              |
+| `@mauriciodmo/framekit/client`                           | Cliente            | Factory exclusiva del cliente para el adaptador de la página privada de renderizado                                                                  |
 | `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                                                                         |
 | `FrameKitStudioRoot`                                     | Servidor           | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                                   |
 | Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor           | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |

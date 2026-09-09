@@ -4,9 +4,10 @@ FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
 Studio export is currently browser-based and supports PNG only. The server-only
 `@mauriciodmo/framekit/server` facade currently exposes the implemented Step 1
-contracts, configuration parser, Bearer authentication helper, and render-error
-class and types; image API routes and server-side image rendering remain future
-work.
+contracts, configuration parser, Bearer authentication helper, render-error
+class and types, and the private render job/page handoff used by production
+rendering. This private handoff is distinct from the public image API; its
+routes and complete public image-rendering contract remain future work.
 
 ## Compatibility
 
@@ -143,16 +144,30 @@ import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 import { FrameKitEditor, FrameKitNavigation } from '@mauriciodmo/framekit/editor'
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
+import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
 import { authenticateBearer, ImageRenderError, parseImageApiConfig } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
+For the private render page, call `createRenderClient(templates)` in a
+consumer-local `'use client'` adapter. The factory closes over the generated
+registry and returns the client render component:
+
+```tsx
+'use client'
+
+import { createRenderClient } from '@mauriciodmo/framekit/client'
+import { templates } from '@framekit/generated/templates'
+
+export const RenderClient = createRenderClient(templates)
+```
+
 The server-only `./server` facade is limited to the implemented Step 1
-contracts, configuration parser, Bearer authentication helper, and the
-render-error class and types. It does not provide image API routes or
-server-side image rendering. Keep the `./dev` and `./server` entry points out
-of browser/client imports.
+contracts, configuration parser, Bearer authentication helper, render-error
+class and types, and private render job/page handoff. It does not provide
+public image API routes or the complete public image-rendering API. Keep the
+`./dev` and `./server` entry points out of browser/client imports.
 
 ### Published color palette
 

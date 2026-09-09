@@ -177,7 +177,11 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
 }
 
 function extractRuntimeImports(source) {
-  return [...source.matchAll(/\bimport\s+(?:[^'";]+?\sfrom\s+)?['"]([^'"]+)['"]/g)].map((match) => match[1])
+  const imports = [
+    ...source.matchAll(/\b(?:import|export)\s+(?:[^'"]*?\sfrom\s+)?(['"])([^'"]+)\1/g),
+    ...source.matchAll(/\bimport\s*\(\s*(['"])([^'"]+)\1\s*\)/g),
+  ]
+  return imports.map((match) => match[2])
 }
 
 function isNodeBuiltin(specifier) {
@@ -199,20 +203,29 @@ async function assertCorePackageBoundary(packageRoot, manifest, label) {
   const clientSource = await readFile(clientEntry, 'utf8')
   assert(/^['"]use client['"];?\s/.test(clientSource), `${label}: dist/client.js lost the use client directive`)
 
-  const clientDirectory = path.join(packageRoot, 'dist', 'client')
-  const clientFiles = [clientEntry]
-  if (await exists(clientDirectory)) clientFiles.push(...(await walkFiles(clientDirectory)).filter((filePath) => filePath.endsWith('.js')))
+  const pendingFiles = [clientEntry]
+  const seenFiles = new Set()
   const forbiddenImports = []
-  for (const filePath of clientFiles) {
+  while (pendingFiles.length > 0) {
+    const filePath = pendingFiles.pop()
+    if (seenFiles.has(filePath)) continue
+    seenFiles.add(filePath)
     const source = await readFile(filePath, 'utf8')
     for (const specifier of extractRuntimeImports(source)) {
       if (
         specifier === 'next/headers' ||
         isNodeBuiltin(specifier) ||
         /^(?:playwright|playwright-core)(?:\/|$)/.test(specifier) ||
-        /(?:^|\/)server(?:\/|$)/.test(specifier) ||
+        /(?:^|\/)server(?:\.js|\/|$)/.test(specifier) ||
         specifier.includes('render-image')
       ) forbiddenImports.push(`${path.relative(packageRoot, filePath)} -> ${specifier}`)
+
+      if (!specifier.startsWith('./') && !specifier.startsWith('../')) continue
+      const resolved = path.resolve(path.dirname(filePath), specifier)
+      assert(isInside(packageRoot, resolved), `${label}: client import escapes package ${specifier}`)
+      if (!resolved.endsWith('.js')) continue
+      assert((await stat(resolved).catch(() => null))?.isFile(), `${label}: client import does not exist ${specifier}`)
+      pendingFiles.push(resolved)
     }
   }
   assert.deepEqual(forbiddenImports, [], `${label}: client runtime has forbidden imports`)
