@@ -217,7 +217,7 @@ Existing trusted template content can already contain root-relative assets.
 Request-specific root-relative values may use only explicit public namespaces:
 
 - `/assets/` for application public assets;
-- `/__framekit/templates/` for generated template assets.
+- `/framekit/templates/` for generated template assets.
 
 Reject:
 
@@ -226,7 +226,7 @@ Reject:
 - encoded/decoded dot traversal;
 - query/fragment tricks that escape the allowed namespace;
 - `/api/` paths;
-- `/__framekit/render/` paths;
+- `/framekit/render/` paths;
 - other arbitrary same-origin paths.
 
 Root-relative values remain root-relative strings and are later loaded by

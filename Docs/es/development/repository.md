@@ -84,7 +84,7 @@ Las siguientes rutas se producen durante el desarrollo:
 | `packages/framekit/dist/`          | JavaScript compilado (ESM), declaraciones de tipos (`.d.ts`) y `styles.css` del paquete público | Ignorado                                                               |
 
 Los directorios generados están en `.gitignore` mediante `**/.framekit/`,
-`**/.next/`, `**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/` y
+`**/.next/`, `**/build/`, `**/dist/`, `**/out/`, `**/public/framekit/` y
 `**/src/generated/framekit/`. El registro generado es desechable y debe
 regenerarse antes de ejecutar comandos que lo importen. Nunca edites manualmente
 output generado o de compilación ignorado.

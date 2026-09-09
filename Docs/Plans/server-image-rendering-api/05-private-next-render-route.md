@@ -32,13 +32,13 @@ API key and is not a second public rendering API.
 ## Route location
 
 ```text
-packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
-packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
-apps/studio/src/app/__framekit/render/[id]/page.tsx
-apps/studio/src/app/__framekit/render/[id]/render-client.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/page.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/render-client.tsx
+apps/studio/src/app/framekit/render/[id]/page.tsx
+apps/studio/src/app/framekit/render/[id]/render-client.tsx
 ```
 
-The reserved `__framekit` namespace aligns with existing generated assets/dev
+The reserved `/framekit` namespace aligns with existing generated assets/dev
 endpoints. Do not place this page under public `/api/v1`.
 
 Route requirements:
@@ -262,10 +262,10 @@ before Step 6. The v1 support target remains one Node process.
 ## Expected files
 
 ```text
-packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
-packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
-apps/studio/src/app/__framekit/render/[id]/page.tsx
-apps/studio/src/app/__framekit/render/[id]/render-client.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/page.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/render-client.tsx
+apps/studio/src/app/framekit/render/[id]/page.tsx
+apps/studio/src/app/framekit/render/[id]/render-client.tsx
 ```
 
 Runtime tests live under the nearest relevant `__tests__/` directory and mirror

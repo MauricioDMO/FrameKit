@@ -37,7 +37,7 @@ async function syncTemplateAssets (
   const assetsBySlug = Object.fromEntries(
     discovered.map(({ template, assets }) => [template.slug, assets.manifest])
   )
-  const outputRoot = path.join(projectRoot, 'public', '__framekit', 'templates')
+  const outputRoot = path.join(projectRoot, 'public', 'framekit', 'templates')
 
   await rm(outputRoot, { recursive: true, force: true })
 

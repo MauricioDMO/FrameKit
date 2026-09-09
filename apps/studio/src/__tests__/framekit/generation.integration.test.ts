@@ -177,10 +177,10 @@ describe('template generation integration', () => {
           variants: { default: 'es', labels: { es: 'Spanish', en: 'English' } },
           variantKeys: ['es', 'en'],
           assets: {
-            common: { logo: '/__framekit/templates/alpha/post/common/logo.svg' },
+            common: { logo: '/framekit/templates/alpha/post/common/logo.svg' },
             variants: {
-              en: { portrait: '/__framekit/templates/alpha/post/en/portrait.webp' },
-              es: { portrait: '/__framekit/templates/alpha/post/es/portrait.png' }
+              en: { portrait: '/framekit/templates/alpha/post/en/portrait.webp' },
+              es: { portrait: '/framekit/templates/alpha/post/es/portrait.png' }
             }
           }
         },
@@ -222,9 +222,9 @@ describe('template generation integration', () => {
         })
       }
 
-      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg>common-logo</svg>')
-      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'es', 'portrait.png'), 'utf8')).resolves.toBe('es-portrait')
-      await expect(readFile(path.join(projectRoot, 'public', '__framekit', 'templates', 'alpha', 'post', 'en', 'portrait.webp'), 'utf8')).resolves.toBe('en-portrait')
+      await expect(readFile(path.join(projectRoot, 'public', 'framekit', 'templates', 'alpha', 'post', 'common', 'logo.svg'), 'utf8')).resolves.toBe('<svg>common-logo</svg>')
+      await expect(readFile(path.join(projectRoot, 'public', 'framekit', 'templates', 'alpha', 'post', 'es', 'portrait.png'), 'utf8')).resolves.toBe('es-portrait')
+      await expect(readFile(path.join(projectRoot, 'public', 'framekit', 'templates', 'alpha', 'post', 'en', 'portrait.webp'), 'utf8')).resolves.toBe('en-portrait')
 
       const brandMetadata = generated.brands.map(metadataWithoutLoader)
       expect(brandMetadata).toEqual([

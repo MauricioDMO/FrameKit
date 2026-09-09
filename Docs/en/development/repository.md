@@ -84,7 +84,7 @@ The following paths are produced during development:
 | `packages/framekit/dist/`          | Built JavaScript (ESM), type declarations (`.d.ts`), and `styles.css` from the public package | Ignored                                                      |
 
 All generated directories are gitignored via `**/.framekit/`, `**/.next/`,
-`**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/`, and
+`**/build/`, `**/dist/`, `**/out/`, `**/public/framekit/`, and
 `**/src/generated/framekit/`. The generated registry is disposable and must be
 regenerated before commands that import it. Never hand-edit ignored generated or
 build output.

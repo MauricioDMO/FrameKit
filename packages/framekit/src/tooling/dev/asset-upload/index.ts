@@ -10,7 +10,7 @@ export async function handleAssetUpload (
   options: { projectRoot: string; regenerate: () => Promise<void> }
 ): Promise<boolean> {
   const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
-  if (pathname !== '/__framekit/assets') return false
+  if (pathname !== '/framekit/assets') return false
 
   if (request.method !== 'POST') {
     response.setHeader('allow', 'POST')

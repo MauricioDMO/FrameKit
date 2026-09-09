@@ -32,7 +32,7 @@
 ## Generated Files
 
 - Linted JavaScript and TypeScript use the ESLint Standard contract: two spaces, single quotes, no semicolons, no trailing commas, and a final newline. Existing Next, TypeScript, and Tailwind rules remain active.
-- Do not hand-edit `packages/framekit/dist/`, `**/.framekit/`, `**/dist/`, `**/.next/`, `**/out/`, `**/build/`, `**/public/__framekit/`, or `**/src/generated/framekit/`; they are ignored build/codegen output.
+- Do not hand-edit `packages/framekit/dist/`, `**/.framekit/`, `**/dist/`, `**/.next/`, `**/out/`, `**/build/`, `**/public/framekit/`, or `**/src/generated/framekit/`; they are ignored build/codegen output.
 - Run `framekit generate` after adding or removing template files or directories. Templates are discovered under `src/templates/**/template.tsx`.
 - Run `framekit check` for definition errors; `framekit build` runs this check before the Next.js build. Run `framekit start` only after a successful build.
 

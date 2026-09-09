@@ -82,7 +82,7 @@ export async function renderTemplateImage (options: {
     release = reserveRender(options.config)
     const createdJob = createRenderJob(options.payload)
     job = createdJob
-    const privateRenderUrl = new URL(`/__framekit/render/${encodeURIComponent(createdJob.id)}`, options.config.internalOrigin).toString()
+    const privateRenderUrl = new URL(`/framekit/render/${encodeURIComponent(createdJob.id)}`, options.config.internalOrigin).toString()
     renderUrl = privateRenderUrl
 
     const contextPromise = createRenderContext(options.payload, options.config.renderTimeoutMs)

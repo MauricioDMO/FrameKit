@@ -52,7 +52,7 @@ export function requestFor (body: string, { method = 'POST', contentType = 'appl
   const request = Readable.from([body]) as unknown as IncomingMessage
   Object.assign(request, {
     method,
-    url: '/__framekit/assets',
+    url: '/framekit/assets',
     headers: { 'content-length': String(Buffer.byteLength(body)), 'content-type': contentType }
   })
   return request

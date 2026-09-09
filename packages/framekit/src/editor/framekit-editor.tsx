@@ -69,7 +69,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
 
   async function uploadImage (key: string, file: File, scope: ImageFieldScope): Promise<void> {
     try {
-      const response = await fetch('/__framekit/assets', {
+      const response = await fetch('/framekit/assets', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

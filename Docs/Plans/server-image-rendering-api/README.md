@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 1-4 implemented and verified; Steps 5-8 pending.
+- **Status:** Steps 1-5 implemented and verified; Steps 6-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -36,7 +36,7 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement the remaining phases in order. Steps 1 through 4 are complete in the
+Implement the remaining phases in order. Steps 1 through 5 are complete in the
 current checkout; a phase is complete only when its focused tests and exit gate
 pass.
 
@@ -199,7 +199,7 @@ Client
      -> renderTemplateImage(resolvedPayload)   @mauriciodmo/framekit/server
         -> globalThis Map job                  @mauriciodmo/framekit/server
         -> shared Chromium context             @mauriciodmo/framekit/server
-        -> GET /__framekit/render/<id>         generated application
+        -> GET /framekit/render/<id>            generated application
            -> loadRenderRequest(...)           @mauriciodmo/framekit/server
            -> generated template loader        generated application
            -> TemplateCanvas                   @mauriciodmo/framekit/editor
@@ -440,8 +440,8 @@ packages/create-framekit/template/
   src/app/editor/[[...slug]]/page.tsx
   src/app/brand/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
-  src/app/__framekit/render/[id]/page.tsx
-  src/app/__framekit/render/[id]/render-client.tsx
+  src/app/framekit/render/[id]/page.tsx
+  src/app/framekit/render/[id]/render-client.tsx
 
 apps/studio/
   src/app/page.tsx
@@ -450,8 +450,8 @@ apps/studio/
   src/app/editor/[[...slug]]/page.tsx
   src/app/brand/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
-  src/app/__framekit/render/[id]/page.tsx
-  src/app/__framekit/render/[id]/render-client.tsx
+  src/app/framekit/render/[id]/page.tsx
+  src/app/framekit/render/[id]/render-client.tsx
   src/__tests__/framekit/generation.integration.test.ts
 
 tests/e2e/

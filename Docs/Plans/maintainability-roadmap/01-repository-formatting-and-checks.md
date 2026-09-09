@@ -105,7 +105,7 @@ canonical patterns are present:
 **/build/
 **/dist/
 **/out/
-**/public/__framekit/
+**/public/framekit/
 **/src/generated/framekit/
 ```
 
@@ -169,7 +169,7 @@ Update `AGENTS.md` to document:
 - that existing Next, TypeScript, and Tailwind rules remain active;
 - the generated/build paths `**/.framekit/`, `**/dist/` (including
   `packages/framekit/dist/`), `**/src/generated/framekit/`,
-  `**/public/__framekit/`, `**/.next/`, `**/out/`, and `**/build/` that must
+  `**/public/framekit/`, `**/.next/`, `**/out/`, and `**/build/` that must
   not be hand-edited;
 - that `Docs/skills/` is authoritative and the two `.agents/skills` locations
   are synchronized generated copies; and

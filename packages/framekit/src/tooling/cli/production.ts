@@ -63,6 +63,22 @@ async function copyStandaloneAssets (projectRoot: string): Promise<void> {
     path.join(serverDirectory, '.framekit', 'next', 'static'),
     { recursive: true }
   )
+
+  const playwrightPackageRoot = path.dirname(require.resolve('playwright-core/package.json'))
+  const standaloneRoot = path.join(projectRoot, '.framekit', 'next', 'standalone')
+  async function copyPlaywrightRegistry (directory: string): Promise<void> {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name)
+      if (!entry.isDirectory()) continue
+      if (entry.name === 'playwright-core') {
+        await cp(path.join(playwrightPackageRoot, 'browsers.json'), path.join(entryPath, 'browsers.json'))
+        continue
+      }
+      await copyPlaywrightRegistry(entryPath)
+    }
+  }
+
+  await copyPlaywrightRegistry(standaloneRoot)
 }
 
 export async function build (projectRoot: string): Promise<number> {

@@ -27,7 +27,7 @@ Markdown, YAML, JSON, CSS ni output generado.
 
 El output generado y de compilación ignorado es desechable y nunca debe editarse
 manualmente. Las rutas canónicas ignoradas son `**/.framekit/`, `**/.next/`,
-`**/build/`, `**/dist/`, `**/out/`, `**/public/__framekit/` y
+`**/build/`, `**/dist/`, `**/out/`, `**/public/framekit/` y
 `**/src/generated/framekit/`. `Docs/skills/` es la fuente autoritativa; las
 copias rastreadas en `.agents/skills` solo se actualizan mediante
 `pnpm sync:skills`.

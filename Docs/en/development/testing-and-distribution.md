@@ -26,7 +26,7 @@ active. ESLint does not format Markdown, YAML, JSON, CSS, or generated output.
 
 Ignored generated and build output is disposable and must never be hand-edited.
 The canonical ignored paths are `**/.framekit/`, `**/.next/`, `**/build/`,
-`**/dist/`, `**/out/`, `**/public/__framekit/`, and
+`**/dist/`, `**/out/`, `**/public/framekit/`, and
 `**/src/generated/framekit/`. `Docs/skills/` is authoritative; the tracked
 `.agents/skills` copies are refreshed only by `pnpm sync:skills`.
 

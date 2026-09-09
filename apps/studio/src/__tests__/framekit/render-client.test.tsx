@@ -12,7 +12,7 @@ import type {
 } from '@mauriciodmo/framekit'
 import type { ResolvedRenderPayload } from '@mauriciodmo/framekit/server'
 
-import { RenderClient } from '@/app/__framekit/render/[id]/render-client'
+import { RenderClient } from '@/app/framekit/render/[id]/render-client'
 
 const registryState = vi.hoisted(() => ({ templates: [] as unknown[] }))
 

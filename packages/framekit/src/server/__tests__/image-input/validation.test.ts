@@ -41,8 +41,8 @@ describe('image input validation', () => {
     '/assets/%2e%2e/secret.png',
     '/assets//secret.png',
     '/assets\\secret.png',
-    '/__framekit/templates/../secret.png',
-    '/__framekit/private/secret.png',
+    '/framekit/templates/../secret.png',
+    '/framekit/private/secret.png',
     '/private/secret.png',
     '../assets/secret.png',
     '//images.example.com/secret.png',
@@ -55,11 +55,11 @@ describe('image input validation', () => {
   it('accepts only the two safe root-relative asset prefixes', async () => {
     await expect(prepare({
       commonImage: '/assets/images/hero.svg',
-      variantImage: '/__framekit/templates/social/post/hero.webp'
+      variantImage: '/framekit/templates/social/post/hero.webp'
     })).resolves.toMatchObject({
       assets: {
         common: { commonImage: '/assets/images/hero.svg' },
-        variants: { en: { variantImage: '/__framekit/templates/social/post/hero.webp' } }
+        variants: { en: { variantImage: '/framekit/templates/social/post/hero.webp' } }
       }
     })
   })

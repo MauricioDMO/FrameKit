@@ -25,7 +25,7 @@ test('edits and exports a structurally valid PNG through Studio', async ({ page 
   const artwork = preview.getByRole('article')
   const backgroundImage = artwork.locator(':scope > img[alt=""]')
   await expect(backgroundImage).toHaveCount(1)
-  await expect(backgroundImage).toHaveAttribute('src', '/__framekit/templates/redes-sociales/instagram/promocion-cuadrada/common/backgroundImage.svg')
+  await expect(backgroundImage).toHaveAttribute('src', '/framekit/templates/redes-sociales/instagram/promocion-cuadrada/common/backgroundImage.svg')
   await expect.poll(() => backgroundImage.evaluate((image) => {
     const element = image as HTMLImageElement
     return element.complete && element.naturalWidth > 0

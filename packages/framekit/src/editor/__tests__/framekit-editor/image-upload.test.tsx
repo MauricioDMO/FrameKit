@@ -36,7 +36,7 @@ describe('FrameKitEditor image upload', () => {
       expect(input.getAttribute('aria-describedby')).toBe('logo-error')
       expect(screen.getByText(messages.imageUploadError).id).toBe('logo-error')
       expect((input as HTMLInputElement).value).toBe('')
-      expect(fetchMock).toHaveBeenCalledWith('/__framekit/assets', {
+      expect(fetchMock).toHaveBeenCalledWith('/framekit/assets', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

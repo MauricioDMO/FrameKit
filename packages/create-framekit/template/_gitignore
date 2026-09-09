@@ -1,7 +1,7 @@
 node_modules
 .next
 .framekit
-public/__framekit
+public/framekit
 src/generated/framekit
 *.tsbuildinfo
 next-env.d.ts

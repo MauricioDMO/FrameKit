@@ -29,7 +29,7 @@ UI. Studio export is browser-based and currently supports PNG.
   not invent contact information when several values are possible.
 - `public/assets/` contains project-wide public assets.
 - `.agents/skills/` contains the public FrameKit skills for agent work.
-- `src/generated/framekit/` and `public/__framekit/` are generated output.
+- `src/generated/framekit/` and `public/framekit/` are generated output.
 
 ## Working rules
 

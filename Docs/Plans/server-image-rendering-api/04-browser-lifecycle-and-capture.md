@@ -157,7 +157,7 @@ timeout.
 Construct it only from validated runtime config and generated job ID:
 
 ```text
-<loopback-origin>/__framekit/render/<encoded-job-id>
+<loopback-origin>/framekit/render/<encoded-job-id>
 ```
 
 Rules:

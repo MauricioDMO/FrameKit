@@ -60,7 +60,7 @@ The component currently owns all of these coordination responsibilities:
   data-error alert fallback;
 - per-field validation translation, with error clearing delegated to the
   existing `useEditorState` callbacks;
-- development-only image upload to `/__framekit/assets`, including base64
+- development-only image upload to `/framekit/assets`, including base64
   conversion, scope-to-variant selection, error state, and reload;
 - export/copy validation, first-invalid-control focusing, `exporting` guard,
   error logging/alerting, PNG dimensions, and calls to `exportTemplate` and
@@ -246,7 +246,7 @@ whether the dialog is open, without duplicating lifecycle code.
   ordering, defaults, draft number behavior, localized validation, image
   upload labels, and `data-field-key` focus lookup remain unchanged.
 - Development upload remains disabled in production, posts the same JSON to
-  `/__framekit/assets`, uses `common` or the selected variant with the same
+  `/framekit/assets`, uses `common` or the selected variant with the same
   scope rule, reloads on success, sets the same localized field error on
   failure, and rethrows to the existing field owner.
 - Export/copy still validate the resolved data before browser work, merge

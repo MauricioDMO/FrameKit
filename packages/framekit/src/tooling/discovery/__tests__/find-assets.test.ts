@@ -33,8 +33,8 @@ describe('findTemplateAssets', () => {
     await expect(findTemplateAssets(root, 'brand/logo')).resolves.toMatchObject({
       manifest: {
         common: {
-          constructor: '/__framekit/templates/brand/logo/common/constructor.png',
-          toString: '/__framekit/templates/brand/logo/common/toString.webp'
+          constructor: '/framekit/templates/brand/logo/common/constructor.png',
+          toString: '/framekit/templates/brand/logo/common/toString.webp'
         },
         variants: {}
       }
@@ -50,19 +50,19 @@ describe('findTemplateAssets', () => {
 
     await expect(findTemplateAssets(root, 'social/post')).resolves.toEqual({
       manifest: {
-        common: { background: '/__framekit/templates/social/post/common/background.svg' },
-        variants: { es: { hero: '/__framekit/templates/social/post/es/hero.webp' } }
+        common: { background: '/framekit/templates/social/post/common/background.svg' },
+        variants: { es: { hero: '/framekit/templates/social/post/es/hero.webp' } }
       },
       files: [
         {
           sourcePath: path.join(root, 'assets', 'common', 'background.svg'),
           relativePath: path.join('common', 'background.svg'),
-          publicPath: '/__framekit/templates/social/post/common/background.svg'
+          publicPath: '/framekit/templates/social/post/common/background.svg'
         },
         {
           sourcePath: path.join(root, 'assets', 'es', 'hero.webp'),
           relativePath: path.join('es', 'hero.webp'),
-          publicPath: '/__framekit/templates/social/post/es/hero.webp'
+          publicPath: '/framekit/templates/social/post/es/hero.webp'
         }
       ]
     })
@@ -83,7 +83,7 @@ describe('findTemplateAssets', () => {
 
     await expect(findTemplateAssets(root, 'brand/logo')).resolves.toMatchObject({
       manifest: {
-        common: { hero: '/__framekit/templates/brand/logo/common/hero.PNG' },
+        common: { hero: '/framekit/templates/brand/logo/common/hero.PNG' },
         variants: {}
       },
       files: [{ relativePath: path.join('common', 'hero.PNG') }]

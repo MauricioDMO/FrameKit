@@ -31,10 +31,10 @@ export function assets (): TemplateAssetManifest {
     },
     variants: {
       en: {
-        variantImage: '/__framekit/templates/en/base.png'
+        variantImage: '/framekit/templates/en/base.png'
       },
       es: {
-        variantImage: '/__framekit/templates/es/base.png'
+        variantImage: '/framekit/templates/es/base.png'
       }
     }
   }

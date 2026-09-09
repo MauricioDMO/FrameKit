@@ -176,7 +176,7 @@ Instrument the controlled environment to prove:
 - browser requests remain loopback/internal plus expected data/browser-internal
   resources;
 - private `x-framekit-render-token` appears only on
-  `/__framekit/render/<id>` main document;
+  `/framekit/render/<id>` main document;
 - Next chunks, public assets, generated template assets, API routes, and any
   blocked external request never receive that token.
 

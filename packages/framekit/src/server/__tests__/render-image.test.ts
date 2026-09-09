@@ -66,7 +66,7 @@ describe('renderTemplateImage', () => {
     expect(mocks.createContext).toHaveBeenCalledWith(payload, config.renderTimeoutMs)
     expect(page.setDefaultTimeout).toHaveBeenCalledWith(config.renderTimeoutMs)
     expect(page.setDefaultNavigationTimeout).toHaveBeenCalledWith(config.renderTimeoutMs)
-    expect(page.goto).toHaveBeenCalledWith('http://127.0.0.1/__framekit/render/' + 'a'.repeat(64), { waitUntil: 'load' })
+    expect(page.goto).toHaveBeenCalledWith('http://127.0.0.1/framekit/render/' + 'a'.repeat(64), { waitUntil: 'load' })
     expect(context.close).toHaveBeenCalledOnce()
     expect(mocks.deleteJob).toHaveBeenCalledWith('a'.repeat(64))
   })
@@ -83,7 +83,7 @@ describe('renderTemplateImage', () => {
     await websocketHandler(websocket)
     expect(websocket.close).toHaveBeenCalledOnce()
     const route = (request: Record<string, unknown>) => ({ request: () => request, continue: vi.fn(async () => undefined), abort: vi.fn(async () => undefined) })
-    const privateRequest = { url: () => 'http://127.0.0.1/__framekit/render/' + 'a'.repeat(64), method: () => 'GET', headers: () => ({ accept: 'text/html' }), isNavigationRequest: () => true, frame: () => frame }
+    const privateRequest = { url: () => 'http://127.0.0.1/framekit/render/' + 'a'.repeat(64), method: () => 'GET', headers: () => ({ accept: 'text/html' }), isNavigationRequest: () => true, frame: () => frame }
     const privateRoute = route(privateRequest)
     await handler(privateRoute)
     expect(privateRoute.continue).toHaveBeenCalledWith({ headers: { accept: 'text/html', 'x-framekit-render-token': 'b'.repeat(64) } })

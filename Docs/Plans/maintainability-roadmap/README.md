@@ -40,7 +40,7 @@ Every phase preserves all of the following:
 - No consumer imports `packages/framekit/src/*` directly.
 - Generated or build output is never hand-edited. This includes
   `packages/framekit/dist/`, `**/.framekit/`, `**/src/generated/framekit/`,
-  `**/public/__framekit/`, and Next.js build output.
+  `**/public/framekit/`, and Next.js build output.
 - `Docs/skills/` is the source for skills. `.agents/skills/` and
   `packages/create-framekit/template/.agents/skills/` are synchronized generated
   copies and remain governed by `pnpm sync:skills`.

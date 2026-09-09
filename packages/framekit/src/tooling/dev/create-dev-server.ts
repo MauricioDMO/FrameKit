@@ -120,7 +120,7 @@ export async function createDevServer (options: DevServerOptions): Promise<DevSe
     const upgradeHandler = app.getUpgradeHandler()
     httpServer = createServer((request, response) => {
       const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
-      if (pathname === '/__framekit/assets') {
+      if (pathname === '/framekit/assets') {
         handleAssetUpload(request, response, {
           projectRoot: options.projectRoot,
           regenerate: generate

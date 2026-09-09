@@ -257,7 +257,7 @@ proporcionados (o un manifest vacío) y un loader lazy para el módulo de la
 plantilla; lanza un error si falta el resumen de una plantilla.
 `writeTemplateModule` descubre las plantillas y marcas, recopila resúmenes y
 assets, escribe ambos módulos generados y sincroniza los assets de plantillas
-en `public/__framekit/templates`.
+en `public/framekit/templates`.
 
 Las funciones de codegen escriben el artefacto del proyecto
 `src/generated/framekit/brands.ts`, que contiene `brands`, `brandManifest` y

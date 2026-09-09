@@ -47,8 +47,8 @@ casos de prueba, comandos y exit gates detallados.
 |     5 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
 El estado operativo del servidor es explícito: Server Image Rendering sigue
-incompleto; los pasos 1 y 2 están implementados y verificados en el checkout
-actual, y los pasos 3 a 8 siguen pendientes. Maintainability fase 6 también
+incompleto; los pasos 1 a 5 están implementados y verificados en el checkout
+actual, y los pasos 6 a 8 siguen pendientes. Maintainability fase 6 también
 sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
@@ -510,68 +510,68 @@ disponibles del paquete `@mauriciodmo/framekit` pasan: 56 archivos de tests y
 Plan:
 [03-temporary-render-jobs.md](./server-image-rendering-api/03-temporary-render-jobs.md).
 
-* [ ] Implementar el store mediante `globalThis + Symbol.for(...)`.
-* [ ] Mantener los jobs en un `Map<string, RenderJobRecord>`.
-* [ ] Generar ID y token criptográficos independientes.
-* [ ] Mantener ID y token con al menos 128 bits de entropía.
-* [ ] Implementar `createRenderJob`.
-* [ ] Implementar `loadRenderRequest`.
-* [ ] Implementar `deleteRenderJob`.
-* [ ] Mantener el `Map` privado detrás de los helpers.
-* [ ] Aplicar TTL de dos minutos.
-* [ ] Eliminar jobs expirados oportunísticamente al crear nuevos jobs.
-* [ ] No extender TTL cuando la página privada lea un job.
-* [ ] Hacer indistinguibles missing, expired y unauthorized en la frontera
+* [x] Implementar el store mediante `globalThis + Symbol.for(...)`.
+* [x] Mantener los jobs en un `Map<string, RenderJobRecord>`.
+* [x] Generar ID y token criptográficos independientes.
+* [x] Mantener ID y token con al menos 128 bits de entropía.
+* [x] Implementar `createRenderJob`.
+* [x] Implementar `loadRenderRequest`.
+* [x] Implementar `deleteRenderJob`.
+* [x] Mantener el `Map` privado detrás de los helpers.
+* [x] Aplicar TTL de dos minutos.
+* [x] Eliminar jobs expirados oportunísticamente al crear nuevos jobs.
+* [x] No extender TTL cuando la página privada lea un job.
+* [x] Hacer indistinguibles missing, expired y unauthorized en la frontera
   privada.
-* [ ] Comparar tokens en tiempo constante.
-* [ ] Mantener load no destructivo.
-* [ ] Hacer delete idempotente.
-* [ ] Añadir retry acotado ante una colisión de ID.
-* [ ] Cubrir creación, lectura, expiración, token inválido y cleanup.
-* [ ] Verificar que bundles separados comparten el mismo store de proceso.
-* [ ] Confirmar que no existe filesystem, Redis, database, queue ni object
+* [x] Comparar tokens en tiempo constante.
+* [x] Mantener load no destructivo.
+* [x] Hacer delete idempotente.
+* [x] Añadir retry acotado ante una colisión de ID.
+* [x] Cubrir creación, lectura, expiración, token inválido y cleanup.
+* [x] Verificar que bundles separados comparten el mismo store de proceso.
+* [x] Confirmar que no existe filesystem, Redis, database, queue ni object
   storage para los jobs de v1.
-* [ ] Pasar el exit gate del paso 3.
+* [x] Pasar el exit gate del paso 3.
 
 ### 3.5 Paso 4: Browser Lifecycle and Capture
 
 Plan:
 [04-browser-lifecycle-and-capture.md](./server-image-rendering-api/04-browser-lifecycle-and-capture.md).
 
-* [ ] Implementar un singleton global de Chromium.
-* [ ] Crear un contexto y página aislados por request.
-* [ ] Reservar capacidad atómicamente sin queue ilimitada.
-* [ ] Limitar navegación al origen loopback configurado.
-* [ ] Bloquear redirects, popups, downloads y hosts no permitidos.
-* [ ] Inyectar el token únicamente en la request privada exacta.
-* [ ] Esperar marker, fonts e imágenes.
-* [ ] Capturar solamente `[data-framekit-render-root]`.
-* [ ] Verificar firma PNG.
-* [ ] Propagar timeout y abort.
-* [ ] Cerrar contexto, liberar capacidad y eliminar job en `finally`.
-* [ ] Implementar idle close y shutdown idempotente.
-* [ ] Pasar el exit gate del paso 4.
+* [x] Implementar un singleton global de Chromium.
+* [x] Crear un contexto y página aislados por request.
+* [x] Reservar capacidad atómicamente sin queue ilimitada.
+* [x] Limitar navegación al origen loopback configurado.
+* [x] Bloquear redirects, popups, downloads y hosts no permitidos.
+* [x] Inyectar el token únicamente en la request privada exacta.
+* [x] Esperar marker, fonts e imágenes.
+* [x] Capturar solamente `[data-framekit-render-root]`.
+* [x] Verificar firma PNG.
+* [x] Propagar timeout y abort.
+* [x] Cerrar contexto, liberar capacidad y eliminar job en `finally`.
+* [x] Implementar idle close y shutdown idempotente.
+* [x] Pasar el exit gate del paso 4.
 
 ### 3.6 Paso 5: Private Next.js Render Route
 
 Plan:
 [05-private-next-render-route.md](./server-image-rendering-api/05-private-next-render-route.md).
 
-* [ ] Añadir la ruta privada en el template canónico.
-* [ ] Añadir la ruta privada en Studio.
-* [ ] Autenticar con ID y token interno.
-* [ ] Mantener el token fuera de URL, props y DOM.
-* [ ] Cargar el payload ya resuelto mediante `loadRenderRequest`.
-* [ ] Cargar el registry generado y la definición exacta.
-* [ ] Revalidar dimensiones y variante contra la definición.
-* [ ] Renderizar un único `TemplateCanvas`.
-* [ ] No ejecutar nuevamente el pipeline canónico de resolución.
-* [ ] Exponer markers loading, ready y error sin datos privados.
-* [ ] Desactivar cache y static generation.
-* [ ] Añadir instrumentation Node-only para shutdown cuando corresponda.
-* [ ] Ejecutar un production build/start smoke que confirme que la API y la
+* [x] Añadir la ruta privada en el template canónico.
+* [x] Añadir la ruta privada en Studio.
+* [x] Autenticar con ID y token interno.
+* [x] Mantener el token fuera de URL, props y DOM.
+* [x] Cargar el payload ya resuelto mediante `loadRenderRequest`.
+* [x] Cargar el registry generado y la definición exacta.
+* [x] Revalidar dimensiones y variante contra la definición.
+* [x] Renderizar un único `TemplateCanvas`.
+* [x] No ejecutar nuevamente el pipeline canónico de resolución.
+* [x] Exponer markers loading, ready y error sin datos privados.
+* [x] Desactivar cache y static generation.
+* [x] Añadir instrumentation Node-only para shutdown cuando corresponda.
+* [x] Ejecutar un production build/start smoke que confirme que la API y la
   página privada comparten el mismo store `globalThis`.
-* [ ] Pasar el exit gate del paso 5.
+* [x] Pasar el exit gate del paso 5.
 
 ### 3.7 Paso 6: Public Image API Route
 

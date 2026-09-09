@@ -10,7 +10,7 @@ import RenderPage, {
   metadata,
   revalidate,
   runtime
-} from '@/app/__framekit/render/[id]/page'
+} from '@/app/framekit/render/[id]/page'
 
 const pageMocks = vi.hoisted(() => {
   const notFoundError = new Error('NEXT_NOT_FOUND')

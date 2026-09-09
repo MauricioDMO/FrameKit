@@ -21,7 +21,7 @@ node_modules
 **/build/
 **/dist/
 **/out/
-**/public/__framekit/
+**/public/framekit/
 **/src/generated/framekit/
 
 # misc

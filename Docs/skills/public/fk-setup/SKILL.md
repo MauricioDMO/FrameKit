@@ -24,4 +24,4 @@ Run `pnpm dlx @mauriciodmo/create-framekit <directory>`. The target must not exi
 Treat `src/generated/framekit/templates.ts` as generated source and do not edit
 it manually. `.framekit/next/` is separate Next.js build output, while temporary
 CLI directories may be created under `.framekit/`. Template assets are
-synchronized under `public/__framekit/templates/` during generation.
+synchronized under `public/framekit/templates/` during generation.

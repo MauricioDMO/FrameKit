@@ -254,7 +254,7 @@ template's `slug` and `segments`, the supplied summary and asset manifest (or an
 empty manifest), and a lazy loader for the template module; it throws if a
 template has no corresponding summary. `writeTemplateModule` discovers the
 templates and brands, gathers summaries and assets, writes both generated
-modules, and synchronizes template assets under `public/__framekit/templates`.
+modules, and synchronizes template assets under `public/framekit/templates`.
 
 ---
 

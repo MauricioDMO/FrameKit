@@ -25,7 +25,7 @@ function emptyAssets (): DiscoveredTemplateAssets {
 function publicPathFor (slug: string, relativePath: string): string {
   const encodedSlug = slug.split('/').map(encodeURIComponent).join('/')
   const encodedPath = relativePath.split(path.sep).map(encodeURIComponent).join('/')
-  return `/__framekit/templates/${encodedSlug}/${encodedPath}`
+  return `/framekit/templates/${encodedSlug}/${encodedPath}`
 }
 
 async function readAssetDirectory (

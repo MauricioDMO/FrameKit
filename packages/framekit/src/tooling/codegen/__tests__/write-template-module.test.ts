@@ -367,7 +367,7 @@ describe('writeTemplateModule', () => {
       await writeFile(path.join(variantAssets, 'card.png'), 'old variant')
 
       const publicKeep = path.join(root, 'public', 'keep.txt')
-      const staleOutput = path.join(root, 'public', '__framekit', 'templates', 'stale', 'old.png')
+      const staleOutput = path.join(root, 'public', 'framekit', 'templates', 'stale', 'old.png')
       await mkdir(path.dirname(publicKeep), { recursive: true })
       await mkdir(path.dirname(staleOutput), { recursive: true })
       await writeFile(publicKeep, 'keep')
@@ -376,7 +376,7 @@ describe('writeTemplateModule', () => {
 
       await writeTemplateModule({ projectRoot: root })
 
-      const outputRoot = path.join(root, 'public', '__framekit', 'templates', 'example')
+      const outputRoot = path.join(root, 'public', 'framekit', 'templates', 'example')
       await expect(readFile(path.join(outputRoot, 'common', 'old.svg'), 'utf8')).resolves.toBe('old common')
       await expect(readFile(path.join(outputRoot, 'variant', 'card.png'), 'utf8')).resolves.toBe('old variant')
       await expect(readFile(staleOutput, 'utf8')).rejects.toThrow()
@@ -486,7 +486,7 @@ describe('writeTemplateModule', () => {
   it('preserves existing output assets when brand discovery fails', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-brand-error-'))
     const brandRoot = path.join(root, 'src', 'brand', 'broken')
-    const existingAsset = path.join(root, 'public', '__framekit', 'templates', 'previous', 'common', 'logo.svg')
+    const existingAsset = path.join(root, 'public', 'framekit', 'templates', 'previous', 'common', 'logo.svg')
 
     try {
       await writeTemplateFixture(root, 'example')

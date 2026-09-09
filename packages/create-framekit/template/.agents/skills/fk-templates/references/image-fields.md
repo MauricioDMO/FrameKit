@@ -66,11 +66,11 @@ render({ data, assets, variant, width, height }) {
 
 For `data[fieldKey]`, the resolved asset URL is applied after the ordinary default, variant-content, and saved-edit values. Therefore a discovered asset takes precedence for that image field. If no matching asset exists, a default, variant value, or saved edit can remain as the value.
 
-Generated template assets are copied to an internal public path under `public/__framekit/templates/<template-slug>/...`. The source of truth remains `src/templates/**/assets`.
+Generated template assets are copied to an internal public path under `public/framekit/templates/<template-slug>/...`. The source of truth remains `src/templates/**/assets`.
 
 ## Studio Uploads
 
-When `framekit dev` is running, the image control previews the resolved value and offers a file picker. Studio sends the selected file to the local `POST /__framekit/assets` endpoint. The server:
+When `framekit dev` is running, the image control previews the resolved value and offers a file picker. Studio sends the selected file to the local `POST /framekit/assets` endpoint. The server:
 
 1. Validates the JSON request and identifies the template, variant/common scope, and field key.
 2. Accepts PNG, JPEG, WebP, or GIF files up to 8 MB.

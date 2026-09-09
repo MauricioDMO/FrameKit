@@ -14,7 +14,7 @@
     "!template/node_modules",
     "!template/.next",
     "!template/.framekit",
-    "!template/public/__framekit",
+    "!template/public/framekit",
     "!template/src/generated/framekit",
     "!template/*.tsbuildinfo",
     "!template/next-env.d.ts",

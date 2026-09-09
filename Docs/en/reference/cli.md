@@ -63,7 +63,7 @@ If no templates are found, the command exits with code 1 and prints an error mes
 
 Output is written to `src/generated/framekit/templates.ts`. The generated module has one runtime export, `templates: TemplateRegistryEntry[]`. Each entry includes `slug`, `segments`, validated `meta` data, `width` and `height`, `variants`, declaration-ordered `variantKeys`, an `assets` manifest, and a lazy `load` function for the template definition. A template title is available as `meta.title`; there are no top-level `title`, `templateManifest`, or `templateRegistry` outputs. Generation also writes `src/generated/framekit/brands.ts` for the optional brand catalog. This source-side generated output is distinct from `.framekit/next`, which is the Next.js build output configured by `distDir`.
 
-Assets are read from `assets/common` and `assets/<variant>`. Supported image files are copied to `public/__framekit/templates/<slug>/...`, and the manifest URLs point to those copied files. Non-hidden asset subdirectories, invalid names, and duplicate keys are rejected; regenerating removes the previous generated asset tree first.
+Assets are read from `assets/common` and `assets/<variant>`. Supported image files are copied to `public/framekit/templates/<slug>/...`, and the manifest URLs point to those copied files. Non-hidden asset subdirectories, invalid names, and duplicate keys are rejected; regenerating removes the previous generated asset tree first.
 
 During generation, every discovered `template.tsx` is imported and validated with `tsx`. Import and definition-validation failures report the path to the affected `template.tsx`.
 

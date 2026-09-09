@@ -17,8 +17,8 @@ export function isSafeRootRelativePath (value: string): boolean {
 
   const prefix = value.startsWith('/assets/')
     ? '/assets/'
-    : value.startsWith('/__framekit/templates/')
-      ? '/__framekit/templates/'
+    : value.startsWith('/framekit/templates/')
+      ? '/framekit/templates/'
       : undefined
   if (!prefix) return false
 

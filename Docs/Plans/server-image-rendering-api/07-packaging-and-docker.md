@@ -91,8 +91,8 @@ Add to `packages/create-framekit/template/`:
 Dockerfile
 .dockerignore
 packages/create-framekit/template/src/app/api/v1/images/route.ts
-packages/create-framekit/template/src/app/__framekit/render/[id]/page.tsx
-packages/create-framekit/template/src/app/__framekit/render/[id]/render-client.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/page.tsx
+packages/create-framekit/template/src/app/framekit/render/[id]/render-client.tsx
 ```
 
 No browser-shutdown `src/instrumentation.ts` is required by the v1 design.

@@ -31,7 +31,7 @@ currently supports PNG.
   `src/components/`.
 - Keep public company information in `src/profile.ts` when templates need it;
   never invent real contact data.
-- Treat `src/generated/framekit/` and `public/__framekit/` as generated output.
+- Treat `src/generated/framekit/` and `public/framekit/` as generated output.
 
 ## Authoring defaults
 
