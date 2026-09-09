@@ -143,8 +143,9 @@ async function expectProjectFiles (
   )
   await expect(readFile(path.join(destination, 'src', 'templates', 'example', 'template.tsx'), 'utf8')).resolves.toContain('defineTemplate')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).resolves.toContain("redirect('/editor')")
-  await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('loadRenderRequest')
-  await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).resolves.toContain('TemplateCanvas')
+  await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('createRenderPage')
+  await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).resolves.toContain('@mauriciodmo/framekit/client')
+  await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).resolves.toContain('@framekit/generated/templates')
 
   const skills = (await readdir(path.join(destination, '.agents', 'skills'))).sort()
   expect(skills).toEqual(['fk-brand', 'fk-overview', 'fk-setup', 'fk-studio', 'fk-templates'])

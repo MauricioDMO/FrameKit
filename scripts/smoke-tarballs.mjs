@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import { access, constants, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
+import { builtinModules } from 'node:module'
 import { createServer as createNetServer } from 'node:net'
 import os from 'node:os'
 import path from 'node:path'
@@ -14,6 +15,7 @@ const corePackageRoot = path.join(repoRoot, 'packages', 'framekit')
 const creatorPackageRoot = path.join(repoRoot, 'packages', 'create-framekit')
 const templateRoot = path.join(creatorPackageRoot, 'template')
 const legacyNamespacePattern = /__framekit|%5F%5Fframekit/i
+const nodeBuiltinNames = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
 
 function usage() {
   console.log('Usage: node scripts/smoke-tarballs.mjs [--keep-temp]')
@@ -174,6 +176,49 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
   return { manifest, entries, packageRoot }
 }
 
+function extractRuntimeImports(source) {
+  return [...source.matchAll(/\bimport\s+(?:[^'";]+?\sfrom\s+)?['"]([^'"]+)['"]/g)].map((match) => match[1])
+}
+
+function isNodeBuiltin(specifier) {
+  const normalized = specifier.replace(/^node:/, '')
+  return nodeBuiltinNames.has(normalized) || [...nodeBuiltinNames].some((name) => normalized.startsWith(`${name}/`))
+}
+
+async function assertCorePackageBoundary(packageRoot, manifest, label) {
+  for (const subpath of ['client', 'server']) {
+    const target = manifest.exports?.[`./${subpath}`]
+    assert.deepEqual(target, {
+      types: `./dist/${subpath}.d.ts`,
+      import: `./dist/${subpath}.js`,
+      default: `./dist/${subpath}.js`,
+    }, `${label}: unexpected ./${subpath} export targets`)
+  }
+
+  const clientEntry = path.join(packageRoot, 'dist', 'client.js')
+  const clientSource = await readFile(clientEntry, 'utf8')
+  assert(/^['"]use client['"];?\s/.test(clientSource), `${label}: dist/client.js lost the use client directive`)
+
+  const clientDirectory = path.join(packageRoot, 'dist', 'client')
+  const clientFiles = [clientEntry]
+  if (await exists(clientDirectory)) clientFiles.push(...(await walkFiles(clientDirectory)).filter((filePath) => filePath.endsWith('.js')))
+  const forbiddenImports = []
+  for (const filePath of clientFiles) {
+    const source = await readFile(filePath, 'utf8')
+    for (const specifier of extractRuntimeImports(source)) {
+      if (
+        specifier === 'next/headers' ||
+        isNodeBuiltin(specifier) ||
+        /^(?:playwright|playwright-core)(?:\/|$)/.test(specifier) ||
+        /(?:^|\/)server(?:\/|$)/.test(specifier) ||
+        specifier.includes('render-image')
+      ) forbiddenImports.push(`${path.relative(packageRoot, filePath)} -> ${specifier}`)
+    }
+  }
+  assert.deepEqual(forbiddenImports, [], `${label}: client runtime has forbidden imports`)
+  console.log(`[PASS] ${label} client/server declarations and runtime targets are isolated`)
+}
+
 async function assertPrivateRenderUrlContract(packageRoot, label) {
   const source = await readFile(path.join(packageRoot, 'dist', 'server', 'render-image.js'), 'utf8')
   assert(source.includes('/framekit/render/'), `${label}: private render URL does not use /framekit/render`)
@@ -281,7 +326,7 @@ async function checkInstalledPackage(consumerRoot, packageName, expectedBin, tem
 }
 
 async function resolvePublicExports(consumerRoot, temporaryRoot) {
-  const source = "for (const specifier of ['@mauriciodmo/framekit', '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/root', '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/styles.css']) console.log(specifier, import.meta.resolve(specifier))"
+  const source = "for (const specifier of ['@mauriciodmo/framekit', '@mauriciodmo/framekit/client', '@mauriciodmo/framekit/server', '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/root', '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/styles.css']) console.log(specifier, import.meta.resolve(specifier))"
   await run('node', ['--input-type=module', '-e', source], consumerRoot, temporaryRoot)
 }
 
@@ -371,10 +416,81 @@ async function runStartSmoke(consumerRoot, temporaryRoot) {
   try {
     const status = await waitForHttp(child, `http://127.0.0.1:${port}/editor`, temporaryRoot)
     console.log(`[PASS] framekit start HTTP readiness /editor returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
+    await runProductionRenderSmoke(port)
   } finally {
     stopped = await stopProcess(child)
     assert(stopped, 'could not stop the standalone server cleanly')
   }
+}
+
+async function runProductionRenderSmoke(port) {
+  const origin = `http://127.0.0.1:${port}`
+  const smokeRoute = `${origin}/framekit-smoke`
+  const createJob = async () => {
+    const response = await fetch(smokeRoute, { method: 'POST' })
+    assert.equal(response.status, 200, `production smoke job creation returned ${response.status}`)
+    return response.json()
+  }
+  const fetchPrivatePage = async (id, token) => {
+    const response = await fetch(`${origin}/framekit/render/${id}`, {
+      headers: { 'x-framekit-render-token': token },
+    })
+    await response.text()
+    return response.status
+  }
+
+  const first = await createJob()
+  const second = await createJob()
+  assert.match(first.id, /^[a-f0-9]{64}$/)
+  assert.match(first.token, /^[a-f0-9]{64}$/)
+  assert.match(second.id, /^[a-f0-9]{64}$/)
+  assert.match(second.token, /^[a-f0-9]{64}$/)
+  assert.notEqual(first.id, second.id, 'production smoke allocated duplicate job IDs')
+
+  assert.equal(await fetchPrivatePage(first.id, first.token), 200, 'first production private page did not resolve')
+  assert.equal(await fetchPrivatePage(second.id, second.token), 200, 'second production private page did not resolve')
+
+  const wrongToken = first.token === '0'.repeat(64) ? '1'.repeat(64) : '0'.repeat(64)
+  assert.equal(await fetchPrivatePage(first.id, wrongToken), 404, 'wrong token did not return not-found')
+  const missingId = first.id === '0'.repeat(64) ? '1'.repeat(64) : '0'.repeat(64)
+  assert.equal(await fetchPrivatePage(missingId, first.token), 404, 'missing job did not return not-found')
+
+  const deleteResponse = await fetch(smokeRoute, {
+    method: 'DELETE',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id: first.id }),
+  })
+  assert.equal(deleteResponse.status, 204, `production smoke deletion returned ${deleteResponse.status}`)
+  assert.equal(await fetchPrivatePage(first.id, first.token), 404, 'deleted job still resolved')
+  assert.equal(await fetchPrivatePage(second.id, second.token), 200, 'deleting one job removed the other job')
+  console.log('[PASS] production Map handoff resolved two jobs and enforced wrong-token/missing/deleted not-found behavior')
+}
+
+async function addProductionRenderSmokeRoute(consumerRoot) {
+  const routeDirectory = path.join(consumerRoot, 'src', 'app', 'framekit-smoke')
+  await mkdir(routeDirectory, { recursive: true })
+  await writeFile(path.join(routeDirectory, 'route.ts'), `import { createRenderJob, deleteRenderJob } from '@mauriciodmo/framekit/server'
+
+const payload = {
+  template: 'example',
+  variant: 'en',
+  data: { title: 'Production smoke', alignment: 'center', opacity: 100, scale: 1, showLogo: false },
+  assets: { common: {}, variants: { es: {}, en: {} } },
+  width: 1200,
+  height: 800,
+}
+
+export function POST() {
+  return Response.json(createRenderJob(payload))
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json()
+  if (typeof body.id !== 'string') return Response.json({ error: 'id is required' }, { status: 400 })
+  deleteRenderJob(body.id)
+  return new Response(null, { status: 204 })
+}
+`, 'utf8')
 }
 
 async function runSmoke({ keepTemp }) {
@@ -403,7 +519,17 @@ async function runSmoke({ keepTemp }) {
       label: 'core',
       archive: coreArchive,
       temporaryRoot,
-      expectedFiles: ['package/bin/framekit.js', 'package/dist/index.js', 'package/dist/styles.css', 'package/README.md', 'package/LICENSE'],
+      expectedFiles: [
+        'package/bin/framekit.js',
+        'package/dist/index.js',
+        'package/dist/client.js',
+        'package/dist/client.d.ts',
+        'package/dist/server.js',
+        'package/dist/server.d.ts',
+        'package/dist/styles.css',
+        'package/README.md',
+        'package/LICENSE',
+      ],
       expectedBin: 'framekit',
     })
     const inspectedCreator = await inspectArchive({
@@ -420,6 +546,7 @@ async function runSmoke({ keepTemp }) {
       ],
       expectedBin: 'create-framekit',
     })
+    await assertCorePackageBoundary(inspectedCore.packageRoot, inspectedCore.manifest, 'core archive')
     await assertPrivateRenderUrlContract(inspectedCore.packageRoot, 'core archive')
     assert(inspectedCore.manifest.version === coreManifest.version, 'core archive version changed during pack')
     assert(inspectedCreator.manifest.version === creatorManifest.version, 'creator archive version changed during pack')
@@ -454,6 +581,7 @@ async function runSmoke({ keepTemp }) {
     await resolvePublicExports(generatedRoot, temporaryRoot)
     assert(installedCoreManifest.version === coreManifest.version, `generated consumer installed unexpected FrameKit ${installedCoreManifest.version}`)
     await runFrameKit(generatedRoot, 'generate', temporaryRoot)
+    await addProductionRenderSmokeRoute(generatedRoot)
     await runFrameKit(generatedRoot, 'check', temporaryRoot)
     await runFrameKit(generatedRoot, 'build', temporaryRoot)
     await assertProductionRenderRoute(generatedRoot)
