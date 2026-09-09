@@ -1,15 +1,15 @@
 # Server Image Rendering API
 
-- **Status:** Steps 1-5 implemented and verified; Steps 6-8 pending.
+- **Status:** Steps 1-5 implemented and verified; Step 0.5 is the packaging/refactor gate before Step 6; Steps 6-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
 - **Primary package:** `@mauriciodmo/framekit`.
 - **Canonical consumer:** `packages/create-framekit/template/`.
 
-The current supported package facades are `.`, `./editor`, `./studio`,
+The current supported package facades are `.`, `./client`, `./editor`, `./studio`,
 `./studio/root`, `./dev`, `./server`, and `./styles.css`. The `./server` facade
-currently exports the Steps 1-4 contracts, errors, configuration parser, Bearer
+currently exports the Steps 1-5 contracts, errors, configuration parser, Bearer
 authentication helper, image-input preparation API, temporary render jobs, and
 PNG browser renderer. This plan does not propose `server/*`, `browser`, `auth`,
 or `shared` public subpaths.
@@ -36,12 +36,17 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement the remaining phases in order. Steps 1 through 5 are complete in the
-current checkout; a phase is complete only when its focused tests and exit gate
-pass.
+Implement Step 0.5 before continuing to Step 6. Steps 1 through 5 are complete in
+the current checkout; Step 0.5 refactors their private-route integration without
+changing the render protocol. A phase is complete only when its focused tests and
+exit gate pass.
+
+The `0.5` number marks this as a cross-cutting package boundary; in the current
+checkout it is applied after Step 5 and before Step 6.
 
 | Step | Plan | Main result | Depends on |
 |---:|---|---|---|
+| 0.5 | Package client/server boundaries | Reusable private-page behavior, a dedicated client entry, and thin consumer route adapters | Current Steps 1-5 implementation |
 | 1 | [Contracts and server boundary](./01-contracts-and-server-boundary.md) | Stable types, errors, configuration, package boundary, and auth contract | Current FrameKit baseline |
 | 2 | [Shared canvas and image inputs](./02-shared-canvas-and-image-inputs.md) | One render canvas plus safe local/base64/remote image preparation | Step 1 |
 | 3 | [Temporary render jobs](./03-temporary-render-jobs.md) | Authenticated, expiring `globalThis Map` handoff | Step 1 |
@@ -50,6 +55,115 @@ pass.
 | 6 | [Public image API route](./06-public-image-api-route.md) | Authenticated `POST /api/v1/images` returning PNG or structured JSON errors | Steps 1-5 |
 | 7 | [Packaging and Docker](./07-packaging-and-docker.md) | Public server export, Playwright runtime, starter integration, and production image | Steps 1-6 |
 | 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 1-7 |
+
+## Step 0.5 - Package Client/Server Boundaries
+
+### Goal
+
+Move the reusable private-render implementation into `@mauriciodmo/framekit`
+without pretending that a published package owns the consumer's Next.js route or
+generated template registry. This is a packaging and ownership refactor of Step 5,
+not a change to the private render protocol.
+
+### Depends on
+
+- Step 5's working private render page and client lifecycle.
+- The generated `TemplateRegistryEntry[]` contract and lazy template loaders.
+- The existing `./editor` and `./server` package facades.
+
+### Deliverables
+
+- A dedicated `@mauriciodmo/framekit/client` entry whose source entry is marked
+  with `'use client'` and exports `createRenderClient(templates)`.
+- The complete template-load, definition-check, readiness, error-boundary, and
+  `TemplateCanvas` lifecycle moved into the package client entry.
+- A `createRenderPage(RenderClient)` helper exported from the existing
+  `@mauriciodmo/framekit/server` facade. It owns parameter/header lookup,
+  `loadRenderRequest`, and uniform `notFound()` handling.
+- A `client` entry in `tsdown.config.ts` and a matching `./client` condition in
+  `packages/framekit/package.json`.
+- Thin route adapters in the canonical generated consumer and `apps/studio`.
+- Package, route, generated-consumer, and distribution checks for the new boundary.
+
+### Boundary rules
+
+The package client entry must not import `next/headers`, `next/navigation`, Node
+built-ins, Playwright, or the server runtime at execution time. Server-related
+types may only be referenced as erased type imports, or should be moved to a
+client-safe shared type if the emitted declarations require it.
+
+The generated `templates` registry remains owned by the consumer. Its `load()`
+functions point to consumer-local template modules and cannot be passed from a
+Server Component to a Client Component as ordinary props. The client API therefore
+uses a factory that closes over the registry in a consumer-local client boundary:
+
+```tsx
+'use client'
+
+import { createRenderClient } from '@mauriciodmo/framekit/client'
+import { templates } from '@framekit/generated/templates'
+
+export const RenderClient = createRenderClient(templates)
+```
+
+The local `src/app/framekit/render/[id]/page.tsx` remains required because Next.js
+discovers routes from the consumer's `app` tree. It retains the static route
+configuration and metadata, then delegates the server behavior to
+`createRenderPage(RenderClient)`. The package does not ship a route file that Next
+would discover from `node_modules`.
+
+### Expected source shape
+
+```text
+packages/framekit/src/
+  client/
+    index.ts                         # 'use client' entry
+    render-client.tsx                # createRenderClient()
+  server/
+    render-page.tsx                  # createRenderPage()
+
+packages/create-framekit/template/src/app/framekit/render/[id]/
+  page.tsx                           # local Next route/config adapter
+  render-client.tsx                  # local registry binding
+
+apps/studio/src/app/framekit/render/[id]/
+  page.tsx                           # local Next route/config adapter
+  render-client.tsx                  # local registry binding
+```
+
+### Tests and checks
+
+- Move the render-client behavior coverage from `apps/studio` to the package
+  client implementation while preserving loading, ready, mismatch, loader,
+  validation, and render-error cases.
+- Test `createRenderPage` with missing, malformed, expired, and wrong-token jobs,
+  plus the valid resolved-payload handoff.
+- Add a type fixture for `@mauriciodmo/framekit/client` and its factory signature.
+- Build the package and assert that `dist/client.js` preserves `'use client'`.
+- Confirm the client artifact has no runtime import of `next/headers`, Node
+  built-ins, Playwright, or the server renderer.
+- Build the canonical generated consumer and first-party Studio with the thin
+  adapters and generated registry.
+- Pack the public package and verify that `.`, `./client`, and `./server` resolve
+  with their declarations.
+
+### Implementation order
+
+1. Extract the client lifecycle into the package client entry and preserve the
+   existing DOM/error protocol.
+2. Extract the private server-page handoff into `createRenderPage`.
+3. Add the `./client` build/export boundary and verify the emitted directive.
+4. Replace duplicated consumer and Studio implementations with thin adapters.
+5. Move focused tests to their owning package and retain route integration checks.
+6. Build, pack, and run the generated-consumer smoke before continuing to Step 6.
+
+### Exit gate
+
+Step 0.5 is complete when the package exposes a working `./client` entry with a
+preserved `'use client'` directive, the `./server` page helper handles the same
+private token contract, both consumers contain only route/registry wiring, and
+package, Studio, generated-consumer, typecheck, build, and packed-export checks
+pass.
 
 ## Step 2 verification
 
@@ -159,8 +273,8 @@ template model:
 - `framekit build` already copies `public` and Next static assets beside the
   discovered standalone server.
 - Server Image Rendering remains incomplete: the public package now includes the
-  Steps 1-4 `./server` contracts, jobs, and Playwright browser/capture runtime,
-  but there is no private/public image API route or production Dockerfile yet.
+  Steps 1-5 `./server` contracts, jobs, browser/capture runtime, and private-page
+  integration, but there is no public image API route or production Dockerfile yet.
 
 Studio's existing `modern-screenshot` export remains functional. The server API
 is additive in the first implementation.
@@ -176,8 +290,11 @@ is additive in the first implementation.
 | Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` (Step 4) | Browser fixes ship with FrameKit |
 | Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` (Step 2) plus shared raster helper | Browser never needs external network access |
 | Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
+| Private client render lifecycle | `@mauriciodmo/framekit/client` (Step 0.5) | Client behavior ships once and remains separate from Node/server code |
+| Private page handoff behavior | `@mauriciodmo/framekit/server` (Step 0.5) | Header/job lookup is shared without moving the Next route convention |
 | Public App Router route | Generated application | Next.js routes belong to the consumer |
-| Private render page | Generated application | It imports the consumer-generated template registry |
+| Private render route shell and static config | Generated application | Next.js discovers routes from the consumer `app` tree |
+| Private render registry binding | Generated application and `apps/studio` | Lazy loaders point to consumer-local template modules |
 | API key and allowed image hosts | Generated application runtime environment | Secrets and deployment policy belong to the application |
 | Dockerfile and `.dockerignore` | Generated application | Container construction is application-owned |
 | First-party integration | `apps/studio` | Dogfood supported public imports and protocol |
@@ -199,10 +316,11 @@ Client
      -> renderTemplateImage(resolvedPayload)   @mauriciodmo/framekit/server
         -> globalThis Map job                  @mauriciodmo/framekit/server
         -> shared Chromium context             @mauriciodmo/framekit/server
-        -> GET /framekit/render/<id>            generated application
-           -> loadRenderRequest(...)           @mauriciodmo/framekit/server
-           -> generated template loader        generated application
-           -> TemplateCanvas                   @mauriciodmo/framekit/editor
+        -> GET /framekit/render/<id>             generated route shell
+           -> createRenderPage(...)              @mauriciodmo/framekit/server
+           -> createRenderClient(templates)      @mauriciodmo/framekit/client
+           -> generated template loader          generated application
+           -> TemplateCanvas                     @mauriciodmo/framekit/editor
         -> locator.screenshot()                @mauriciodmo/framekit/server
      <- PNG Buffer
   <- image/png bytes
@@ -211,9 +329,10 @@ Client
 No generated application may import `packages/framekit/src/*`. Shared behavior
 must cross supported package exports.
 
-The FrameKit server package owns reusable server-rendering behavior. The generated
-application and `apps/studio` own their Next.js routes and generated-registry
-integration; routes must not move into `packages/framekit/src/server/`. Keep
+The FrameKit package owns reusable server-rendering behavior and the client render
+lifecycle. The generated application and `apps/studio` own their Next.js route
+files, static route configuration, and generated-registry binding; route files must
+not move into `packages/framekit/src/server/`. Keep
 `packages/create-framekit/src/` small and limited to scaffolding concerns; do not
 add `services/`, `utils/`, `lib/`, or `commands/` layers.
 
@@ -388,6 +507,9 @@ renders and deleted in `finally`.
 ```text
 packages/framekit/src/
   index.ts                         # current root facade
+  client/
+    index.ts                       # Step 0.5 client facade with 'use client'
+    render-client.tsx              # createRenderClient() implementation
   editor.ts                        # current editor facade
   studio.ts                        # current Studio facade
   studio-root.ts                   # current Studio root facade
@@ -428,6 +550,7 @@ packages/framekit/src/
     image-input.ts
     render-image.ts
     render-job.ts
+    render-page.tsx                # Step 0.5 createRenderPage() helper
     request-body.ts
     __tests__/
 
@@ -476,12 +599,16 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 
 - Keep changes in the smallest owning layer.
 - Route adapters must not duplicate browser, image-fetch, or job-store logic.
+- Keep `@mauriciodmo/framekit/client` free of runtime Node.js, Playwright, and
+  server-route imports.
+- Treat preservation of `'use client'` in `dist/client.js` as a package build
+  contract, not an assumption about the bundler.
 - Use `globalThis + Symbol.for(...)` for both render-job and browser process state.
 - Keep the render-job API storage-agnostic enough that a future Redis/filesystem
   implementation can replace the `Map` without changing public/private routes.
 - Complete focused tests with each step instead of deferring them to Step 8.
-- After Step 5, run a production Next.js build/start smoke proving that the public
-  route and private page see the same global job store before continuing.
+- After Step 0.5, run a production Next.js build/start smoke proving that the public
+  route and private page see the same global job store before continuing to Step 6.
 - Do not add a database, Redis, queue, public job endpoint, or object storage to
   the first implementation.
 - Do not allow Chromium external network access to support remote image fields;
