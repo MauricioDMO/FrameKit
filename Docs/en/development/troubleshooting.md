@@ -331,7 +331,8 @@ If the template uses images from a different origin and the server does not send
 
 PNG export uses `modern-screenshot` (which relies on DOM and canvas). Some environments — such as headless browsers without full DOM support — cannot perform the capture.
 
-**Note:** Export is entirely browser-side; there is no server-side rendering involved.
+**Note:** Studio export is entirely browser-side. Separate server-side PNG
+rendering uses the private render-job/page handoff.
 
 **Note:** The current export supports no format or scale options — PNG only, at the dimensions declared in the template definition, at scale 1.
 

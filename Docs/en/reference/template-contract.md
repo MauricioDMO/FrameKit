@@ -38,7 +38,9 @@ export default defineTemplate({
 
 The definition has no version property or editor-only alternate shape. `render`
 receives only `data`, `assets`, `variant`, `width`, and `height`. Studio invokes
-it in the browser; server-side frame rendering is not currently implemented.
+it in the browser. The server renderer invokes the same template through the
+private render-page handoff and returns PNG output; it is not a public image API
+route.
 
 The `render` props are typed from the definition:
 

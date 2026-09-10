@@ -123,11 +123,11 @@ deleteRenderJob(
 
 These functions can be synchronous because the store has no I/O.
 
-The planned `renderTemplateImage` will use create/delete internally. The current
-`./server` entry exports only the Step 1 contracts, authentication helper,
-configuration parser, and error model. `loadRenderRequest` is planned for that
-entry in Step 3 because the generated private Next.js page consumes it; the job
-store and renderer are not implemented yet.
+The implemented `renderTemplateImage` uses create/delete internally, and the
+existing `./server` facade exports these job helpers. The package's Step 0.5
+`createRenderPage` consumes `loadRenderRequest`; Step 0.6 changes only its client
+binding integration. Step 6's high-level HTTP handler delegates to the renderer
+without exposing job management in consumer route adapters.
 
 ## ID and token generation
 

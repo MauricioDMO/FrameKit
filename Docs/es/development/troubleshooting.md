@@ -331,7 +331,9 @@ Si la plantilla usa imágenes de un origen diferente y el servidor no envía las
 
 La exportación PNG usa `modern-screenshot` (que depende de DOM y canvas). Algunos entornos — como navegadores headless sin soporte completo de DOM — no pueden realizar la captura.
 
-**Nota:** La exportación es enteramente del lado del navegador; no hay renderizado del lado del servidor.
+**Nota:** La exportación de Studio es enteramente del lado del navegador. El
+renderizado de PNG en servidor usa por separado el handoff privado de
+trabajo/página.
 
 **Nota:** La exportación actual no ofrece opciones de formato ni escala: solo PNG, a las dimensiones declaradas en la definición de la plantilla, a escala 1.
 

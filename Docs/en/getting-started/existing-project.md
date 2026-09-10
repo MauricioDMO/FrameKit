@@ -162,9 +162,12 @@ pnpm framekit start
 
 See the [CLI reference](../reference/cli.md#framekit-dev) for the authoritative distinction: `framekit dev` processes `FRAMEKIT_HOST`, `HOST`, and `PORT`, while [`framekit start`](../reference/cli.md#framekit-start) passes the inherited environment to Next's standalone server, which handles its own production variables.
 
-## Critical limitation
+## Rendering boundaries
 
-All frame exports (preview, download, PNG generation) happen entirely in the browser. FrameKit does not support server-side rendering of frames, and PNG generation does not occur on the server under any configuration.
+Studio frame exports (preview, download, and browser PNG generation) happen in
+the browser. The package also provides server-side PNG rendering through its
+private render-job/page handoff; this is separate from the future public image
+API routes.
 
 ---
 

@@ -284,9 +284,10 @@ modules, and synchronizes template assets under `public/framekit/templates`.
 
 ### `@mauriciodmo/framekit/server`
 
-The server entry point is a Node.js/server-only facade for the Step 1 image API
-contracts and the private render job/page handoff. Do not import it into browser
-bundles.
+The server entry point is a Node.js/server-only facade for the implemented Steps
+1-5 contracts: configuration and authentication, image-input preparation,
+temporary render jobs, PNG browser rendering, and the private render-page
+handoff. Do not import it into browser bundles.
 
 **Runtime exports**
 
@@ -295,10 +296,12 @@ bundles.
 | `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
 | `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
-| `createRenderJob`     | `createRenderJob(payload: ResolvedRenderPayload): CreatedRenderJob`; creates a short-lived private render job identifier and token |
-| `loadRenderRequest`   | `loadRenderRequest(id: string, token: string): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
-| `deleteRenderJob`     | `deleteRenderJob(id: string): void`; removes a private render job |
-| `createRenderPage`    | `createRenderPage(RenderClient)`; creates the server page handoff that validates the private render token and passes the resolved payload to the client component |
+| `prepareRenderInputs` | `prepareRenderInputs(options)`; validates request data and prepares local, data-URL, and allowed remote image inputs for rendering |
+| `renderTemplateImage` | `renderTemplateImage(options): Promise<Buffer>`; renders a resolved payload through the private page and returns PNG bytes |
+| `createRenderJob`     | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; creates a temporary private render job identifier and token |
+| `loadRenderRequest`   | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
+| `deleteRenderJob`     | `deleteRenderJob(id: string, options?): void`; removes a private render job |
+| `createRenderPage`    | `createRenderPage(RenderClient)`; creates the private server page handoff that validates the render token and passes the resolved payload to the client component |
 
 `parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
 `FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
@@ -332,6 +335,8 @@ malformed authorization values return `false`.
 | `ImageRenderRequest`       | Request shape with `template`, optional `variant`, and optional data                                |
 | `ImageRenderRuntimeConfig` | Runtime settings with loopback origin, allowed image hosts, concurrency, and timeout              |
 | `ResolvedRenderPayload`    | Serializable resolved render data with template, variant, data, assets, width, and height        |
+| `CreatedRenderJob`         | Private render job identifier and token returned by `createRenderJob`                         |
+| `RenderJobTestOptions`     | Optional clock and identifier source overrides for deterministic render-job tests              |
 | `ImageRenderErrorCode`     | Public error-code union: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
 | `ImageRenderFailure`       | Error construction shape with `code`, `message`, optional `fields`, and optional `cause`          |
 
@@ -400,7 +405,7 @@ These are peer requirements. The package will emit a warning during installation
 | `Markdown`                                               | Server or client | Pure React rendering component; the implementation uses no browser-only APIs                       |
 | `FrameKitStudioRoot`                                     | Server           | Uses `next/headers` for request-level APIs; must only be used in server components or layouts      |
 | `@mauriciodmo/framekit/dev` entry points                 | Server           | Dev server, template discovery, code generation, and file watching are all server-side operations  |
-| `@mauriciodmo/framekit/server` entry point               | Server           | Node.js/server-only configuration, authentication, and image API contract symbols; do not bundle for browsers |
+| `@mauriciodmo/framekit/server` entry point               | Server           | Node.js/server-only configuration, authentication, image preparation, render jobs, and image-rendering symbols; do not bundle for browsers |
 
 ---
 

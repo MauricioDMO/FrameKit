@@ -77,7 +77,9 @@ The Export and Copy PNG buttons validate the current resolved, committed data be
 
 Export then downloads a PNG file in the browser. The filename uses the template slug with `/` replaced by `-` (e.g., `social/instagram/post` becomes `social-instagram-post.png`). Copy PNG places the captured image on the clipboard instead of downloading it.
 
-Export runs entirely in the browser. There is no server-side rendering, no format options, and no scale or DPI controls in the current release.
+Studio export runs entirely in the browser. Separate server-side PNG rendering
+uses the private render-job/page handoff; the current Studio export has no
+format options and no scale or DPI controls.
 
 ## Theme
 

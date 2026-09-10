@@ -1,5 +1,10 @@
 # Step 5 - Private Next.js Render Route
 
+The protocol is implemented in the current checkout. Step 0.5 has extracted its
+behavior into the package; [Step 0.6](./00.6-minimal-consumer-integration.md) now
+plans generated client bindings. The route locations below describe that target
+integration, while the behavioral requirements remain unchanged.
+
 ## Goal
 
 Add the application-owned private page that authenticates an in-memory render
@@ -33,9 +38,8 @@ API key and is not a second public rendering API.
 
 ```text
 packages/create-framekit/template/src/app/framekit/render/[id]/page.tsx
-packages/create-framekit/template/src/app/framekit/render/[id]/render-client.tsx
 apps/studio/src/app/framekit/render/[id]/page.tsx
-apps/studio/src/app/framekit/render/[id]/render-client.tsx
+<each consumer>/src/generated/framekit/render-client.tsx  # generated, not starter source
 ```
 
 The reserved `/framekit` namespace aligns with existing generated assets/dev
@@ -54,12 +58,13 @@ Use the installed Next.js App Router signatures at implementation time.
 
 ## Server page responsibilities
 
-The server page performs only the secure handoff:
+The package's `createRenderPage(RenderClient)` performs the secure handoff. The
+consumer `page.tsx` imports its generated client binding and retains literal route
+settings and metadata:
 
 1. Read the generated `id` route parameter.
 2. Read exactly one `x-framekit-render-token` request header.
-3. Call `loadRenderRequest(id, token)` from the existing
-   `@mauriciodmo/framekit/server` facade; Step 3 will add this helper.
+3. Call the existing Step 3 `loadRenderRequest(id, token)` helper.
 4. Treat malformed ID, missing header, missing job, wrong token, and expired job
    as the same not-found state.
 5. Pass only the returned `ResolvedRenderPayload` to `RenderClient`.
@@ -82,8 +87,10 @@ The job reader validates the token before returning payload data.
 
 ## Client render component
 
-The generated registry already exposes lazy template loaders used by Studio, so
-the private client component may reuse that boundary.
+The package's `createRenderClient(templates)` owns this lifecycle. Step 0.6 emits
+the consumer-local factory binding as generated output; it is not a second copy
+of the implementation. The neutral registry exposes the lazy loaders used by
+both Studio and server template loading.
 
 Input:
 
@@ -182,9 +189,9 @@ Do not use arbitrary sleeps.
 The private route inherits the consumer's root layout/global CSS because
 FrameKit templates need the same Tailwind/styles/font environment as Studio.
 
-The reusable package owns server behavior; the generated application and
-`apps/studio` own these Next.js routes and their generated-registry integration.
-Do not move the routes into `packages/framekit/src/server/`.
+The reusable package owns client/server behavior and binding generation. The
+generated application and Studio own the Next route/config adapters and their
+local template modules. Do not move discoverable routes into the package.
 
 Prevent application chrome from affecting capture:
 
@@ -201,13 +208,15 @@ so Chromium can load them over loopback.
 
 ## Registry integration
 
-Application code imports only the supported generated alias:
+The private route adapter imports its generated client component:
 
 ```typescript
-import { templates } from '@framekit/generated/templates'
+import { RenderClient } from '@framekit/generated/render-client'
 ```
 
-Do not edit generated `templates.ts` manually.
+That client-only binding imports the neutral generated `templates.ts` locally and
+calls `createRenderClient(templates)`. Do not hand-edit either generated file or
+pass template loader functions from a Server Component through ordinary props.
 
 If the generated registry cannot be safely consumed by both Studio/private page,
 update codegen once and regenerate consumers.
@@ -263,9 +272,11 @@ before Step 6. The v1 support target remains one Node process.
 
 ```text
 packages/create-framekit/template/src/app/framekit/render/[id]/page.tsx
-packages/create-framekit/template/src/app/framekit/render/[id]/render-client.tsx
 apps/studio/src/app/framekit/render/[id]/page.tsx
-apps/studio/src/app/framekit/render/[id]/render-client.tsx
+packages/framekit/src/client/render-client.tsx
+packages/framekit/src/server/render-page.tsx
+packages/framekit/src/tooling/codegen/write-template-module.ts
+<each consumer>/src/generated/framekit/render-client.tsx  # generated output
 ```
 
 Runtime tests live under the nearest relevant `__tests__/` directory and mirror
@@ -274,11 +285,15 @@ Studio integration coverage remains under `apps/studio/src/__tests__/`.
 
 No `src/instrumentation.ts` is required solely for browser shutdown in v1.
 
-If canonical-template/Studio duplication exceeds thin registry imports/wiring,
-move the shared behavior into a supported package helper rather than maintaining
-two implementations.
+Canonical-template/Studio route files contain only static route settings,
+metadata, the generated client import, and `createRenderPage(RenderClient)`.
+Component behavior is tested in the package; application tests cover integration.
 
 ## Implementation sequence
+
+The original Step 5 behavioral sequence is retained below. Its package extraction
+is covered by Step 0.5; use Step 0.6 for the new generated-binding migration and
+rerun the production handoff gate after changing integration.
 
 1. Add private server page in canonical template.
 2. Wire ID/header lookup to `loadRenderRequest` and uniform not-found handling.
@@ -304,6 +319,8 @@ two implementations.
 - Marker output contains no field values/base64/token/full URL/stack trace.
 - Route is dynamic/non-cacheable.
 - Canonical template and Studio build with generated registries.
+- Clean codegen recreates the render binding, whose package implementation stays
+  independent of Studio shell/navigation and runtime server imports.
 - Real production Next server proves route/page share one global job store.
 
 ## Exit gate

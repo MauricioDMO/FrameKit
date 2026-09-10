@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 1-5 implemented and verified; Step 0.5 is the packaging/refactor gate before Step 6; Steps 6-8 pending.
+- **Status:** Steps 0.5 and 0.6, and Steps 1-5, implemented and verified on 2026-09-10; Steps 6-8 are pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -8,11 +8,13 @@
 - **Canonical consumer:** `packages/create-framekit/template/`.
 
 The current supported package facades are `.`, `./client`, `./editor`, `./studio`,
-`./studio/root`, `./dev`, `./server`, and `./styles.css`. The `./server` facade
-currently exports the Steps 1-5 contracts, errors, configuration parser, Bearer
-authentication helper, image-input preparation API, temporary render jobs, and
-PNG browser renderer. This plan does not propose `server/*`, `browser`, `auth`,
-or `shared` public subpaths.
+`./studio/root`, `./dev`, `./server`, `./next`, and `./styles.css`. The `./server`
+facade currently exports the Steps 1-5 contracts, errors, configuration parser,
+Bearer authentication helper, image-input preparation API, temporary render jobs,
+PNG browser renderer, and Step 0.5 `createRenderPage`. The `./client` factory and
+the Step 0.6 configuration-only `./next` facade (`withFrameKit`) also exist. Step
+6 adds `createImageHandler` to `./server`. This plan does not propose `server/*`,
+`browser`, `auth`, or `shared` public subpaths.
 
 ## Purpose of this plan
 
@@ -36,27 +38,33 @@ README defines the cross-cutting contract and execution order.
 
 ## How to execute the plan
 
-Implement Step 0.5 before continuing to Step 6. Steps 1 through 5 are complete in
-the current checkout; Step 0.5 refactors their private-route integration without
-changing the render protocol. A phase is complete only when its focused tests and
-exit gate pass.
+Verify the completed Step 0.5 and Step 0.6 gates before continuing to Step 6.
+Steps 1 through 5 are complete in the current checkout. The two cross-cutting
+steps preserve the render protocol while moving reusable behavior and registry
+binding out of maintained consumer files. Source presence alone does not
+establish that a phase's focused tests and exit gate pass.
 
-The `0.5` number marks this as a cross-cutting package boundary; in the current
-checkout it is applied after Step 5 and before Step 6.
+The `0.5` and `0.6` numbers mark cross-cutting boundaries; in the current checkout
+their gates run after Step 5 and before Step 6.
 
 | Step | Plan | Main result | Depends on |
 |---:|---|---|---|
 | 0.5 | Package client/server boundaries | Reusable private-page behavior, a dedicated client entry, and thin consumer route adapters | Current Steps 1-5 implementation |
+| 0.6 | [Minimal consumer integration](./00.6-minimal-consumer-integration.md) | Next config preset, generated client bindings, and one editor/brand route; four maintained app files before Step 6 | Step 0.5 gate |
 | 1 | [Contracts and server boundary](./01-contracts-and-server-boundary.md) | Stable types, errors, configuration, package boundary, and auth contract | Current FrameKit baseline |
 | 2 | [Shared canvas and image inputs](./02-shared-canvas-and-image-inputs.md) | One render canvas plus safe local/base64/remote image preparation | Step 1 |
 | 3 | [Temporary render jobs](./03-temporary-render-jobs.md) | Authenticated, expiring `globalThis Map` handoff | Step 1 |
 | 4 | [Browser lifecycle and capture](./04-browser-lifecycle-and-capture.md) | Shared Chromium, bounded contexts, loopback-only browser network, PNG capture | Steps 1-3 |
 | 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders already-resolved data | Steps 2-4 |
-| 6 | [Public image API route](./06-public-image-api-route.md) | Authenticated `POST /api/v1/images` returning PNG or structured JSON errors | Steps 1-5 |
-| 7 | [Packaging and Docker](./07-packaging-and-docker.md) | Public server export, Playwright runtime, starter integration, and production image | Steps 1-6 |
-| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 1-7 |
+| 6 | [Public image API route](./06-public-image-api-route.md) | Package-owned `createImageHandler(templates)` and a thin authenticated PNG route | Steps 0.5-0.6 and 1-5 |
+| 7 | [Packaging and Docker](./07-packaging-and-docker.md) | FrameKit-owned browser installation/versioning, minimal starter distribution, and production image | Steps 0.5-0.6 and 1-6 |
+| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7 |
 
 ## Step 0.5 - Package Client/Server Boundaries
+
+The extraction described here is already present in source. Retain its exit
+checks; Step 0.6 subsequently replaces the local client binding shown below with
+generated output. The final starter shape is defined by Step 0.6.
 
 ### Goal
 
@@ -164,6 +172,25 @@ preserved `'use client'` directive, the `./server` page helper handles the same
 private token contract, both consumers contain only route/registry wiring, and
 package, Studio, generated-consumer, typecheck, build, and packed-export checks
 pass.
+
+## Step 0.6 - Minimal Consumer Integration
+
+See [the implementation phase](./00.6-minimal-consumer-integration.md). After Step
+6, the final starter is expected to have five maintained files under `src/app`.
+The pre-migration baseline was seven maintained files (the previous full-feature
+plan described eight); the verified current pre-Step-6 result is four maintained
+`src/app` files. The five-file post-Step-6 target is:
+
+- one `[section]/[[...slug]]/page.tsx` serving `/editor` and `/brand`;
+- one private render page and one public API route;
+- the application layout and global CSS.
+
+`withFrameKit` in the implemented `./next` facade owns standard Next settings and
+the root redirect. Step 0.6 extends existing codegen to emit separate Studio/render
+client bindings under ignored `src/generated/framekit/`. The package owns
+behavior; the consumer retains ordinary Next route files, project styling,
+templates, and deployment configuration. No hidden generated Next application is
+introduced.
 
 ## Step 2 verification
 
@@ -292,9 +319,13 @@ is additive in the first implementation.
 | Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
 | Private client render lifecycle | `@mauriciodmo/framekit/client` (Step 0.5) | Client behavior ships once and remains separate from Node/server code |
 | Private page handoff behavior | `@mauriciodmo/framekit/server` (Step 0.5) | Header/job lookup is shared without moving the Next route convention |
-| Public App Router route | Generated application | Next.js routes belong to the consumer |
+| Public HTTP pipeline and response mapping | `@mauriciodmo/framekit/server` (Step 6) | `createImageHandler(templates)` owns auth, parsing, preparation, cancellation, and PNG/errors |
+| Public App Router route adapter | Generated application | Exports static route config and the package-created `POST` handler |
 | Private render route shell and static config | Generated application | Next.js discovers routes from the consumer `app` tree |
-| Private render registry binding | Generated application and `apps/studio` | Lazy loaders point to consumer-local template modules |
+| Studio/private client registry bindings | Package codegen, emitted inside each consumer (Step 0.6) | Lazy loaders remain consumer-local without maintained wrapper files |
+| Studio section validation | `@mauriciodmo/framekit/studio/root` (Step 0.6) | One page adapter accepts only editor/brand sections |
+| Standard Next config and root redirect | `@mauriciodmo/framekit/next` (Step 0.6) | One configuration-time facade, free of request/browser dependencies |
+| Browser revision and explicit installation command | FrameKit package and CLI (Step 7) | Consumers do not synchronize a direct Playwright dependency |
 | API key and allowed image hosts | Generated application runtime environment | Secrets and deployment policy belong to the application |
 | Dockerfile and `.dockerignore` | Generated application | Container construction is application-owned |
 | First-party integration | `apps/studio` | Dogfood supported public imports and protocol |
@@ -304,7 +335,8 @@ is additive in the first implementation.
 ```text
 Client
   -> POST /api/v1/images                       generated application
-     -> auth + request parsing                 generated adapter + server helpers
+     -> createImageHandler(templates)           @mauriciodmo/framekit/server
+     -> auth + bounded request parsing          package-owned handler
      -> load template definition              generated registry
      -> prepare image inputs                   @mauriciodmo/framekit/server
         -> data URL validation
@@ -318,6 +350,7 @@ Client
         -> shared Chromium context             @mauriciodmo/framekit/server
         -> GET /framekit/render/<id>             generated route shell
            -> createRenderPage(...)              @mauriciodmo/framekit/server
+           -> generated render-client binding    consumer-local codegen output
            -> createRenderClient(templates)      @mauriciodmo/framekit/client
            -> generated template loader          generated application
            -> TemplateCanvas                     @mauriciodmo/framekit/editor
@@ -329,14 +362,21 @@ Client
 No generated application may import `packages/framekit/src/*`. Shared behavior
 must cross supported package exports.
 
-The FrameKit package owns reusable server-rendering behavior and the client render
-lifecycle. The generated application and `apps/studio` own their Next.js route
-files, static route configuration, and generated-registry binding; route files must
-not move into `packages/framekit/src/server/`. Keep
+The FrameKit package owns the full reusable HTTP/rendering behavior, client render
+lifecycle, generated bindings, standard Next config, and browser-install command.
+The generated application and `apps/studio` own their Next.js route files and
+static route configuration. Registries/bindings are generated inside each
+consumer, while route files must not move into `packages/framekit/src/server/`. Keep
 `packages/create-framekit/src/` small and limited to scaffolding concerns; do not
 add `services/`, `utils/`, `lib/`, or `commands/` layers.
 
 ## End-to-end lifecycle
+
+Step 6 is planned to implement Steps 1-11 and the final HTTP response once inside
+the package's `createImageHandler`, rather than copying them into consumer route
+adapters. The following lifecycle is the target design and is not yet implemented.
+One request-wide deadline and abort signal cover body reading, image preparation,
+and capture; the browser stage does not renew the end-to-end timeout budget.
 
 1. The public route loads validated configuration.
 2. It authenticates the Bearer API key before parsing request data or revealing
@@ -514,7 +554,11 @@ packages/framekit/src/
   studio.ts                        # current Studio facade
   studio-root.ts                   # current Studio root facade
   dev.ts                           # current development facade
-  server.ts                        # current Step 1-4 facade; later steps extend it
+  next.ts                          # Step 0.6 configuration-only facade
+  next/
+    config.ts                      # withFrameKit()
+    __tests__/
+  server.ts                        # current render facade; Step 6 adds createImageHandler
   core/
     fields/
     template-data/
@@ -536,8 +580,10 @@ packages/framekit/src/
       framekit-navigation.tsx
     state/
   studio/
+    page.tsx                       # Step 0.6 createStudioPage()
   tooling/
     cli/
+      browser.ts                   # Step 7 explicit pinned browser installation
     codegen/
     discovery/
     dev/
@@ -546,7 +592,7 @@ packages/framekit/src/
     browser.ts
     config.ts
     errors.ts
-    http-errors.ts
+    image-handler.ts               # Step 6 complete HTTP pipeline and response mapping
     image-input.ts
     render-image.ts
     render-job.ts
@@ -557,25 +603,28 @@ packages/framekit/src/
 packages/create-framekit/template/
   Dockerfile
   .dockerignore
-  src/app/page.tsx
+  .env.example
+  next.config.ts                   # withFrameKit()
   src/app/layout.tsx
   src/app/globals.css
-  src/app/editor/[[...slug]]/page.tsx
-  src/app/brand/[[...slug]]/page.tsx
+  src/app/[section]/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
   src/app/framekit/render/[id]/page.tsx
-  src/app/framekit/render/[id]/render-client.tsx
 
 apps/studio/
-  src/app/page.tsx
+  next.config.ts                   # withFrameKit() plus monorepo settings
   src/app/layout.tsx
   src/app/globals.css
-  src/app/editor/[[...slug]]/page.tsx
-  src/app/brand/[[...slug]]/page.tsx
+  src/app/[section]/[[...slug]]/page.tsx
   src/app/api/v1/images/route.ts
   src/app/framekit/render/[id]/page.tsx
-  src/app/framekit/render/[id]/render-client.tsx
   src/__tests__/framekit/generation.integration.test.ts
+
+<each consumer>/src/generated/framekit/    # generated, never copied in the starter
+  templates.ts
+  brands.ts
+  studio-client.tsx
+  render-client.tsx
 
 tests/e2e/
   # root Playwright E2E coverage remains here
@@ -599,6 +648,14 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 
 - Keep changes in the smallest owning layer.
 - Route adapters must not duplicate browser, image-fetch, or job-store logic.
+- The public adapter exports `POST = createImageHandler(templates)`; the package
+  also owns authentication order, bounded parsing, resolution, and HTTP mapping.
+- Step 0.6 reduces the final maintained starter `src/app` inventory from eight to
+  five files. Generated bindings stay disposable; generation never rewrites routes.
+- `./next` must import without a Next request context and without pulling in
+  `./server`, Playwright, Studio, or development-server initialization.
+- Browser installation is explicit through `framekit browser install`; ordinary
+  install/generate/check/dev/build/start commands do not download browsers.
 - Keep `@mauriciodmo/framekit/client` free of runtime Node.js, Playwright, and
   server-route imports.
 - Treat preservation of `'use client'` in `dist/client.js` as a package build
@@ -607,8 +664,9 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 - Keep the render-job API storage-agnostic enough that a future Redis/filesystem
   implementation can replace the `Map` without changing public/private routes.
 - Complete focused tests with each step instead of deferring them to Step 8.
-- After Step 0.5, run a production Next.js build/start smoke proving that the public
-  route and private page see the same global job store before continuing to Step 6.
+- After Steps 0.5 and 0.6, run a production Next.js build/start smoke proving that
+  a test-only server route and private page see the same global job store before
+  continuing to Step 6. Step 6 replaces the test-only flow with the actual API.
 - Do not add a database, Redis, queue, public job endpoint, or object storage to
   the first implementation.
 - Do not allow Chromium external network access to support remote image fields;
@@ -642,6 +700,10 @@ The feature is complete when:
 - final Docker runs standalone Next.js and matching Chromium as non-root under
   `tini`;
 - package tarballs work in an isolated creator-generated project;
+- the final starter has five maintained `src/app` files, with existing URLs and
+  project styling preserved and registry bindings reproducible through codegen;
+- the API adapter contains no HTTP pipeline logic, and browser installation uses
+  FrameKit's pinned dependency without consumer-managed Playwright versions;
 - Studio's existing browser export/copy behavior still works;
 - English/Spanish docs, changelog, migration notes, and package exports match the
   shipped behavior;

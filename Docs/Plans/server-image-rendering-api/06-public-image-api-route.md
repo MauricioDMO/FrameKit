@@ -1,10 +1,14 @@
 # Step 6 - Public Image API Route
 
+- **Status:** Planned; the complete HTTP pipeline belongs to the package.
+
 ## Goal
 
-Implement the authenticated synchronous endpoint that validates client input,
-prepares request-specific images, resolves/validates the final template data,
-invokes the server renderer, and returns PNG bytes or stable JSON failures.
+Implement `createImageHandler(templates)` in `@mauriciodmo/framekit/server`. Its
+returned handler authenticates, validates client input, prepares request-specific
+images, resolves/validates final data, invokes the renderer, and returns PNG bytes
+or stable JSON failures. Consumers supply only their generated registry and a
+Next.js route/config adapter.
 
 ## Depends on
 
@@ -16,18 +20,23 @@ invokes the server renderer, and returns PNG bytes or stable JSON failures.
 - [Step 5](./05-private-next-render-route.md) operational private page and proven
   process-global Map handoff.
 - Consumer-generated registry entries/loaders.
+- [Step 0.5](./README.md#step-05---package-clientserver-boundaries) package-boundary gate.
+- [Step 0.6](./00.6-minimal-consumer-integration.md) minimal starter and generated
+  client bindings, with the production Map handoff reverified.
 
 ## Deliverables
 
-- `POST /api/v1/images` in the canonical generated application.
-- Equivalent thin route in first-party Studio.
+- A public `createImageHandler` factory owning the entire HTTP pipeline.
+- `POST /api/v1/images` adapters in the canonical generated app and Studio.
 - Bounded streaming JSON reader.
 - Exact request-shape and registry/template validation.
 - Node-side remote image preparation before browser capacity is consumed.
 - One canonical resolve/validate pass producing `ResolvedRenderPayload`.
 - Stable status/error/header mapping.
-- Request-abort propagation to remote fetch and browser rendering.
-- Focused route tests with renderer/fetch orchestration mocked.
+- One request-wide deadline and abort propagation through body reading, remote
+  fetch, and browser rendering.
+- Package-owned handler tests with renderer/fetch orchestration mocked, plus
+  thin consumer-route integration and public-import type checks.
 
 ## Route location and runtime
 
@@ -35,6 +44,32 @@ invokes the server renderer, and returns PNG bytes or stable JSON failures.
 packages/create-framekit/template/src/app/api/v1/images/route.ts
 apps/studio/src/app/api/v1/images/route.ts
 ```
+
+Both route files contain only:
+
+```typescript
+import { createImageHandler } from '@mauriciodmo/framekit/server'
+import { templates } from '@framekit/generated/templates'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+export const POST = createImageHandler(templates)
+```
+
+Public factory signature:
+
+```typescript
+function createImageHandler (
+  templates: readonly TemplateRegistryEntry[]
+): (request: Request) => Promise<Response>
+```
+
+The factory only binds the registry. It does not read secrets, validate runtime
+configuration, load templates, or start a browser during route-module evaluation.
+Those operations occur in the returned request handler. Use native `Request` and
+`Response`; the HTTP implementation does not require Next-specific request APIs.
+Keep body/error helpers private and test through the handler where practical.
 
 Rules:
 
@@ -80,7 +115,9 @@ request cannot.
 
 ## 1. Configuration
 
-Call the Step 1 parser with explicit environment record.
+Inside each handler invocation, call the Step 1 pure parser with `process.env` as
+the explicit environment record. The consumer owns runtime environment values;
+it does not need to call the parser or pass secrets in a route adapter.
 
 Configuration failure returns:
 
@@ -99,9 +136,8 @@ Cache-Control: no-store
 
 Do not reveal which secret/config value is absent.
 
-A stable module may cache successfully parsed configuration if tests prove safe
-for the Next runtime. Do not permanently cache a development configuration
-failure across reloads.
+Parse per request in v1. This avoids build-time secret requirements and stale
+development configuration without adding a cache or environment singleton.
 
 ## 2. Authentication
 
@@ -156,11 +192,14 @@ image fetch.
 
 ## 5. Registry and definition lookup
 
-Use generated application imports:
+The thin application adapter supplies the registry through:
 
 ```typescript
 import { templates } from '@framekit/generated/templates'
 ```
+
+The package never imports `@framekit/generated/*` directly. The registry remains
+server-consumable; only the separate generated client bindings carry `'use client'`.
 
 Flow:
 
@@ -215,7 +254,7 @@ const payload: ResolvedRenderPayload = {
   data,
   assets,
   width: definition.width,
-  height: definition.height,
+  height: definition.height
 }
 ```
 
@@ -223,20 +262,29 @@ The private page must render this payload directly rather than re-resolving it.
 
 ## 7. Rendering and request cancellation
 
-Call:
+The handler establishes one end-to-end deadline from request handling and combines
+it with `request.signal`. Use the same effective signal for bounded body reading,
+remote image preparation, and rendering. Do not give capture a fresh 30-second
+budget after the earlier stages have consumed time.
+
+Call with that effective signal:
 
 ```typescript
 const png = await renderTemplateImage({
   payload,
   config: config.render,
-  signal: request.signal,
+  signal
 })
 ```
 
-The request signal should also be available during remote image preparation so a
-disconnected client stops both fetch and browser work.
+Cancel the body reader on abort or deadline and stop remote fetch/browser work.
+Map the handler's deadline to `render_timeout`, including expiry before browser
+capacity is reserved. Preserve safe handling of a disconnected client without
+inventing a new public error code.
 
-Cleanup belongs to image-fetch/render helpers, not route duplication.
+The handler clears its own deadline timer/listeners in `finally`. Image-fetch and
+renderer cleanup remain owned by their existing helpers; the route adapter owns
+none of these resources.
 
 An aborted request must not create an unhandled rejection. If a response can no
 longer be written, coarse operational logging is sufficient.
@@ -297,19 +345,19 @@ Every JSON error includes `Content-Type: application/json` and
 
 ## Thin adapter rule
 
-Canonical template and `apps/studio` routes should differ only in registry import
-and deployment configuration.
+Canonical template and Studio use the same `createImageHandler` adapter. There
+must be no application-owned authentication, parsing, resolution, image
+preparation, response construction, or error mapping to copy between them.
 
-The current `@mauriciodmo/framekit/server` facade exports only the Step 1
-contracts, authentication helper, configuration parser, and error model. This
-step plans to extend that facade with reusable server behavior; jobs, browser
-orchestration, image preparation, and route integration remain future work. The
-generated application and `apps/studio` own the Next.js route and registry
-integration; do not move either route into `packages/framekit/src/server/`.
+The existing `./server` facade already contains the Steps 1-5 runtime and Step
+0.5 private-page helper. Extend it with the high-level handler; keep the existing
+lower-level exports compatible. Consumers using the standard endpoint do not
+need to construct `ResolvedRenderPayload` or manage render jobs.
 
-If parsing/error mapping grows into duplicated application code, expose a
-server-package helper that accepts the generated registry/definition loader as a
-dependency. Do not create a Studio-only protocol.
+The actual Next.js `route.ts` and its literal static configuration stay in the
+consumer. The package owns `server/image-handler.ts`, not an undiscoverable
+Next route file. Do not add a public dependency-injection container, middleware
+framework, or separate Studio protocol to implement this one pipeline.
 
 ## Abuse and rate behavior
 
@@ -346,9 +394,12 @@ Never log:
 ```text
 packages/create-framekit/template/src/app/api/v1/images/route.ts
 apps/studio/src/app/api/v1/images/route.ts
+packages/framekit/src/server.ts
+packages/framekit/src/server/image-handler.ts
+packages/framekit/src/server/__tests__/image-handler.test.ts
 packages/framekit/src/server/request-body.ts
 packages/framekit/src/server/__tests__/request-body.test.ts
-packages/framekit/src/server/http-errors.ts
+packages/framekit/tests/types/image-handler.ts
 ```
 
 Runtime tests live under the nearest relevant `__tests__/` directory and mirror
@@ -357,21 +408,23 @@ the production domain. FrameKit server tests use
 under `packages/framekit/tests/types/`; root Playwright E2E remains under
 `tests/e2e/`.
 
-Image preparation stays in the Step 2 server module. Pure body/error helpers
-belong in the package only when they prevent real duplication.
+Image preparation stays in the Step 2 server module. Keep response/error mapping
+inside `image-handler.ts` unless a second real package caller needs it; a separate
+`http-errors.ts` is not a required deliverable.
 
 ## Implementation sequence
 
-1. Add bounded body reader and exact request parser tests.
-2. Implement canonical registry/definition lookup helper boundaries as needed.
-3. Implement canonical generated-template route adapter.
-4. Wire configuration and authentication first.
-5. Wire async image preparation with request abort signal.
-6. Run canonical resolve/validate once and create `ResolvedRenderPayload`.
-7. Invoke `renderTemplateImage`.
-8. Add raw PNG response + semantic JSON error mapping.
-9. Add route tests with mocked image fetch/renderer/registry fixture.
-10. Mirror the thin route in first-party Studio.
+1. Add the package handler factory, configuration/auth ordering, and bounded
+   reader/request parser with focused tests.
+2. Bind registry lookup/definition validation inside the handler.
+3. Wire one deadline and abort signal across reading/preparation/rendering.
+4. Prepare images and run canonical resolve/validate exactly once.
+5. Invoke `renderTemplateImage`; construct PNG/error responses in the package.
+6. Export the factory and add its public-import type fixture.
+7. Add the two minimal `POST` adapters, bringing the starter to five maintained
+   `src/app` files.
+8. Run package tests, adapter integration, production builds, and standalone
+   public/private Map handoff checks.
 
 ## Focused tests
 
@@ -390,6 +443,10 @@ belong in the package only when they prevent real duplication.
 - Capacity/timeout map to `503`/`504` and route does not repeat renderer cleanup.
 - Success returns exact PNG headers/body and safe filename.
 - Request abort reaches both remote image fetch and renderer.
+- A slow body or image stage consumes the same deadline budget as capture;
+  expiry prevents later stages and clears the handler's timer/listeners.
+- Importing the route/factory with absent API secrets does not fail the build;
+  a request with absent configuration returns the documented generic `503`.
 - No response/log snapshot contains secret request values/full signed URLs.
 - Template and Studio adapters behave identically for the same fixture.
 
@@ -398,9 +455,13 @@ belong in the package only when they prevent real duplication.
 Step 6 is complete when:
 
 - authenticated endpoint works with mocked browser renderer;
+- `createImageHandler` owns all HTTP behavior and both application routes contain
+  only registry imports, literal route settings, and the `POST` factory binding;
 - remote images are fetched/prepared before browser work;
 - all invalid/unauthorized input exits before browser capacity consumption;
 - canonical data resolution/validation runs once;
 - success returns raw PNG bytes;
 - every semantic failure maps without message parsing;
+- request-wide cancellation/deadline and factory import/type checks pass;
+- the minimal starter contains exactly five maintained `src/app` files;
 - canonical template and Studio focused tests/typecheck/build pass.

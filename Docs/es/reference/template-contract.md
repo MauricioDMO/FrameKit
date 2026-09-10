@@ -39,8 +39,9 @@ export default defineTemplate({
 
 La definición no tiene propiedad de versión ni una forma alternativa exclusiva
 del editor. `render` recibe únicamente `data`, `assets`, `variant`, `width` y
-`height`. Studio la ejecuta en el navegador; el renderizado de frames del lado
-del servidor no está implementado actualmente.
+`height`. Studio la ejecuta en el navegador. El renderer de servidor invoca la
+misma plantilla mediante el handoff privado de la página de renderizado y
+devuelve PNG; no es una ruta pública de la API de imágenes.
 
 Las props de `render` se tipan a partir de la definición:
 

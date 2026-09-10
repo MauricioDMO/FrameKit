@@ -296,8 +296,10 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para los contratos de la API de imágenes del Paso 1 y el handoff privado de
-trabajo/página de renderizado. No se debe importar en bundles del navegador.
+para los contratos implementados de los Pasos 1-5: configuración y
+autenticación, preparación de inputs de imagen, trabajos temporales,
+renderizado PNG en navegador y el handoff privado de la página de renderizado.
+No se debe importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
@@ -306,10 +308,12 @@ trabajo/página de renderizado. No se debe importar en bundles del navegador.
 | `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
 | `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
-| `createRenderJob`      | `createRenderJob(payload: ResolvedRenderPayload): CreatedRenderJob`; crea un identificador y un token de corta duración para un trabajo privado de renderizado |
-| `loadRenderRequest`    | `loadRenderRequest(id: string, token: string): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
-| `deleteRenderJob`      | `deleteRenderJob(id: string): void`; elimina un trabajo privado de renderizado |
-| `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff de página de servidor que valida el token privado y pasa el payload resuelto al componente cliente |
+| `prepareRenderInputs`  | `prepareRenderInputs(options)`; valida los datos de la solicitud y prepara inputs de imagen locales, data URLs y remotos permitidos para renderizar |
+| `renderTemplateImage`  | `renderTemplateImage(options): Promise<Buffer>`; renderiza un payload resuelto mediante la página privada y devuelve bytes PNG |
+| `createRenderJob`      | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; crea un identificador y un token temporales para un trabajo privado de renderizado |
+| `loadRenderRequest`    | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
+| `deleteRenderJob`      | `deleteRenderJob(id: string, options?): void`; elimina un trabajo privado de renderizado |
+| `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff privado de página de servidor que valida el token de renderizado y pasa el payload resuelto al componente cliente |
 
 `parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
 `FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
@@ -346,6 +350,8 @@ malformados devuelven `false`.
 | `ImageRenderRequest`         | Forma de solicitud con `template`, `variant` opcional y datos opcionales                             |
 | `ImageRenderRuntimeConfig`   | Configuración de ejecución con origen loopback, hosts de imagen permitidos, concurrencia y timeout |
 | `ResolvedRenderPayload`      | Datos de render resueltos y serializables con template, variante, datos, assets, width y height     |
+| `CreatedRenderJob`           | Identificador y token de trabajo privado devueltos por `createRenderJob`                          |
+| `RenderJobTestOptions`       | Sobrescrituras opcionales del reloj y la fuente de identificadores para tests deterministas       |
 | `ImageRenderErrorCode`       | Unión pública de códigos: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
 | `ImageRenderFailure`         | Forma para construir errores con `code`, `message`, `fields` opcional y `cause` opcional           |
 
@@ -415,7 +421,7 @@ Estas son dependencias paralelas. El paquete emitirá una advertencia durante la
 | `Markdown`                                               | Servidor o cliente | Componente React puro; la implementación no usa APIs exclusivas del navegador                                                                         |
 | `FrameKitStudioRoot`                                     | Servidor           | Utiliza `next/headers` para APIs de nivel de solicitud; debe usarse únicamente en componentes de servidor o layouts                                   |
 | Puntos de entrada de `@mauriciodmo/framekit/dev`         | Servidor           | El servidor de desarrollo, el descubrimiento de plantillas, la generación de código y la vigilancia de archivos son operaciones del lado del servidor |
-| Punto de entrada `@mauriciodmo/framekit/server`          | Servidor           | Símbolos de configuración, autenticación y contratos de la API de imágenes exclusivos de Node.js/servidor; no incluir en bundles del navegador                |
+| Punto de entrada `@mauriciodmo/framekit/server`          | Servidor           | Símbolos de configuración, autenticación, preparación de imágenes, trabajos de render y renderizado exclusivos de Node.js/servidor; no incluir en bundles del navegador |
 
 ---
 

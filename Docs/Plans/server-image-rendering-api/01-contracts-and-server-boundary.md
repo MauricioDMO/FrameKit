@@ -31,14 +31,16 @@ This step is intentionally executable without Chromium.
 
 ## Boundary design
 
-The server export owns generic server-rendering behavior. It must not own a
-consumer's generated registry or a global environment singleton.
+The Step 1 contracts own generic server-rendering behavior. Later steps extend
+the same facade with runtime helpers and Next private-page integration. The
+package must not import a consumer's generated registry or own a global
+environment singleton.
 
 The generated application remains responsible for supplying:
 
 - its registry entries and template loaders;
-- `process.env` to the pure configuration parser;
-- the incoming `Request` and outgoing `Response`;
+- runtime environment values, including secrets and deployment policy;
+- the incoming `Request` through its route adapter;
 - the public API route;
 - the private render route;
 - its loopback internal origin.
@@ -50,7 +52,12 @@ The server package remains responsible for:
 - Bearer authentication comparison;
 - request/image helpers added in later steps;
 - the in-memory render-job store;
-- browser and capture orchestration.
+- browser and capture orchestration;
+- the complete HTTP handler in Step 6, which passes `process.env` explicitly to
+  the pure parser at request time and constructs the outgoing `Response`.
+
+Consumers using `createImageHandler(templates)` do not manually call the parser
+or orchestrate these lower-level helpers. The pure parser's contract is unchanged.
 
 No type in the `./server` facade may reference `packages/create-framekit/template`,
 `apps/studio`, or `@framekit/generated/*`.
@@ -252,20 +259,23 @@ The supported import is:
 ```typescript
 import {
   parseImageApiConfig,
-  authenticateBearer,
-  // later: renderTemplateImage, loadRenderRequest
+  authenticateBearer
+  // later steps also export runtime/page helpers and createImageHandler
 } from '@mauriciodmo/framekit/server'
 ```
 
-The current facade exports only the completed Step 1 symbols shown above. Later
-steps may add the renderer and job helpers; do not add or document `server/*`,
-`browser`, `auth`, or `shared` public subpaths.
+The example identifies the Step 1 subset, not the current full facade. Steps 2-5
+and 0.5 have already added runtime/page helpers; Step 6 plans `createImageHandler`.
+Step 0.6 separately introduces the configuration-only `./next` facade. Do not add
+`server/*`, `browser`, `auth`, or `shared` public subpaths.
 
 Rules:
 
-- `./server` may import Node built-ins and later `playwright-core`.
-- root, `./editor`, `./studio`, and `./dev` client-capable exports must not import
-  the server entry.
+- `./server` may import Node built-ins and `playwright-core`.
+- root, `./client`, `./editor`, and the `./studio` client graph must not import the
+  server entry at runtime; `./dev` is Node tooling, not a client-capable export.
+- the new `./next` configuration entry must not import request-bound Next APIs or
+  the server/browser runtime; see Step 0.6 for its import-time contract.
 - importing `@mauriciodmo/framekit` or `/editor` must never pull Playwright into a
   client bundle.
 - generated apps must consume supported package exports, never repository source
@@ -334,5 +344,5 @@ Step 1 is complete and verified in the current checkout:
 - [x] The final render payload contract represents already-resolved data.
 - [x] Existing package entry points still build without depending on `./server`.
 
-This exit gate covers only Step 1. Image inputs, render jobs, browser capture,
-routes, packaging, Docker, and rollout remain pending in Steps 2-8.
+This records only Step 1's verified gate. See the plan README for the current
+status of subsequent phases; it does not certify their later exports or checks.

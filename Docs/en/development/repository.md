@@ -59,7 +59,7 @@ This links the package directory on disk, while its `exports` point consumers to
 
 Running `pnpm dev` from inside a package directory bypasses this ordering and will fail because the `dist/` it tries to import does not yet exist.
 
-The public package exports only `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade currently exposes only the implemented Step 1 contracts, configuration parser, Bearer authentication helper, and render-error class and types; it does not provide image API routes or server-side image rendering. The generated project uses the published version of the package, not `workspace:*`.
+The public package exports `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade currently exposes the implemented Steps 1-5 contracts, configuration and authentication helpers, image-input preparation, PNG rendering, temporary render jobs, and the private render-page handoff; it does not provide public image API routes or the complete public image-rendering API. The generated project uses the published version of the package, not `workspace:*`.
 
 ## Focused package commands
 

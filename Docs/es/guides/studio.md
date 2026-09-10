@@ -77,7 +77,10 @@ Los botones Exportar y Copiar PNG validan los datos resueltos y confirmados actu
 
 Exportar descarga un archivo PNG en el navegador. El nombre del archivo usa el slug de la plantilla con `/` reemplazado por `-` (por ejemplo, `social/instagram/post` se convierte en `social-instagram-post.png`). Copiar PNG coloca la imagen capturada en el portapapeles en lugar de descargarla.
 
-La exportación se ejecuta íntegramente en el navegador. No hay renderizado en el servidor, ni opciones de formato, ni controles de escala o DPI en la versión actual.
+La exportación de Studio se ejecuta íntegramente en el navegador. El renderizado
+de PNG en servidor se ofrece por separado mediante el handoff privado de
+trabajo/página; la exportación actual de Studio no tiene opciones de formato ni
+controles de escala o DPI.
 
 ## Tema
 

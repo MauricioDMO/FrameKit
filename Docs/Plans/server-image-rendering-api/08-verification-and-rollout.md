@@ -9,6 +9,7 @@ distribution; update documentation; and define a safe additive rollout.
 ## Depends on
 
 - Completion of Steps 1-7 with passing focused exit gates.
+- Steps 0.5 and 0.6 package/integration gates, including the minimal starter.
 - Built public package tarballs.
 - An isolated creator-generated consumer outside the workspace.
 
@@ -19,6 +20,8 @@ distribution; update documentation; and define a safe additive rollout.
   job store.
 - Real Chromium API smoke in final production container.
 - Isolated tarball/generated-consumer smoke.
+- Five-file maintained starter inventory and clean generated-binding recovery.
+- Package-owned HTTP pipeline and FrameKit-owned browser installation checks.
 - Remote-image SSRF/token-leak/browser-network verification.
 - Cleanup/resource verification.
 - English/Spanish public documentation.
@@ -110,7 +113,34 @@ under `tests/e2e/`.
 - canonical resolve/validate once;
 - success/error headers/raw PNG response;
 - request abort propagation;
-- template and first-party Studio adapter parity.
+- template and first-party Studio adapter parity;
+- handler factory import works without runtime secrets; the adapter contains no
+  application-owned HTTP pipeline;
+- the same deadline covers slow body reads, image preparation, and capture;
+- `/` redirects temporarily to `/editor`; the unified section route preserves
+  editor/brand nested slug behavior and rejects unknown sections;
+- explicit API/private routes retain precedence and the development asset
+  endpoint still works.
+
+### Minimal starter/configuration/browser tooling
+
+- final starter has exactly five maintained `src/app` files, down from the
+  previous eight-file full-feature plan;
+- old home/editor/brand pages and sibling render-client binding are absent;
+- both generated client bindings are excluded from the creator template and
+  recreated from a clean generated directory without rewriting user files;
+- neutral registries remain server-consumable and private render imports exclude
+  the Studio shell/catalog graph;
+- `withFrameKit` preserves project settings, composes redirects, and rejects
+  conflicting reserved settings without mutation;
+- packed `./next` imports in ordinary Node without request/browser dependencies;
+- existing manual config/explicit routes remain supported for unmigrated apps;
+- `framekit browser install` uses FrameKit's pinned Playwright resolution without
+  a direct consumer Playwright dependency, including a conflicting consumer pin;
+- installer honors the browser path and exit codes; the Docker `--with-deps`
+  command produces system libraries and the matching headless shell;
+- normal dependency installation and other FrameKit commands do not download
+  browser binaries.
 
 ## Canonical browser fixture
 
@@ -233,13 +263,21 @@ behind the same API before release rather than adding per-bundle Maps.
 4. Generate a project from creator tarball.
 5. Install local FrameKit tarball as appropriate.
 6. Install dependencies with generated lock/package-manager contract.
-7. Run generation/check/build.
+7. Check the five-file source inventory, then run generation/check/build from
+   absent generated output, verifying both client bindings are recreated.
 8. Build/run Docker image.
 9. Configure API key + allowed test image host at runtime.
 10. Exercise local/data/remote image API requests.
 11. Verify output PNG and Map cleanup.
 12. Inspect installed package/tarballs for workspace paths/secrets/browser
-    binaries.
+     binaries.
+
+Exercise both creator install-and-generate and skip-install workflows. In the
+latter, install dependencies before a normal FrameKit generate/check/dev/build
+command. Verify the packed config facade in Node and browser installation through
+FrameKit's command, with no direct consumer `playwright-core` dependency. Use one
+focused resolution test with an unrelated consumer Playwright version to prove
+the installer does not pick it up.
 
 ## Small smoke harness
 
@@ -325,7 +363,8 @@ Document:
 - fact that remote HTTPS images are downloaded by Node and Chromium does not
   access arbitrary Internet resources;
 - Docker build/run;
-- browser installation/common launch failures;
+- `framekit browser install` and `--with-deps`, browser-path configuration, and
+  common launch failures; users do not coordinate a separate Playwright pin;
 - status/error reference including `image_fetch_failed`;
 - request/image/timeout/concurrency limits;
 - one-process-per-container + long-lived Node support boundary;
@@ -339,10 +378,14 @@ Update:
 
 - generated template README;
 - placeholder `.env.example`;
-- current supported package imports, including the existing `./server` import
-  for the Step 1 contracts, authentication, configuration, and errors; jobs,
-  browser, routes, image fetching, Docker, and rollout remain future work, and
-  no server/browser/auth/shared public subpaths are proposed;
+- supported package imports and implemented signatures for `createImageHandler`,
+  `createRenderClient`, `createRenderPage`, `createStudioPage`, and `withFrameKit`;
+  the final export map includes `./next`, with no server/browser/auth/shared subpaths;
+- the five-file app source tree, consumer-owned routes/styles, and generated
+  registry/client bindings; never instruct users to edit generated bindings;
+- package/repository AGENTS instructions and skill sources under `Docs/skills/`
+  when their public-import or consumer-file maps change; regenerate synchronized
+  skill copies through the existing sync command;
 - note that Dockerfile is pnpm-specific initially;
 - note that Studio client export remains available;
 - note that server-rendered templates should package fonts/styles/assets locally
@@ -355,6 +398,26 @@ Update:
 - explicit additive API statement;
 - known limitations: one process/store, PNG only, no serverless/Edge, no public
   async jobs, no Chromium external network.
+
+### Existing-consumer migration
+
+The minimal layout is the default for newly scaffolded projects. Existing
+consumers may continue using their explicit editor/brand pages, local render
+binding, and manual Next config with the same supported package APIs.
+
+For consumers adopting the smaller source tree, document this order:
+
+1. Upgrade FrameKit and regenerate registries plus client bindings.
+2. Adopt `withFrameKit` only if the application uses the standard FrameKit root
+   redirect and standalone paths; preserve custom Next settings.
+3. Add the unified section adapter and change the private page's client import.
+4. After reviewing local customizations, explicitly remove the superseded home,
+   editor, brand, and render-client files. Codegen must never perform this removal.
+5. Add or replace the public route with `createImageHandler(templates)`.
+6. Use the FrameKit browser-install command and verify build/start, existing URLs,
+   PNG output, and project styles before removing any obsolete direct dependency.
+
+Do not move template data/assets or require a hidden generated Next application.
 
 ## Observability acceptance
 
@@ -376,8 +439,9 @@ or raw Playwright exception in public logs.
 1. Merge additive server package internals/exports.
 2. Merge shared canvas/image preparation without changing Studio export.
 3. Merge Map job + browser/private route behind generated integration.
-4. Prove production Map sharing.
-5. Merge public route and Docker support.
+4. Verify Step 0.5, implement the Step 0.6 minimal integration, and reprove
+   production Map sharing and existing route behavior.
+5. Merge the shared HTTP handler, browser-install command, and Docker support.
 6. Run full isolated package/Docker smoke.
 7. Update docs/changelog/migration notes.
 8. Release only when every final checklist item passes.
@@ -407,6 +471,12 @@ feature, so rollback should not require data migration.
 - [ ] Raw PNG headers/signature/dimensions pass.
 - [ ] Studio current export remains functional.
 - [ ] Packed packages work outside workspace.
+- [ ] Starter has five maintained app files and clean generation restores client bindings.
+- [ ] Root/editor/brand URLs, unknown-section handling, and reserved routes work.
+- [ ] Config preset imports safely and preserves project settings.
+- [ ] Public route is only a binding to the complete package HTTP handler.
+- [ ] One deadline/abort signal covers body, images, and capture.
+- [ ] Browser installation uses FrameKit's pin without consumer version management.
 - [ ] Docker runs non-root with matching Chromium.
 - [ ] Logs contain no sensitive request data.
 - [ ] English/Spanish docs/changelog/migration notes are current.

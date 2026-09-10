@@ -3,11 +3,11 @@
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
 Studio export is currently browser-based and supports PNG only. The server-only
-`@mauriciodmo/framekit/server` facade currently exposes the implemented Step 1
-contracts, configuration parser, Bearer authentication helper, render-error
-class and types, and the private render job/page handoff used by production
-rendering. This private handoff is distinct from the public image API; its
-routes and complete public image-rendering contract remain future work.
+`@mauriciodmo/framekit/server` facade currently exposes the implemented Steps 1-5
+contracts, configuration and authentication helpers, `prepareRenderInputs`,
+`renderTemplateImage`, temporary render jobs, and the private `createRenderPage`
+handoff used by production rendering. Public image API routes and the complete
+public image-rendering API remain future work; the private handoff is separate.
 
 ## Compatibility
 
@@ -146,7 +146,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
-import { authenticateBearer, ImageRenderError, parseImageApiConfig } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
@@ -163,11 +163,12 @@ import { templates } from '@framekit/generated/templates'
 export const RenderClient = createRenderClient(templates)
 ```
 
-The server-only `./server` facade is limited to the implemented Step 1
-contracts, configuration parser, Bearer authentication helper, render-error
-class and types, and private render job/page handoff. It does not provide
-public image API routes or the complete public image-rendering API. Keep the
-`./dev` and `./server` entry points out of browser/client imports.
+The server-only `./server` facade exposes the implemented Steps 1-5 contracts,
+configuration and authentication helpers, `prepareRenderInputs`,
+`renderTemplateImage`, temporary render jobs, and the private `createRenderPage`
+handoff. It does not provide public image API routes or the complete public
+image-rendering API; those remain future work. Keep the `./dev` and `./server`
+entry points out of browser/client imports.
 
 ### Published color palette
 
