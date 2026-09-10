@@ -1,13 +1,13 @@
 import type { NextConfig } from 'next'
 import path from 'node:path'
 
+import { withFrameKit } from '@mauriciodmo/framekit/next'
+
 const nextConfig: NextConfig = {
   devIndicators: false,
-  distDir: '.framekit/next',
-  output: 'standalone',
   turbopack: {
     root: path.resolve(process.cwd(), '../..')
   }
 }
 
-export default nextConfig
+export default withFrameKit(nextConfig)

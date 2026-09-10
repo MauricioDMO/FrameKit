@@ -19,7 +19,7 @@ describe('withFrameKit', () => {
     await expect(readRedirects(result)).resolves.toEqual([frameKitRedirect])
   })
 
-  it('preserves ordinary settings and appends the reserved redirect after async rules', async () => {
+  it('preserves ordinary settings and prepends the reserved redirect before async rules', async () => {
     const headers = vi.fn(async () => [])
     const rewrites = vi.fn(async () => [])
     const redirects = vi.fn(async () => [
@@ -41,9 +41,9 @@ describe('withFrameKit', () => {
     expect(result.headers).toBe(headers)
     expect(result.rewrites).toBe(rewrites)
     expect(resultRedirects).toEqual([
+      frameKitRedirect,
       { source: '/legacy', destination: '/editor', permanent: true },
-      { source: '/old', destination: '/new', permanent: false },
-      frameKitRedirect
+      { source: '/old', destination: '/new', permanent: false }
     ])
     expect(redirects).toHaveBeenCalledOnce()
     expect(config).toEqual({ turbopack: config.turbopack, headers, rewrites, redirects })
@@ -53,14 +53,14 @@ describe('withFrameKit', () => {
     const existing = { source: '/', destination: '/editor', permanent: false }
     const result = withFrameKit({ redirects: () => [existing] })
 
-    await expect(readRedirects(result)).resolves.toEqual([existing])
+    await expect(readRedirects(result)).resolves.toEqual([frameKitRedirect])
   })
 
   it('accepts the equivalent status-code form of the temporary redirect', async () => {
     const existing = { source: '/', destination: '/editor', statusCode: 307 }
     const result = withFrameKit({ redirects: () => [existing] })
 
-    await expect(readRedirects(result)).resolves.toEqual([existing])
+    await expect(readRedirects(result)).resolves.toEqual([frameKitRedirect])
   })
 
   it('rejects a conflicting exact root redirect', async () => {
@@ -78,6 +78,6 @@ describe('withFrameKit', () => {
     const custom = { source: '/:path*', destination: '/legacy/:path*', permanent: false }
     const result = withFrameKit({ redirects: () => [custom] })
 
-    await expect(readRedirects(result)).resolves.toEqual([custom, frameKitRedirect])
+    await expect(readRedirects(result)).resolves.toEqual([frameKitRedirect, custom])
   })
 })

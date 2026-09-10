@@ -33,17 +33,15 @@ export function withFrameKit (config: NextConfig = {}): NextConfig {
     output: frameKitOutput,
     async redirects () {
       const customRedirects = redirects === undefined ? [] : await redirects()
-      let hasFrameKitRedirect = false
 
       for (const redirect of customRedirects) {
         if (redirect.source !== '/') continue
         if (!isFrameKitRootRedirect(redirect)) {
           throw new Error('FrameKit configuration conflict: the root redirect must be an exact temporary 307 redirect to "/editor"')
         }
-        hasFrameKitRedirect = true
       }
 
-      return hasFrameKitRedirect ? customRedirects : [...customRedirects, frameKitRootRedirect]
+      return [frameKitRootRedirect, ...customRedirects.filter((redirect) => !isFrameKitRootRedirect(redirect))]
     }
   }
 }

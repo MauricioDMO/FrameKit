@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 
 import { createRenderPage } from '@mauriciodmo/framekit/server'
-
-import { RenderClient } from './render-client'
+import { RenderClient } from '@framekit/generated/render-client'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

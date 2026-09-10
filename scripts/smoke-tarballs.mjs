@@ -214,8 +214,9 @@ async function assertCorePackageBoundary(packageRoot, manifest, label) {
     for (const specifier of extractRuntimeImports(source)) {
       if (
         specifier === 'next/headers' ||
+        specifier === 'next/navigation' ||
         isNodeBuiltin(specifier) ||
-        /^(?:playwright|playwright-core)(?:\/|$)/.test(specifier) ||
+        /^(?:@playwright(?:\/|$)|playwright(?:-core)?(?:\/|$))/.test(specifier) ||
         /(?:^|\/)server(?:\.js|\/|$)/.test(specifier) ||
         specifier.includes('render-image')
       ) forbiddenImports.push(`${path.relative(packageRoot, filePath)} -> ${specifier}`)
@@ -239,12 +240,37 @@ async function assertPrivateRenderUrlContract(packageRoot, label) {
   console.log(`[PASS] ${label} private render URL contract uses /framekit/render`)
 }
 
-async function assertGeneratedRenderRoute(consumerRoot) {
+async function assertGeneratedConsumerShape(consumerRoot) {
+  const appRoot = path.join(consumerRoot, 'src', 'app')
+  const studioRoute = path.join(appRoot, '[section]', '[[...slug]]', 'page.tsx')
   const routeRoot = path.join(consumerRoot, 'src', 'app', 'framekit', 'render', '[id]')
-  assert(await exists(path.join(routeRoot, 'page.tsx')), 'creator consumer is missing src/app/framekit/render/[id]/page.tsx')
-  assert(await exists(path.join(routeRoot, 'render-client.tsx')), 'creator consumer is missing src/app/framekit/render/[id]/render-client.tsx')
-  assert(!(await exists(path.join(consumerRoot, 'src', 'app', '__framekit'))), 'creator consumer contains the legacy __framekit route')
-  console.log('[PASS] creator consumer has the physical src/app/framekit/render/[id] route')
+  const appFiles = (await walkFiles(appRoot)).map((filePath) => path.relative(appRoot, filePath)).sort()
+  const studioSource = await readFile(studioRoute, 'utf8')
+  const renderSource = await readFile(path.join(routeRoot, 'page.tsx'), 'utf8')
+  const configSource = await readFile(path.join(consumerRoot, 'next.config.ts'), 'utf8')
+
+  assert.deepEqual(appFiles, [
+    '[section]/[[...slug]]/page.tsx',
+    'framekit/render/[id]/page.tsx',
+    'globals.css',
+    'layout.tsx',
+  ], 'creator consumer src/app contains unexpected files')
+  assert(studioSource.includes("import { createStudioPage } from '@mauriciodmo/framekit/studio/root'"), 'creator consumer unified route misses createStudioPage')
+  assert(studioSource.includes("import { StudioClient } from '@framekit/generated/studio-client'"), 'creator consumer unified route misses generated StudioClient')
+  assert(configSource.includes("import { withFrameKit } from '@mauriciodmo/framekit/next'"), 'creator consumer next.config.ts misses withFrameKit')
+  assert(renderSource.includes("import { RenderClient } from '@framekit/generated/render-client'"), 'creator consumer private route misses generated RenderClient')
+  assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit', 'studio-client.tsx'))), 'creator consumer copied generated StudioClient output')
+  assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit', 'render-client.tsx'))), 'creator consumer copied generated RenderClient output')
+  console.log('[PASS] creator consumer has the unified Studio route and generated-only client bindings')
+}
+
+async function assertGeneratedBindings(consumerRoot) {
+  const generatedRoot = path.join(consumerRoot, 'src', 'generated', 'framekit')
+  const studioClient = path.join(generatedRoot, 'studio-client.tsx')
+  const renderClient = path.join(generatedRoot, 'render-client.tsx')
+  assert((await readFile(studioClient, 'utf8')).includes("import { FrameKitStudio } from '@mauriciodmo/framekit/studio'"), 'generated StudioClient has an unexpected import graph')
+  assert((await readFile(renderClient, 'utf8')).includes("import { createRenderClient } from '@mauriciodmo/framekit/client'"), 'generated RenderClient has an unexpected import graph')
+  console.log('[PASS] consumer generation recreated studio-client.tsx and render-client.tsx')
 }
 
 async function assertProductionRenderRoute(consumerRoot) {
@@ -265,9 +291,9 @@ function pickDependencies(manifest, names, dependencyKey, dependencyLabel) {
 async function createIndependentConsumer(temporaryRoot, coreArchive, templateManifest) {
   const consumerRoot = path.join(temporaryRoot, 'independent-consumer')
   const appRoot = path.join(consumerRoot, 'src', 'app')
-  const editorRoot = path.join(appRoot, 'editor', '[[...slug]]')
+  const studioRouteRoot = path.join(appRoot, '[section]', '[[...slug]]')
   const templateDirectory = path.join(consumerRoot, 'src', 'templates', 'smoke')
-  await mkdir(editorRoot, { recursive: true })
+  await mkdir(studioRouteRoot, { recursive: true })
   await mkdir(templateDirectory, { recursive: true })
 
   await writeJson(path.join(consumerRoot, 'package.json'), {
@@ -290,7 +316,7 @@ async function createIndependentConsumer(temporaryRoot, coreArchive, templateMan
     ], 'devDependencies', 'devDependency'),
   })
   await writeFile(path.join(consumerRoot, '.gitignore'), 'node_modules\n.framekit\npublic/framekit\nsrc/generated/framekit\n', 'utf8')
-  await writeFile(path.join(consumerRoot, 'next.config.ts'), "import type { NextConfig } from 'next'\n\nconst nextConfig: NextConfig = { distDir: '.framekit/next', output: 'standalone' }\n\nexport default nextConfig\n", 'utf8')
+  await writeFile(path.join(consumerRoot, 'next.config.ts'), "import { withFrameKit } from '@mauriciodmo/framekit/next'\n\nexport default withFrameKit()\n", 'utf8')
   await writeFile(path.join(consumerRoot, 'postcss.config.mjs'), "export default { plugins: { '@tailwindcss/postcss': {} } }\n", 'utf8')
   await writeFile(path.join(consumerRoot, 'next-env.d.ts'), '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n\n// This file is generated by Next.js.\n', 'utf8')
   await writeJson(path.join(consumerRoot, 'tsconfig.json'), {
@@ -320,8 +346,7 @@ async function createIndependentConsumer(temporaryRoot, coreArchive, templateMan
   })
   await writeFile(path.join(appRoot, 'globals.css'), '@import "tailwindcss";\n@import "@mauriciodmo/framekit/styles.css";\n', 'utf8')
   await writeFile(path.join(appRoot, 'layout.tsx'), "import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'\nimport './globals.css'\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return <FrameKitStudioRoot>{children}</FrameKitStudioRoot>\n}\n", 'utf8')
-  await writeFile(path.join(appRoot, 'page.tsx'), "import { redirect } from 'next/navigation'\n\nexport default function HomePage() {\n  redirect('/editor')\n}\n", 'utf8')
-  await writeFile(path.join(editorRoot, 'page.tsx'), "'use client'\n\nimport { FrameKitStudio } from '@mauriciodmo/framekit/studio'\nimport { templates } from '@framekit/generated/templates'\n\nexport default function EditorPage() {\n  return <FrameKitStudio templates={templates} />\n}\n", 'utf8')
+  await writeFile(path.join(studioRouteRoot, 'page.tsx'), "import { createStudioPage } from '@mauriciodmo/framekit/studio/root'\nimport { StudioClient } from '@framekit/generated/studio-client'\n\nexport default createStudioPage(StudioClient)\n", 'utf8')
   await writeFile(path.join(templateDirectory, 'template.tsx'), "import { defineTemplate, field } from '@mauriciodmo/framekit'\n\nexport default defineTemplate({\n  meta: { title: 'Independent smoke template' },\n  width: 640,\n  height: 360,\n  fields: { title: field.text({ label: 'Title', required: true, minLength: 1 }) },\n  content: { default: { title: 'Independent consumer' } },\n  variants: { default: 'default' },\n  render({ data, width, height }) {\n    return <div style={{ width, height, padding: 32, background: '#173d31', color: 'white' }}>{data.title}</div>\n  },\n})\n", 'utf8')
 
   return consumerRoot
@@ -339,7 +364,7 @@ async function checkInstalledPackage(consumerRoot, packageName, expectedBin, tem
 }
 
 async function resolvePublicExports(consumerRoot, temporaryRoot) {
-  const source = "for (const specifier of ['@mauriciodmo/framekit', '@mauriciodmo/framekit/client', '@mauriciodmo/framekit/server', '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/root', '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/styles.css']) console.log(specifier, import.meta.resolve(specifier))"
+  const source = "await import('@mauriciodmo/framekit/next'); for (const specifier of ['@mauriciodmo/framekit', '@mauriciodmo/framekit/client', '@mauriciodmo/framekit/server', '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/next', '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/root', '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/styles.css']) console.log(specifier, import.meta.resolve(specifier))"
   await run('node', ['--input-type=module', '-e', source], consumerRoot, temporaryRoot)
 }
 
@@ -429,11 +454,31 @@ async function runStartSmoke(consumerRoot, temporaryRoot) {
   try {
     const status = await waitForHttp(child, `http://127.0.0.1:${port}/editor`, temporaryRoot)
     console.log(`[PASS] framekit start HTTP readiness /editor returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
+    await runStudioRouteSmoke(port)
     await runProductionRenderSmoke(port)
   } finally {
     stopped = await stopProcess(child)
     assert(stopped, 'could not stop the standalone server cleanly')
   }
+}
+
+async function runStudioRouteSmoke(port) {
+  const origin = `http://127.0.0.1:${port}`
+  const rootResponse = await fetch(`${origin}/`, { redirect: 'manual' })
+  await rootResponse.text()
+  assert.equal(rootResponse.status, 307, 'root route did not return a temporary redirect')
+  assert.equal(rootResponse.headers.get('location'), '/editor', 'root route redirected to an unexpected path')
+
+  for (const pathname of ['/editor', '/editor/example', '/brand', '/brand/catalog/hero']) {
+    const response = await fetch(`${origin}${pathname}`, { redirect: 'manual' })
+    await response.text()
+    assert.equal(response.status, 200, `${pathname} did not resolve through the unified section route`)
+  }
+
+  const invalidSection = await fetch(`${origin}/preview/example`, { redirect: 'manual' })
+  await invalidSection.text()
+  assert.equal(invalidSection.status, 404, 'unknown section did not return not-found')
+  console.log('[PASS] unified Studio route preserved root redirect, nested sections, and invalid-section 404')
 }
 
 async function runProductionRenderSmoke(port) {
@@ -552,8 +597,9 @@ async function runSmoke({ keepTemp }) {
       expectedFiles: [
         'package/dist/cli.js',
         'package/template/package.json',
+        'package/template/next.config.ts',
+        'package/template/src/app/[section]/[[...slug]]/page.tsx',
         'package/template/src/app/framekit/render/[id]/page.tsx',
-        'package/template/src/app/framekit/render/[id]/render-client.tsx',
         'package/README.md',
         'package/LICENSE',
       ],
@@ -569,6 +615,7 @@ async function runSmoke({ keepTemp }) {
     await checkInstalledPackage(independentRoot, '@mauriciodmo/framekit', 'framekit', temporaryRoot)
     await resolvePublicExports(independentRoot, temporaryRoot)
     await runFrameKit(independentRoot, 'generate', temporaryRoot)
+    await assertGeneratedBindings(independentRoot)
     await runFrameKit(independentRoot, 'check', temporaryRoot)
     await runFrameKit(independentRoot, 'build', temporaryRoot)
     assert(await exists(path.join(independentRoot, 'src', 'generated', 'framekit', 'templates.ts')), 'independent consumer did not generate templates.ts')
@@ -580,7 +627,7 @@ async function runSmoke({ keepTemp }) {
     await run('npm', ['install', '--no-audit', '--no-fund', creatorArchive], runnerRoot, temporaryRoot)
     await checkInstalledPackage(runnerRoot, '@mauriciodmo/create-framekit', 'create-framekit', temporaryRoot)
     await run('npx', ['--no-install', 'create-framekit', generatedRoot, '-n'], runnerRoot, temporaryRoot)
-    await assertGeneratedRenderRoute(generatedRoot)
+    await assertGeneratedConsumerShape(generatedRoot)
 
     assert(!(await exists(path.join(generatedRoot, 'node_modules'))), 'creator generated consumer was not clean before install')
     const generatedPackagePath = path.join(generatedRoot, 'package.json')
@@ -594,6 +641,7 @@ async function runSmoke({ keepTemp }) {
     await resolvePublicExports(generatedRoot, temporaryRoot)
     assert(installedCoreManifest.version === coreManifest.version, `generated consumer installed unexpected FrameKit ${installedCoreManifest.version}`)
     await runFrameKit(generatedRoot, 'generate', temporaryRoot)
+    await assertGeneratedBindings(generatedRoot)
     await addProductionRenderSmokeRoute(generatedRoot)
     await runFrameKit(generatedRoot, 'check', temporaryRoot)
     await runFrameKit(generatedRoot, 'build', temporaryRoot)

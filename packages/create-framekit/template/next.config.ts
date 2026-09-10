@@ -1,8 +1,3 @@
-import type { NextConfig } from 'next'
+import { withFrameKit } from '@mauriciodmo/framekit/next'
 
-const nextConfig: NextConfig = {
-  distDir: '.framekit/next',
-  output: 'standalone',
-}
-
-export default nextConfig
+export default withFrameKit()

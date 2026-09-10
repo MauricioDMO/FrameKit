@@ -161,6 +161,11 @@ describe('template generation integration', () => {
       ])
 
       const generated = await loadGeneratedModules(projectRoot)
+      const generatedRoot = path.join(projectRoot, 'src', 'generated', 'framekit')
+      await expect(readFile(path.join(generatedRoot, 'studio-client.tsx'), 'utf8')).resolves.toContain("import { FrameKitStudio } from '@mauriciodmo/framekit/studio'")
+      await expect(readFile(path.join(generatedRoot, 'studio-client.tsx'), 'utf8')).resolves.toContain("import { brands } from './brands'")
+      await expect(readFile(path.join(generatedRoot, 'render-client.tsx'), 'utf8')).resolves.toContain("import { createRenderClient } from '@mauriciodmo/framekit/client'")
+      await expect(readFile(path.join(generatedRoot, 'render-client.tsx'), 'utf8')).resolves.toContain("import { templates } from './templates'")
 
       expect(generated.templates.map(metadataWithoutLoader)).toEqual([
         {
