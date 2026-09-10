@@ -29,7 +29,7 @@ pnpm build
 
 Treat `src/generated/framekit/templates.ts`, `.framekit/next/`, and `packages/framekit/dist/` as disposable ignored output. The generated `templates` registry contains canonical summaries and lazy loaders. `framekit dev`, `framekit check`, and `framekit build` generate it automatically; use `framekit generate` for a one-off regeneration before direct registry imports. Do not maintain a parallel registry or adapter.
 
-The public package contract exposes only `.`, `./editor`, `./studio`, `./studio/root`, `./dev`, and `./styles.css`; do not treat `packages/framekit/src/*` imports as supported consumer imports.
+The public package contract exposes `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`; do not treat `packages/framekit/src/*` imports as supported consumer imports.
 
 ## Skills
 
