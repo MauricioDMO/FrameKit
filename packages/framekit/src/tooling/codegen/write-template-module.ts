@@ -10,6 +10,40 @@ import { collectTemplateSummaries } from './collect-template-summaries'
 import { createBrandModule } from './create-brand-module'
 import { createTemplateModule } from './create-template-module'
 
+const generatedFileHeader = '/* Archivo generado automáticamente. No modificar. */'
+
+function createStudioClientModule (): string {
+  const templatesImport = ['.', 'templates'].join('/')
+  const brandsImport = ['.', 'brands'].join('/')
+
+  return `${generatedFileHeader}
+
+'use client'
+
+import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+import { templates } from '${templatesImport}'
+import { brands } from '${brandsImport}'
+
+export function StudioClient () {
+  return <FrameKitStudio templates={templates} brands={brands} />
+}
+`
+}
+
+function createRenderClientModule (): string {
+  const templatesImport = ['.', 'templates'].join('/')
+
+  return `${generatedFileHeader}
+
+'use client'
+
+import { createRenderClient } from '@mauriciodmo/framekit/client'
+import { templates } from '${templatesImport}'
+
+export const RenderClient = createRenderClient(templates)
+`
+}
+
 async function writeIfChanged (filePath: string, content: string): Promise<void> {
   let current = ''
 
@@ -59,6 +93,8 @@ export async function writeTemplateModule (options: {
   const outputDirectory = path.join(options.projectRoot, 'src', 'generated', 'framekit')
   const outputFile = path.join(outputDirectory, 'templates.ts')
   const brandOutputFile = path.join(outputDirectory, 'brands.ts')
+  const studioClientOutputFile = path.join(outputDirectory, 'studio-client.tsx')
+  const renderClientOutputFile = path.join(outputDirectory, 'render-client.tsx')
   const templates = await findTemplates(templatesDirectory)
 
   if (templates.length === 0) {
@@ -70,10 +106,14 @@ export async function writeTemplateModule (options: {
   const brandSource = createBrandModule(brands, { outputDirectory })
   const assetsBySlug = await syncTemplateAssets(options.projectRoot, templates)
   const source = createTemplateModule(templates, { outputDirectory, assetsBySlug, summariesBySlug })
+  const studioClientSource = createStudioClientModule()
+  const renderClientSource = createRenderClientModule()
 
   await mkdir(outputDirectory, { recursive: true })
   await writeIfChanged(outputFile, source)
   await writeIfChanged(brandOutputFile, brandSource)
+  await writeIfChanged(studioClientOutputFile, studioClientSource)
+  await writeIfChanged(renderClientOutputFile, renderClientSource)
 
   return templates
 }

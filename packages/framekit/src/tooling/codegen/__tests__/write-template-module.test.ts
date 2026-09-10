@@ -55,14 +55,46 @@ export function validateTemplateDefinition(definition) {
   return { success: true, definition }
 }
 `): Promise<void> {
+  await writeFile(path.join(root, 'tsconfig.json'), JSON.stringify({
+    compilerOptions: { jsx: 'react-jsx' }
+  }))
+
   const framekitPackage = path.join(root, 'node_modules', '@mauriciodmo', 'framekit')
   await mkdir(framekitPackage, { recursive: true })
   await writeFile(path.join(framekitPackage, 'package.json'), JSON.stringify({
     name: '@mauriciodmo/framekit',
     type: 'module',
-    exports: './index.js'
+    exports: {
+      '.': './index.js',
+      './client': './client.js',
+      './studio': './studio.js'
+    }
   }))
   await writeFile(path.join(framekitPackage, 'index.js'), source)
+
+  await writeFile(path.join(framekitPackage, 'client.js'), `
+export function createRenderClient(templates) {
+  return { marker: 'render-client', templates }
+}
+`)
+  await writeFile(path.join(framekitPackage, 'studio.js'), `
+export function FrameKitStudio() {}
+`)
+
+  const reactPackage = path.join(root, 'node_modules', 'react')
+  await mkdir(reactPackage, { recursive: true })
+  await writeFile(path.join(reactPackage, 'package.json'), JSON.stringify({
+    name: 'react',
+    type: 'module',
+    exports: { './jsx-runtime': './jsx-runtime.js' }
+  }))
+  await writeFile(path.join(reactPackage, 'jsx-runtime.js'), `
+export function jsx(type, props) {
+  return { type: type.name, props }
+}
+
+export const jsxs = jsx
+`)
 }
 
 function normalizePathSeparators (value: string): string {
@@ -112,15 +144,22 @@ async function executeGeneratedLoaders (root: string): Promise<{
   templateMarkers: string[]
   brandMarkers: string[]
   brandRegistryMarker: string | null
+  studioTemplateSlugs: string[]
+  studioBrandSlugs: string[]
+  renderTemplateSlugs: string[]
 }> {
   const outputDirectory = path.join(root, 'src', 'generated', 'framekit')
   const runner = path.join(root, 'inspect-generated.mts')
   const templatesFile = pathToFileURL(path.join(outputDirectory, 'templates.ts')).href
   const brandsFile = pathToFileURL(path.join(outputDirectory, 'brands.ts')).href
+  const studioClientFile = pathToFileURL(path.join(outputDirectory, 'studio-client.tsx')).href
+  const renderClientFile = pathToFileURL(path.join(outputDirectory, 'render-client.tsx')).href
 
   await writeFile(runner, `
 const templateModule = await import(${JSON.stringify(templatesFile)})
 const brandModule = await import(${JSON.stringify(brandsFile)})
+const studioClientModule = await import(${JSON.stringify(studioClientFile)})
+const renderClientModule = await import(${JSON.stringify(renderClientFile)})
 const templateMarkers = await Promise.all(
   templateModule.templates.map(async (entry) => (await entry.load()).default.marker),
 )
@@ -131,6 +170,7 @@ const firstBrand = brandModule.brands[0]
 const registryResult = firstBrand
   ? await brandModule.brandRegistry[firstBrand.slug]()
   : null
+const studioElement = studioClientModule.StudioClient()
 
 console.log(JSON.stringify({
   templateMetadata: templateModule.templates.map(({ load: _, ...metadata }) => metadata),
@@ -140,6 +180,9 @@ console.log(JSON.stringify({
   templateMarkers,
   brandMarkers,
   brandRegistryMarker: registryResult?.default.marker ?? null,
+  studioTemplateSlugs: studioElement.props.templates.map(({ slug }) => slug),
+  studioBrandSlugs: studioElement.props.brands.map(({ slug }) => slug),
+  renderTemplateSlugs: renderClientModule.RenderClient.templates.map(({ slug }) => slug),
 }))
 `, 'utf8')
 
@@ -243,9 +286,33 @@ describe('writeTemplateModule', () => {
         { slug: 'zeta/launch', segments: ['zeta', 'launch'], absolutePath: zetaTemplate }
       ])
 
+      const generatedDirectory = path.join(root, 'src', 'generated', 'framekit')
+      const generatedTemplates = await readFile(path.join(generatedDirectory, 'templates.ts'), 'utf8')
+      const generatedBrands = await readFile(path.join(generatedDirectory, 'brands.ts'), 'utf8')
+      const generatedStudioClient = await readFile(path.join(generatedDirectory, 'studio-client.tsx'), 'utf8')
+      const generatedRenderClient = await readFile(path.join(generatedDirectory, 'render-client.tsx'), 'utf8')
+
+      expect(generatedTemplates).toContain('/* Archivo generado automáticamente. No modificar. */')
+      expect(generatedBrands).toContain('/* Archivo generado automáticamente. No modificar. */')
+      expect(generatedStudioClient).toContain("'use client'")
+      expect(generatedStudioClient).toContain("import { FrameKitStudio } from '@mauriciodmo/framekit/studio'")
+      expect(generatedStudioClient).toContain("import { templates } from './templates'")
+      expect(generatedStudioClient).toContain("import { brands } from './brands'")
+      expect(generatedRenderClient).toContain("'use client'")
+      expect(generatedRenderClient).toContain("import { createRenderClient } from '@mauriciodmo/framekit/client'")
+      expect(generatedRenderClient).toContain("import { templates } from './templates'")
+      expect(generatedRenderClient).not.toContain('./brands')
+      expect(generatedRenderClient).not.toContain('@mauriciodmo/framekit/studio')
+      expect(generatedStudioClient).not.toContain('@mauriciodmo/framekit/client')
+      expect(generatedTemplates).not.toContain("'use client'")
+      expect(generatedBrands).not.toContain("'use client'")
+
       const generated = await executeGeneratedLoaders(root)
       expect(generated.templateMetadata.map((entry) => entry.slug)).toEqual(['alpha/post', 'zeta/launch'])
       expect(generated.templateMarkers).toEqual(['template-loader', 'escaped-template-loader'])
+      expect(generated.studioTemplateSlugs).toEqual(['alpha/post', 'zeta/launch'])
+      expect(generated.studioBrandSlugs).toEqual(['alpha-brand', 'zulu-brand'])
+      expect(generated.renderTemplateSlugs).toEqual(['alpha/post', 'zeta/launch'])
 
       expect(generated.templateMetadata.find((entry) => entry.slug === 'zeta/launch')).toMatchObject({
         slug: 'zeta/launch',
@@ -303,11 +370,94 @@ describe('writeTemplateModule', () => {
       await writeTemplateModule({ projectRoot: root })
       const firstTemplates = await readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'), 'utf8')
       const firstBrands = await readFile(path.join(root, 'src', 'generated', 'framekit', 'brands.ts'), 'utf8')
+      const firstStudioClient = await readFile(path.join(root, 'src', 'generated', 'framekit', 'studio-client.tsx'), 'utf8')
+      const firstRenderClient = await readFile(path.join(root, 'src', 'generated', 'framekit', 'render-client.tsx'), 'utf8')
 
       await writeTemplateModule({ projectRoot: root })
 
       await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'), 'utf8')).resolves.toBe(firstTemplates)
       await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'brands.ts'), 'utf8')).resolves.toBe(firstBrands)
+      await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'studio-client.tsx'), 'utf8')).resolves.toBe(firstStudioClient)
+      await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'render-client.tsx'), 'utf8')).resolves.toBe(firstRenderClient)
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
+  it('recreates missing bindings without changing consumer-owned files', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-bindings-'))
+    const templateRoot = await writeTemplateFixture(root, 'example')
+    const routeFile = path.join(root, 'src', 'app', 'editor', '[[...slug]]', 'page.tsx')
+    const configFile = path.join(root, 'next.config.ts')
+    const sourceAsset = path.join(templateRoot, 'assets', 'common', 'logo.svg')
+    const publicFile = path.join(root, 'public', 'keep.svg')
+    const userGeneratedFile = path.join(root, 'src', 'generated', 'framekit', 'custom.ts')
+
+    try {
+      await mkdir(path.dirname(routeFile), { recursive: true })
+      await mkdir(path.dirname(sourceAsset), { recursive: true })
+      await mkdir(path.dirname(publicFile), { recursive: true })
+      await mkdir(path.dirname(userGeneratedFile), { recursive: true })
+      await writeFile(routeFile, 'export default function Page() { return null }')
+      await writeFile(configFile, 'export default { distDir: \'custom\' }')
+      await writeFile(sourceAsset, 'source asset')
+      await writeFile(publicFile, 'public file')
+      await writeFile(userGeneratedFile, 'export const custom = true')
+      await addFrameKitStub(root)
+
+      await writeTemplateModule({ projectRoot: root })
+
+      const generatedDirectory = path.join(root, 'src', 'generated', 'framekit')
+      const studioClient = path.join(generatedDirectory, 'studio-client.tsx')
+      const renderClient = path.join(generatedDirectory, 'render-client.tsx')
+      await rm(studioClient)
+      await rm(renderClient)
+
+      await writeTemplateModule({ projectRoot: root })
+
+      await expect(readFile(studioClient, 'utf8')).resolves.toContain("'use client'")
+      await expect(readFile(renderClient, 'utf8')).resolves.toContain("'use client'")
+      await expect(readFile(routeFile, 'utf8')).resolves.toBe('export default function Page() { return null }')
+      await expect(readFile(configFile, 'utf8')).resolves.toBe('export default { distDir: \'custom\' }')
+      await expect(readFile(sourceAsset, 'utf8')).resolves.toBe('source asset')
+      await expect(readFile(publicFile, 'utf8')).resolves.toBe('public file')
+      await expect(readFile(userGeneratedFile, 'utf8')).resolves.toBe('export const custom = true')
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
+  it('generates empty brand bindings while keeping client graphs separate', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-empty-brands-'))
+
+    try {
+      await writeTemplateFixture(root, 'example')
+      await addFrameKitStub(root)
+
+      await writeTemplateModule({ projectRoot: root })
+
+      const generatedDirectory = path.join(root, 'src', 'generated', 'framekit')
+      const templatesSource = await readFile(path.join(generatedDirectory, 'templates.ts'), 'utf8')
+      const brandsSource = await readFile(path.join(generatedDirectory, 'brands.ts'), 'utf8')
+      const studioSource = await readFile(path.join(generatedDirectory, 'studio-client.tsx'), 'utf8')
+      const renderSource = await readFile(path.join(generatedDirectory, 'render-client.tsx'), 'utf8')
+      const generated = await executeGeneratedLoaders(root)
+
+      expect(generated.brandMetadata).toEqual([])
+      expect(generated.brandManifest).toEqual([])
+      expect(generated.brandRegistryKeys).toEqual([])
+      expect(generated.brandMarkers).toEqual([])
+      expect(generated.studioBrandSlugs).toEqual([])
+      expect(generated.studioTemplateSlugs).toEqual(['example'])
+      expect(generated.renderTemplateSlugs).toEqual(['example'])
+      expect(brandsSource).toContain('export const brands')
+      expect(brandsSource).toMatch(/= \[\s*\]/)
+      expect(studioSource).toContain("import { brands } from './brands'")
+      expect(studioSource).not.toContain('@mauriciodmo/framekit/client')
+      expect(renderSource).not.toContain('./brands')
+      expect(renderSource).not.toContain('@mauriciodmo/framekit/studio')
+      expect(templatesSource).not.toContain("'use client'")
+      expect(brandsSource).not.toContain("'use client'")
     } finally {
       await rm(root, { recursive: true, force: true })
     }
