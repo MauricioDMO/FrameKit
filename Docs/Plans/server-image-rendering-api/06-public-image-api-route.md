@@ -1,6 +1,6 @@
 # Step 6 - Public Image API Route
 
-- **Status:** Planned; the complete HTTP pipeline belongs to the package.
+- **Status:** Implemented and verified in the current checkout on 2026-09-10; packed-consumer release synchronization remains in Steps 7-8.
 
 ## Goal
 
@@ -355,7 +355,7 @@ lower-level exports compatible. Consumers using the standard endpoint do not
 need to construct `ResolvedRenderPayload` or manage render jobs.
 
 The actual Next.js `route.ts` and its literal static configuration stay in the
-consumer. The package owns `server/image-handler.ts`, not an undiscoverable
+consumer. The package owns `server/image-handler/`, not an undiscoverable
 Next route file. Do not add a public dependency-injection container, middleware
 framework, or separate Studio protocol to implement this one pipeline.
 
@@ -395,9 +395,18 @@ Never log:
 packages/create-framekit/template/src/app/api/v1/images/route.ts
 apps/studio/src/app/api/v1/images/route.ts
 packages/framekit/src/server.ts
-packages/framekit/src/server/image-handler.ts
+packages/framekit/src/server/image-handler/
+  index.ts
+  parse-request.ts
+  errors.ts
+  response.ts
+  request-deadline.ts
+  render-payload.ts
 packages/framekit/src/server/__tests__/image-handler.test.ts
-packages/framekit/src/server/request-body.ts
+packages/framekit/src/server/request-body/
+  index.ts
+  validate-request.ts
+  reader.ts
 packages/framekit/src/server/__tests__/request-body.test.ts
 packages/framekit/tests/types/image-handler.ts
 ```
@@ -409,8 +418,8 @@ under `packages/framekit/tests/types/`; root Playwright E2E remains under
 `tests/e2e/`.
 
 Image preparation stays in the Step 2 server module. Keep response/error mapping
-inside `image-handler.ts` unless a second real package caller needs it; a separate
-`http-errors.ts` is not a required deliverable.
+inside the private `server/image-handler/` modules; do not expose these helpers as
+public package exports.
 
 ## Implementation sequence
 

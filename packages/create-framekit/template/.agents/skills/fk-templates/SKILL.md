@@ -1,17 +1,36 @@
 ---
 name: fk-templates
-description: Create, design, organize, validate, or troubleshoot visual templates in a FrameKit project. Use for template files, editable fields, content variants, render functions, Markdown, assets, and discovery or validation failures.
+description: Create, design, organize, validate, troubleshoot, or plan visual templates in a FrameKit project. Use for vague visual ideas and template briefs, template files, editable fields, content variants, render functions, Markdown, assets, brand reuse, and discovery or validation failures.
 ---
 
 # FrameKit Templates
 
 Templates live under `src/templates/`. A directory containing a default-exporting `template.tsx` is discovered as a Studio template.
 
+## Turn an idea into a FrameKit brief
+
+When the request is vague, clarify it as a template brief before writing code.
+Keep the brief focused on a fixed-size visual export, not a general web page.
+Capture:
+
+- purpose, audience, channel, and requested dimensions;
+- a lowercase kebab-case slug and useful `meta` text;
+- the visual direction from `DESIGN.md`, existing styles, and approved assets;
+- editable fields with their type, label, defaults, and validation;
+- content variants and whether their keys represent language, campaign, or another concept;
+- shared assets in `assets/common` and variant assets in `assets/<variant>`;
+- the composition order and which reusable `src/brand` components should be used;
+- the smallest validation and visual-check workflow.
+
+Do not invent contact information, metrics, logos, or assets. Ask only for
+decisions that cannot be inferred from the project or the request. Preserve a
+simple request instead of adding fields, variants, or abstractions for later.
+
 ## Before creating artwork
 
-- Treat `DESIGN.md` as the source of truth for visual decisions. If brand styling is needed and it is missing, ask for the design source instead of inventing one.
+- Treat `DESIGN.md` as the source of truth for visual decisions. If it is missing and the task needs a new visual direction, use `fk-design`; otherwise ask for the design source instead of inventing one.
 - Inspect `src/profile.ts` when present, ask which actual exports to use, and never invent contact information. Import synchronized values instead of duplicating them in defaults.
-- Read `src/brand/README.md` when present. Consult `fk-brand` and reuse an existing brand component before creating reusable visual JSX.
+- Consult `fk-brand` and inspect `src/brand/` before creating reusable visual JSX. Reuse an existing component before extracting a new one.
 - Follow explicit user overrides while keeping other decisions consistent with the design system.
 
 ## Workflow

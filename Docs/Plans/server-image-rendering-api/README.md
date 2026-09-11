@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 0.5 and 0.6, and Steps 1-5, implemented and verified on 2026-09-10; Steps 6-8 are pending.
+- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Steps 7-8 are pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -592,12 +592,21 @@ packages/framekit/src/
     browser.ts
     config.ts
     errors.ts
-    image-handler.ts               # Step 6 complete HTTP pipeline and response mapping
+    image-handler/                 # Step 6 HTTP pipeline and response mapping
+      index.ts                     # public handler factory and orchestration
+      parse-request.ts             # exact request-shape validation
+      errors.ts                    # stable public failures
+      response.ts                  # HTTP response construction
+      request-deadline.ts          # request-wide timeout and abort
+      render-payload.ts            # definition/data/payload pipeline
     image-input.ts
     render-image.ts
     render-job.ts
     render-page.tsx                # Step 0.5 createRenderPage() helper
-    request-body.ts
+    request-body/                  # bounded JSON body reader
+      index.ts
+      validate-request.ts
+      reader.ts
     __tests__/
 
 packages/create-framekit/template/
