@@ -59,8 +59,8 @@ before `framekit start`.
 
 Read the relevant skill before working:
 
-- `fk-overview` for FrameKit's purpose and project boundaries.
+- `fk-design` for the project's visual language and `DESIGN.md`.
+- `fk-brand` for reusable brand components and reuse decisions.
+- `fk-templates` for template briefs, authoring, fields, variants, and assets.
 - `fk-setup` for installation, commands, and integration.
-- `fk-templates` for template authoring, fields, variants, and assets.
-- `fk-brand` for reusable brand components.
 - `fk-studio` for Studio behavior and troubleshooting.

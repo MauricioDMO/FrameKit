@@ -10,10 +10,14 @@ import {
 } from './package-manager.js'
 
 const templateDirectory = fileURLToPath(new URL('../template/', import.meta.url))
-const legacySkillDirectories = [
+const obsoleteSkillDirectories = [
   'framekit-project-setup',
   'framekit-studio-usage',
-  'framekit-template-creation'
+  'framekit-template-creation',
+  'fk-overview',
+  'taste-design',
+  'enhance-prompt',
+  'fk-enhance-prompt'
 ]
 
 async function pathExists (target: string): Promise<boolean> {
@@ -85,7 +89,7 @@ export async function updateSkills (projectName = '.'): Promise<string> {
   }
 
   await Promise.all(
-    legacySkillDirectories.map((name) => rm(path.join(destination, name), { recursive: true, force: true }))
+    obsoleteSkillDirectories.map((name) => rm(path.join(destination, name), { recursive: true, force: true }))
   )
 
   return target

@@ -1,82 +1,56 @@
 ---
 name: fk-brand
-description: Create, classify, document, preview, extract, or reuse brand components in a FrameKit project. Use whenever a user mentions src/brand, reusable brand UI, a component catalog or preview, component README files, extracting JSX from a template, or deciding whether visual code belongs in a brand component or a template.
+description: Reuse and create project-owned brand components in a FrameKit project. Use whenever work touches src/brand, reusable visual JSX, brand previews, component README files, or the decision between a brand component and one-template artwork.
 ---
 
 # FrameKit Brand
 
-Brand components are reusable visual decisions owned by the project brand, not generic UI, editor controls, or complete templates.
+`src/brand/` contains reusable visual decisions owned by the project brand. It is
+not a home for generic application UI, editor controls, or complete templates.
 
-## Mandatory design preflight
+## Reuse first
 
-Before creating or changing a visual brand component:
+Before writing new visual JSX:
 
-1. Read `DESIGN.md` and use it as the source of truth for visual decisions.
-2. Inspect existing brand components and project styling before creating values.
-3. Reuse the existing design language.
+1. Read `DESIGN.md` when it exists.
+2. Inspect `src/brand/` and the consuming templates.
+3. Reuse or extend an existing component when it represents the same visual pattern.
+4. Keep one-use artwork in its template instead of abstracting it early.
 
-If `DESIGN.md` is missing, do not silently invent brand styling. Ask the user to provide or create it first. Use the `design-md` skill when the project has the required Stitch inputs; otherwise explain what information is missing.
+If a new visual language is needed and `DESIGN.md` is missing, use `fk-design`
+to define it before creating reusable brand code. Do not invent company data or
+brand assets.
 
-## Decide where code belongs
+## Placement
 
 Use this order:
 
 - `src/components/` for UI that is independent of the brand.
 - `src/brand/` for reusable visual language, brand patterns, and brand communication blocks.
 - `src/templates/<template>/` for code used by only one template.
-- `packages/framekit/src/editor/` only for FrameKit's reusable editor UI, never for project brand artwork.
+- `packages/framekit/src/editor/` is FrameKit source and is never a project brand location.
 
-Inspect the relevant branch first. Extract JSX only when it has a clear reuse case; do not abstract a one-use template block.
+Keep props semantic and channel-neutral. Do not add an Instagram, LinkedIn, or
+dimension prop merely because the first consumer uses that channel or format.
 
-## Brand tree
+## Component contract
 
-Classify by semantic purpose, not implementation level or distribution channel:
+FrameKit discovers leaf directories containing these files:
 
-```text
-src/brand/
-├── README.md
-└── <semantic-domain>/
-    ├── README.md
-    └── <communication-intent>/
-        ├── README.md
-        └── <component>/
-            ├── README.md
-            ├── component.tsx
-            └── preview.tsx
-```
+- `component.tsx`: reusable component with semantic props.
+- `preview.tsx`: default-exported representative preview.
+- `README.md`: description used by the Studio catalog and guidance for agents.
 
-Use semantic, channel-neutral domains and intents, such as `people/person-quote`. Keep channel, format, dimensions, and export constraints in the consuming template. Add taxonomy levels only when they clarify real siblings.
+Organize directories by semantic purpose, not by channel or export size. Add
+classification levels only when they clarify real siblings. Use profile values
+or approved sample content in previews; never invent real contact information.
 
-## Documentation contract
+## Finish
 
-Add `README.md` at each classification level. Document immediate children and, for each component, its purpose, inputs, constraints, when to use it, and when to choose a sibling. Document the decision boundary, not only its appearance.
+After adding or changing a brand component:
 
-## Component files
-
-- `component.tsx` contains the reusable component and accepts semantic props.
-- `preview.tsx` renders a representative example and reuses `component.tsx`.
-- `README.md` explains use cases and constraints.
-
-Keep channel-specific wrappers, dimensions, and field resolution in the template. The component should not require an Instagram or LinkedIn prop merely because its first consumer is on that platform.
-
-Use profile values or approved sample content in previews; never invent real contact information.
-
-## Component catalog/view
-
-If a component catalog exists, follow the template catalog pattern:
-
-- Discover leaf directories through `component.tsx`.
-- Derive navigation segments from the nested path.
-- Render folders as a collapsible tree.
-- Render `preview.tsx` on the selected component page.
-- Do not add search or runtime Markdown parsing; README files are agent-facing documentation.
-
-When a component needs editable preview controls, first confirm that this is required. Prefer a static representative preview until an editor contract for component props exists.
-
-## Quality check
-
-Before finishing:
-
-1. Confirm `DESIGN.md`, reuse, semantic placement, and channel neutrality.
-2. Read the nearest parent README and write the component README.
-3. Run the applicable typecheck, lint, and visual preview checks.
+1. Confirm the component is reused by, or clearly intended for, more than one template.
+2. Confirm the component is channel-neutral and its README explains purpose, props,
+   constraints, and when to choose a sibling.
+3. Run `framekit generate` when discovery output needs refreshing and inspect the
+   component under `/brand` with `framekit dev`.

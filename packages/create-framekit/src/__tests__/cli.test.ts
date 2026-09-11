@@ -155,7 +155,7 @@ async function expectProjectFiles (
   await expect(readFile(path.join(destination, 'src', 'generated', 'framekit', 'render-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
 
   const skills = (await readdir(path.join(destination, '.agents', 'skills'))).sort()
-  expect(skills).toEqual(['fk-brand', 'fk-overview', 'fk-setup', 'fk-studio', 'fk-templates'])
+  expect(skills).toEqual(['fk-brand', 'fk-design', 'fk-setup', 'fk-studio', 'fk-templates'])
   for (const skill of skills) {
     await expect(readFile(path.join(destination, '.agents', 'skills', skill, 'SKILL.md'), 'utf8')).resolves.toContain(`name: ${skill}`)
   }
@@ -371,8 +371,16 @@ describe('create-framekit', () => {
       const root = await createTemporaryDirectory('create-framekit-update-skills-')
       const project = path.join(root, 'project')
       await mkdir(path.join(project, '.agents', 'skills', 'framekit-project-setup'), { recursive: true })
+      await mkdir(path.join(project, '.agents', 'skills', 'fk-overview'), { recursive: true })
+      await mkdir(path.join(project, '.agents', 'skills', 'taste-design'), { recursive: true })
+      await mkdir(path.join(project, '.agents', 'skills', 'enhance-prompt'), { recursive: true })
+      await mkdir(path.join(project, '.agents', 'skills', 'fk-enhance-prompt'), { recursive: true })
       await mkdir(path.join(project, '.agents', 'skills', 'custom-skill'), { recursive: true })
       await writeFile(path.join(project, '.agents', 'skills', 'framekit-project-setup', 'SKILL.md'), 'legacy', 'utf8')
+      await writeFile(path.join(project, '.agents', 'skills', 'fk-overview', 'SKILL.md'), 'obsolete', 'utf8')
+      await writeFile(path.join(project, '.agents', 'skills', 'taste-design', 'SKILL.md'), 'obsolete', 'utf8')
+      await writeFile(path.join(project, '.agents', 'skills', 'enhance-prompt', 'SKILL.md'), 'obsolete', 'utf8')
+      await writeFile(path.join(project, '.agents', 'skills', 'fk-enhance-prompt', 'SKILL.md'), 'obsolete', 'utf8')
       await writeFile(path.join(project, '.agents', 'skills', 'custom-skill', 'SKILL.md'), 'custom', 'utf8')
 
       await main(['update-skills', project])
@@ -381,7 +389,7 @@ describe('create-framekit', () => {
       expect((await readdir(path.join(project, '.agents', 'skills'))).sort()).toEqual([
         'custom-skill',
         'fk-brand',
-        'fk-overview',
+        'fk-design',
         'fk-setup',
         'fk-studio',
         'fk-templates'
@@ -389,6 +397,10 @@ describe('create-framekit', () => {
       await expect(readFile(path.join(project, '.agents', 'skills', 'fk-setup', 'SKILL.md'), 'utf8')).resolves.toContain('name: fk-setup')
       await expect(readFile(path.join(project, '.agents', 'skills', 'custom-skill', 'SKILL.md'), 'utf8')).resolves.toBe('custom')
       await expect(readFile(path.join(project, '.agents', 'skills', 'framekit-project-setup', 'SKILL.md'), 'utf8')).rejects.toThrow()
+      await expect(readFile(path.join(project, '.agents', 'skills', 'fk-overview', 'SKILL.md'), 'utf8')).rejects.toThrow()
+      await expect(readFile(path.join(project, '.agents', 'skills', 'taste-design', 'SKILL.md'), 'utf8')).rejects.toThrow()
+      await expect(readFile(path.join(project, '.agents', 'skills', 'enhance-prompt', 'SKILL.md'), 'utf8')).rejects.toThrow()
+      await expect(readFile(path.join(project, '.agents', 'skills', 'fk-enhance-prompt', 'SKILL.md'), 'utf8')).rejects.toThrow()
     })
 
     it('reports a missing project for update-skills', async () => {
