@@ -54,7 +54,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "eslint": "^9",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "16.3.5",
     "tsdown": "^0.20",
     "tsx": "^4.19.0",
     "typescript": "^5",

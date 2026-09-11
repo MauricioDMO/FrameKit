@@ -17,7 +17,7 @@
     "@icons-pack/react-simple-icons": "13.8.0",
     "@mauriciodmo/framekit": "0.8.1",
     "@tabler/icons-react": "^3.45.0",
-    "next": "16.3.0",
+    "next": "16.3.5",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
