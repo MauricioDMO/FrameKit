@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Steps 7-8 are pending.
+- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Step 7 implemented and verified on 2026-09-11; Step 8 is pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -300,8 +300,9 @@ template model:
 - `framekit build` already copies `public` and Next static assets beside the
   discovered standalone server.
 - Server Image Rendering remains incomplete: the public package now includes the
-  Steps 1-5 `./server` contracts, jobs, browser/capture runtime, and private-page
-  integration, but there is no public image API route or production Dockerfile yet.
+  Steps 1-6 contracts, jobs, browser/capture runtime, private-page integration,
+  and public image API route; Step 7 also adds the browser installer and
+  production Dockerfile, while Step 8's final rollout verification remains.
 
 Studio's existing `modern-screenshot` export remains functional. The server API
 is additive in the first implementation.
@@ -372,9 +373,10 @@ add `services/`, `utils/`, `lib/`, or `commands/` layers.
 
 ## End-to-end lifecycle
 
-Step 6 is planned to implement Steps 1-11 and the final HTTP response once inside
-the package's `createImageHandler`, rather than copying them into consumer route
-adapters. The following lifecycle is the target design and is not yet implemented.
+Step 6 implements Steps 1-11 and the final HTTP response once inside the package's
+`createImageHandler`, rather than copying them into consumer route adapters. The
+following lifecycle is the implemented target design; final rollout verification
+remains in Step 8.
 One request-wide deadline and abort signal cover body reading, image preparation,
 and capture; the browser stage does not renew the end-to-end timeout budget.
 

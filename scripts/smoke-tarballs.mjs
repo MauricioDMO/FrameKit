@@ -16,6 +16,17 @@ const creatorPackageRoot = path.join(repoRoot, 'packages', 'create-framekit')
 const templateRoot = path.join(creatorPackageRoot, 'template')
 const legacyNamespacePattern = /__framekit|%5F%5Fframekit/i
 const nodeBuiltinNames = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
+const publicCoreSpecifiers = [
+  '@mauriciodmo/framekit',
+  '@mauriciodmo/framekit/client',
+  '@mauriciodmo/framekit/dev',
+  '@mauriciodmo/framekit/editor',
+  '@mauriciodmo/framekit/next',
+  '@mauriciodmo/framekit/server',
+  '@mauriciodmo/framekit/studio',
+  '@mauriciodmo/framekit/studio/root',
+  '@mauriciodmo/framekit/styles.css'
+]
 
 function usage() {
   console.log('Usage: node scripts/smoke-tarballs.mjs [--keep-temp]')
@@ -98,16 +109,16 @@ async function exists(filePath) {
   }
 }
 
-function isInside(directory, target) {
-  return target === directory || target.startsWith(`${directory}${path.sep}`)
-}
-
 async function walkFiles(directory) {
   return (await readdir(directory, { withFileTypes: true, recursive: true })).flatMap((entry) => {
     if (entry.isDirectory()) return []
     if (!entry.isFile()) throw new Error(`Unexpected non-regular archive entry: ${path.join(entry.parentPath, entry.name)}`)
     return [path.join(entry.parentPath, entry.name)]
   })
+}
+
+function isInside(directory, target) {
+  return target === directory || target.startsWith(`${directory}${path.sep}`)
 }
 
 function collectStrings(value, strings = []) {
@@ -128,6 +139,20 @@ async function validatePackageTargets(packageRoot, manifest, label) {
   }
 }
 
+function isForbiddenArchiveEntry(entry) {
+  const normalizedEntry = entry.replaceAll('\\', '/')
+  const basename = path.posix.basename(normalizedEntry)
+  if (/(^|\/)(?:node_modules|tests?|__tests__)(?:\/|$)/i.test(normalizedEntry)) return true
+  if (/\.(?:test|spec)\.[^/]+$/i.test(basename)) return true
+  if (/^\.env(?:\.[^/]+)?$/i.test(basename) && basename !== '.env.example') return true
+  if (/(^|\/)(?:secrets?|credentials?)(?:\/|$)/i.test(normalizedEntry)) return true
+  if (/(?:id_(?:rsa|dsa|ecdsa|ed25519)|[^/]*(?:secret|credential|password|token|private[-_]?key|service[-_]?account|api[-_]?key)[^/]*)$/i.test(basename)) return true
+  if (/\.(?:pem|key|p12|pfx)$/i.test(basename)) return true
+  if (/(^|\/)(?:\.?ms-playwright|\.?local-browsers)(?:\/|$)/i.test(normalizedEntry)) return true
+  if (/^(?:chrome|chromium|chrome-headless-shell|headless[_-]shell|firefox|webkit|ffmpeg)(?:\.exe)?$/i.test(basename)) return true
+  return /(^|\/)(?:chrome|chromium|firefox|webkit|headless[_-]shell)(?:[-_][^/]*)?(?:\/|$)/i.test(normalizedEntry)
+}
+
 async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, expectedBin }) {
   const listingResult = await run('tar', ['-tzf', archive], repoRoot, temporaryRoot)
   const entries = listingResult.stdout.split(/\r?\n/).filter(Boolean)
@@ -140,10 +165,9 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
     assert(entries.includes(expectedFile), `${label}: missing archive entry ${expectedFile}`)
   }
 
-  const forbiddenEntry = entries.find((entry) =>
-    /(^|\/)(?:node_modules|tests?|__tests__)(?:\/|$)|(^|\/)\.env(?:\.|$)/i.test(entry),
-  )
+  const forbiddenEntry = entries.find(isForbiddenArchiveEntry)
   assert(!forbiddenEntry, `${label}: forbidden archive entry ${forbiddenEntry}`)
+  console.log(`[PASS] ${label} archive contains no tests, secrets, or browser binaries`)
 
   const extractionRoot = path.join(temporaryRoot, `inspect-${label}`)
   await mkdir(extractionRoot, { recursive: true })
@@ -190,12 +214,11 @@ function isNodeBuiltin(specifier) {
 }
 
 async function assertCorePackageBoundary(packageRoot, manifest, label) {
-  for (const subpath of ['client', 'server']) {
-    const target = manifest.exports?.[`./${subpath}`]
-    assert.deepEqual(target, {
+  for (const subpath of ['client', 'next', 'server']) {
+    assert.deepEqual(manifest.exports?.[`./${subpath}`], {
       types: `./dist/${subpath}.d.ts`,
       import: `./dist/${subpath}.js`,
-      default: `./dist/${subpath}.js`,
+      default: `./dist/${subpath}.js`
     }, `${label}: unexpected ./${subpath} export targets`)
   }
 
@@ -242,26 +265,17 @@ async function assertPrivateRenderUrlContract(packageRoot, label) {
 
 async function assertGeneratedConsumerShape(consumerRoot) {
   const appRoot = path.join(consumerRoot, 'src', 'app')
-  const studioRoute = path.join(appRoot, '[section]', '[[...slug]]', 'page.tsx')
-  const routeRoot = path.join(consumerRoot, 'src', 'app', 'framekit', 'render', '[id]')
   const appFiles = (await walkFiles(appRoot)).map((filePath) => path.relative(appRoot, filePath)).sort()
-  const studioSource = await readFile(studioRoute, 'utf8')
-  const renderSource = await readFile(path.join(routeRoot, 'page.tsx'), 'utf8')
-  const configSource = await readFile(path.join(consumerRoot, 'next.config.ts'), 'utf8')
 
   assert.deepEqual(appFiles, [
     '[section]/[[...slug]]/page.tsx',
+    'api/v1/images/route.ts',
     'framekit/render/[id]/page.tsx',
     'globals.css',
     'layout.tsx',
   ], 'creator consumer src/app contains unexpected files')
-  assert(studioSource.includes("import { createStudioPage } from '@mauriciodmo/framekit/studio/root'"), 'creator consumer unified route misses createStudioPage')
-  assert(studioSource.includes("import { StudioClient } from '@framekit/generated/studio-client'"), 'creator consumer unified route misses generated StudioClient')
-  assert(configSource.includes("import { withFrameKit } from '@mauriciodmo/framekit/next'"), 'creator consumer next.config.ts misses withFrameKit')
-  assert(renderSource.includes("import { RenderClient } from '@framekit/generated/render-client'"), 'creator consumer private route misses generated RenderClient')
-  assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit', 'studio-client.tsx'))), 'creator consumer copied generated StudioClient output')
-  assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit', 'render-client.tsx'))), 'creator consumer copied generated RenderClient output')
-  console.log('[PASS] creator consumer has the unified Studio route and generated-only client bindings')
+  assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit'))), 'creator consumer copied generated FrameKit bindings')
+  console.log('[PASS] creator consumer has the five-file app and generated-only client bindings')
 }
 
 async function assertGeneratedBindings(consumerRoot) {
@@ -364,7 +378,7 @@ async function checkInstalledPackage(consumerRoot, packageName, expectedBin, tem
 }
 
 async function resolvePublicExports(consumerRoot, temporaryRoot) {
-  const source = "await import('@mauriciodmo/framekit/next'); for (const specifier of ['@mauriciodmo/framekit', '@mauriciodmo/framekit/client', '@mauriciodmo/framekit/server', '@mauriciodmo/framekit/editor', '@mauriciodmo/framekit/next', '@mauriciodmo/framekit/studio', '@mauriciodmo/framekit/studio/root', '@mauriciodmo/framekit/dev', '@mauriciodmo/framekit/styles.css']) console.log(specifier, import.meta.resolve(specifier))"
+  const source = `await import('@mauriciodmo/framekit/next'); for (const specifier of ${JSON.stringify(publicCoreSpecifiers)}) console.log(specifier, import.meta.resolve(specifier))`
   await run('node', ['--input-type=module', '-e', source], consumerRoot, temporaryRoot)
 }
 
@@ -560,8 +574,6 @@ async function runSmoke({ keepTemp }) {
     const creatorManifest = await readJson(path.join(creatorPackageRoot, 'package.json'))
     const templateManifest = await readJson(path.join(templateRoot, 'package.json'))
 
-    await run('pnpm', ['--filter', '@mauriciodmo/framekit', 'build'], repoRoot, temporaryRoot)
-    await run('pnpm', ['--filter', '@mauriciodmo/create-framekit', 'build'], repoRoot, temporaryRoot)
     await run('pnpm', ['--filter', '@mauriciodmo/framekit', 'pack', '--pack-destination', temporaryRoot], repoRoot, temporaryRoot)
     await run('pnpm', ['--filter', '@mauriciodmo/create-framekit', 'pack', '--pack-destination', temporaryRoot], repoRoot, temporaryRoot)
 
@@ -596,10 +608,16 @@ async function runSmoke({ keepTemp }) {
       temporaryRoot,
       expectedFiles: [
         'package/dist/cli.js',
+        'package/template/.dockerignore',
+        'package/template/.env.example',
+        'package/template/Dockerfile',
         'package/template/package.json',
         'package/template/next.config.ts',
         'package/template/src/app/[section]/[[...slug]]/page.tsx',
+        'package/template/src/app/api/v1/images/route.ts',
         'package/template/src/app/framekit/render/[id]/page.tsx',
+        'package/template/src/app/globals.css',
+        'package/template/src/app/layout.tsx',
         'package/README.md',
         'package/LICENSE',
       ],

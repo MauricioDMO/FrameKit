@@ -1,9 +1,8 @@
 # @mauriciodmo/create-framekit
 
-Scaffold a new FrameKit project with one command:
-
-The generated project uses browser-based Studio export; a server-side
-image-generation API is future work.
+Scaffold a new FrameKit project with one command. The generated project
+includes browser-based Studio export and a server-side `POST /api/v1/images`
+PNG API.
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
@@ -26,6 +25,29 @@ pnpm dlx @mauriciodmo/create-framekit my-project -n
 ```
 
 After copying the template, the creator runs `install` and `framekit generate` automatically if you chose to install dependencies. If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
+
+The generated project does not download browsers during dependency
+installation. Install FrameKit's Chromium headless shell explicitly from the
+project root:
+
+```bash
+pnpm framekit browser install
+pnpm framekit browser install --with-deps
+```
+
+The second form also installs Playwright system dependencies and may require
+root or equivalent system-package privileges on Linux. The generated template
+includes a pnpm-only `Dockerfile` that uses
+`framekit browser install --with-deps`. A suitable `pnpm-lock.yaml` must exist
+in the generated project before `docker build`; npm or Yarn scaffolds and
+scaffolds created without dependency installation (including `-n`) are not
+Docker-ready or validated by this path. Its API key and image-host allowlist
+are supplied at runtime rather than baked into the image. Repository smoke
+checks inspect the deployment files but do not perform a live Docker build.
+
+The API route accepts JSON containing `template`, optional `variant`, and
+optional `data`, authenticates `Authorization: Bearer <FRAMEKIT_API_KEY>`, and
+returns `image/png` on success. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md).
 
 To update the official agent skills in an existing project, run this from the project root:
 

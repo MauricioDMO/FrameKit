@@ -45,6 +45,12 @@ the creator template's FrameKit version/range, scaffold with `-n`, install the
 exact core package, run `generate`, `check`, `build`, and `start`, poll
 `/editor` over HTTP, and clean up.
 
+Also run `pnpm smoke:docker -- <exact-published-framekit-version>` from the
+repository root. It must build and start the canonical generated image as
+non-root Node under `tini`, reject missing authentication, and return a valid
+PNG using the packaged local asset. It intentionally does not duplicate remote
+image and lifecycle cases covered by Vitest.
+
 Check the intended dist-tag independently of the consumer smoke. Record the
 inputs, resolved versions, runtime, commands, logs, and PASS/FAIL result. A
 failure blocks promotion to that tag, not the initial package upload; never

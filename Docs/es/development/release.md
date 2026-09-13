@@ -75,7 +75,14 @@ pnpm --filter @mauriciodmo/create-framekit publish --access public --tag "$PUBLI
 ```
 
 No añadas `--otp` al comando. Si npm solicita un OTP, introdúcelo directamente
-en tu terminal interactiva. Cuando los paquetes estén disponibles, ejecuta el
+en tu terminal interactiva. Cuando FrameKit esté disponible, valida su imagen
+Docker generada desde la raíz del repositorio:
+
+```sh
+pnpm smoke:docker -- <versión-framekit-publicada-exacta>
+```
+
+Después ejecuta el
 [smoke del registro npm después de publicar](testing-and-distribution.md#smoke-del-registro-npm-después-de-publicar-manual-pendiente-antes-de-promocionar)
 con valores exactos de `CORE_SPEC`, `CREATOR_SPEC` y `EXPECTED_DIST_TAG`
 suministrados durante la preparación del release. Un fallo bloquea la

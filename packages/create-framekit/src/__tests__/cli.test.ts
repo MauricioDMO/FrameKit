@@ -1,14 +1,18 @@
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { main } from '@/cli'
+import { runCommand } from '@/package-manager'
 import { createProject, updateSkills } from '@/project'
 
 const temporaryDirectories: string[] = []
 const initialCwd = process.cwd()
+const framekitCli = fileURLToPath(new URL('../../../framekit/src/tooling/cli/index.ts', import.meta.url))
+const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))
 const initialEnvironment = {
   PATH: process.env.PATH,
   FRAMEKIT_TEST_FAIL: process.env.FRAMEKIT_TEST_FAIL,
@@ -136,13 +140,47 @@ async function expectProjectFiles (
     }
   })
   expect(packageJson.dependencies['@mauriciodmo/framekit']).toBeTypeOf('string')
+  const consumerPlaywrightDependencies = [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys((packageJson as { devDependencies?: Record<string, string> }).devDependencies ?? {})
+  ].filter((name) => /playwright/i.test(name))
+  expect(consumerPlaywrightDependencies).toEqual([])
   await expect(readFile(path.join(destination, '.gitignore'), 'utf8')).resolves.toContain('.framekit')
   await expect(readFile(path.join(destination, '_gitignore'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+  const dockerfile = await readFile(path.join(destination, 'Dockerfile'), 'utf8')
+  expect(dockerfile).toContain('FROM node:22-bookworm-slim AS base')
+  expect(dockerfile).toContain('RUN pnpm build')
+  expect(dockerfile).toContain('./node_modules/.bin/framekit browser install --with-deps')
+  expect(dockerfile).toContain('PLAYWRIGHT_BROWSERS_PATH=/ms-playwright')
+  expect(dockerfile).toContain('USER node')
+  expect(dockerfile).toContain('ENTRYPOINT ["/usr/bin/tini", "--"]')
+  expect(dockerfile).not.toContain('playwright-core')
+  expect(dockerfile).not.toContain('FRAMEKIT_API_KEY')
+  expect(dockerfile).toContain('COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./')
+  const dockerignore = await readFile(path.join(destination, '.dockerignore'), 'utf8')
+  expect(dockerignore).toContain('!.env.example')
+  expect(dockerignore).toContain('.env.*')
+  const envExample = await readFile(path.join(destination, '.env.example'), 'utf8')
+  expect(envExample).toContain('FRAMEKIT_API_KEY=replace-me')
+  expect(envExample).toContain('FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000')
+  expect(envExample).toContain('FRAMEKIT_ALLOWED_IMAGE_HOSTS=')
+  expect(envExample).toContain('FRAMEKIT_MAX_CONCURRENT_RENDERS=2')
+  expect(envExample).toContain('FRAMEKIT_RENDER_TIMEOUT_MS=30000')
   await expect(readFile(path.join(destination, 'next.config.ts'), 'utf8')).resolves.toContain("import { withFrameKit } from '@mauriciodmo/framekit/next'")
   await expect(readFile(path.join(destination, 'AGENTS.md'), 'utf8')).resolves.toContain(
     'FrameKit is a React and Next.js toolkit'
   )
   await expect(readFile(path.join(destination, 'src', 'templates', 'example', 'template.tsx'), 'utf8')).resolves.toContain('defineTemplate')
+  expect((await readdir(path.join(destination, 'src', 'app'), { withFileTypes: true, recursive: true }))
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.relative(path.join(destination, 'src', 'app'), path.join(entry.parentPath, entry.name)).split(path.sep).join('/'))
+    .sort()).toEqual([
+    '[section]/[[...slug]]/page.tsx',
+    'api/v1/images/route.ts',
+    'framekit/render/[id]/page.tsx',
+    'globals.css',
+    'layout.tsx'
+  ])
   await expect(readFile(path.join(destination, 'src', 'app', '[section]', '[[...slug]]', 'page.tsx'), 'utf8')).resolves.toContain('createStudioPage')
   await expect(readFile(path.join(destination, 'src', 'app', '[section]', '[[...slug]]', 'page.tsx'), 'utf8')).resolves.toContain('@framekit/generated/studio-client')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
@@ -150,6 +188,7 @@ async function expectProjectFiles (
   await expect(readFile(path.join(destination, 'src', 'app', 'brand', '[[...slug]]', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('createRenderPage')
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('@framekit/generated/render-client')
+  await expect(readFile(path.join(destination, 'src', 'app', 'api', 'v1', 'images', 'route.ts'), 'utf8')).resolves.toContain('createImageHandler(templates)')
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'generated', 'framekit', 'studio-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'generated', 'framekit', 'render-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
@@ -284,6 +323,49 @@ describe('create-framekit', () => {
       })
       await expectProjectFiles(destination, 'pnpm')
       expectCommands(await readCommandLog(log), destination, [])
+    })
+
+    it('recreates generated client bindings from a copied starter', async () => {
+      const root = await createTemporaryDirectory('create-framekit-bindings-')
+      const destination = await createProject(path.join(root, 'project'), 'pnpm', {
+        installDependencies: false,
+        runApproveBuilds: false,
+        initGit: false
+      })
+      const generatedDirectory = path.join(destination, 'src', 'generated', 'framekit')
+      const templateFile = path.join(destination, 'src', 'templates', 'example', 'template.tsx')
+      const framekitPackage = path.join(destination, 'node_modules', '@mauriciodmo', 'framekit')
+
+      await rm(generatedDirectory, { recursive: true, force: true })
+      await writeFile(templateFile, `export default {
+  meta: { title: 'Generated example' },
+  width: 1200,
+  height: 800,
+  fields: {},
+  content: { default: {} },
+  variants: { default: 'default' },
+  render: () => null
+}
+`, 'utf8')
+      await mkdir(framekitPackage, { recursive: true })
+      await writeFile(path.join(framekitPackage, 'package.json'), JSON.stringify({
+        name: '@mauriciodmo/framekit',
+        type: 'module',
+        exports: { '.': './index.js' }
+      }), 'utf8')
+      await writeFile(path.join(framekitPackage, 'index.js'), `export function validateTemplateDefinition (definition) {
+  return { success: true, definition }
+}
+`, 'utf8')
+
+      await runCommand(process.execPath, [tsxCli, framekitCli, 'generate'], destination)
+
+      await expect(readFile(path.join(generatedDirectory, 'studio-client.tsx'), 'utf8')).resolves.toContain(
+        "import { FrameKitStudio } from '@mauriciodmo/framekit/studio'"
+      )
+      await expect(readFile(path.join(generatedDirectory, 'render-client.tsx'), 'utf8')).resolves.toContain(
+        "import { createRenderClient } from '@mauriciodmo/framekit/client'"
+      )
     })
 
     it('runs approve-builds for pnpm when requested', async () => {

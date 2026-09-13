@@ -33,13 +33,15 @@ El `package.json` raíz define scripts para todo el repositorio y un script de d
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "smoke:docker": "node scripts/smoke-docker.mjs"
   }
 }
 ```
 
 - `pnpm dev` — primero compila el paquete público `@mauriciodmo/framekit` y luego inicia Studio. No ejecutes `pnpm dev` desde dentro de un directorio de paquete; siempre ejecútalo desde la raíz del repositorio.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` — se ejecutan recursivamente en cada espacio de trabajo que defina el script correspondiente.
+- `pnpm smoke:docker -- <versión>` — valida la imagen de producción generada con una versión exacta publicada de FrameKit.
 - `pnpm lint` es la comprobación recursiva completa de ESLint. El hook de pre-commit lo ejecuta antes de `pnpm sync:skills` y, si pasa, añade explícitamente las dos ubicaciones de copias sincronizadas de skills.
 
 JavaScript y TypeScript bajo lint siguen el contrato ESLint Standard: dos
@@ -59,7 +61,7 @@ Esto enlaza el directorio del paquete en disco, mientras sus `exports` apuntan a
 
 Ejecutar `pnpm dev` desde dentro de un directorio de paquete evita este ordenamiento y fallará porque el `dist/` que intenta importar aún no existe.
 
-El paquete público exporta `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. La fachada de servidor `./server` expone actualmente los contratos implementados de los Pasos 1-5, helpers de configuración y autenticación, preparación de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff privado de la página; no proporciona rutas públicas de la API de imágenes ni la API pública completa de renderizado. El proyecto generado usa la versión publicada del paquete, no `workspace:*`.
+El paquete público exporta `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. La fachada de servidor `./server` expone helpers de configuración y autenticación, la API PNG pública `createImageHandler`, preparación de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff privado de la página. La instalación del navegador es explícita mediante `framekit browser install`; el proyecto generado usa la versión publicada del paquete, no `workspace:*`.
 
 ## Comandos enfocados en paquetes específicos
 

@@ -33,13 +33,15 @@ The root `package.json` defines repository-wide scripts and a focused developmen
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "smoke:docker": "node scripts/smoke-docker.mjs"
   }
 }
 ```
 
 - `pnpm dev` — builds the public `@mauriciodmo/framekit` package first, then starts Studio. Do not run `pnpm dev` from inside a package directory; always run it from the repository root.
 - `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build` — all recurse into every workspace that defines the corresponding script.
+- `pnpm smoke:docker -- <version>` — validates the generated production image against an exact published FrameKit version.
 - `pnpm lint` is the complete recursive ESLint check. The pre-commit hook runs it before `pnpm sync:skills` and explicitly stages the two synchronized skill-copy locations after it passes.
 
 Linted JavaScript and TypeScript follow the ESLint Standard contract: two spaces,
@@ -59,7 +61,7 @@ This links the package directory on disk, while its `exports` point consumers to
 
 Running `pnpm dev` from inside a package directory bypasses this ordering and will fail because the `dist/` it tries to import does not yet exist.
 
-The public package exports `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade currently exposes the implemented Steps 1-5 contracts, configuration and authentication helpers, image-input preparation, PNG rendering, temporary render jobs, and the private render-page handoff; it does not provide public image API routes or the complete public image-rendering API. The generated project uses the published version of the package, not `workspace:*`.
+The public package exports `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade exposes configuration and authentication helpers, the public `createImageHandler` PNG API, image-input preparation, PNG rendering, temporary render jobs, and the private render-page handoff. Browser installation is explicit through `framekit browser install`; the generated project uses the published version of the package, not `workspace:*`.
 
 ## Focused package commands
 

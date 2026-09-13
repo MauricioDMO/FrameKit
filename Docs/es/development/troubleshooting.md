@@ -280,7 +280,7 @@ Revisa el almacenamiento del navegador para `framekit:<slug>:v2`, o elimina esa 
 
 ## Gates de verificación del repositorio
 
-Los gates permanentes del repositorio son versionless: no seleccionan una versión de release. Ubuntu ejecuta las comprobaciones completas con Node.js `22.13.0` y `24` y pnpm `11.14.0`, incluyendo `pnpm check:runtime`, lint, tests, comprobación de tipos, builds y comprobaciones dry de los paquetes. Windows ejecuta comprobaciones focalizadas del consumidor generado con Node.js `22.13.0`: tests de discovery/codegen, tests del creator, comprobación de tipos, empaquetado, `framekit generate` y `framekit check`. Ubuntu también ejecuta un único flujo crítico de Studio con Chromium y Node.js `22.13.0` mediante `pnpm test:e2e`.
+Los gates permanentes del repositorio son versionless: no seleccionan una versión de release. Ubuntu ejecuta las comprobaciones completas con Node.js `22.13.0` y `24` y pnpm `11.14.0`, incluyendo `pnpm check:runtime`, lint, tests, comprobación de tipos, builds y comprobaciones dry de los paquetes. Windows ejecuta comprobaciones focalizadas del consumidor generado con Node.js `22.13.0`: tests de discovery/codegen, tests del creator, comprobación de tipos, empaquetado, `framekit generate` y `framekit check`. Ubuntu también ejecuta los flujos críticos de Studio y de la API de imágenes con Chromium y Node.js `22.13.0` mediante `pnpm test:e2e`.
 
 Estos gates no sustituyen la verificación del release. Los smokes reales de tarballs y del registro npm usan versiones de paquetes proporcionadas durante la preparación del release; los gates versionless del repositorio no codifican ninguna versión de release.
 

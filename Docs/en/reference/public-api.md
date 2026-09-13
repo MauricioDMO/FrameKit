@@ -285,9 +285,9 @@ modules, and synchronizes template assets under `public/framekit/templates`.
 ### `@mauriciodmo/framekit/server`
 
 The server entry point is a Node.js/server-only facade for the implemented Steps
-1-5 contracts: configuration and authentication, image-input preparation,
-temporary render jobs, PNG browser rendering, and the private render-page
-handoff. Do not import it into browser bundles.
+1-7 contracts: configuration and authentication, the public image handler,
+image-input preparation, temporary render jobs, PNG browser rendering, and the
+private render-page handoff. Do not import it into browser bundles.
 
 **Runtime exports**
 
@@ -296,6 +296,7 @@ handoff. Do not import it into browser bundles.
 | `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
 | `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
+| `createImageHandler` | `createImageHandler(templates): (request: Request) => Promise<Response>`; creates the authenticated PNG image API handler |
 | `prepareRenderInputs` | `prepareRenderInputs(options)`; validates request data and prepares local, data-URL, and allowed remote image inputs for rendering |
 | `renderTemplateImage` | `renderTemplateImage(options): Promise<Buffer>`; renders a resolved payload through the private page and returns PNG bytes |
 | `createRenderJob`     | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; creates a temporary private render job identifier and token |
@@ -346,9 +347,84 @@ only `code`, `message`, and, when present, `fields`; `cause` is not enumerable.
 `fields` is supported only for the `invalid_template_data` code and must be a
 non-null, non-array object.
 
-The private render job/page handoff is not the public image API. This entry
-point does not provide public image API routes or a complete public
-image-rendering request/response surface; that public API remains future work.
+`createImageHandler(templates)` accepts a generated registry and returns a
+Node.js request handler. The canonical generated consumer mounts it at
+`POST /api/v1/images` with `runtime = 'nodejs'` and `dynamic = 'force-dynamic'`.
+Requests use the following JSON shape:
+
+```json
+{ "template": "example", "variant": "en", "data": {} }
+```
+
+The route requires `Authorization: Bearer <FRAMEKIT_API_KEY>`, resolves and
+validates the selected template, prepares permitted image inputs, and returns
+PNG bytes directly. Success responses are `200 image/png`; failures contain
+the stable `error`, `message`, and optional `fields` JSON properties. The
+handler reads `FRAMEKIT_API_KEY`, `FRAMEKIT_INTERNAL_ORIGIN`, and the optional
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
+`FRAMEKIT_RENDER_TIMEOUT_MS` settings from the runtime environment.
+
+An actual request using the generated `example` template is:
+
+```http
+POST /api/v1/images HTTP/1.1
+Authorization: Bearer framekit-smoke-api-key
+Content-Type: application/json
+
+{"template":"example","variant":"en","data":{"hero":"https://framekit-smoke.test/image.png"}}
+```
+
+The remote hostname must be an exact entry in
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS` (for this example, `framekit-smoke.test`). Remote image
+URLs must use HTTPS and may include a query string for signed CDN URLs, but must
+not contain a port, credentials, fragment, or IP literal. They are downloaded by
+Node.js before the render job is created.
+Chromium receives the resulting data URL and is blocked from arbitrary external
+network access. TLS verification must remain enabled; a private test
+certificate may be supplied only through `NODE_EXTRA_CA_CERTS` in the smoke
+process or its equivalent container mount.
+
+Successful responses are raw PNG bytes with status `200`, `Content-Type:
+image/png`, `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`,
+`Content-Disposition: inline; filename="example.png"`, and a matching
+`Content-Length`. The body must be non-empty, begin with the eight-byte PNG
+signature, contain `IHDR` at byte offset `12`, and contain the declared
+`1200x800` dimensions as big-endian integers at offsets `16` and `20`. Error
+responses are uncached JSON with `error`, `message`, and `fields` only when
+canonical template-data validation produced field errors.
+
+| Error | HTTP | Meaning |
+| --- | ---: | --- |
+| `invalid_request` | 400 | Invalid JSON, shape, variant, or input form |
+| `unauthorized` | 401 | Missing or wrong Bearer token |
+| `template_not_found` | 404 | Unknown authenticated template |
+| `request_too_large` | 413 | Request or decoded image exceeds its bound |
+| `unsupported_image` | 415 | Unsupported or inconsistent image MIME/signature |
+| `invalid_template_data` | 422 | Template field validation failed |
+| `image_host_not_allowed` | 422 | Remote host is outside the exact allowlist |
+| `image_fetch_failed` | 502 | Allowed remote image could not be fetched safely |
+| `api_not_configured` | 503 | Required runtime configuration is unavailable |
+| `render_capacity_exhausted` | 503 | Process-local render capacity is full |
+| `render_timeout` | 504 | End-to-end render deadline expired |
+| `render_failed` | 500 | Rendering failed unexpectedly |
+
+Initial limits are a 12 MB encoded request body, 8 MB decoded bytes per image,
+two simultaneous render contexts per Node.js process, a 30-second end-to-end
+render deadline, a two-minute in-memory job TTL, three remote redirects, and a
+single PNG at the template dimensions with device scale factor `1`. The API is
+intended for a long-lived single Node.js process; it has no serverless/Edge
+mode, asynchronous public job endpoint, database, queue, or persistent render
+output.
+
+The repository's Playwright E2E exercises one authenticated PNG render with real
+Chromium. Focused Vitest suites cover authentication, remote-image policy,
+limits, and cleanup. `pnpm smoke:docker -- <version>` validates the generated
+Docker image at release time using an exact published FrameKit version; see [Testing and
+Distribution](../development/testing-and-distribution.md).
+
+The private render job/page handoff remains separate from this public API. The
+Chromium headless shell must be installed explicitly with `framekit browser
+install` before rendering requests are served.
 
 ---
 

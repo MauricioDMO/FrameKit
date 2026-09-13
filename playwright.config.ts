@@ -15,14 +15,16 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm dev',
+    command: 'pnpm --filter @mauriciodmo/framekit build && pnpm --filter studio build && pnpm --filter studio start',
     url: 'http://localhost:3000/editor',
     env: {
       FRAMEKIT_HOST: 'localhost',
+      FRAMEKIT_API_KEY: 'framekit-e2e-api-key',
+      FRAMEKIT_INTERNAL_ORIGIN: 'http://localhost:3000',
       PORT: '3000',
       NEXT_TELEMETRY_DISABLED: '1',
     },
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 240_000,
   },
 })

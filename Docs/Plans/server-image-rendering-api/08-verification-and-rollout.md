@@ -45,7 +45,7 @@ under `tests/e2e/`.
 |---|---|---|
 | Unit/component | Parsing, auth, image fetch policy, Map state, browser state, canvas/markers | Actual Next process layout or browser binary |
 | Next integration | Generated registry/routes and production `globalThis` Map handoff | Installed Chromium/system libraries |
-| Docker browser smoke | Final standalone app, Node remote fetch, Chromium capture, fonts/assets, binary response | Published npm tarballs |
+| Docker browser smoke | Final standalone app, Chromium capture, packaged assets, binary response | Detailed request and remote-image policy |
 | Isolated package smoke | Packed FrameKit/creator artifacts work outside monorepo | Future registry publication/version promotion |
 
 ## Focused test inventory
@@ -150,7 +150,6 @@ Use one small template rather than a large visual matrix. It should include:
 - visible text;
 - one packaged local image asset;
 - one image field accepting data URL;
-- one image field accepting allowlisted HTTPS URL (fetched by Node);
 - representative local font/style path;
 - deterministic layout suitable for basic PNG presence/dimension checks without
   cross-platform snapshots.
@@ -160,12 +159,10 @@ Otherwise add one focused fixture, not a second application architecture.
 
 ## Real Docker/Chromium smoke
 
-Build/run final generated-consumer image with runtime secrets and a controlled
-HTTPS image fixture.
-
-The remote fixture should be under test control so redirect/content-type/size
-behavior can be deterministic. If CI uses a private CA, install that CA only in
-the smoke environment rather than disabling TLS verification globally.
+Build and run the final generated-consumer image with runtime configuration and
+the packaged local image fixture. Remote-image policy remains in focused tests;
+the Docker smoke does not maintain certificates, host mappings, or an HTTPS
+fixture.
 
 ### Startup checks
 
@@ -179,39 +176,13 @@ the smoke environment rather than disabling TLS verification globally.
 ### API checks
 
 1. Missing API token -> `401`.
-2. Wrong token -> same `401`, no template detail.
-3. Malformed JSON -> `400` after valid auth.
-4. Unknown template -> `404` after auth.
-5. Invalid variant/data -> `400`/`422` before browser.
-6. Valid default/local asset request -> non-empty PNG.
-7. Valid request data URL -> non-empty PNG.
-8. Valid allowlisted HTTPS image -> Node fetch succeeds and PNG includes it.
-9. Non-allowlisted HTTPS host -> `422` before outbound request.
-10. Controlled redirect to allowed host -> works within redirect bound.
-11. Redirect to loopback/private IP/unallowlisted host -> rejected before target
-    request.
-12. Unsupported remote Content-Type/signature -> `415`.
-13. Remote response over byte bound -> `413` or documented size semantic.
-14. Remote upstream/network failure -> `502 image_fetch_failed`.
-15. Requests above render capacity -> bounded success + `503`, no unbounded wait.
-16. Deliberately stalled render -> `504` and cleanup.
-17. Client abort -> remote fetch/browser work stops without lingering job/context.
+2. Valid default/local asset request -> non-empty PNG.
+3. Response headers, signature, and declared dimensions match.
 
-### Browser network/token checks
-
-Instrument the controlled environment to prove:
-
-- Chromium never directly requests the external image fixture;
-- Node.js is the component making that HTTPS request;
-- browser requests remain loopback/internal plus expected data/browser-internal
-  resources;
-- private `x-framekit-render-token` appears only on
-  `/framekit/render/<id>` main document;
-- Next chunks, public assets, generated template assets, API routes, and any
-  blocked external request never receive that token.
-
-Any token leak or external Chromium request outside the documented policy blocks
-release.
+Detailed malformed input, remote-image policy, browser network/token scoping,
+capacity, timeout, abort, and cleanup behavior remains in the focused Vitest
+suites. The production Playwright E2E separately proves the authenticated route,
+private-page handoff, and Chromium capture.
 
 ### PNG checks
 
@@ -228,16 +199,8 @@ Do not promise pixel-identical output across Chromium/platform versions.
 
 ### Cleanup and lifecycle checks
 
-After success, error, timeout, and abort:
-
-- render-job Map returns to zero relevant entries;
-- active render count returns to zero;
-- context is closed;
-- browser may remain open for process reuse;
-- process restart naturally clears job Map/browser state;
-- no render data is persisted to disk;
-- logs contain no API key, private token, base64, field content, or full signed
-  remote URL.
+Focused tests verify job, context, capacity, abort, and timeout cleanup. The
+Docker smoke always removes its container, image, and temporary consumer.
 
 ## Production Map compatibility smoke
 
@@ -265,12 +228,12 @@ behind the same API before release rather than adding per-bundle Maps.
 6. Install dependencies with generated lock/package-manager contract.
 7. Check the five-file source inventory, then run generation/check/build from
    absent generated output, verifying both client bindings are recreated.
-8. Build/run Docker image.
-9. Configure API key + allowed test image host at runtime.
-10. Exercise local/data/remote image API requests.
-11. Verify output PNG and Map cleanup.
-12. Inspect installed package/tarballs for workspace paths/secrets/browser
-     binaries.
+8. Inspect installed package/tarballs for workspace paths, secrets, and browser
+   binaries.
+
+The registry-backed Docker smoke is separate because it requires an exact
+published FrameKit version. It builds the canonical image and verifies one local
+asset render without repeating the tarball checks.
 
 Exercise both creator install-and-generate and skip-install workflows. In the
 latter, install dependencies before a normal FrameKit generate/check/dev/build
@@ -281,15 +244,10 @@ the installer does not pick it up.
 
 ## Small smoke harness
 
-A small Node script may:
-
-- wait for app readiness;
-- send authenticated JSON request;
-- write raw response bytes to a temp `.png` only inside the test harness;
-- verify headers/signature/IHDR;
-- issue concurrent requests;
-- test 401/422/502/503/504 cases;
-- stop container and report coarse diagnostics.
+A small Node script may build the canonical image, wait for readiness, reject a
+request without authentication, verify one authenticated PNG response, and
+remove the container/image. It does not need an HTTPS server, certificate
+management, lifecycle probes, or a second consumer orchestrator.
 
 The application itself must not write rendered PNGs/jobs to disk as part of the
 runtime path.

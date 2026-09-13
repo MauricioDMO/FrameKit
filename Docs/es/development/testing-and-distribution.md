@@ -13,7 +13,7 @@ lane de CI construye los paquetes públicos antes de esos checks.
 - `pnpm --filter @mauriciodmo/framekit test` — ejecuta las pruebas unitarias del paquete central; las pruebas se ejecutan en entorno Node, con jsdom habilitado para las pruebas del editor que requieren DOM o localStorage
 - `pnpm --filter studio test` — ejecuta pruebas de integración para la aplicación Studio; `framekit generate` se llama como paso previo antes de que Vitest se ejecute
 - `pnpm --filter @mauriciodmo/create-framekit test` — ejecuta pruebas unitarias para el paquete CLI
-- `pnpm test:e2e` — ejecuta la única prueba crítica en Chromium; primero instala el navegador con `pnpm exec playwright install chromium`
+- `pnpm test:e2e` — ejecuta las pruebas críticas de Chromium contra un build de producción de Studio; primero instala el navegador con `pnpm exec playwright install chromium`
 - `pnpm typecheck` — ejecuta `tsc --noEmit` en todos los paquetes y adicionalmente verifica el conjunto de fixtures de tipos (casos positivos y negativos de plantillas)
 - `pnpm lint` — ejecuta ESLint en todos los workspaces
 - `pnpm build` — reconstruye todos los workspaces completamente; el paquete central se construye primero, luego todos los workspaces dependientes
@@ -48,11 +48,13 @@ Las siguientes áreas están cubiertas por el conjunto de pruebas:
 
 **CLI:** Análisis de argumentos y rutas de error, verificación que activa el build de Next.js y descubrimiento de directorios de plantillas independientes.
 
-**E2E de navegador:** Un único flujo de Playwright en Chromium abre la entrada
+**E2E de navegador:** Un flujo de Playwright en Chromium abre la entrada
 del registro generado `redes-sociales/instagram/promocion-cuadrada`, verifica su
 metadata y dimensiones, cambia variantes, edita campos de texto/número/opciones/
 booleano/color, comprueba que un borrador numérico incompleto no sustituye el
-valor confirmado del preview y exporta un PNG con las dimensiones declaradas.
+valor confirmado del preview y exporta un PNG con las dimensiones declaradas. Un
+segundo flujo rechaza una solicitud no autenticada a la API de imágenes y luego
+renderiza y valida un PNG mediante la API de producción autenticada.
 
 **Fixtures de tipos:** Tanto casos positivos (plantillas válidas que deben verificar tipos) como casos negativos (plantillas inválidas que deben producir un error de `tsc`, usando `@ts-expect-error`) se ejecutan como parte de `pnpm typecheck`.
 
@@ -91,7 +93,7 @@ resultado de CI.
   focalizadas de discovery, codegen, creator, typecheck, paquetes y consumidor
   generado en Node.js `22.13.0`; la última ejecución registrada es el run exitoso
   enlazado arriba.
-- El lane de Ubuntu del workflow está configurado para ejecutar el único E2E de Chromium en Node.js `22.13.0`; instala Chromium e inicia Studio con `pnpm dev`.
+- El lane de Ubuntu del workflow está configurado para ejecutar los E2E de Chromium en Node.js `22.13.0`; instala Chromium, compila Studio e inicia su servidor de producción.
 
 El smoke de creator en Windows está configurado para usar `create-framekit
 <directorio> -n`, instalar las dependencias del proyecto generado y ejecutar
@@ -145,14 +147,46 @@ El script mantiene todos los consumidores temporales fuera del workspace y
 verifica:
 
 - la auditoría de ambos tarballs públicos, incluidos archivos esperados, targets
-  de paquetes, binarios y rechazo de tests, secrets, referencias al workspace,
-  links locales y rutas del checkout;
+  de paquetes, binarios y rechazo de tests, secrets, binarios de navegador,
+  referencias al workspace, links locales y rutas del checkout;
 - un consumidor independiente instalado directamente desde el tarball de
   `@mauriciodmo/framekit`, incluida la resolución de exports públicos y
   `generate`, `check` y `build`;
 - un consumidor generado por creator, incluida la instalación limpia,
-  `generate`, `check`, `build`, `start` standalone, readiness HTTP y apagado/
-  limpieza correctos.
+  `generate`, `check`, `build`, la forma de cinco archivos de `src/app`, la ruta
+  pública `/api/v1/images`, los archivos de despliegue, `start` standalone,
+  readiness HTTP y apagado/limpieza correctos. Los bindings de cliente
+  generados deben estar ausentes antes de generar y presentes después.
+
+Este smoke de tarballs no ejecuta un build real de Docker, un contenedor ni una
+descarga de navegador. Esas comprobaciones de despliegue y navegador real son
+gates operativos separados.
+
+## E2E de la API de imágenes
+
+`pnpm test:e2e` inicia Studio con una clave exclusiva para pruebas y ejercita la
+API de imágenes con Chromium real. `tests/e2e/image-api.spec.ts` comprueba el
+rechazo de autenticación y una respuesta PNG correcta, incluidos headers, firma
+y dimensiones.
+
+Los casos detallados de autenticación, parsing, política de imágenes remotas,
+capacidad, timeout, abort y limpieza permanecen en las suites Vitest enfocadas.
+No se repiten en los entornos standalone y Docker.
+
+Docker permanece como gate operativo de release. Después de publicar FrameKit,
+ejecuta:
+
+```sh
+pnpm smoke:docker -- <versión-framekit-publicada-exacta>
+```
+
+El script copia el consumidor canónico a un directorio temporal, crea su lockfile
+con esa versión del registro, construye e inicia la imagen Docker generada,
+verifica el usuario `node` no root y el entrypoint `tini`, rechaza una solicitud
+sin autenticación y renderiza un PNG con el asset local empaquetado. No repite la
+matriz detallada de Vitest ni requiere un fixture HTTPS. Se mantiene separado
+porque el smoke de tarball pre-publicación y un build Docker desde el registro
+ejercitan artefactos distintos.
 
 La secuencia shell siguiente es un procedimiento manual opcional del camino de
 creator. Audita ambos archivos, pero su flujo de consumidor solo crea y ejecuta

@@ -73,14 +73,19 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 - Renderizado Markdown para formato de texto en línea y listas básicas.
 - Descubrimiento de plantillas en `src/templates/**/template.tsx` y registros generados.
 - Navegación en Studio, cambio de variante, tema claro/oscuro, persistencia local en el navegador, zoom y desplazamiento de la vista previa.
-- Comandos CLI para `generate`, `check`, `dev`, `build` y `start`.
+- Comandos CLI para `generate`, `check`, `dev`, `build`, `start` y la instalación
+  explícita del headless shell de Chromium con `framekit browser install`.
 - Exportación de PNG en el navegador con el ancho y alto declarados por la plantilla.
-- La fachada de servidor `@mauriciodmo/framekit/server`, con los contratos implementados de los Pasos 1-5, preparación de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff privado de la página.
+- La fachada de servidor `@mauriciodmo/framekit/server`, con la API pública PNG
+  `createImageHandler`, preparación de inputs de imagen, renderizado PNG,
+  trabajos temporales de render y el handoff privado de la página.
 
 ## Limitaciones conocidas
 
 - Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
-- La exportación de Studio solo admite PNG en el navegador. El paquete también proporciona renderizado de PNG en servidor mediante un handoff privado de trabajo/página, pero no rutas públicas de API de imágenes, exportación a GIF/video, otros formatos, control de escala ni DPI.
+- La exportación de Studio solo admite PNG en el navegador. El consumidor
+  generado también proporciona la API PNG de servidor `POST /api/v1/images`;
+  no se admiten exportación a GIF/video, otros formatos, control de escala ni DPI.
 - Studio guarda las ediciones en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
 - La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.

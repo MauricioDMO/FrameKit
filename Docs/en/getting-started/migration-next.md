@@ -12,9 +12,10 @@ guide](./migration-v0.8.0.md).
   Next.js `>=16 <17` and React/React DOM `>=19 <20`.
 - This guide does not require an alpha, future, or otherwise preselected package
   version. Release version selection is a separate maintainer step.
-- The canonical runtime and Studio behavior described here is implemented. A
-  server image-generation API is future work; it is not implemented and is not
-  part of this contract.
+- The canonical runtime and Studio behavior described here is implemented. The
+  server image-generation API is available through the generated consumer's
+  `POST /api/v1/images` route; install its Chromium headless shell explicitly
+  with `framekit browser install` before serving requests.
 
 This rolling guide is the documentation deliverable for [GitHub issue
 #14](https://github.com/MauricioDMO/FrameKit/issues/14).

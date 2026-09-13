@@ -165,9 +165,11 @@ See the [CLI reference](../reference/cli.md#framekit-dev) for the authoritative 
 ## Rendering boundaries
 
 Studio frame exports (preview, download, and browser PNG generation) happen in
-the browser. The package also provides server-side PNG rendering through its
-private render-job/page handoff; this is separate from the future public image
-API routes.
+the browser. The generated consumer also provides the Node.js-only
+`POST /api/v1/images` server image API through `createImageHandler`; install the
+Chromium headless shell explicitly with `framekit browser install` before
+serving requests. The private render-job/page handoff remains an internal
+implementation detail of that API and the generated render page.
 
 ---
 

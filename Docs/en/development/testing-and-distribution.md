@@ -13,7 +13,7 @@ before those checks.
 - `pnpm --filter @mauriciodmo/framekit test` — runs unit tests for the core package; tests execute in a Node environment, with jsdom enabled for editor tests that require DOM or localStorage
 - `pnpm --filter studio test` — runs integration tests for the Studio application; `framekit generate` is called as a precondition step before Vitest runs
 - `pnpm --filter @mauriciodmo/create-framekit test` — runs unit tests for the CLI package
-- `pnpm test:e2e` — runs the single Chromium critical-path test; install the browser first with `pnpm exec playwright install chromium`
+- `pnpm test:e2e` — runs the Chromium critical-path tests against a production Studio build; install the browser first with `pnpm exec playwright install chromium`
 - `pnpm typecheck` — runs `tsc --noEmit` across all packages and additionally type-checks the type fixture suite (positive and negative template cases)
 - `pnpm lint` — runs ESLint across all workspaces
 - `pnpm build` — full rebuild of all workspaces; the core package is built first, then all dependent workspaces
@@ -50,7 +50,9 @@ The following areas are covered by the test suite:
 `redes-sociales/instagram/promocion-cuadrada` registry entry, verifies its
 metadata and dimensions, switches variants, edits text/number/choice/boolean/
 color fields, checks that an incomplete number draft does not replace the
-committed preview value, and exports a PNG with the declared dimensions.
+committed preview value, and exports a PNG with the declared dimensions. A
+second flow rejects an unauthenticated image API request, then renders and
+validates a PNG through the authenticated production API.
 
 **Type-level fixtures:** Both positive cases (valid templates that must type-check) and negative cases (invalid templates that must produce a `tsc` error, using `@ts-expect-error`) run as part of `pnpm typecheck`.
 
@@ -87,7 +89,7 @@ workflow steps. Running them locally does not count as a CI result.
 - The Windows workflow lane is configured to run the focused discovery, codegen,
   creator, typecheck, package, and generated-consumer checks on Node.js
   `22.13.0`; the latest recorded execution is the successful run linked above.
-- The Ubuntu workflow lane is configured to run the one Chromium E2E on Node.js `22.13.0`; it installs Chromium and starts Studio with `pnpm dev`.
+- The Ubuntu workflow lane is configured to run the Chromium E2E tests on Node.js `22.13.0`; it installs Chromium, builds Studio, and starts its production server.
 
 The configured Windows creator smoke uses `create-framekit <directory> -n`,
 installs the generated project's dependencies, and runs `framekit generate` and
@@ -140,13 +142,45 @@ node scripts/smoke-tarballs.mjs
 The script keeps all temporary consumers outside the workspace and verifies:
 
 - archive audits for both public tarballs, including expected files, package
-  targets, binaries, and rejection of tests, secrets, workspace references,
-  local links, and checkout paths;
+  targets, binaries, and rejection of tests, secrets, browser binaries,
+  workspace references, local links, and checkout paths;
 - an independent consumer installed directly from the `@mauriciodmo/framekit`
   tarball, including public export resolution and `generate`, `check`, and
   `build`;
 - a creator-generated consumer, including a clean install, `generate`, `check`,
-  `build`, standalone `start`, HTTP readiness, and clean shutdown/cleanup.
+  `build`, the five-file `src/app` shape, the public `/api/v1/images` route,
+  deployment files, standalone `start`, HTTP readiness, and clean
+  shutdown/cleanup. Generated client bindings must be absent before
+  generation and present afterward.
+
+This tarball smoke does not perform a live Docker build, container run, or
+browser download. Those deployment and real-browser checks remain separate
+operational gates.
+
+## Image API E2E
+
+`pnpm test:e2e` starts Studio with a test-only runtime key and exercises the
+image API with real Chromium. `tests/e2e/image-api.spec.ts` verifies rejected
+authentication and one successful PNG response, including headers, signature,
+and dimensions.
+
+Detailed authentication, request parsing, remote-image policy, capacity,
+timeout, abort, and cleanup cases remain in the focused Vitest suites. They are
+not repeated for standalone and Docker environments.
+
+Docker remains a release-time operational gate. After publishing FrameKit, run:
+
+```sh
+pnpm smoke:docker -- <exact-published-framekit-version>
+```
+
+The script copies the canonical consumer to a temporary directory, creates its
+lockfile with that registry version, builds and starts the generated Docker
+image, verifies the non-root `node` user and `tini` entrypoint, rejects a request
+without authentication, and renders one PNG using the packaged local asset. It
+does not repeat the detailed Vitest matrix or require an HTTPS fixture. This
+stays separate because a pre-publication tarball smoke and a registry-backed
+Docker build exercise different artifacts.
 
 The shell sequence below is an optional manual creator-path procedure. It audits
 both archives but its consumer flow only creates and runs the creator-generated

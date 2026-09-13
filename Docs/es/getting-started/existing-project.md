@@ -166,9 +166,12 @@ Consulta la [referencia de la CLI](../reference/cli.md#framekit-dev) para la dis
 ## Límites de renderizado
 
 Las exportaciones de frames de Studio (vista previa, descarga y generación de
-PNG en el navegador) ocurren en el navegador. El paquete también proporciona
-renderizado de PNG en servidor mediante su handoff privado de trabajo/página;
-esto es independiente de las futuras rutas públicas de la API de imágenes.
+PNG en el navegador) ocurren en el navegador. El consumidor generado también
+proporciona la API de imágenes de servidor exclusiva de Node.js
+`POST /api/v1/images` mediante `createImageHandler`; instala explícitamente el
+headless shell de Chromium con `framekit browser install` antes de servir
+solicitudes. El handoff privado de trabajo/página sigue siendo un detalle
+interno de esa API y de la página de renderizado generada.
 
 ---
 

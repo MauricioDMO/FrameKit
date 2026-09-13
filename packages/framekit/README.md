@@ -2,12 +2,11 @@
 
 FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
-Studio export is currently browser-based and supports PNG only. The server-only
-`@mauriciodmo/framekit/server` facade currently exposes the implemented Steps 1-5
-contracts, configuration and authentication helpers, `prepareRenderInputs`,
-`renderTemplateImage`, temporary render jobs, and the private `createRenderPage`
-handoff used by production rendering. Public image API routes and the complete
-public image-rendering API remain future work; the private handoff is separate.
+Studio export is browser-based and supports PNG only. The server-only
+`@mauriciodmo/framekit/server` facade exposes configuration and authentication
+helpers, the `createImageHandler` PNG API, image preparation and rendering,
+temporary render jobs, and the private `createRenderPage` handoff used by
+production rendering.
 
 ## Compatibility
 
@@ -37,6 +36,23 @@ validated metadata, dimensions, variants, variant keys, assets, and lazy loaders
 `dev`, `check`, and `build` generate automatically; `start` uses existing build
 output and does not generate. Production uses Next.js standalone output under
 `.framekit/next`.
+
+### Browser installation
+
+Browser installation is explicit and uses FrameKit's pinned `playwright-core`
+dependency:
+
+```sh
+framekit browser install
+framekit browser install --with-deps
+```
+
+Both commands install only Chromium's headless shell. `--with-deps` also asks
+Playwright to install system dependencies and may require root or equivalent
+system-package privileges on Linux. `PLAYWRIGHT_BROWSERS_PATH` is honored by
+the installer and the server runtime. Normal package installation and
+`generate`, `check`, `dev`, `build`, and `start` do not download browser
+binaries.
 
 ## Inline templates
 
@@ -146,7 +162,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
-import { authenticateBearer, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, createImageHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
@@ -163,12 +179,35 @@ import { templates } from '@framekit/generated/templates'
 export const RenderClient = createRenderClient(templates)
 ```
 
-The server-only `./server` facade exposes the implemented Steps 1-5 contracts,
-configuration and authentication helpers, `prepareRenderInputs`,
-`renderTemplateImage`, temporary render jobs, and the private `createRenderPage`
-handoff. It does not provide public image API routes or the complete public
-image-rendering API; those remain future work. Keep the `./dev` and `./server`
-entry points out of browser/client imports.
+The server-only `./server` facade exposes configuration and authentication
+helpers, `createImageHandler`, `prepareRenderInputs`, `renderTemplateImage`,
+temporary render jobs, and the private `createRenderPage` handoff. Keep the
+`./dev` and `./server` entry points out of browser/client imports.
+
+### Server image API
+
+The generated consumer template exposes a Node.js-only `POST /api/v1/images`
+route backed by `createImageHandler(templates)`. Send JSON with the generated
+template slug, an optional variant, and optional field data:
+
+```json
+{
+  "template": "example",
+  "variant": "en",
+  "data": {}
+}
+```
+
+Authenticate with `Authorization: Bearer <FRAMEKIT_API_KEY>`. A successful
+request returns `200` with `image/png`; failures return stable JSON errors.
+Configure `FRAMEKIT_API_KEY` and `FRAMEKIT_INTERNAL_ORIGIN` at runtime. The
+optional `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`,
+and `FRAMEKIT_RENDER_TIMEOUT_MS` settings control remote images and render
+limits. Install the headless shell before serving this route.
+
+The generated template also includes the canonical `Dockerfile`,
+`.dockerignore`, and `.env.example`. The repository smoke checks inspect these
+deployment files but do not perform a live Docker build or browser download.
 
 ### Published color palette
 

@@ -296,10 +296,10 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para los contratos implementados de los Pasos 1-5: configuración y
-autenticación, preparación de inputs de imagen, trabajos temporales,
-renderizado PNG en navegador y el handoff privado de la página de renderizado.
-No se debe importar en bundles del navegador.
+para los contratos implementados de los Pasos 1-7: configuración y
+autenticación, el handler público de imágenes, preparación de inputs de
+imagen, trabajos temporales, renderizado PNG en navegador y el handoff privado
+de la página de renderizado. No se debe importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
@@ -308,6 +308,7 @@ No se debe importar en bundles del navegador.
 | `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
 | `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
+| `createImageHandler`   | `createImageHandler(templates): (request: Request) => Promise<Response>`; crea el handler autenticado de la API de imágenes PNG |
 | `prepareRenderInputs`  | `prepareRenderInputs(options)`; valida los datos de la solicitud y prepara inputs de imagen locales, data URLs y remotos permitidos para renderizar |
 | `renderTemplateImage`  | `renderTemplateImage(options): Promise<Buffer>`; renderiza un payload resuelto mediante la página privada y devuelve bytes PNG |
 | `createRenderJob`      | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; crea un identificador y un token temporales para un trabajo privado de renderizado |
@@ -361,10 +362,85 @@ contiene `code`, `message` y, cuando existe, `fields`; `cause` no es enumerable.
 `fields` solo se admite con el código `invalid_template_data` y debe ser un
 objeto no nulo que no sea un array.
 
-El handoff privado de trabajo/página no es la API pública de imágenes. Este
-punto de entrada no proporciona rutas públicas de la API de imágenes ni una
-superficie pública completa de solicitud/respuesta para renderizar imágenes;
-esa API pública sigue siendo trabajo futuro.
+`createImageHandler(templates)` recibe un registro generado y devuelve un
+handler de solicitudes para Node.js. El consumidor generado canónico lo monta
+en `POST /api/v1/images` con `runtime = 'nodejs'` y
+`dynamic = 'force-dynamic'`. Las solicitudes usan esta forma JSON:
+
+```json
+{ "template": "example", "variant": "en", "data": {} }
+```
+
+La ruta exige `Authorization: Bearer <FRAMEKIT_API_KEY>`, resuelve y valida la
+plantilla seleccionada, prepara los inputs de imagen permitidos y devuelve los
+bytes PNG directamente. Las respuestas exitosas son `200 image/png`; los
+fallos contienen las propiedades JSON estables `error`, `message` y
+`fields` opcional. El handler lee `FRAMEKIT_API_KEY`,
+`FRAMEKIT_INTERNAL_ORIGIN` y las opciones de entorno opcionales
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS` y
+`FRAMEKIT_RENDER_TIMEOUT_MS`.
+
+Una solicitud real usando la plantilla generada `example` es:
+
+```http
+POST /api/v1/images HTTP/1.1
+Authorization: Bearer framekit-smoke-api-key
+Content-Type: application/json
+
+{"template":"example","variant":"en","data":{"hero":"https://framekit-smoke.test/image.png"}}
+```
+
+El hostname remoto debe ser una entrada exacta de
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS` (en este ejemplo, `framekit-smoke.test`). Las URLs de
+imágenes remotas deben usar HTTPS y pueden incluir un query string para URLs
+firmadas de CDN, pero no pueden contener puerto, credenciales, fragmento ni
+literal IP. Node.js las descarga antes de crear el trabajo de render. Chromium recibe el data URL resultante y no puede acceder a una red
+externa arbitraria. La verificación TLS debe permanecer activa; un certificado
+privado de prueba solo puede suministrarse mediante `NODE_EXTRA_CA_CERTS` en el
+proceso del smoke o su montaje equivalente en el contenedor.
+
+Las respuestas exitosas son bytes PNG sin envolver con estado `200`,
+`Content-Type: image/png`, `Cache-Control: no-store`,
+`X-Content-Type-Options: nosniff`,
+`Content-Disposition: inline; filename="example.png"` y un `Content-Length`
+coincidente. El cuerpo debe ser no vacío, comenzar con la firma PNG de ocho
+bytes, contener `IHDR` en el offset `12` y contener las dimensiones declaradas
+`1200x800` como enteros big-endian en los offsets `16` y `20`. Las respuestas de
+error son JSON sin cache con `error`, `message` y `fields` únicamente cuando la
+validación canónica de datos de plantilla produjo errores por field.
+
+| Error | HTTP | Significado |
+| --- | ---: | --- |
+| `invalid_request` | 400 | JSON, forma, variante o input inválido |
+| `unauthorized` | 401 | Token Bearer ausente o incorrecto |
+| `template_not_found` | 404 | Plantilla autenticada desconocida |
+| `request_too_large` | 413 | Request o imagen decodificada sobre su límite |
+| `unsupported_image` | 415 | MIME/firma de imagen no compatible o inconsistente |
+| `invalid_template_data` | 422 | Falló la validación de fields de la plantilla |
+| `image_host_not_allowed` | 422 | Host remoto fuera del allowlist exacto |
+| `image_fetch_failed` | 502 | No se pudo descargar de forma segura la imagen permitida |
+| `api_not_configured` | 503 | Falta configuración de ejecución requerida |
+| `render_capacity_exhausted` | 503 | La capacidad de render local del proceso está llena |
+| `render_timeout` | 504 | Expiró el plazo end-to-end de render |
+| `render_failed` | 500 | El renderizado falló inesperadamente |
+
+Los límites iniciales son un body codificado de solicitud de 12 MB, 8 MB
+decodificados por imagen, dos contextos de render simultáneos por proceso
+Node.js, un plazo end-to-end de 30 segundos, un TTL de dos minutos para trabajos
+en memoria, tres redirects remotos y un único PNG con las dimensiones de la
+plantilla y device scale factor `1`. La API está pensada para un proceso Node.js
+único de larga duración; no tiene modo serverless/Edge, endpoint público de
+trabajos asíncronos, base de datos, cola ni output de render persistente.
+
+El E2E de Playwright del repositorio ejercita un render PNG autenticado con
+Chromium real. Las suites Vitest enfocadas cubren autenticación, política de
+imágenes remotas, límites y limpieza. `pnpm smoke:docker -- <versión>` valida la
+imagen Docker generada durante el release con una versión exacta publicada de
+FrameKit; consulta [Pruebas y Distribución](../development/testing-and-distribution.md).
+
+El handoff privado de trabajo/página permanece separado de esta API pública.
+El headless shell de Chromium debe instalarse explícitamente con
+`framekit browser install` antes de servir solicitudes de renderizado.
 
 ---
 

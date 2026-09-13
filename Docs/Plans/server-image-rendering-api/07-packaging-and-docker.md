@@ -1,6 +1,6 @@
 # Step 7 - Packaging and Docker
 
-- **Status:** Planned; FrameKit owns the browser dependency and install command.
+- **Status:** Implemented and verified on 2026-09-11; Step 8 remains pending.
 
 ## Goal
 

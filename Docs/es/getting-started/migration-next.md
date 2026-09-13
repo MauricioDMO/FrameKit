@@ -13,8 +13,10 @@ migración histórica](./migration-v0.8.0.md).
 - Esta guía no exige una versión alpha, futura ni preseleccionada del paquete.
   La selección de versión de release es un paso separado de los maintainers.
 - El comportamiento canónico de runtime y Studio descrito aquí está
-  implementado. La API de generación de imágenes en servidor es trabajo futuro;
-  no está implementada ni forma parte de este contrato.
+  implementado. La API de generación de imágenes en servidor está disponible
+  mediante la ruta `POST /api/v1/images` del consumidor generado; instala
+  explícitamente su headless shell de Chromium con `framekit browser install`
+  antes de servir solicitudes.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).

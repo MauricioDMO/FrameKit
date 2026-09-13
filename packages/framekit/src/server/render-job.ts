@@ -108,10 +108,7 @@ export function loadRenderRequest (
   return job.payload
 }
 
-export function deleteRenderJob (
-  id: string,
-  _options: RenderJobTestOptions = {}
-): void {
+export function deleteRenderJob (id: string): void {
   if (!hasValidIdentifier(id)) return
   getRenderJobStore().jobs.delete(id)
 }

@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
+import { runChild } from '../run-child'
+
 const cliFile = fileURLToPath(new URL('../index.ts', import.meta.url))
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))
 const temporaryRoots: string[] = []
@@ -92,7 +94,9 @@ describe('framekit CLI', () => {
   it.each([
     ['unknown command', ['unknown']],
     ['missing command', []],
-    ['extra arguments', ['generate', 'extra']]
+    ['extra arguments', ['generate', 'extra']],
+    ['browser without install', ['browser']],
+    ['unsupported browser install argument', ['browser', 'install', '--dry-run']]
   ] as const)('prints usage for %s', async (_caseName, args) => {
     const result = await runCli(await createProject(), args)
 
@@ -170,5 +174,21 @@ describe('framekit CLI', () => {
 
     expect(result.code).toBe(7)
     expect(result.stdout).toContain('server-ready')
+  })
+
+  it('inherits PLAYWRIGHT_BROWSERS_PATH and returns the child exit code', async () => {
+    const root = await createProject()
+    const browsersPath = path.join(root, 'browsers')
+    const childFile = path.join(root, 'child.cjs')
+    await writeFile(childFile, `process.exitCode = process.env.PLAYWRIGHT_BROWSERS_PATH === ${JSON.stringify(browsersPath)} ? 17 : 18`)
+
+    const previousBrowsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH
+    process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath
+    try {
+      await expect(runChild(childFile, [], root)).resolves.toBe(17)
+    } finally {
+      if (previousBrowsersPath === undefined) delete process.env.PLAYWRIGHT_BROWSERS_PATH
+      else process.env.PLAYWRIGHT_BROWSERS_PATH = previousBrowsersPath
+    }
   })
 })

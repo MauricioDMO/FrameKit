@@ -4,9 +4,15 @@
 
 ```
 framekit <generate|check|dev|build|start>
+framekit browser install [--with-deps]
 ```
 
-Todos los comandos `framekit` usan `process.cwd()` como raíz del proyecto y rechazan argumentos posicionales u opciones adicionales. No hay flags `--help`, `--version` ni archivo de configuración. No existe forma de especificar un directorio de plantillas alternativo; FrameKit siempre explora `src/templates`.
+Todos los comandos `framekit` usan `process.cwd()` como raíz del proyecto. Los
+comandos estándar rechazan argumentos posicionales u opciones adicionales; el
+comando del navegador solo acepta la bandera opcional `--with-deps`. No hay
+flags `--help`, `--version` ni archivo de configuración. No existe forma de
+especificar un directorio de plantillas alternativo; FrameKit siempre explora
+`src/templates`.
 
 ---
 
@@ -50,6 +56,56 @@ pnpm --filter @mauriciodmo/create-framekit build && node packages/create-frameki
 ```
 
 Los colores se activan en la salida de terminal y pueden desactivarse con `NO_COLOR=1`.
+
+---
+
+## `framekit browser install`
+
+Instala explícitamente el runtime del navegador mediante la dependencia
+`playwright-core` fijada por FrameKit:
+
+```sh
+framekit browser install
+framekit browser install --with-deps
+```
+
+Ambas formas instalan únicamente el headless shell de Chromium.
+`--with-deps` también pide a la CLI de Playwright que instale las dependencias
+del sistema y puede requerir privilegios de root o equivalentes para paquetes
+del sistema en Linux. El comando respeta `PLAYWRIGHT_BROWSERS_PATH` y rechaza
+cualquier otro argumento. La instalación de dependencias, `generate`, `check`,
+`dev`, `build` y `start` no descargan binarios de navegador.
+
+El `Dockerfile` canónico del consumidor generado es exclusivo de pnpm y usa
+`framekit browser install --with-deps`; no invoca Playwright directamente.
+Antes de `docker build`, el proyecto debe contener un `pnpm-lock.yaml`
+adecuado. Los consumidores creados para npm o Yarn, y los proyectos creados sin
+instalar dependencias como `-n`, no están listos para Docker ni validados por
+este camino.
+
+---
+
+## API de imágenes del servidor
+
+El consumidor generado expone la ruta `POST /api/v1/images`, exclusiva del
+runtime Node.js, mediante `createImageHandler(templates)` de
+`@mauriciodmo/framekit/server`. La solicitud JSON contiene el slug obligatorio
+`template` y `variant` y `data` opcionales:
+
+```json
+{ "template": "example", "variant": "en", "data": {} }
+```
+
+Envía `Authorization: Bearer <FRAMEKIT_API_KEY>`. Cuando tiene éxito devuelve
+`200` con `image/png`; los fallos devuelven errores JSON estables. Define
+`FRAMEKIT_API_KEY` y `FRAMEKIT_INTERNAL_ORIGIN` en tiempo de ejecución. Las
+variables opcionales `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
+`FRAMEKIT_MAX_CONCURRENT_RENDERS` y `FRAMEKIT_RENDER_TIMEOUT_MS` configuran el
+acceso a imágenes remotas y los límites de renderizado. La API requiere el
+headless shell instalado explícitamente.
+
+El smoke de tarballs comprueba la ruta generada y los archivos de despliegue; no
+afirma un build real de Docker ni una validación del contenedor/navegador.
 
 ---
 
@@ -171,7 +227,7 @@ framekit start
 
 ## Gates operativos de verificación
 
-Los gates permanentes del repositorio son versionless: Ubuntu ejecuta las comprobaciones completas en Node.js `22.13.0` y `24` con pnpm `11.14.0`; Windows ejecuta comprobaciones focalizadas del consumidor generado en Node.js `22.13.0`; y Ubuntu ejecuta un único flujo crítico de Studio en Chromium con Node.js `22.13.0`. Los comandos correspondientes del repositorio incluyen `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e` y la inspección dry de paquetes con `pnpm --filter <package> pack --dry-run`.
+Los gates permanentes del repositorio son versionless: Ubuntu ejecuta las comprobaciones completas en Node.js `22.13.0` y `24` con pnpm `11.14.0`; Windows ejecuta comprobaciones focalizadas del consumidor generado en Node.js `22.13.0`; y Ubuntu ejecuta los flujos críticos de Studio y de la API de imágenes en Chromium con Node.js `22.13.0`. Los comandos correspondientes del repositorio incluyen `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e` y la inspección dry de paquetes con `pnpm --filter <package> pack --dry-run`.
 
 Las comprobaciones de distribución están separadas. Durante la preparación del release, los maintainers eligen las versiones de los paquetes y ejecutan el smoke de tarballs reales en un consumidor aislado; después de publicar, se proporcionan especificaciones npm exactas y el dist-tag previsto para un smoke de registro separado antes de promocionar. Los gates versionless del repositorio no seleccionan ni codifican una versión de release. Consulta [Pruebas y Distribución](../development/testing-and-distribution.md) para las secuencias reproducibles.
 

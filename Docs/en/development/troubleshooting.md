@@ -280,7 +280,7 @@ Check the browser's storage for `framekit:<slug>:v2`, or remove that exact key a
 
 ## Repository verification gates
 
-The permanent repository gates are versionless: they do not select a release version. Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`, including `pnpm check:runtime`, lint, tests, type-checking, builds, and package dry-run checks. Windows runs focused generated-consumer checks on Node.js `22.13.0`: discovery/codegen tests, creator tests, type-checking, packaging, `framekit generate`, and `framekit check`. Ubuntu also runs one Chromium Studio critical path on Node.js `22.13.0` with `pnpm test:e2e`.
+The permanent repository gates are versionless: they do not select a release version. Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`, including `pnpm check:runtime`, lint, tests, type-checking, builds, and package dry-run checks. Windows runs focused generated-consumer checks on Node.js `22.13.0`: discovery/codegen tests, creator tests, type-checking, packaging, `framekit generate`, and `framekit check`. Ubuntu also runs the Chromium Studio and image API critical paths on Node.js `22.13.0` with `pnpm test:e2e`.
 
 These gates do not replace release verification. Real tarball and npm registry smokes use package versions supplied during release preparation; no release version is encoded in the repository gates.
 

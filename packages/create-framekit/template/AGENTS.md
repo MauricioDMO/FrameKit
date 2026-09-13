@@ -16,9 +16,11 @@ templates.
 FrameKit focuses on code-defined visual communication: social cards, banners,
 campaign graphics, branded compositions, and similar fixed-size exports.
 
-It is not a general CMS, a design-token system, a server-side image-generation
-API, a collaboration service, or a replacement for the application's general
-UI. Studio export is browser-based and currently supports PNG.
+It is not a general CMS, a design-token system, an arbitrary/public rendering
+service, a collaboration service, or a replacement for the application's
+general UI. The shipped `/api/v1/images` route supports synchronous server-side
+PNG generation for defined templates. Studio export is browser-based and
+currently supports PNG.
 
 ## Project map
 

@@ -4,9 +4,14 @@
 
 ```
 framekit <generate|check|dev|build|start>
+framekit browser install [--with-deps]
 ```
 
-All `framekit` commands use `process.cwd()` as the project root and reject extra positional arguments or options. There is no `--help`, `--version`, or configuration file flag. There is no way to specify an alternate templates directory; FrameKit always scans `src/templates`.
+All `framekit` commands use `process.cwd()` as the project root. The standard
+commands reject extra positional arguments or options; the browser command
+accepts only the optional `--with-deps` flag. There is no `--help`, `--version`,
+or configuration file flag. There is no way to specify an alternate templates
+directory; FrameKit always scans `src/templates`.
 
 ---
 
@@ -50,6 +55,53 @@ pnpm --filter @mauriciodmo/create-framekit build && node packages/create-frameki
 ```
 
 Colors are enabled for terminal output and can be disabled with `NO_COLOR=1`.
+
+---
+
+## `framekit browser install`
+
+Installs the browser runtime explicitly through FrameKit's pinned
+`playwright-core` dependency:
+
+```sh
+framekit browser install
+framekit browser install --with-deps
+```
+
+Both forms install only Chromium's headless shell. `--with-deps` also asks the
+Playwright CLI to install system dependencies and may require root or
+equivalent system-package privileges on Linux. The command honors
+`PLAYWRIGHT_BROWSERS_PATH` and rejects every other argument. Dependency
+installation, `generate`, `check`, `dev`, `build`, and `start` do not download
+browser binaries.
+
+The generated consumer's canonical `Dockerfile` is pnpm-only and uses
+`framekit browser install --with-deps`; it does not invoke Playwright directly.
+Before `docker build`, the project must contain a suitable `pnpm-lock.yaml`.
+Consumers scaffolded for npm or Yarn, and scaffolds created without dependency
+installation such as `-n`, are not Docker-ready or validated by this path.
+
+---
+
+## Server image API
+
+The generated consumer exposes a Node.js-only `POST /api/v1/images` route using
+`createImageHandler(templates)` from `@mauriciodmo/framekit/server`. The JSON
+request contains a required `template` slug and optional `variant` and `data`:
+
+```json
+{ "template": "example", "variant": "en", "data": {} }
+```
+
+Send `Authorization: Bearer <FRAMEKIT_API_KEY>`. Success returns `200` with
+`image/png`; failures return stable JSON errors. Set
+`FRAMEKIT_API_KEY` and `FRAMEKIT_INTERNAL_ORIGIN` at runtime. The optional
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
+`FRAMEKIT_RENDER_TIMEOUT_MS` variables configure remote-image access and render
+limits. The API requires the explicitly installed headless shell.
+
+The tarball smoke checks the generated route and deployment files; it does not
+claim a live Docker build or browser/container validation.
 
 ---
 
@@ -171,7 +223,7 @@ framekit start
 
 ## Operational verification gates
 
-The permanent repository gates are versionless: Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`; Windows runs focused generated-consumer checks on Node.js `22.13.0`; and Ubuntu runs one Chromium Studio critical path on Node.js `22.13.0`. The corresponding repository commands include `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e`, and dry package inspection with `pnpm --filter <package> pack --dry-run`.
+The permanent repository gates are versionless: Ubuntu runs the full checks on Node.js `22.13.0` and `24` with pnpm `11.14.0`; Windows runs focused generated-consumer checks on Node.js `22.13.0`; and Ubuntu runs the Chromium Studio and image API critical paths on Node.js `22.13.0`. The corresponding repository commands include `pnpm check:runtime`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm test:e2e`, and dry package inspection with `pnpm --filter <package> pack --dry-run`.
 
 Distribution checks are separate. During release preparation, maintainers choose package versions and run the real tarball smoke in an isolated consumer; after publication, exact npm package specs and the intended dist-tag are supplied to a separate registry smoke before promotion. No release version is selected or encoded by the versionless repository gates. See [Testing and Distribution](../development/testing-and-distribution.md) for the reproducible sequences.
 
