@@ -1,6 +1,6 @@
 # Step 7 - Packaging and Docker
 
-- **Status:** Implemented and verified on 2026-09-11; Step 8 remains pending.
+- **Status:** Implemented and locally reverified on 2026-09-13; Step 8 remains pending.
 
 ## Goal
 
@@ -279,6 +279,30 @@ arguments, pnpm standalone layout, ownership, and whether copying all production
 `node_modules` remains necessary. Prefer a smaller runner later if a clean real
 build proves it can contain only the standalone traced dependencies plus browser
 install/runtime requirements.
+
+## Verification record
+
+The current checkout was reverified locally on 2026-09-13 without publishing
+packages. The runtime contract, focused CLI/creator/render tests, full workspace
+suite (736 tests), lint, typecheck, and workspace build passed.
+
+The pre-publication tarball smoke passed for both the independent consumer and
+the creator-generated consumer. It verified package targets and exports, absence
+of tests/secrets/browser binaries/workspace references, clean generated bindings,
+standalone startup, HTTP readiness, and the production `globalThis` Map handoff.
+
+The browser installer was also run from the freshly packed FrameKit package with
+a temporary `PLAYWRIGHT_BROWSERS_PATH`; it installed the pinned Chromium
+headless shell without a consumer-managed Playwright dependency. A temporary
+Docker context using that same local tarball built the generated image, installed
+the matching shell and system dependencies, ran as non-root `node` under `tini`,
+returned `401` without authentication, and returned a valid `1200x800` PNG with
+authentication.
+
+The committed `scripts/smoke-docker.mjs` remains a registry smoke and requires an
+exact published FrameKit version. It was not run against npm because no package
+was published; the temporary local Docker run covered the same image/runtime
+assertions before publication.
 
 ## `.dockerignore`
 

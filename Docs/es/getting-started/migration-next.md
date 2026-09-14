@@ -21,6 +21,34 @@ migración histórica](./migration-v0.8.0.md).
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
 
+## Integración De Renderizado En Servidor
+
+Los proyectos generados incluyen la ruta aditiva de PNG en servidor. El
+`next.config.ts` generado usa `withFrameKit()`, la ruta unificada de secciones
+conserva las URLs existentes `/editor` y `/brand`, y las rutas explícitas de la
+API y del render privado siguen siendo propiedad de la aplicación. `framekit
+generate` recrea los bindings `studio-client.tsx` y `render-client.tsx` bajo
+`src/generated/framekit/`; no edites esos archivos manualmente ni agregues un
+binding de render hermano dentro del directorio de la ruta.
+
+Para renderizar en servidor, instala el runtime del navegador desde el paquete
+de FrameKit en lugar de agregar una dependencia `playwright-core` al consumidor:
+
+```sh
+framekit browser install
+framekit browser install --with-deps
+```
+
+La segunda forma instala dependencias del sistema en Linux y puede requerir
+permisos de root o equivalentes. El Dockerfile generado es exclusivo de pnpm y
+requiere un `pnpm-lock.yaml` generado; las claves de API y la política de hosts
+de imágenes se suministran en runtime, no se incorporan a la imagen. Las
+aplicaciones existentes pueden conservar sus rutas manuales y su configuración
+de Next, pero deben ejecutar `framekit generate`, `framekit check`, `framekit
+build` y una petición PNG de producción después de adoptar la ruta de servidor.
+Esta funcionalidad no migra datos de plantillas, assets ni estado persistido del
+editor.
+
 ## Contrato Canónico De Plantillas
 
 El issue [#1](https://github.com/MauricioDMO/FrameKit/issues/1) establece una

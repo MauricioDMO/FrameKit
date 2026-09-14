@@ -72,13 +72,18 @@ The test suite does not cover:
 The commands in this document are local checks unless explicitly identified as
 workflow steps. Running them locally does not count as a CI result.
 
-- The [CI run 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
-  completed the Ubuntu Node.js `22.13.0`, Ubuntu Node.js `24`, Windows, and
-  Chromium jobs successfully.
+- The [CI run 34744936723](https://github.com/MauricioDMO/FrameKit/actions/runs/34744936723)
+  for the current checkout completed the Ubuntu Node.js `22.13.0`, Ubuntu
+  Node.js `24`, Windows, and Chromium jobs successfully.
 - The pre-publication tarball smoke recorded in [GitHub issue
   #15](https://github.com/MauricioDMO/FrameKit/issues/15) passed for both an
   independent consumer and a creator-generated consumer. Repeat this gate for
   each release.
+- The current checkout was reverified locally on 2026-09-13: runtime checks,
+  focused package tests, all 736 workspace tests, lint, typecheck, workspace
+  build, tarball smoke, packed browser installation, and a local-tarball Docker
+  smoke all passed. The local Docker run used a temporary context because the
+  committed Docker script is registry-backed; no package was published.
 - The post-publication npm registry smoke remains pending until the exact
   published packages are available and the check passes; it must pass before
   final dist-tag promotion.

@@ -4,7 +4,7 @@ Publica el paquete o paquetes modificados desde la raíz del repositorio con pnp
 
 Esta página es un procedimiento de release, no un registro de release. No
 confirma que las versiones, commits, tags, checks locales, CI, smokes o la
-publicación ya hayan ocurrido. El [run CI 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+publicación ya hayan ocurrido. El [run CI 34744936723](https://github.com/MauricioDMO/FrameKit/actions/runs/34744936723)
 pasó Ubuntu, Windows y Chromium. El smoke pre-publicación de tarballs pasó para
 ambos caminos de consumidor aislado; el resultado está registrado en el [issue
 #15 de GitHub](https://github.com/MauricioDMO/FrameKit/issues/15). El smoke del

@@ -1,6 +1,6 @@
 # Server Image Rendering API
 
-- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Step 7 implemented and verified on 2026-09-11; Step 8 is pending.
+- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Step 7 implemented and locally reverified on 2026-09-13; Step 8 is pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -233,6 +233,26 @@ resources, scopes the private token to the exact render-document request, waits
 for render readiness/fonts/images, captures and verifies PNG bytes, and cleans
 up context, jobs, and capacity on success, failure, timeout, or abort. Real
 Chromium validation remains a later integration gate.
+
+## Step 7 verification
+
+Step 7 was locally reverified on 2026-09-13 without publishing either package.
+The current checkout passed the runtime contract, focused CLI/creator/render
+tests, the full workspace suite (736 tests), lint, typecheck, and workspace
+build. The packed-package smoke also passed for an independent consumer and a
+creator-generated consumer, including public export resolution, generated
+bindings, standalone startup, HTTP readiness, and the production `globalThis`
+Map handoff.
+
+The packed FrameKit CLI installed its pinned Chromium headless shell while
+honoring `PLAYWRIGHT_BROWSERS_PATH`. A separate temporary Docker context using
+the freshly packed local package built the canonical image, installed the shell
+and system dependencies, ran as `node` under `tini`, rejected an unauthenticated
+request, and returned a `1200x800` PNG from the API. No package was published.
+
+The repository `smoke:docker` command remains intentionally registry-backed: it
+requires an exact published FrameKit version. That post-publication check is
+still a release handoff and does not block the local Step 7 implementation gate.
 
 Each step contains:
 

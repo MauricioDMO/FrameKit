@@ -51,5 +51,10 @@
   checks on Node.js `22.13.0`, and one Chromium Studio critical path. Release
   tarball and npm checks take versions supplied during release preparation; no
   release version is selected here. See [GitHub issue #15](https://github.com/MauricioDMO/FrameKit/issues/15).
+- Added the authenticated server-side PNG API to the public package and generated
+  consumer, including the pinned `playwright-core` runtime, explicit
+  `framekit browser install` command, generated Docker image, local tarball
+  verification, and non-root Chromium runtime checks. The registry-backed Docker
+  smoke remains a release-time handoff; no package version is selected here.
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

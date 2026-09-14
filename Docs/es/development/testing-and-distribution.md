@@ -75,13 +75,19 @@ Los comandos de este documento son checks locales salvo cuando se identifiquen
 explícitamente como pasos del workflow. Ejecutarlos localmente no cuenta como un
 resultado de CI.
 
-- El [run CI 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
-  completó correctamente los lanes de Ubuntu con Node.js `22.13.0`, Ubuntu con
-  Node.js `24`, Windows y Chromium.
+- El [run CI 34744936723](https://github.com/MauricioDMO/FrameKit/actions/runs/34744936723)
+  del checkout actual completó correctamente los lanes de Ubuntu con Node.js
+  `22.13.0`, Ubuntu con Node.js `24`, Windows y Chromium.
 - El smoke pre-publicación de tarballs registrado en el [issue #15 de
   GitHub](https://github.com/MauricioDMO/FrameKit/issues/15) pasó para un
   consumidor independiente y otro generado por creator. Repite este gate en
   cada release.
+- El checkout actual se reverificó localmente el 2026-09-13: pasaron los checks
+  de runtime, las pruebas focalizadas de paquetes, las 736 pruebas del
+  workspace, lint, typecheck, build del workspace, el smoke de tarballs, la
+  instalación del navegador desde el paquete y un smoke Docker con tarball
+  local. El smoke Docker local usó un contexto temporal porque el script
+  versionado está respaldado por el registry; no se publicó ningún paquete.
 - El smoke del registro npm posterior a publicar queda pendiente hasta que los
   paquetes publicados exactos estén disponibles y la comprobación pase; debe
   pasar antes de promover el dist-tag final.

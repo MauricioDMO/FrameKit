@@ -4,7 +4,7 @@ Publish the changed package or packages from the repository root with pnpm. Do n
 
 This page is a release procedure, not a release record. It does not confirm
 that versions, commits, tags, local checks, CI, smoke tests, or publication have
-already happened. The latest [CI run 33948285021](https://github.com/MauricioDMO/FrameKit/actions/runs/33948285021)
+already happened. The latest [CI run 34744936723](https://github.com/MauricioDMO/FrameKit/actions/runs/34744936723)
 passed Ubuntu, Windows, and Chromium. The pre-publication tarball smoke passed
 for both isolated consumer paths; its result is recorded in [GitHub issue
 #15](https://github.com/MauricioDMO/FrameKit/issues/15). The post-publication

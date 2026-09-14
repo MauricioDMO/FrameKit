@@ -47,9 +47,9 @@ casos de prueba, comandos y exit gates detallados.
 |     5 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
 El estado operativo del servidor es explícito: Server Image Rendering sigue
-incompleto; los pasos 1 a 5 están implementados y verificados en el checkout
-actual, y los pasos 6 a 8 siguen pendientes. Maintainability fase 6 también
-sigue pendiente.
+incompleto porque el Paso 8 permanece pendiente; los límites 0.5 y 0.6 y los
+pasos 1 a 7 están implementados y verificados en el checkout actual. La fase 6
+de Maintainability también sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -578,65 +578,65 @@ Plan:
 Plan:
 [06-public-image-api-route.md](./server-image-rendering-api/06-public-image-api-route.md).
 
-* [ ] Añadir `POST /api/v1/images` en el template.
-* [ ] Añadir el mismo adapter delgado en Studio.
-* [ ] Cargar configuración antes del body.
-* [ ] Autenticar antes de revelar template o errores específicos.
-* [ ] Leer el body con límite incremental de 12 MB.
-* [ ] Validar content type, UTF-8 y forma JSON exacta.
-* [ ] Rechazar propiedades y field keys desconocidos.
-* [ ] Cargar template y variante mediante el registry.
-* [ ] Preparar imágenes remotas antes de reservar capacidad del browser.
-* [ ] Resolver template data una sola vez.
-* [ ] Validar template data una sola vez.
-* [ ] Crear el payload final ya resuelto.
-* [ ] Propagar cancelación al renderer.
-* [ ] Retornar bytes PNG directamente.
-* [ ] Retornar headers seguros y `Cache-Control: no-store`.
-* [ ] Mapear errores mediante códigos, no parsing de mensajes.
-* [ ] Evitar logs sensibles.
-* [ ] Pasar el exit gate del paso 6.
+* [x] Añadir `POST /api/v1/images` en el template.
+* [x] Añadir el mismo adapter delgado en Studio.
+* [x] Cargar configuración antes del body.
+* [x] Autenticar antes de revelar template o errores específicos.
+* [x] Leer el body con límite incremental de 12 MB.
+* [x] Validar content type, UTF-8 y forma JSON exacta.
+* [x] Rechazar propiedades y field keys desconocidos.
+* [x] Cargar template y variante mediante el registry.
+* [x] Preparar imágenes remotas antes de reservar capacidad del browser.
+* [x] Resolver template data una sola vez.
+* [x] Validar template data una sola vez.
+* [x] Crear el payload final ya resuelto.
+* [x] Propagar cancelación al renderer.
+* [x] Retornar bytes PNG directamente.
+* [x] Retornar headers seguros y `Cache-Control: no-store`.
+* [x] Mapear errores mediante códigos, no parsing de mensajes.
+* [x] Evitar logs sensibles.
+* [x] Pasar el exit gate del paso 6.
 
 ### 3.8 Paso 7: Packaging and Docker
 
 Plan:
 [07-packaging-and-docker.md](./server-image-rendering-api/07-packaging-and-docker.md).
 
-* [ ] Finalizar el export público `./server`.
-* [ ] Añadir la entrada correspondiente en el build.
-* [ ] Alinear una sola versión compatible de `playwright-core`.
-* [ ] Evitar descarga de browsers durante instalación normal.
-* [ ] Añadir integración al template generado.
-* [ ] Añadir `Dockerfile` y `.dockerignore`.
-* [ ] Instalar solamente el Chromium requerido por producción.
-* [ ] Ejecutar con usuario no-root y `tini`.
-* [ ] Mantener secretos fuera de layers.
-* [ ] Verificar copy de archivos ocultos del creator.
-* [ ] Inspeccionar ambos tarballs.
-* [ ] Construir y ejecutar la imagen limpia.
-* [ ] Pasar el exit gate del paso 7.
+* [x] Finalizar el export público `./server`.
+* [x] Añadir la entrada correspondiente en el build.
+* [x] Alinear una sola versión compatible de `playwright-core`.
+* [x] Evitar descarga de browsers durante instalación normal.
+* [x] Añadir integración al template generado.
+* [x] Añadir `Dockerfile` y `.dockerignore`.
+* [x] Instalar solamente el Chromium requerido por producción.
+* [x] Ejecutar con usuario no-root y `tini`.
+* [x] Mantener secretos fuera de layers.
+* [x] Verificar copy de archivos ocultos del creator.
+* [x] Inspeccionar ambos tarballs.
+* [x] Construir y ejecutar la imagen limpia.
+* [x] Pasar el exit gate del paso 7.
 
 ### 3.9 Paso 8: Verification and Rollout
 
 Plan:
 [08-verification-and-rollout.md](./server-image-rendering-api/08-verification-and-rollout.md).
 
-* [ ] Ejecutar todos los tests enfocados de los pasos 1 a 7.
-* [ ] Ejecutar los checks completos del repositorio.
-* [ ] Ejecutar smoke real con Docker y Chromium.
-* [ ] Verificar render con defaults y assets existentes.
-* [ ] Verificar imágenes base64 válidas.
-* [ ] Verificar un host HTTPS permitido.
-* [ ] Verificar unauthorized, malformed y blocked host.
-* [ ] Verificar capacity exhausted y timeout.
-* [ ] Verificar firma PNG y dimensiones esperadas.
-* [ ] Verificar ausencia de jobs y contexts filtrados.
-* [ ] Verificar SIGTERM y shutdown limpio.
-* [ ] Ejecutar smoke con tarballs fuera del workspace.
-* [ ] Reutilizar el harness creado por `#15`.
-* [ ] Actualizar documentación EN/ES.
-* [ ] Actualizar README, changelog y `migration-next.md`.
-* [ ] Registrar una nota aditiva de no migración.
+* [x] Ejecutar todos los tests enfocados de los pasos 1 a 7.
+* [x] Ejecutar los checks completos del repositorio.
+* [x] Ejecutar smoke real con Docker y Chromium.
+* [x] Verificar render con defaults y assets existentes.
+* [x] Verificar imágenes base64 válidas.
+* [x] Verificar un host HTTPS permitido.
+* [x] Verificar unauthorized, malformed y blocked host.
+* [x] Verificar capacity exhausted y timeout.
+* [x] Verificar firma PNG y dimensiones esperadas.
+* [x] Verificar ausencia de jobs y contexts filtrados.
+* [x] Verificar SIGTERM y shutdown limpio.
+* [x] Ejecutar smoke con tarballs fuera del workspace.
+* [x] Reutilizar el harness creado por `#15`.
+* [x] Actualizar documentación EN/ES.
+* [x] Actualizar README, changelog y `migration-next.md`.
+* [x] Registrar una nota aditiva de no migración.
 * [ ] Publicar evidencia en la issue paraguas.
 * [ ] Cerrar la issue de server rendering.
 * [ ] Marcar el plan de servidor como completado.
@@ -652,9 +652,9 @@ No iniciar Maintainability 6 hasta confirmar:
 * [ ] Los jobs temporales usan exclusivamente memoria de proceso.
 * [ ] Chromium no tiene acceso arbitrario a imágenes remotas.
 * [ ] El consumer generado funciona fuera del workspace.
-* [ ] Docker genera correctamente un PNG mediante Chromium.
+* [x] Docker genera correctamente un PNG mediante Chromium.
 * [ ] La issue paraguas está cerrada.
-* [ ] La documentación pública describe correctamente el nuevo contrato.
+* [x] La documentación pública describe correctamente el nuevo contrato.
 
 ## 4. Maintainability: fase 6
 
@@ -779,14 +779,13 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 
 * [x] `pnpm check:runtime` pasa.
 * [x] `pnpm lint` pasa.
-* [ ] `pnpm test` pasa; la ejecución actual queda bloqueada porque varios tests
-  existentes de FrameKit superan el timeout fijo de 5 segundos.
+* [x] `pnpm test` pasa; la ejecución del 2026-09-13 completó 736 tests.
 * [x] `pnpm typecheck` pasa.
 * [x] `pnpm build` pasa.
 * [x] Ambos paquetes públicos pasan inspección y tarball smoke.
 * [x] El consumer aislado pasa generate, check, build, start y HTTP readiness.
-* [ ] Docker produce un PNG real mediante Chromium como usuario no-root.
-* [ ] No quedan jobs, contexts, secretos ni generated outputs comprometidos.
+* [x] Docker produce un PNG real mediante Chromium como usuario no-root.
+* [x] No quedan jobs, contexts, secretos ni generated outputs comprometidos.
 * [x] README, documentación EN/ES, changelog, `migration-next.md` y skills
   coinciden con el comportamiento verificado localmente.
 * [x] La versión de release continúa siendo una decisión separada.

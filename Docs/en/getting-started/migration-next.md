@@ -20,6 +20,33 @@ guide](./migration-v0.8.0.md).
 This rolling guide is the documentation deliverable for [GitHub issue
 #14](https://github.com/MauricioDMO/FrameKit/issues/14).
 
+## Server Rendering Integration
+
+Generated projects include the additive server-side PNG path. The generated
+`next.config.ts` uses `withFrameKit()`, the unified section route serves the
+existing `/editor` and `/brand` URLs, and the explicit API and private render
+routes remain application-owned. `framekit generate` recreates the
+`studio-client.tsx` and `render-client.tsx` bindings under
+`src/generated/framekit/`; do not hand-edit those files or add a sibling render
+binding to the route directory.
+
+For server rendering, install the browser runtime from the FrameKit package
+rather than adding a consumer `playwright-core` dependency:
+
+```sh
+framekit browser install
+framekit browser install --with-deps
+```
+
+The second form installs Linux system dependencies and may require root or
+equivalent privileges. The generated Dockerfile is pnpm-specific and requires
+a generated `pnpm-lock.yaml`; API keys and image-host policy are supplied at
+runtime, not baked into the image. Existing applications may keep their manual
+routes and Next configuration, but should run `framekit generate`, `framekit
+check`, `framekit build`, and a production PNG request after adopting the server
+route. This feature does not migrate template data, assets, or persisted editor
+state.
+
 ## Canonical Template Contract
 
 Issue [#1](https://github.com/MauricioDMO/FrameKit/issues/1) establishes one
