@@ -1,9 +1,10 @@
 # Maintainability Roadmap
 
 - **Status:** In progress; phases 1 through 5 are implemented and the Phase 5 shared exit gate passes.
-- **Next:** After phases 1 through 5 pass their exit gates, execute the eight
-  Server Image Rendering steps and its server gate; Phase 6 remains deferred
-  until they are complete.
+- **Next:** After phases 1 through 5 pass their exit gates, preserve the verified
+  Server Image Rendering Steps 1-7 baseline, execute Studio Access and API
+  Rendering Phases 1-8, then revalidate and close Server Step 8. Phase 6 remains
+  deferred until those blocks are complete.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,
@@ -105,7 +106,7 @@ Implement and merge these PRs in order:
 | 3 | [Editor orchestration](./03-editor-orchestration.md) | Smaller editor coordinator with existing state, controls, preview, and export owners reused | PRs 1-2 |
 | 4 | [Studio shell split](./04-studio-shell-split.md) | Internal Studio resource, state, settings, and shell ownership split | PRs 1-3 |
 | 5 | [Published design tokens](./05-design-tokens.md) | A small public theme-role contract with internal visual details kept private and the export unchanged | PRs 1-4 |
-| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Post-server boundary plan covering current entries and the Step 1-only `./server` facade plus its future capabilities | Server steps 1-8 and server gate |
+| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Final boundary plan covering rendering, SQLite access, Studio root integration, and generated consumers | Server Steps 1-7, Studio Access and API Rendering Phases 1-8, and Server Step 8 final gate |
 
 The links above are the complete phase index for this roadmap. A later phase
 must not be folded into an earlier PR merely because both touch documentation or
@@ -118,10 +119,11 @@ a cheap failure signal. PR 2 separates validation ownership without changing its
 public facade. PR 3 then separates editor presentation from orchestration while
 retaining existing state and export owners. PR 4 applies the same ownership
 discipline to the Studio shell. PR 5 centralizes repeated visual values behind a
-bounded, documented semantic CSS contract. The Server Image Rendering plan is
-then intended to add its final runtime and consumer surface. PR 6 is last because
-import-boundary checks must describe that post-server graph and generated-output
-conventions rather than enforce a pre-server architecture.
+bounded, documented semantic CSS contract. Server Image Rendering Steps 1-7 add
+the rendering runtime, Studio Access and API Rendering then adds the final access
+and export surface, and Server Step 8 reverifies that combined result. PR 6 is
+last because import-boundary checks must describe that final graph and
+generated-output conventions rather than enforce a transitional architecture.
 
 Each phase may clarify names or documentation wording, but it may not alter a
 public export, move a package, change generated-template behavior, or change a

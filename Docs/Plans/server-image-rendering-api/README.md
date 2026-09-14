@@ -1,6 +1,8 @@
 # Server Image Rendering API
 
-- **Status:** Steps 0.5 and 0.6, and Steps 1-6, implemented and verified on 2026-09-10; Step 7 implemented and locally reverified on 2026-09-13; Step 8 is pending.
+- **Status:** Steps 0.5 and 0.6, and Steps 1-7, are implemented and verified;
+  Step 8 final revalidation and closure are blocked by the Studio Access, API
+  Tokens, and Server-backed Export plan.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -36,6 +38,20 @@ database, Redis, queue, or object storage is required.
 The phase documents are the source of truth for implementation details. This
 README defines the cross-cutting contract and execution order.
 
+## Cross-plan supersession
+
+The verified Steps 1-7 implementation remains the rendering baseline. The
+[Studio Access, API Tokens, and Server-backed Export plan](../studio-access-and-api-rendering/README.md)
+must now run before Step 8 final closure. It supersedes the final assumptions of
+one canonical shared API key, five maintained starter files, no application
+persistent volume, and browser-based Studio export.
+
+SQLite introduced by that plan stores users, sessions, and API tokens only. It
+does not replace the temporary `globalThis + Map` render-job store described by
+this plan. Sections below that describe browser export, the five-file starter,
+or no persistent application data remain historical Step 1-7 baseline records
+until the new plan's documentation phase reconciles them.
+
 ## How to execute the plan
 
 Verify the completed Step 0.5 and Step 0.6 gates before continuing to Step 6.
@@ -58,7 +74,7 @@ their gates run after Step 5 and before Step 6.
 | 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders already-resolved data | Steps 2-4 |
 | 6 | [Public image API route](./06-public-image-api-route.md) | Package-owned `createImageHandler(templates)` and a thin authenticated PNG route | Steps 0.5-0.6 and 1-5 |
 | 7 | [Packaging and Docker](./07-packaging-and-docker.md) | FrameKit-owned browser installation/versioning, minimal starter distribution, and production image | Steps 0.5-0.6 and 1-6 |
-| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7 |
+| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Final unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7, then Studio Access and API Rendering Phases 1-8 |
 
 ## Step 0.5 - Package Client/Server Boundaries
 

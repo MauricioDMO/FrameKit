@@ -10,6 +10,8 @@ distribution; update documentation; and define a safe additive rollout.
 
 - Completion of Steps 1-7 with passing focused exit gates.
 - Steps 0.5 and 0.6 package/integration gates, including the minimal starter.
+- Completion of all eight phases in
+  [Studio Access, API Tokens, and Server-backed Export](../studio-access-and-api-rendering/README.md).
 - Built public package tarballs.
 - An isolated creator-generated consumer outside the workspace.
 
@@ -27,6 +29,11 @@ distribution; update documentation; and define a safe additive rollout.
 - English/Spanish public documentation.
 - Changelog + additive migration note.
 - Rollout/rollback checklist and known limitations.
+
+The verification inventory below records the original API-key and browser-export
+baseline. Before final closure, reconcile and rerun every affected assertion for
+SQLite access data, sessions, API tokens, the seven-file starter, server-backed
+Studio export, and persistent Docker storage. Render jobs remain memory-only.
 
 ## Verification strategy
 

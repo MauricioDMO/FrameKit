@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-06.
+* **Última revisión:** 2026-09-13.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -34,6 +34,9 @@ casos de prueba, comandos y exit gates detallados.
   después del cierre versionless del bloque Future.
 * [Server Image Rendering API](./server-image-rendering-api/README.md): ocho
   pasos para renderizado PNG autenticado en un proceso Node de larga duración.
+* [Studio Access, API Tokens, and Server-backed Export](./studio-access-and-api-rendering/README.md):
+  ocho fases para acceso a Studio mediante SQLite, usuarios, sesiones, API
+  tokens, export server-side y persistencia Docker.
 
 ## Orden global aprobado
 
@@ -42,14 +45,18 @@ casos de prueba, comandos y exit gates detallados.
 |     0 | Sincronizar GitHub y alinear issues con los planes    | Issues y planes activos describen el contrato real                            |
 |     1 | Cerrar el bloque Future: `#12 -> #17 -> #13 -> #14 -> #15` | `#12`, `#13`, `#14`, `#15` y `#17` cerradas                                   |
 |     2 | Maintainability fases 1 a 5                           | Tooling, validación, Editor, Studio y estilos estabilizados                   |
-|     3 | Server Image Rendering pasos 1 a 8                    | API, browser, seguridad, Docker y distribución verificadas                    |
-|     4 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
-|     5 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
+|     3 | Server Image Rendering pasos 1 a 7                    | API, browser, seguridad, packaging y Docker base verificados                   |
+|     4 | Studio Access & API Rendering fases 1 a 8             | SQLite, auth, usuarios, tokens, export server-side y volumen verificados       |
+|     5 | Server Image Rendering paso 8: reverificación y cierre | Evidencia final publicada contra la arquitectura transversal definitiva       |
+|     6 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
+|     7 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
-El estado operativo del servidor es explícito: Server Image Rendering sigue
-incompleto porque el Paso 8 permanece pendiente; los límites 0.5 y 0.6 y los
-pasos 1 a 7 están implementados y verificados en el checkout actual. La fase 6
-de Maintainability también sigue pendiente.
+El estado operativo del servidor es explícito: los límites 0.5 y 0.6 y los
+pasos 1 a 7 están implementados y verificados. La mayor parte de la evidencia
+técnica del Paso 8 también se ejecutó contra el baseline de API key compartida y
+export browser-side, pero su cierre final queda bloqueado por Studio Access & API
+Rendering y debe revalidarse contra esa arquitectura. La fase 6 de
+Maintainability también sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -79,7 +86,13 @@ Maintainability
 1 → 2 → 3 → 4 → 5
     ↓
 Server Image Rendering
+1 → 2 → 3 → 4 → 5 → 6 → 7
+    ↓
+Studio Access & API Rendering
 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+    ↓
+Server Image Rendering
+8 (reverificación y cierre)
     ↓
 Maintainability
 6
@@ -428,10 +441,15 @@ estructura estabilizada por las fases anteriores, no de `./server`.
 
 ## 3. Server Image Rendering API
 
-El plan de servidor se ejecuta completo después de Maintainability 1 a 5.
+Los pasos 1 a 7 del plan de servidor se ejecutan después de Maintainability 1 a
+5. Su Paso 8 se cierra solamente después del nuevo plan transversal.
 
 ```text
-1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+1 → 2 → 3 → 4 → 5 → 6 → 7
+                            ↓
+            Studio Access & API Rendering 1 → 8
+                            ↓
+              Step 8 revalidation and closure
 ```
 
 La primera implementación soporta un único proceso Node de larga duración por
@@ -621,6 +639,11 @@ Plan:
 Plan:
 [08-verification-and-rollout.md](./server-image-rendering-api/08-verification-and-rollout.md).
 
+La evidencia marcada a continuación corresponde al baseline anterior al nuevo
+plan transversal. Debe conservarse como registro, pero los puntos afectados por
+SQLite, sesiones, API tokens, export server-side y volumen persistente deben
+repetirse antes del cierre.
+
 * [x] Ejecutar todos los tests enfocados de los pasos 1 a 7.
 * [x] Ejecutar los checks completos del repositorio.
 * [x] Ejecutar smoke real con Docker y Chromium.
@@ -637,6 +660,10 @@ Plan:
 * [x] Actualizar documentación EN/ES.
 * [x] Actualizar README, changelog y `migration-next.md`.
 * [x] Registrar una nota aditiva de no migración.
+* [ ] Completar las ocho fases de Studio Access & API Rendering.
+* [ ] Revalidar Step 8 contra sesiones, API tokens y export server-side.
+* [ ] Revalidar Docker con volumen SQLite persistente y restart.
+* [ ] Sustituir la nota puramente aditiva por la migración real de Studio.
 * [ ] Publicar evidencia en la issue paraguas.
 * [ ] Cerrar la issue de server rendering.
 * [ ] Marcar el plan de servidor como completado.
@@ -646,17 +673,43 @@ Plan:
 No iniciar Maintainability 6 hasta confirmar:
 
 * [ ] Los ocho pasos aprobaron sus exit gates.
+* [ ] Studio Access & API Rendering aprobó sus ocho fases.
 * [ ] El export público `./server` está definido y empaquetado.
 * [ ] `TemplateCanvas` forma parte intencional de `./editor`.
 * [ ] Las rutas públicas y privadas utilizan únicamente exports soportados.
 * [ ] Los jobs temporales usan exclusivamente memoria de proceso.
 * [ ] Chromium no tiene acceso arbitrario a imágenes remotas.
 * [ ] El consumer generado funciona fuera del workspace.
+* [ ] El consumer generado usa la forma final de siete archivos mantenidos.
+* [ ] SQLite persiste acceso mientras los render jobs permanecen en memoria.
 * [x] Docker genera correctamente un PNG mediante Chromium.
 * [ ] La issue paraguas está cerrada.
-* [x] La documentación pública describe correctamente el nuevo contrato.
+* [ ] La documentación pública describe correctamente el contrato final.
 
-## 4. Maintainability: fase 6
+## 4. Studio Access & API Rendering
+
+Plan:
+[Studio Access, API Tokens, and Server-backed Export](./studio-access-and-api-rendering/README.md).
+
+Este bloque se ejecuta después de Server Image Rendering 1 a 7 y antes de su
+Paso 8 final. Sus fases son obligatoriamente secuenciales:
+
+```text
+1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+```
+
+* [ ] Fase 1: SQLite and Migrations.
+* [ ] Fase 2: Users, Passwords, and Bootstrap.
+* [ ] Fase 3: Sessions, HTTP, and Route Protection.
+* [ ] Fase 4: API Tokens, Users, and Authorization.
+* [ ] Fase 5: Studio Access UI.
+* [ ] Fase 6: Authenticated Image API and Export.
+* [ ] Fase 7: Generated Consumer and Docker.
+* [ ] Fase 8: Verification, Documentation, and Rollout.
+* [ ] Reabrir el gate final de Server Image Rendering Step 8 sobre el nuevo
+  baseline.
+
+## 5. Maintainability: fase 6
 
 La fase final de mantenibilidad se ejecuta contra la arquitectura posterior al
 servidor.
@@ -672,10 +725,15 @@ Antes de implementarla, actualiza su baseline para incluir:
 * el nuevo package/build entry;
 * Playwright y Node como dependencias exclusivamente server/tooling donde
   corresponda.
+* `src/server/access/**` y `node:sqlite`;
+* los boundaries server-only de `./studio/root`;
+* las rutas de acceso y el handler de imagen autenticado;
+* la forma final de siete archivos mantenidos del consumer;
+* SQLite persistente separado de los render jobs en memoria.
 
 No implementes las reglas de la fase 6 usando el mapa anterior de seis exports.
 
-### 4.1 Fase 6: Architectural Import Boundaries
+### 5.1 Fase 6: Architectural Import Boundaries
 
 Plan actual que debe revalidarse:
 [06-architectural-import-boundaries.md](./maintainability-roadmap/06-architectural-import-boundaries.md).
@@ -710,7 +768,7 @@ Plan actual que debe revalidarse:
 * [ ] Marcar la fase 6 como completada.
 * [ ] Marcar `maintainability-roadmap/` como completado.
 
-### 4.2 Gate de arquitectura final
+### 5.2 Gate de arquitectura final
 
 * [ ] Foundation no depende de capas superiores.
 * [ ] Editor no depende de Studio ni Server.
@@ -724,15 +782,15 @@ Plan actual que debe revalidarse:
 * [ ] Los tests negativos demuestran que las restricciones realmente fallan.
 * [ ] El consumer empaquetado sigue funcionando fuera del monorepo.
 
-## 5. Backlog no bloqueante
+## 6. Backlog no bloqueante
 
-Estas issues no forman parte del completion gate de los tres planes principales.
+Estas issues no forman parte del completion gate de los cuatro planes principales.
 
 Pueden repriorizarse una vez estabilizada la arquitectura final, pero no deben
 intercalarse en Future, Maintainability ni Server salvo que se conviertan
 explícitamente en trabajo bloqueante mediante una nueva decisión registrada.
 
-### 5.1 Issue #18: Template Quick Switcher
+### 6.1 Issue #18: Template Quick Switcher
 
 * [ ] Repriorizar después de estabilizar `FrameKitStudio`.
 * [ ] Implementar sin crear un command framework.
@@ -740,7 +798,7 @@ explícitamente en trabajo bloqueante mediante una nueva decisión registrada.
 * [ ] Verificar teclado, foco, traducciones y navegación.
 * [ ] Cerrar `#18` cuando su acceptance gate pase.
 
-### 5.2 Issue #19: Recent Templates
+### 6.2 Issue #19: Recent Templates
 
 * [ ] Repriorizar después de estabilizar el resource lifecycle de Studio.
 * [ ] Implementar de forma independiente de `#18`.
@@ -775,7 +833,20 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 * [ ] Las imágenes remotas se materializan mediante Node antes del browser.
 * [ ] Chromium no tiene acceso arbitrario a la red externa.
 
+### Studio Access and API Rendering
+
+* [ ] Las ocho fases aprobaron sus exit gates.
+* [ ] Studio exige una sesión activa sin proteger la ruta privada con esa sesión.
+* [ ] Usuarios, sesiones y API tokens se almacenan bajo el contrato SQLite final.
+* [ ] Download PNG y Copy PNG usan exclusivamente el renderer server-side.
+* [ ] El handler clásico conserva compatibilidad con `FRAMEKIT_API_KEY`.
+* [ ] El starter final contiene siete archivos mantenidos bajo `src/app`.
+* [ ] Docker preserva SQLite entre containers y limpia jobs al reiniciar proceso.
+
 ### Repository gates
+
+Los resultados marcados corresponden al baseline anterior a Studio Access & API
+Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 
 * [x] `pnpm check:runtime` pasa.
 * [x] `pnpm lint` pasa.
@@ -804,3 +875,5 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 | 2026-08-31 | Limitar v1 a un proceso Node de larga duración por contenedor                                                                      |
 | 2026-08-31 | Mantener `#18` y `#19` como backlog no bloqueante                                                                                  |
 | 2026-08-31 | Usar una issue paraguas para server rendering; crear subissues solo si aparece trabajo paralelo real                               |
+| 2026-09-13 | Insertar Studio Access & API Rendering entre Server Steps 1-7 y la reverificación/cierre final de Step 8                           |
+| 2026-09-13 | Persistir usuarios, sesiones y API tokens en SQLite sin cambiar el store temporal `globalThis + Map` de los render jobs             |
