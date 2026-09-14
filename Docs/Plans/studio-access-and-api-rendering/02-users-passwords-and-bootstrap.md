@@ -143,6 +143,18 @@ separate file becomes necessary during implementation.
    or silently change its parameters. If the profile is not viable, amend this
    plan before any `v1` hash is persisted.
 
+## Benchmark record
+
+Measured on 2026-09-14 with Node.js `v22.13.0` on Linux x64, using one warm-up
+and three sequential samples:
+
+- Profile: `N=131072`, `r=8`, `p=1`, `maxmem=268435456`, 16-byte salt, 64-byte key.
+- Samples: 1733.02 ms, 1289.28 ms, 1629.06 ms.
+- Median: 1629.06 ms; min: 1289.28 ms; max: 1733.02 ms.
+
+This is viable for infrequent bootstrap/login work. It is not a concurrency
+promise; deployment throttling remains required.
+
 ## Exit gate
 
 Phase 2 is complete when credentials are never persisted or returned in

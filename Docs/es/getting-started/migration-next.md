@@ -17,10 +17,12 @@ migración histórica](./migration-v0.8.0.md).
   mediante la ruta `POST /api/v1/images` del consumidor generado; instala
   explícitamente su headless shell de Chromium con `framekit browser install`
   antes de servir solicitudes.
-- La Fase 1 de Studio Access & API Rendering (SQLite y migraciones) está
-  implementada, pero las fases 2-8 todavía no. El Paso 8 de Server Image
-  Rendering sigue bloqueado hasta completar ese plan; sus cambios de autenticación
-  y exportación server-side aún no están disponibles.
+- Las Fases 1 y 2 de Studio Access & API Rendering (SQLite, migraciones,
+  usuarios, contraseñas y bootstrap) están implementadas, pero las fases 3-8
+  siguen sin estar disponibles. El Paso 8 de Server Image Rendering continúa
+  bloqueado hasta completar ese plan; el login y las sesiones HTTP, las rutas
+  protegidas de Studio, los endpoints de tokens API y la exportación server-side
+  de Studio todavía no están disponibles.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -47,13 +49,16 @@ autenticación ni convierte Studio en una ruta protegida.
   FrameKit.
 
 `node:sqlite` continúa siendo una API en desarrollo activo en Node.js 22; por
-eso el runtime mínimo es Node.js `>=22.13.0`. Esta fase solo prepara tablas
-vacías. El bootstrap del primer administrador, el login, las sesiones, los
-tokens API, la protección de rutas y la exportación server-side de Studio
-pertenecen a fases posteriores. Las variables `FRAMEKIT_ADMIN_USERNAME` y
-`FRAMEKIT_ADMIN_PASSWORD` todavía no tienen efecto.
+eso el runtime mínimo es Node.js `>=22.13.0`. La base de la Fase 1 solo prepara
+tablas vacías; la Fase 2 las usa para el bootstrap lazy, en tiempo de solicitud,
+del primer administrador y para las credenciales locales. El login y las
+sesiones HTTP, las rutas protegidas de Studio, los endpoints de tokens API y la
+exportación server-side pertenecen a fases posteriores. `FRAMEKIT_ADMIN_USERNAME`
+y `FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
+`FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
+de imágenes continúa leyéndola de forma independiente.
 
-Mientras esas fases no estén implementadas, la ruta `POST /api/v1/images`
+Mientras las fases 3-8 no estén implementadas, la ruta `POST /api/v1/images`
 continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
 usando el exportador actual del navegador. Esta base tampoco migra datos de
 plantillas, assets ni estado persistido del editor.
@@ -62,6 +67,34 @@ La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
 duración por contenedor. Los render jobs son locales al proceso, desaparecen al
 reiniciar, no se guardan en SQLite y no admiten ejecución serverless ni múltiples
 réplicas.
+
+## Credenciales y bootstrap del primer administrador
+
+La Fase 2 del plan de acceso a Studio ya está implementada. Añade credenciales
+locales y operaciones seguras de usuarios, pero todavía no incorpora handlers
+HTTP ni UI.
+
+- Las contraseñas deben tener entre 12 y 256 bytes UTF-8. Se calculan de forma
+  asíncrona con el perfil fijo `scrypt:v1` y salts aleatorias; la base de datos
+  solo guarda hashes de contraseñas y de secretos de API importados. El DTO
+  seguro `StudioUser` solo expone `id`, `username` y `role`.
+- En la primera inicialización perezosa, en tiempo de solicitud, de una base
+  vacía, `FRAMEKIT_ADMIN_PASSWORD` es obligatorio y
+  `FRAMEKIT_ADMIN_USERNAME` usa `admin` por defecto. `FRAMEKIT_DATABASE_PATH`
+  continúa seleccionando la ruta de la base de datos.
+- Si `FRAMEKIT_API_KEY` no está vacío durante ese primer bootstrap, se importa
+  una sola vez como hash SHA-256 de un token API heredado. Cuando ya existe
+  cualquier usuario, se ignoran los valores de entorno del bootstrap y la
+  cuenta no vuelve a sincronizarse desde el entorno.
+- Las mutaciones validan el nombre de usuario, el rol, el estado activo, los
+  cambios y restablecimientos de contraseña y la eliminación. Cambiar o
+  restablecer una contraseña, y desactivar un usuario, elimina sus sesiones; una
+  transacción impide eliminar, desactivar o degradar al último administrador
+  activo.
+- El login y las sesiones HTTP, las rutas protegidas de Studio, los endpoints de
+  tokens API y la descarga y copia PNG en el servidor todavía no están disponibles.
+  `POST /api/v1/images` sigue usando `FRAMEKIT_API_KEY`, y Download PNG y Copy
+  PNG siguen usando el exportador del navegador.
 
 ## Integración De Renderizado En Servidor
 

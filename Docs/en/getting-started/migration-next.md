@@ -16,10 +16,11 @@ guide](./migration-v0.8.0.md).
   server image-generation API is available through the generated consumer's
   `POST /api/v1/images` route; install its Chromium headless shell explicitly
   with `framekit browser install` before serving requests.
-- Studio Access and API Rendering Phase 1 (SQLite and migrations) is implemented,
-  but phases 2-8 are not. Server Image Rendering Step 8 remains blocked until
-  that plan is complete; its authentication and server-backed export changes are
-  not available yet.
+- Studio Access and API Rendering Phases 1 and 2 (SQLite, migrations, users,
+  passwords, and bootstrap) are implemented, but Phases 3-8 remain unavailable.
+  Server Image Rendering Step 8 remains blocked until that plan is complete;
+  login/session HTTP, protected Studio routes, API-token endpoints, and
+  server-backed Studio export are not available yet.
 
 This rolling guide is the documentation deliverable for [GitHub issue
 #14](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -46,12 +47,15 @@ Studio routes protected yet.
   Do not use `.framekit/`, which remains reserved for disposable FrameKit output.
 
 `node:sqlite` remains an active-development API in Node.js 22, so the minimum
-runtime remains Node.js `>=22.13.0`. This phase only prepares empty tables. First
-administrator bootstrap, login, sessions, API tokens, route protection, and
-server-backed Studio export belong to later phases. `FRAMEKIT_ADMIN_USERNAME`
-and `FRAMEKIT_ADMIN_PASSWORD` have no effect yet.
+runtime remains Node.js `>=22.13.0`. The Phase 1 foundation only prepares empty
+tables; Phase 2 uses them for lazy, request-time first-administrator bootstrap
+and local credentials. Login/session HTTP, protected Studio routes, API-token
+endpoints, and server-backed Studio export belong to later phases.
+`FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD` apply only during the
+first bootstrap; `FRAMEKIT_API_KEY` is imported only then, while the classic
+image handler continues reading it independently.
 
-Until those phases are implemented, `POST /api/v1/images` continues to use
+Until Phases 3-8 are implemented, `POST /api/v1/images` continues to use
 `FRAMEKIT_API_KEY`, and Download PNG and Copy PNG continue to use the current
 browser exporter. This foundation does not migrate template data, assets, or
 persisted editor state.
@@ -59,6 +63,30 @@ persisted editor state.
 The server image API remains bounded to one long-lived Node.js process per
 container. Render jobs are process-local, disappear on restart, are not stored in
 SQLite, and do not support serverless or multi-replica execution.
+
+## User Credentials and First-Admin Bootstrap
+
+Phase 2 of the Studio access plan is implemented. It adds local credentials and
+safe user operations without adding HTTP handlers or UI yet.
+
+- Passwords must be 12-256 UTF-8 bytes. They are hashed asynchronously with the
+  fixed `scrypt:v1` profile and random salts; passwords and imported API-key
+  secrets are stored only as hashes. The safe `StudioUser` DTO exposes only
+  `id`, `username`, and `role`.
+- On the first lazy, request-time initialization of an empty database,
+  `FRAMEKIT_ADMIN_PASSWORD` is required and `FRAMEKIT_ADMIN_USERNAME` defaults
+  to `admin`. `FRAMEKIT_DATABASE_PATH` continues to select the database path.
+- A non-empty `FRAMEKIT_API_KEY` is imported once as a SHA-256 legacy API-token
+  hash. Once any user exists, the bootstrap environment values are ignored and
+  account data is not synchronized from the environment.
+- Validated user mutations cover username, role, active state, password changes,
+  resets, and deletion. Password changes and deactivation delete that user's
+  sessions; a transaction prevents deleting, deactivating, or demoting the
+  last active administrator.
+- Login/session HTTP, protected Studio routes, API-token endpoints, and
+  server-backed Download PNG/Copy PNG are not available yet. `POST
+  /api/v1/images` still uses `FRAMEKIT_API_KEY`, while Download PNG and Copy PNG
+  still use the browser exporter.
 
 ## Server Rendering Integration
 

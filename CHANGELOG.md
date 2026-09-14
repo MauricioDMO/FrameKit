@@ -59,8 +59,15 @@
 - Added the SQLite persistence foundation for the planned Studio access flow:
   lazy `node:sqlite` connections, schema version 1 for users, sessions, and API
   tokens, process-global connection reuse, WAL and busy-timeout setup, and ignored
-  local database artifacts. This phase only provides the internal schema; login,
-  bootstrap, session and token management, and server-backed Studio export remain
+  local database artifacts. This phase provides the internal schema; login/session
+  HTTP, token management, Studio UI, and server-backed Studio export remain
   subsequent phases. See the [SQLite and migrations phase plan](Docs/Plans/studio-access-and-api-rendering/01-sqlite-and-migrations.md).
+- Completed Phase 2 users and passwords with asynchronous fixed-profile
+  `scrypt:v1` credentials, lazy first-administrator bootstrap, one-time SHA-256
+  import of the legacy `FRAMEKIT_API_KEY`, safe user DTOs and mutations, session
+  cleanup on password changes and deactivation, and the last-active-administrator
+  invariant. Session/HTTP access, Studio UI, API-token endpoints, and
+  server-backed export remain subsequent phases. See the [users, passwords, and
+  bootstrap phase plan](Docs/Plans/studio-access-and-api-rendering/02-users-passwords-and-bootstrap.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

@@ -699,7 +699,7 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 ```
 
 * [x] Fase 1: SQLite and Migrations.
-* [ ] Fase 2: Users, Passwords, and Bootstrap.
+* [x] Fase 2: Users, Passwords, and Bootstrap.
 * [ ] Fase 3: Sessions, HTTP, and Route Protection.
 * [ ] Fase 4: API Tokens, Users, and Authorization.
 * [ ] Fase 5: Studio Access UI.
