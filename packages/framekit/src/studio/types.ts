@@ -1,5 +1,11 @@
 import type { TemplateRegistryEntry } from '../types'
 
+export interface StudioUser {
+  id: string
+  username: string
+  role: 'admin' | 'user'
+}
+
 export interface FrameKitStudioBrand {
   slug: string
   title: string

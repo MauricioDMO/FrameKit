@@ -1,5 +1,5 @@
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
-import type { FrameKitStudioBrand } from '@mauriciodmo/framekit/studio'
+import type { FrameKitStudioBrand, StudioUser } from '@mauriciodmo/framekit/studio'
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 
 import { template, templateAssets } from './valid-template'
@@ -24,6 +24,12 @@ const brands = [{
   description: 'An example brand fixture.',
   load: async () => ({ default: () => null })
 }] satisfies readonly FrameKitStudioBrand[]
+
+export const studioUser = {
+  id: 'user-1',
+  username: 'admin',
+  role: 'admin'
+} satisfies StudioUser
 
 FrameKitStudio({ templates })
 FrameKitStudio({ brands })
