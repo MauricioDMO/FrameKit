@@ -56,5 +56,11 @@
   `framekit browser install` command, generated Docker image, local tarball
   verification, and non-root Chromium runtime checks. The registry-backed Docker
   smoke remains a release-time handoff; no package version is selected here.
+- Added the SQLite persistence foundation for the planned Studio access flow:
+  lazy `node:sqlite` connections, schema version 1 for users, sessions, and API
+  tokens, process-global connection reuse, WAL and busy-timeout setup, and ignored
+  local database artifacts. This phase only provides the internal schema; login,
+  bootstrap, session and token management, and server-backed Studio export remain
+  subsequent phases. See the [SQLite and migrations phase plan](Docs/Plans/studio-access-and-api-rendering/01-sqlite-and-migrations.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

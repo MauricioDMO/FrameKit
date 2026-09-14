@@ -12,14 +12,56 @@ migración histórica](./migration-v0.8.0.md).
   peers del runtime público son Next.js `>=16 <17` y React/React DOM `>=19 <20`.
 - Esta guía no exige una versión alpha, futura ni preseleccionada del paquete.
   La selección de versión de release es un paso separado de los maintainers.
-- El comportamiento canónico de runtime y Studio descrito aquí está
+- El comportamiento canónico existente de runtime y Studio descrito aquí está
   implementado. La API de generación de imágenes en servidor está disponible
   mediante la ruta `POST /api/v1/images` del consumidor generado; instala
   explícitamente su headless shell de Chromium con `framekit browser install`
   antes de servir solicitudes.
+- La Fase 1 de Studio Access & API Rendering (SQLite y migraciones) está
+  implementada, pero las fases 2-8 todavía no. El Paso 8 de Server Image
+  Rendering sigue bloqueado hasta completar ese plan; sus cambios de autenticación
+  y exportación server-side aún no están disponibles.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
+
+## Base De Persistencia De Studio
+
+La Fase 1 del plan de acceso a Studio ya está implementada. Añade una capa
+interna de SQLite mediante `node:sqlite`, pero todavía no cambia el flujo de
+autenticación ni convierte Studio en una ruta protegida.
+
+- `FRAMEKIT_DATABASE_PATH` se lee de forma lazy. Las rutas relativas se resuelven
+  desde el directorio de trabajo de la aplicación y, si se omite, la base se crea
+  en `.framekit-data/framekit.sqlite`.
+- La primera migración usa `PRAGMA user_version = 1` y crea las tablas estrictas
+  `users`, `sessions` y `api_tokens`, con sus índices y claves foráneas.
+- La conexión se abre solo cuando el runtime de acceso la solicita. Importar las
+  facades del paquete, generar el registro o construir la aplicación no crea la
+  base de datos ni sus archivos WAL/SHM.
+- La conexión se reutiliza por ruta de base de datos dentro del proceso mediante
+  estado global. La base queda reservada para datos de acceso; los render jobs
+  continúan siendo temporales y permanecen en el `Map` en memoria del proceso.
+- `.framekit-data/` está excluido de Git, del contexto Docker y de los tarballs.
+  No uses `.framekit/`, porque esa ruta sigue reservada para output descartable de
+  FrameKit.
+
+`node:sqlite` continúa siendo una API en desarrollo activo en Node.js 22; por
+eso el runtime mínimo es Node.js `>=22.13.0`. Esta fase solo prepara tablas
+vacías. El bootstrap del primer administrador, el login, las sesiones, los
+tokens API, la protección de rutas y la exportación server-side de Studio
+pertenecen a fases posteriores. Las variables `FRAMEKIT_ADMIN_USERNAME` y
+`FRAMEKIT_ADMIN_PASSWORD` todavía no tienen efecto.
+
+Mientras esas fases no estén implementadas, la ruta `POST /api/v1/images`
+continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
+usando el exportador actual del navegador. Esta base tampoco migra datos de
+plantillas, assets ni estado persistido del editor.
+
+La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
+duración por contenedor. Los render jobs son locales al proceso, desaparecen al
+reiniciar, no se guardan en SQLite y no admiten ejecución serverless ni múltiples
+réplicas.
 
 ## Integración De Renderizado En Servidor
 
