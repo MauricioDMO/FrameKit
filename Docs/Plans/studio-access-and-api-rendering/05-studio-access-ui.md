@@ -56,6 +56,11 @@ It passes the safe `{ id, username, role }` DTO into `FrameKitStudio`. No
 database row, active flag, hash, session token, or API-token secret crosses the
 Server Component boundary.
 
+Define `StudioUser` in `packages/framekit/src/studio/types.ts` and export it from
+`@mauriciodmo/framekit/studio`. The generated Client Component imports the type
+from that client-safe facade alongside `FrameKitStudio`; it must never import a
+type from `@mauriciodmo/framekit/server`.
+
 Existing clients that ignore props remain valid. A client requiring unrelated
 props must continue to fail the `createStudioPage()` type contract.
 
@@ -119,6 +124,8 @@ are asserted through codegen tests and are never hand-edited.
 
 - login labels, pending state, generic failure, and successful navigation;
 - generated `StudioClient` accepts and forwards only `StudioUser`;
+- generated `StudioClient` imports `StudioUser` only from
+  `@mauriciodmo/framekit/studio`;
 - editor, brand, and settings section detection;
 - settings does not load template/brand resources;
 - three top-level destinations expose correct `aria-current` state;

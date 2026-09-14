@@ -107,6 +107,22 @@ administrator creates user
   -> user session is rejected
 ```
 
+Reverse-proxy CSRF flow:
+
+```text
+browser opens https://framekit.example.com
+  -> representative reverse proxy forwards to http://127.0.0.1:3000
+  -> Origin remains https://framekit.example.com
+  -> login succeeds
+  -> authenticated account mutation succeeds
+  -> session-authenticated image request succeeds
+```
+
+Run this against Next.js rather than only unit-testing constructed `Request`
+objects. First verify that the supported proxy headers make
+`new URL(request.url).origin` equal the browser origin. Introduce an explicit
+public-origin setting only if this integration proves it necessary.
+
 Use an isolated temporary database per E2E run and clean it through the test
 harness. Do not depend on a developer's local `.framekit-data` directory.
 
@@ -166,15 +182,15 @@ Maintainability 1-5
   -> Maintainability 6
 ```
 
-Reconcile the Server Image Rendering documents without erasing completed
-history:
+Revalidate the already reconciled Server Image Rendering documents without
+erasing completed history:
 
 - retain Steps 1-7 evidence;
 - mark Step 8 final closure as blocked by this plan;
 - state that SQLite persists access data, not render jobs;
-- supersede the five-file starter target with seven files;
-- supersede shared-API-key-only canonical authentication;
-- supersede browser-based Studio export;
+- keep the five-file starter target marked historical and seven files active;
+- keep shared-API-key-only canonical authentication marked historical;
+- keep browser-based Studio export marked historical;
 - rerun every affected Step 8 assertion before closing that plan.
 
 Revalidate Maintainability Phase 6 against:
@@ -251,6 +267,8 @@ a separate post-publication handoff requiring an exact published version.
   session.
 - [ ] API-token owner and administrator boundaries pass.
 - [ ] Cookie mutations reject cross-origin requests.
+- [ ] Same-origin cookie requests pass through the supported HTTPS-to-HTTP
+  reverse-proxy topology without extra origin configuration.
 - [ ] Public deployment requirements state HTTPS and external login throttling.
 - [ ] Canonical image API accepts session or API token.
 - [ ] Classic image API handler remains compatible with `FRAMEKIT_API_KEY`.

@@ -4,7 +4,7 @@
 
 Prove the feature across pure logic, Next.js integration, the process-global
 in-memory job handoff, real Chromium, production Docker, and public package
-distribution; update documentation; and define a safe additive rollout.
+distribution; update documentation; and define a safe compatibility rollout.
 
 ## Depends on
 
@@ -22,18 +22,20 @@ distribution; update documentation; and define a safe additive rollout.
   job store.
 - Real Chromium API smoke in final production container.
 - Isolated tarball/generated-consumer smoke.
-- Five-file maintained starter inventory and clean generated-binding recovery.
+- Seven-file maintained starter inventory and clean generated-binding recovery.
+- SQLite-backed Studio access, sessions, API tokens, and persistent-volume proof.
 - Package-owned HTTP pipeline and FrameKit-owned browser installation checks.
 - Remote-image SSRF/token-leak/browser-network verification.
 - Cleanup/resource verification.
 - English/Spanish public documentation.
-- Changelog + additive migration note.
+- Changelog + compatibility and migration note.
 - Rollout/rollback checklist and known limitations.
 
-The verification inventory below records the original API-key and browser-export
-baseline. Before final closure, reconcile and rerun every affected assertion for
-SQLite access data, sessions, API tokens, the seven-file starter, server-backed
-Studio export, and persistent Docker storage. Render jobs remain memory-only.
+Evidence already recorded against the original API-key and browser-export
+baseline remains historical proof for Steps 1-7. The active verification
+inventory below uses SQLite access data, sessions, API tokens, the seven-file
+starter, server-backed Studio export, and persistent Docker storage. Render jobs
+remain memory-only.
 
 ## Verification strategy
 
@@ -63,14 +65,16 @@ under `tests/e2e/`.
 - loopback-only internal origin;
 - exact allowed-image-host parsing;
 - bounded numeric settings;
-- constant-time Bearer contract;
+- constant-time classic `FRAMEKIT_API_KEY` Bearer contract;
+- canonical session/API-token authentication, invalid-Bearer precedence, and
+  same-origin cookie enforcement;
 - stable error-code/status mapping;
 - public server export type fixture/client-server boundary.
 
 ### Data/image/canvas
 
 - shared canvas receives exact canonical props;
-- Studio export/copy remains functional;
+- Studio Download PNG and Copy PNG use the canonical server image route;
 - raster signatures + strict base64;
 - data URL/root-relative policy;
 - remote HTTPS URL exact-host policy;
@@ -114,7 +118,7 @@ under `tests/e2e/`.
 - registry loader/definition dimension/variant mismatch checks;
 - no duplicate resolve/validate pipeline in private client;
 - deterministic loading/ready/error markers;
-- public auth-before-body/registry/fetch/browser ordering;
+- classic and canonical auth-before-body/registry/fetch/browser ordering;
 - bounded body/exact JSON shape;
 - remote-image preparation before renderer;
 - canonical resolve/validate once;
@@ -129,11 +133,13 @@ under `tests/e2e/`.
 - explicit API/private routes retain precedence and the development asset
   endpoint still works.
 
-### Minimal starter/configuration/browser tooling
+### Canonical starter/access/configuration/browser tooling
 
-- final starter has exactly five maintained `src/app` files, down from the
-  previous eight-file full-feature plan;
+- final starter has exactly seven maintained `src/app` files: the unified Studio
+  page, login page, access route, image route, private render page, layout, and
+  global CSS;
 - old home/editor/brand pages and sibling render-client binding are absent;
+- login/access/image/Studio/private-render files remain thin package bindings;
 - both generated client bindings are excluded from the creator template and
   recreated from a clean generated directory without rewriting user files;
 - neutral registries remain server-consumable and private render imports exclude
@@ -175,16 +181,22 @@ fixture.
 
 1. Container process is `tini` -> non-root Node standalone server.
 2. HTTP readiness succeeds.
-3. Public/generated static template assets return `200`.
-4. Chromium executable exists under configured browser path.
-5. No browser starts before first valid render request.
-6. No FrameKit temp render-job directory/file exists.
+3. `/data` is writable by the runtime user and contains SQLite, WAL, and SHM
+   files only after runtime initialization.
+4. Public/generated static template assets return `200`.
+5. Chromium executable exists under configured browser path.
+6. No browser starts before first valid render request.
+7. No FrameKit temp render-job directory/file exists.
 
 ### API checks
 
-1. Missing API token -> `401`.
-2. Valid default/local asset request -> non-empty PNG.
-3. Response headers, signature, and declared dimensions match.
+1. Empty-volume boot creates the configured administrator.
+2. Missing session/API token -> `401`.
+3. Same-origin login and session-authenticated render -> non-empty PNG.
+4. Generated API-token render -> non-empty PNG.
+5. Response headers, signature, and declared dimensions match.
+6. Container replacement with the same volume preserves users, sessions, and
+   API tokens while clearing temporary render jobs.
 
 Detailed malformed input, remote-image policy, browser network/token scoping,
 capacity, timeout, abort, and cleanup behavior remains in the focused Vitest
@@ -233,7 +245,7 @@ behind the same API before release rather than adding per-bundle Maps.
 4. Generate a project from creator tarball.
 5. Install local FrameKit tarball as appropriate.
 6. Install dependencies with generated lock/package-manager contract.
-7. Check the five-file source inventory, then run generation/check/build from
+7. Check the seven-file source inventory, then run generation/check/build from
    absent generated output, verifying both client bindings are recreated.
 8. Inspect installed package/tarballs for workspace paths, secrets, and browser
    binaries.
@@ -251,10 +263,11 @@ the installer does not pick it up.
 
 ## Small smoke harness
 
-A small Node script may build the canonical image, wait for readiness, reject a
-request without authentication, verify one authenticated PNG response, and
-remove the container/image. It does not need an HTTPS server, certificate
-management, lifecycle probes, or a second consumer orchestrator.
+A small Node script may build the canonical image, wait for readiness, bootstrap
+and log in, reject a request without authentication, verify session and API-token
+PNG responses, replace the container while retaining its temporary volume, and
+clean up all resources. HTTPS reverse-proxy behavior remains in the browser E2E
+rather than adding certificate management to this smoke.
 
 The application itself must not write rendered PNGs/jobs to disk as part of the
 runtime path.
@@ -296,7 +309,7 @@ needs a future redesign.
 Release-blocking items:
 
 - auth occurs before body/template/fetch work;
-- API key never enters job/browser/page/log;
+- no API key, API token, or session credential enters job/browser/page/log;
 - job token never enters URL/client props/log;
 - job token only reaches exact private main document;
 - public/private job failures do not create an ID/token oracle;
@@ -322,7 +335,10 @@ Any failed trust-boundary item blocks completion even if happy-path PNG works.
 Document:
 
 - public API request/response;
-- one Bearer API key configuration;
+- canonical Studio session/API-token authentication and the compatible classic
+  `FRAMEKIT_API_KEY` handler;
+- first-boot administrator configuration, recurring environment behavior, HTTPS,
+  reverse-proxy login throttling, and persistent SQLite volume ownership;
 - exact allowed-image-host configuration;
 - data URL/root-relative/remote URL examples;
 - fact that remote HTTPS images are downloaded by Node and Chromium does not
@@ -344,15 +360,18 @@ Update:
 - generated template README;
 - placeholder `.env.example`;
 - supported package imports and implemented signatures for `createImageHandler`,
-  `createRenderClient`, `createRenderPage`, `createStudioPage`, and `withFrameKit`;
-  the final export map includes `./next`, with no server/browser/auth/shared subpaths;
-- the five-file app source tree, consumer-owned routes/styles, and generated
+  `createStudioImageHandler`, `createStudioAccessHandler`, `createRenderClient`,
+  `createRenderPage`, `createStudioPage`, `createLoginPage`, and `withFrameKit`;
+  the final export map includes `./next`, with no server/browser/auth/shared
+  subpaths;
+- the seven-file app source tree, consumer-owned routes/styles, and generated
   registry/client bindings; never instruct users to edit generated bindings;
 - package/repository AGENTS instructions and skill sources under `Docs/skills/`
   when their public-import or consumer-file maps change; regenerate synchronized
   skill copies through the existing sync command;
 - note that Dockerfile is pnpm-specific initially;
-- note that Studio client export remains available;
+- note that Studio Download PNG and Copy PNG use the server route while local
+  preview remains client-side;
 - note that server-rendered templates should package fonts/styles/assets locally
   rather than relying on remote browser resources.
 
@@ -360,27 +379,31 @@ Update:
 
 - root `CHANGELOG.md` under `Unreleased`;
 - English/Spanish migration notes;
-- explicit additive API statement;
+- explicit compatibility and database-backed Studio migration statement;
 - known limitations: one process/store, PNG only, no serverless/Edge, no public
   async jobs, no Chromium external network.
 
 ### Existing-consumer migration
 
-The minimal layout is the default for newly scaffolded projects. Existing
-consumers may continue using their explicit editor/brand pages, local render
-binding, and manual Next config with the same supported package APIs.
+The seven-file authenticated layout is the default for newly scaffolded
+projects. Existing classic API consumers may retain
+`createImageHandler(templates)` and `FRAMEKIT_API_KEY`, but adopting
+database-backed Studio access is not entirely additive.
 
-For consumers adopting the smaller source tree, document this order:
+Document this order:
 
 1. Upgrade FrameKit and regenerate registries plus client bindings.
-2. Adopt `withFrameKit` only if the application uses the standard FrameKit root
-   redirect and standalone paths; preserve custom Next settings.
-3. Add the unified section adapter and change the private page's client import.
-4. After reviewing local customizations, explicitly remove the superseded home,
-   editor, brand, and render-client files. Codegen must never perform this removal.
-5. Add or replace the public route with `createImageHandler(templates)`.
-6. Use the FrameKit browser-install command and verify build/start, existing URLs,
-   PNG output, and project styles before removing any obsolete direct dependency.
+2. Configure first-boot administrator credentials and a persistent
+   `FRAMEKIT_DATABASE_PATH`; preserve the SQLite files during later upgrades.
+3. Add the login and access route adapters.
+4. Update the unified section adapter to use the authenticated
+   `createStudioPage()` contract and generated `StudioClient` user prop.
+5. Bind the canonical image route with `createStudioImageHandler(templates)`;
+   retain a separate classic route only when an external API-key consumer needs
+   it.
+6. Adopt `withFrameKit` where appropriate, preserve custom Next settings, install
+   FrameKit's browser, and verify login, existing URLs, PNG output, persistence,
+   and project styles before removing obsolete files or dependencies.
 
 Do not move template data/assets or require a hidden generated Next application.
 
@@ -396,33 +419,35 @@ Operational logs may include only:
 - browser launch/disconnect lifecycle;
 - remote image fetch coarse host/result only if logging policy permits hostname.
 
-Never include API key/token, field data, base64, full URL/query, response bodies,
-or raw Playwright exception in public logs.
+Never include API keys, API/session tokens, credential hashes, field data,
+base64, full URL/query, response bodies, or raw Playwright exceptions in public
+logs.
 
 ## Rollout sequence
 
-1. Merge additive server package internals/exports.
-2. Merge shared canvas/image preparation without changing Studio export.
-3. Merge Map job + browser/private route behind generated integration.
-4. Verify Step 0.5, implement the Step 0.6 minimal integration, and reprove
-   production Map sharing and existing route behavior.
-5. Merge the shared HTTP handler, browser-install command, and Docker support.
-6. Run full isolated package/Docker smoke.
-7. Update docs/changelog/migration notes.
-8. Release only when every final checklist item passes.
+1. Retain the completed Steps 1-7 rendering evidence.
+2. Complete Studio Access, API Tokens, and Server-backed Export Phases 1-8.
+3. Build and pack both public packages and generate an isolated seven-file
+   consumer.
+4. Run focused, repository, browser, tarball, reverse-proxy, and two-container
+   persistence gates against the final architecture.
+5. Update English/Spanish docs, changelog, migration, and rollback notes.
+6. Release only when every final checklist item passes.
 
 ## Rollback
 
-The feature is additive. Rollback may remove/disable the generated public API
-route and Docker documentation while leaving existing Studio/client export
-untouched.
+Rolling back to the previous package may restore the classic image handler and
+browser-based Studio behavior with `FRAMEKIT_API_KEY`, but database-backed Studio
+access is not additive. Keep the SQLite volume intact during rollback so a later
+retry preserves users and tokens. Never downgrade or delete access data
+implicitly; removal is an explicit operator action.
 
-Do not migrate existing template data or rewrite generated assets for this
-feature, so rollback should not require data migration.
+Template definitions and generated assets still require no data migration.
 
 ## Final acceptance checklist
 
-- [ ] Public auth contract works and fails closed.
+- [ ] Classic API-key and canonical session/API-token auth contracts work and
+  fail closed.
 - [ ] Exact request parsing/body limits pass.
 - [ ] Local/data/remote image preparation works.
 - [ ] Node remote fetch redirect/size/MIME/signature policy passes.
@@ -434,9 +459,12 @@ feature, so rollback should not require data migration.
 - [ ] Private page renders already-resolved data.
 - [ ] Browser capacity/timeout/isolation pass.
 - [ ] Raw PNG headers/signature/dimensions pass.
-- [ ] Studio current export remains functional.
+- [ ] Studio Download PNG and Copy PNG use the canonical server image route.
 - [ ] Packed packages work outside workspace.
-- [ ] Starter has five maintained app files and clean generation restores client bindings.
+- [ ] Starter has seven maintained app files and clean generation restores client
+  bindings.
+- [ ] SQLite access data survives container replacement; render jobs do not.
+- [ ] HTTPS reverse-proxy same-origin login, mutation, and image rendering pass.
 - [ ] Root/editor/brand URLs, unknown-section handling, and reserved routes work.
 - [ ] Config preset imports safely and preserves project settings.
 - [ ] Public route is only a binding to the complete package HTTP handler.

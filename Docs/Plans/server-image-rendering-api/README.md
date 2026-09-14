@@ -49,8 +49,9 @@ persistent volume, and browser-based Studio export.
 SQLite introduced by that plan stores users, sessions, and API tokens only. It
 does not replace the temporary `globalThis + Map` render-job store described by
 this plan. Sections below that describe browser export, the five-file starter,
-or no persistent application data remain historical Step 1-7 baseline records
-until the new plan's documentation phase reconciles them.
+or no persistent application data are historical Step 1-7 baseline records, not
+active Step 8 instructions. The Step 8 document uses the superseding seven-file,
+session/API-token, server-backed-export baseline.
 
 ## How to execute the plan
 
@@ -191,11 +192,12 @@ pass.
 
 ## Step 0.6 - Minimal Consumer Integration
 
-See [the implementation phase](./00.6-minimal-consumer-integration.md). After Step
-6, the final starter is expected to have five maintained files under `src/app`.
-The pre-migration baseline was seven maintained files (the previous full-feature
-plan described eight); the verified current pre-Step-6 result is four maintained
-`src/app` files. The five-file post-Step-6 target is:
+See [the implementation phase](./00.6-minimal-consumer-integration.md). The
+historical post-Step-6 starter has five maintained files under `src/app`; the
+Studio Access plan supersedes that shape with seven. The pre-migration baseline
+was seven maintained files (the previous full-feature plan described eight); the
+verified pre-Step-6 result was four maintained `src/app` files. The historical
+five-file post-Step-6 result is:
 
 - one `[section]/[[...slug]]/page.tsx` serving `/editor` and `/brand`;
 - one private render page and one public API route;
@@ -697,8 +699,9 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 - Route adapters must not duplicate browser, image-fetch, or job-store logic.
 - The public adapter exports `POST = createImageHandler(templates)`; the package
   also owns authentication order, bounded parsing, resolution, and HTTP mapping.
-- Step 0.6 reduces the final maintained starter `src/app` inventory from eight to
-  five files. Generated bindings stay disposable; generation never rewrites routes.
+- Step 0.6 reduced its historical maintained starter `src/app` inventory from
+  eight to five files. The Studio Access plan supersedes it with seven; generated
+  bindings stay disposable and generation never rewrites routes.
 - `./next` must import without a Next request context and without pulling in
   `./server`, Playwright, Studio, or development-server initialization.
 - Browser installation is explicit through `framekit browser install`; ordinary
@@ -714,8 +717,9 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 - After Steps 0.5 and 0.6, run a production Next.js build/start smoke proving that
   a test-only server route and private page see the same global job store before
   continuing to Step 6. Step 6 replaces the test-only flow with the actual API.
-- Do not add a database, Redis, queue, public job endpoint, or object storage to
-  the first implementation.
+- Do not add database persistence, Redis, a queue, a public job endpoint, or
+  object storage for render jobs. The superseding Studio Access plan uses SQLite
+  only for users, sessions, and API tokens.
 - Do not allow Chromium external network access to support remote image fields;
   Node.js owns those fetches.
 - Do not add output formats/options before synchronous PNG works in an isolated
@@ -747,11 +751,14 @@ The feature is complete when:
 - final Docker runs standalone Next.js and matching Chromium as non-root under
   `tini`;
 - package tarballs work in an isolated creator-generated project;
-- the final starter has five maintained `src/app` files, with existing URLs and
+- the final starter has seven maintained `src/app` files, with existing URLs and
   project styling preserved and registry bindings reproducible through codegen;
 - the API adapter contains no HTTP pipeline logic, and browser installation uses
   FrameKit's pinned dependency without consumer-managed Playwright versions;
-- Studio's existing browser export/copy behavior still works;
+- Studio Download PNG and Copy PNG use the canonical server image route while
+  local preview behavior remains unchanged;
+- SQLite access data persists across container replacement while render jobs
+  remain process-local and ephemeral;
 - English/Spanish docs, changelog, migration notes, and package exports match the
   shipped behavior;
 - every phase exit gate passes.
@@ -759,11 +766,12 @@ The feature is complete when:
 ## Out of scope
 
 - public asynchronous jobs, polling, callbacks, queues, or webhooks;
-- Redis, database persistence, filesystem render jobs, object storage, or
-  generated-image URLs;
+- Redis, database persistence for render jobs, filesystem render jobs, object
+  storage, or generated-image URLs;
 - multiple Node.js application processes sharing one render store;
 - serverless/Edge deployment;
-- multiple API keys, accounts, scopes, quotas, billing, or public rendering;
+- organizations, token scopes, quotas, billing, or public unauthenticated
+  rendering;
 - arbitrary URL screenshotting, scraping, crawling, caller HTML, or caller CSS;
 - browser access to arbitrary external resources;
 - remote fonts/stylesheets in templates; package them with the application for

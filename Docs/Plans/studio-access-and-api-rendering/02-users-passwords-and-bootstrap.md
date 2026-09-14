@@ -19,9 +19,21 @@ Use a versioned stored format:
 scrypt:v1:<base64url-salt>:<base64url-hash>
 ```
 
-Version `v1` fixes the scrypt parameters, a 16-byte random salt, and a 64-byte
-derived key. Hashing and verification use asynchronous `crypto.scrypt`; do not
-block the event loop with `scryptSync`.
+Version `v1` means exactly:
+
+```text
+N       = 131072 (2^17)
+r       = 8
+p       = 1
+maxmem  = 268435456 bytes (256 MiB)
+salt    = 16 random bytes
+keylen  = 64 bytes
+```
+
+These values follow OWASP's primary minimum scrypt profile, while `maxmem`
+provides headroom above Node's approximate `128 * N * r` requirement. Hashing
+and verification use asynchronous `crypto.scrypt`; do not block the event loop
+with `scryptSync`.
 
 Reject malformed versions, encoding, salt length, and hash length before calling
 `timingSafeEqual`. Missing, inactive, and unknown users must run verification
@@ -47,6 +59,11 @@ interface StudioUser {
   role: 'admin' | 'user'
 }
 ```
+
+`StudioUser` lives in `packages/framekit/src/studio/types.ts` and is exported
+from `@mauriciodmo/framekit/studio`. Code under `server/access/**` may import the
+client-safe source type internally. Client Components and generated clients must
+never import it from `@mauriciodmo/framekit/server`.
 
 ## First-boot bootstrap
 
@@ -121,8 +138,10 @@ separate file becomes necessary during implementation.
 3. Implement transactional first-boot bootstrap.
 4. Add one-time legacy API-key insertion.
 5. Implement user mutations and the last-admin invariant.
-6. Benchmark scrypt on the minimum Node/Docker baseline and record the selected
-   fixed `v1` parameters in the implementation tests.
+6. Benchmark the fixed `v1` profile on the minimum Node 22/Docker baseline and
+   record the result. The benchmark validates the contract; it does not select
+   or silently change its parameters. If the profile is not viable, amend this
+   plan before any `v1` hash is persisted.
 
 ## Exit gate
 

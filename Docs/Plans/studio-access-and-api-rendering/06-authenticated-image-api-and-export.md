@@ -149,6 +149,8 @@ configuration.
 - classic `createImageHandler()` still requires and accepts `FRAMEKIT_API_KEY`;
 - Studio handler succeeds with a valid API token;
 - Studio handler succeeds with a valid same-origin session;
+- Studio handler accepts the same-origin session through the verified HTTPS
+  reverse-proxy topology;
 - invalid Bearer does not fall back to a valid session;
 - revoked token, inactive user, expired session, and cross-origin session fail
   before body/template/browser work;

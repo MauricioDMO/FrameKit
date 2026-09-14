@@ -71,6 +71,21 @@ Bearer-authenticated API requests are not governed by this cookie CSRF rule.
 Deployment-level login throttling remains mandatory and is not implemented in
 FrameKit.
 
+Prove the comparison through a representative reverse-proxy integration before
+adding public-origin configuration:
+
+```text
+browser: https://framekit.example.com
+reverse proxy -> container: http://127.0.0.1:3000
+Origin: https://framekit.example.com
+```
+
+With the proxy forwarding the external host and protocol through its normal
+headers, Next.js must reconstruct `request.url` so login and an authenticated
+account mutation are accepted. If that gate fails, stop and define an explicit
+public-origin contract before shipping; do not add `FRAMEKIT_PUBLIC_ORIGIN`
+speculatively.
+
 ## Studio page protection
 
 Evolve `createStudioPage(StudioClient)` so it:
@@ -127,6 +142,8 @@ Keep route files as configuration and package-factory bindings only.
 - access bodies are bounded and exact;
 - unsafe cookie operations reject missing and cross-origin `Origin` headers;
 - valid same-origin login sets all cookie attributes;
+- HTTPS reverse-proxy integration accepts same-origin login and an authenticated
+  account mutation while the container receives HTTP;
 - protected editor and brand routes redirect without a session;
 - login redirects with an existing valid session;
 - `StudioClient` receives only the safe user DTO;
@@ -138,5 +155,5 @@ Keep route files as configuration and package-factory bindings only.
 
 Phase 3 is complete when login and logout work through the thin catch-all route,
 Studio pages and development writes require an active session, password changes
-invalidate sessions, CSRF checks fail closed, and the private render protocol is
-unchanged.
+invalidate sessions, CSRF checks fail closed without rejecting the supported
+reverse-proxy topology, and the private render protocol is unchanged.

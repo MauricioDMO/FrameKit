@@ -165,10 +165,15 @@ version. In particular, use `PRAGMA busy_timeout` rather than the later
 ## Identity and secret contracts
 
 - User IDs and API-token IDs use `crypto.randomUUID()`.
+- The safe `StudioUser` DTO lives in `packages/framekit/src/studio/types.ts` and
+  is exported from `@mauriciodmo/framekit/studio`. Server access internals may
+  import that client-safe type, but client code must never import it from
+  `@mauriciodmo/framekit/server`.
 - Usernames are 3-64 ASCII letters, numbers, `.`, `_`, or `-`.
 - Passwords are 12-256 UTF-8 bytes.
 - Password hashes use asynchronous `crypto.scrypt` with a random 16-byte salt,
-  a 64-byte derived key, and fixed parameters identified by `scrypt:v1`.
+  a 64-byte derived key, and fixed `scrypt:v1` parameters `N=131072`, `r=8`,
+  `p=1`, and `maxmem=268435456` bytes.
 - Session and API-token secrets use 32 random bytes encoded as base64url.
 - Session and API-token lookup stores only SHA-256 hashes.
 - Generated API tokens use `fk_<base64url>`.
@@ -363,10 +368,13 @@ Maintainability 6
 - Focused, repository, E2E, package, tarball, and Docker persistence gates pass.
 - Public documentation states the HTTPS, external throttling, single-process,
   persistent-volume, and public-asset limitations.
+- A browser integration behind an HTTPS reverse proxy accepts same-origin login
+  and session mutations while Next.js runs on an internal HTTP origin.
 
 ## References
 
 - [Node.js 22 SQLite documentation](https://nodejs.org/docs/latest-v22.x/api/sqlite.html)
 - [Node.js 22 Crypto documentation](https://nodejs.org/docs/latest-v22.x/api/crypto.html)
+- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 - [Next.js authentication guide](https://nextjs.org/docs/app/guides/authentication)
 - [Next.js cookies API](https://nextjs.org/docs/app/api-reference/functions/cookies)
