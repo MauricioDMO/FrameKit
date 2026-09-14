@@ -17,6 +17,7 @@ node_modules
 
 # generated and build output
 **/.framekit/
+**/.framekit-data/
 **/.next/
 **/build/
 **/dist/

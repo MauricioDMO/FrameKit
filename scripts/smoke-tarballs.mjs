@@ -150,6 +150,8 @@ function isForbiddenArchiveEntry(entry) {
   if (/\.(?:pem|key|p12|pfx)$/i.test(basename)) return true
   if (/(^|\/)(?:\.?ms-playwright|\.?local-browsers)(?:\/|$)/i.test(normalizedEntry)) return true
   if (/^(?:chrome|chromium|chrome-headless-shell|headless[_-]shell|firefox|webkit|ffmpeg)(?:\.exe)?$/i.test(basename)) return true
+  if (/(^|\/)\.framekit-data(?:\/|$)/i.test(normalizedEntry)) return true
+  if (/\.(?:sqlite3?|db)(?:-(?:wal|shm))?$/i.test(basename)) return true
   return /(^|\/)(?:chrome|chromium|firefox|webkit|headless[_-]shell)(?:[-_][^/]*)?(?:\/|$)/i.test(normalizedEntry)
 }
 

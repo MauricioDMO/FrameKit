@@ -1,6 +1,7 @@
 node_modules
 .next
 .framekit
+.framekit-data/
 public/framekit
 src/generated/framekit
 *.tsbuildinfo

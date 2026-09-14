@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-13.
+* **Última revisión:** 2026-09-14.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -698,7 +698,7 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 ```
 
-* [ ] Fase 1: SQLite and Migrations.
+* [x] Fase 1: SQLite and Migrations.
 * [ ] Fase 2: Users, Passwords, and Bootstrap.
 * [ ] Fase 3: Sessions, HTTP, and Route Protection.
 * [ ] Fase 4: API Tokens, Users, and Authorization.
