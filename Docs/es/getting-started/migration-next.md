@@ -17,12 +17,12 @@ migración histórica](./migration-v0.8.0.md).
   mediante la ruta `POST /api/v1/images` del consumidor generado; instala
   explícitamente su headless shell de Chromium con `framekit browser install`
   antes de servir solicitudes.
-- Las Fases 1 y 2 de Studio Access & API Rendering (SQLite, migraciones,
-  usuarios, contraseñas y bootstrap) están implementadas, pero las fases 3-8
-  siguen sin estar disponibles. El Paso 8 de Server Image Rendering continúa
-  bloqueado hasta completar ese plan; el login y las sesiones HTTP, las rutas
-  protegidas de Studio, los endpoints de tokens API y la exportación server-side
-  de Studio todavía no están disponibles.
+- Las Fases 1 a 3 de Studio Access & API Rendering (SQLite, migraciones,
+  usuarios, contraseñas, bootstrap, sesiones, acceso HTTP y protección de rutas)
+  están implementadas. Las fases 4-8 siguen sin estar disponibles. El Paso 8
+  de Server Image Rendering continúa bloqueado hasta completar ese plan; los
+  endpoints de tokens API y la exportación server-side de Studio todavía no
+  están disponibles.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -51,14 +51,15 @@ autenticación ni convierte Studio en una ruta protegida.
 `node:sqlite` continúa siendo una API en desarrollo activo en Node.js 22; por
 eso el runtime mínimo es Node.js `>=22.13.0`. La base de la Fase 1 solo prepara
 tablas vacías; la Fase 2 las usa para el bootstrap lazy, en tiempo de solicitud,
-del primer administrador y para las credenciales locales. El login y las
-sesiones HTTP, las rutas protegidas de Studio, los endpoints de tokens API y la
+del primer administrador y para las credenciales locales. La Fase 3 añade el
+login y las sesiones HTTP, las rutas protegidas de Studio y los uploads
+autenticados de assets en desarrollo. Los endpoints de tokens API y la
 exportación server-side pertenecen a fases posteriores. `FRAMEKIT_ADMIN_USERNAME`
 y `FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
 `FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
 de imágenes continúa leyéndola de forma independiente.
 
-Mientras las fases 3-8 no estén implementadas, la ruta `POST /api/v1/images`
+Mientras las fases 4-8 no estén implementadas, la ruta `POST /api/v1/images`
 continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
 usando el exportador actual del navegador. Esta base tampoco migra datos de
 plantillas, assets ni estado persistido del editor.
@@ -91,10 +92,75 @@ HTTP ni UI.
   restablecer una contraseña, y desactivar un usuario, elimina sus sesiones; una
   transacción impide eliminar, desactivar o degradar al último administrador
   activo.
-- El login y las sesiones HTTP, las rutas protegidas de Studio, los endpoints de
-  tokens API y la descarga y copia PNG en el servidor todavía no están disponibles.
-  `POST /api/v1/images` sigue usando `FRAMEKIT_API_KEY`, y Download PNG y Copy
-  PNG siguen usando el exportador del navegador.
+- La Fase 3 ya proporciona el login y las sesiones HTTP y las rutas protegidas de
+  Studio. Los endpoints de tokens API y la descarga y copia PNG en el servidor
+  todavía no están disponibles. `POST /api/v1/images` sigue usando
+  `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen usando el exportador del
+  navegador.
+
+## Acceso A Studio, Sesiones Y Protección De Rutas
+
+La Fase 3 de Studio Access & API Rendering está implementada. Las fases 1-3 ya
+están disponibles; las fases 4-8 siguen pendientes, incluidas la gestión de
+tokens API y la exportación server-side de Studio.
+
+El handler de acceso expone exactamente estas cinco rutas:
+
+```text
+POST  /api/framekit/login
+POST  /api/framekit/logout
+GET   /api/framekit/account
+PATCH /api/framekit/account
+POST  /api/framekit/account/password
+```
+
+Un login correcto establece una cookie `framekit_session` con `HttpOnly`,
+`SameSite=Lax`, `Path=/` y una duración de 30 días mediante `Expires`/`Max-Age`.
+También establece `Secure` cuando `NODE_ENV=production`. La base de datos solo
+guarda el hash SHA-256 de la sesión y sus metadatos de usuario, creación y
+expiración; el secreto crudo solo se devuelve en la cookie. Logout elimina la
+sesión guardada actual y expira la cookie del navegador. Cambiar la contraseña
+invalida todas las sesiones del usuario y expira la cookie actual. Las respuestas
+públicas solo exponen el DTO seguro `StudioUser`: `id`, `username` y `role`.
+
+El login y cada solicitud insegura autenticada por cookie requieren un header
+`Origin` cuyo valor coincida exactamente con el origen canónico de la solicitud.
+En solicitudes directas es `new URL(request.url).origin`. Como el adaptador de
+Next 16 puede construir `request.url` usando el hostname y puerto internos
+configurados, la ruta soportada detrás de un reverse proxy HTTPS usa un único
+valor válido `x-forwarded-proto: https` y una única autoridad válida
+`x-forwarded-host` como origen público canónico. Los overrides incompletos,
+ambiguos, malformados o no HTTPS se rechazan antes de leer el body o mutar
+datos. El proxy debe sobrescribir o eliminar los headers de forwarding enviados
+por el cliente; no existe un fallback `FRAMEKIT_PUBLIC_ORIGIN`. La forma
+soportada detrás de un reverse proxy HTTPS es:
+
+```text
+browser/request URL: https://framekit.example.com/api/framekit/...
+reverse proxy -> container: http://127.0.0.1:3000
+Origin: https://framekit.example.com
+```
+
+El proxy reenvía el host y el protocolo externos mediante sus headers normales
+para que el handler use el origen público canónico aunque Next.js conserve el
+origen interno en `request.url`; no hace falta configurar
+`FRAMEKIT_PUBLIC_ORIGIN`.
+
+Las secciones `editor` y `brand` de Studio validan una sesión activa y redirigen
+a `/login` cuando falta o es inválida. La página de login redirige a `/editor`
+si la sesión ya está autenticada y, en caso contrario, muestra el formulario.
+El upload autenticado de `/framekit/assets` en el servidor de desarrollo exige
+una sesión válida y el `Origin` del mismo origen antes de procesar o escribir un
+asset.
+
+`/framekit/render/[id]` sigue siendo independiente de las sesiones de Studio.
+Su ID interno de render job y `x-framekit-render-token` continúan siendo la única
+frontera de autenticación de esa ruta privada.
+
+La Fase 3 no introduce migración de plantillas, assets, estado del editor ni
+versión de release. El comportamiento existente de la API de imágenes y del
+exportador del navegador no cambia hasta implementar las futuras fases de tokens
+API y exportación server-side.
 
 ## Integración De Renderizado En Servidor
 

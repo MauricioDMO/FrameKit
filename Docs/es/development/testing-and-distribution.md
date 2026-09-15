@@ -159,10 +159,11 @@ verifica:
   `@mauriciodmo/framekit`, incluida la resolución de exports públicos y
   `generate`, `check` y `build`;
 - un consumidor generado por creator, incluida la instalación limpia,
-  `generate`, `check`, `build`, la forma de cinco archivos de `src/app`, la ruta
-  pública `/api/v1/images`, los archivos de despliegue, `start` standalone,
-  readiness HTTP y apagado/limpieza correctos. Los bindings de cliente
-  generados deben estar ausentes antes de generar y presentes después.
+  `generate`, `check`, `build`, la forma de siete archivos de `src/app`, la ruta
+  pública de login, las redirecciones de rutas protegidas, las rutas de Studio
+  autenticadas, la ruta pública `/api/v1/images`, los archivos de despliegue,
+  `start` standalone, readiness HTTP y apagado/limpieza correctos. Los bindings
+  de cliente generados deben estar ausentes antes de generar y presentes después.
 
 Este smoke de tarballs no ejecuta un build real de Docker, un contenedor ni una
 descarga de navegador. Esas comprobaciones de despliegue y navegador real son
@@ -265,7 +266,7 @@ npx --no-install framekit build
 test -f src/generated/framekit/templates.ts
 rg -q '^src/generated/framekit$' .gitignore
 
-# Inicia el servidor standalone, consulta un route de Studio por HTTP y limpia con el trap.
+# Inicia el servidor standalone, consulta la ruta pública de login por HTTP y limpia con el trap.
 PORT=4317
 HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
@@ -276,7 +277,7 @@ const deadline = Date.now() + 30_000
 
 while (Date.now() < deadline) {
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+      const response = await fetch(`http://127.0.0.1:${port}/login`)
     if (response.ok) process.exit(0)
   } catch {
     // El servidor standalone todavía puede estar iniciando.
@@ -392,7 +393,7 @@ const deadline = Date.now() + 30_000
 
 while (Date.now() < deadline) {
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+      const response = await fetch(`http://127.0.0.1:${port}/login`)
     if (response.ok) process.exit(0)
   } catch {
     // El servidor standalone todavía puede estar iniciando.

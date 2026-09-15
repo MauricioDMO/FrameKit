@@ -119,9 +119,10 @@ browser opens https://framekit.example.com
 ```
 
 Run this against Next.js rather than only unit-testing constructed `Request`
-objects. First verify that the supported proxy headers make
-`new URL(request.url).origin` equal the browser origin. Introduce an explicit
-public-origin setting only if this integration proves it necessary.
+objects. Verify that the supported proxy headers let the access handler derive
+the browser's canonical HTTPS origin even when `new URL(request.url).origin`
+contains the internal hostname and port. Introduce an explicit public-origin
+setting only if this integration proves it necessary.
 
 Use an isolated temporary database per E2E run and clean it through the test
 harness. Do not depend on a developer's local `.framekit-data` directory.

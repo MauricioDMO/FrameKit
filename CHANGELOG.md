@@ -69,5 +69,9 @@
   invariant. Session/HTTP access, Studio UI, API-token endpoints, and
   server-backed export remain subsequent phases. See the [users, passwords, and
   bootstrap phase plan](Docs/Plans/studio-access-and-api-rendering/02-users-passwords-and-bootstrap.md).
+- Implemented Studio Access Phase 3 with hashed 30-day sessions, an exact-origin
+  security boundary, protected Studio routes and login behavior, and authenticated
+  development asset uploads; no release-version or persisted-content migration
+  is introduced. See the [sessions, HTTP, and route protection phase plan](Docs/Plans/studio-access-and-api-rendering/03-sessions-http-and-route-protection.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

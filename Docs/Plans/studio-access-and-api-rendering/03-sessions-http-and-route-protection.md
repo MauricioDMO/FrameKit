@@ -63,9 +63,17 @@ All JSON responses use `Cache-Control: no-store` and never include hashes.
 
 ## Same-origin protection
 
-Require an `Origin` header matching `new URL(request.url).origin` for login and
-every cookie-authenticated unsafe request. Reject a missing, malformed, or
-cross-origin value before mutating data.
+Require an `Origin` header matching the canonical request origin for login and
+every cookie-authenticated unsafe request. For direct requests, that origin is
+`new URL(request.url).origin`. Because the Next 16 adapter can build
+`request.url` from its configured internal hostname and port, the supported
+HTTPS reverse-proxy path uses one valid `x-forwarded-proto: https` value and one
+valid `x-forwarded-host` authority as the canonical public origin. Incomplete,
+ambiguous, malformed, or non-HTTPS forwarding overrides fail closed. The proxy
+must overwrite or strip client-supplied forwarding headers; FrameKit has no
+`FRAMEKIT_PUBLIC_ORIGIN` fallback.
+
+Reject a missing, malformed, or cross-origin value before mutating data.
 
 Bearer-authenticated API requests are not governed by this cookie CSRF rule.
 Deployment-level login throttling remains mandatory and is not implemented in
@@ -81,8 +89,9 @@ Origin: https://framekit.example.com
 ```
 
 With the proxy forwarding the external host and protocol through its normal
-headers, Next.js must reconstruct `request.url` so login and an authenticated
-account mutation are accepted. If that gate fails, stop and define an explicit
+headers, the access handler must use that canonical public origin so login and
+an authenticated account mutation are accepted even when Next's `request.url`
+contains the internal origin. If that gate fails, stop and define an explicit
 public-origin contract before shipping; do not add `FRAMEKIT_PUBLIC_ORIGIN`
 speculatively.
 
@@ -130,6 +139,25 @@ apps/studio/src/app/api/framekit/[...action]/route.ts
 ```
 
 Keep route files as configuration and package-factory bindings only.
+
+## Implementation and verification record
+
+Phase 3 is **implemented and verified** in the current checkout on 2026-09-15.
+
+- Database sessions generate 32-byte base64url secrets, store only SHA-256
+  hashes, expire after 30 days, reject inactive users, and invalidate on logout,
+  password changes, and deactivation.
+- The exact five-route access handler enforces bounded exact JSON bodies, safe
+  `StudioUser` responses, and exact same-origin `Origin` checks before unsafe
+  cookie operations.
+- `editor` and `brand` require an active session and redirect to `/login`; an
+  authenticated login page redirects to `/editor`; development asset uploads
+  require the same session and origin boundary before file handling.
+- The private `/framekit/render/[id]` path remains independent and token-only.
+- The HTTP access test covers an internal adapter URL with forwarded HTTPS login
+  and authenticated account PATCH through the actual handler and returned
+  session cookie without public-origin configuration. The app adapter test also
+  exercises the real Next route exports with that topology.
 
 ## Focused tests
 

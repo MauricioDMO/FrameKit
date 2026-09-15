@@ -16,10 +16,10 @@ guide](./migration-v0.8.0.md).
   server image-generation API is available through the generated consumer's
   `POST /api/v1/images` route; install its Chromium headless shell explicitly
   with `framekit browser install` before serving requests.
-- Studio Access and API Rendering Phases 1 and 2 (SQLite, migrations, users,
-  passwords, and bootstrap) are implemented, but Phases 3-8 remain unavailable.
-  Server Image Rendering Step 8 remains blocked until that plan is complete;
-  login/session HTTP, protected Studio routes, API-token endpoints, and
+- Studio Access and API Rendering Phases 1-3 (SQLite, migrations, users,
+  passwords, bootstrap, sessions, HTTP access, and route protection) are
+  implemented. Phases 4-8 remain unavailable. Server Image Rendering Step 8
+  remains blocked until that plan is complete; API-token endpoints and
   server-backed Studio export are not available yet.
 
 This rolling guide is the documentation deliverable for [GitHub issue
@@ -49,13 +49,14 @@ Studio routes protected yet.
 `node:sqlite` remains an active-development API in Node.js 22, so the minimum
 runtime remains Node.js `>=22.13.0`. The Phase 1 foundation only prepares empty
 tables; Phase 2 uses them for lazy, request-time first-administrator bootstrap
-and local credentials. Login/session HTTP, protected Studio routes, API-token
-endpoints, and server-backed Studio export belong to later phases.
+and local credentials. Phase 3 adds login/session HTTP, protected Studio routes,
+and authenticated development asset uploads. API-token endpoints and
+server-backed Studio export belong to later phases.
 `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD` apply only during the
 first bootstrap; `FRAMEKIT_API_KEY` is imported only then, while the classic
 image handler continues reading it independently.
 
-Until Phases 3-8 are implemented, `POST /api/v1/images` continues to use
+Until Phases 4-8 are implemented, `POST /api/v1/images` continues to use
 `FRAMEKIT_API_KEY`, and Download PNG and Copy PNG continue to use the current
 browser exporter. This foundation does not migrate template data, assets, or
 persisted editor state.
@@ -83,10 +84,71 @@ safe user operations without adding HTTP handlers or UI yet.
   resets, and deletion. Password changes and deactivation delete that user's
   sessions; a transaction prevents deleting, deactivating, or demoting the
   last active administrator.
-- Login/session HTTP, protected Studio routes, API-token endpoints, and
-  server-backed Download PNG/Copy PNG are not available yet. `POST
-  /api/v1/images` still uses `FRAMEKIT_API_KEY`, while Download PNG and Copy PNG
-  still use the browser exporter.
+- Phase 3 now provides login/session HTTP and protected Studio routes.
+  API-token endpoints and server-backed Download PNG/Copy PNG are not available
+  yet. `POST /api/v1/images` still uses `FRAMEKIT_API_KEY`, while Download PNG
+  and Copy PNG still use the browser exporter.
+
+## Studio Access, Sessions, and Route Protection
+
+Studio Access and API Rendering Phase 3 is implemented. Phases 1-3 are now
+available; Phases 4-8 remain pending, including API-token management and
+server-backed Studio export.
+
+The access handler exposes exactly these five routes:
+
+```text
+POST  /api/framekit/login
+POST  /api/framekit/logout
+GET   /api/framekit/account
+PATCH /api/framekit/account
+POST  /api/framekit/account/password
+```
+
+Successful login sets a `framekit_session` cookie with `HttpOnly`,
+`SameSite=Lax`, `Path=/`, and a 30-day `Expires`/`Max-Age` lifetime. It also
+sets `Secure` when `NODE_ENV=production`. The database stores only the
+SHA-256 session hash and its user, creation, and expiry metadata; the raw
+secret is returned only in the cookie. Logout deletes the current stored
+session and expires the browser cookie. Password changes invalidate every
+session for the user and expire the current cookie. Public responses expose
+only the safe `StudioUser` DTO: `id`, `username`, and `role`.
+
+Login and every cookie-authenticated unsafe request require an `Origin` header
+whose value exactly matches the canonical request origin. For direct requests,
+that is `new URL(request.url).origin`. Because the Next 16 adapter can build
+`request.url` from its configured internal hostname and port, the supported
+HTTPS reverse-proxy path uses one valid `x-forwarded-proto: https` value and one
+valid `x-forwarded-host` authority as the canonical public origin. Incomplete,
+ambiguous, malformed, or non-HTTPS forwarding overrides are rejected before
+body parsing or data mutation. The proxy must overwrite or strip client-supplied
+forwarding headers; there is no `FRAMEKIT_PUBLIC_ORIGIN` fallback. The supported
+HTTPS reverse-proxy shape is:
+
+```text
+browser/request URL: https://framekit.example.com/api/framekit/...
+reverse proxy -> container: http://127.0.0.1:3000
+Origin: https://framekit.example.com
+```
+
+The proxy forwards the external host and protocol through its normal headers so
+the access handler can use the canonical public origin even when Next.js keeps
+the internal origin in `request.url`; no `FRAMEKIT_PUBLIC_ORIGIN` setting is
+required.
+
+The `editor` and `brand` Studio sections validate an active session and redirect
+missing or invalid sessions to `/login`. The login page redirects an already
+authenticated user to `/editor` and otherwise renders the login form. The
+development server's authenticated `/framekit/assets` upload requires a valid
+session and the same-origin `Origin` before it handles or writes an asset.
+
+`/framekit/render/[id]` remains independent of Studio sessions. Its existing
+internal render-job ID and `x-framekit-render-token` are still the only
+authentication boundary for that private route.
+
+Phase 3 introduces no template, asset, editor-state, or release-version
+migration. The existing image API and browser export behavior remain unchanged
+until the future API-token and server-backed export phases are implemented.
 
 ## Server Rendering Integration
 

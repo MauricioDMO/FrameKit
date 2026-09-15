@@ -153,10 +153,11 @@ The script keeps all temporary consumers outside the workspace and verifies:
   tarball, including public export resolution and `generate`, `check`, and
   `build`;
 - a creator-generated consumer, including a clean install, `generate`, `check`,
-  `build`, the five-file `src/app` shape, the public `/api/v1/images` route,
-  deployment files, standalone `start`, HTTP readiness, and clean
-  shutdown/cleanup. Generated client bindings must be absent before
-  generation and present afterward.
+  `build`, the seven-file `src/app` shape, the public login route, protected
+  route redirects, authenticated Studio routes, the public `/api/v1/images`
+  route, deployment files, standalone `start`, HTTP readiness, and clean
+  shutdown/cleanup. Generated client bindings must be absent before generation
+  and present afterward.
 
 This tarball smoke does not perform a live Docker build, container run, or
 browser download. Those deployment and real-browser checks remain separate
@@ -258,7 +259,7 @@ npx --no-install framekit build
 test -f src/generated/framekit/templates.ts
 rg -q '^src/generated/framekit$' .gitignore
 
-# Start the standalone server, poll a Studio route over HTTP, and let the trap clean it up.
+# Start the standalone server, poll the public login route over HTTP, and let the trap clean it up.
 PORT=4317
 HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
@@ -269,7 +270,7 @@ const deadline = Date.now() + 30_000
 
 while (Date.now() < deadline) {
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+      const response = await fetch(`http://127.0.0.1:${port}/login`)
     if (response.ok) process.exit(0)
   } catch {
     // The standalone server may still be starting.
@@ -383,7 +384,7 @@ const deadline = Date.now() + 30_000
 
 while (Date.now() < deadline) {
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/editor`)
+      const response = await fetch(`http://127.0.0.1:${port}/login`)
     if (response.ok) process.exit(0)
   } catch {
     // The standalone server may still be starting.
