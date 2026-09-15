@@ -22,4 +22,11 @@ function RequiredPropsClient ({ label }: { label: string }) {
 // @ts-expect-error client components may not require props
 createStudioPage(RequiredPropsClient)
 
+function AdminOnlyClient ({ user }: { user: { id: string, username: string, role: 'admin' } }) {
+  return <div>{user.username}</div>
+}
+
+// @ts-expect-error client components must accept every StudioUser
+createStudioPage(AdminOnlyClient)
+
 export { StudioPage }

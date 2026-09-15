@@ -1,12 +1,34 @@
 import { readFile } from 'node:fs/promises'
 
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 const templateRoute = '/editor/redes-sociales/instagram/promocion-cuadrada'
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const pngHeader = Buffer.from('IHDR')
+const testUsername = 'admin'
+const testPassword = 'framekit-e2e-password'
+
+async function signIn (page: Page): Promise<void> {
+  await page.goto('/login')
+  await page.locator('#framekit-login-username').fill(testUsername)
+  await page.locator('#framekit-login-password').fill(testPassword)
+  await page.getByRole('button', { name: 'Iniciar sesión', exact: true }).click()
+  await expect(page).toHaveURL(/\/editor\/?$/)
+}
+
+test('keeps the login route public and redirects protected routes without credentials', async ({ page }) => {
+  for (const pathname of ['/editor', '/brand']) {
+    const response = await page.request.get(pathname, { maxRedirects: 0 })
+    expect(response.status()).toBe(307)
+    expect(response.headers().location).toBe('/login')
+  }
+
+  await page.goto('/login')
+  await expect(page.getByRole('heading', { name: 'Inicia sesión en Studio', exact: true })).toBeVisible()
+})
 
 test('edits and exports a structurally valid PNG through Studio', async ({ page }) => {
+  await signIn(page)
   await page.goto(templateRoute)
 
   await expect(page.getByRole('heading', { name: 'Promoción cuadrada', level: 1, exact: true })).toBeVisible()

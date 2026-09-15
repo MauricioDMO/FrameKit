@@ -94,4 +94,12 @@ describe('private render page helper', () => {
     expect(pageMocks.headers).toHaveBeenCalledOnce()
     expect(pageMocks.notFound).not.toHaveBeenCalled()
   })
+
+  it('does not accept a Studio session cookie for private rendering', async () => {
+    const job = createRenderJob(payload)
+    pageMocks.state.requestHeaders = new Headers({ cookie: 'framekit_session=valid-session' })
+
+    await expect(renderPage(job.id)).rejects.toBe(pageMocks.notFoundError)
+    expect(pageMocks.notFound).toHaveBeenCalledOnce()
+  })
 })

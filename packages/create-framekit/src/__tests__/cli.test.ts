@@ -176,13 +176,29 @@ async function expectProjectFiles (
     .map((entry) => path.relative(path.join(destination, 'src', 'app'), path.join(entry.parentPath, entry.name)).split(path.sep).join('/'))
     .sort()).toEqual([
     '[section]/[[...slug]]/page.tsx',
+    'api/framekit/[...action]/route.ts',
     'api/v1/images/route.ts',
     'framekit/render/[id]/page.tsx',
     'globals.css',
-    'layout.tsx'
+    'layout.tsx',
+    'login/page.tsx'
   ])
-  await expect(readFile(path.join(destination, 'src', 'app', '[section]', '[[...slug]]', 'page.tsx'), 'utf8')).resolves.toContain('createStudioPage')
-  await expect(readFile(path.join(destination, 'src', 'app', '[section]', '[[...slug]]', 'page.tsx'), 'utf8')).resolves.toContain('@framekit/generated/studio-client')
+  const studioPage = readFile(path.join(destination, 'src', 'app', '[section]', '[[...slug]]', 'page.tsx'), 'utf8')
+  const loginPage = readFile(path.join(destination, 'src', 'app', 'login', 'page.tsx'), 'utf8')
+  const accessRoute = readFile(path.join(destination, 'src', 'app', 'api', 'framekit', '[...action]', 'route.ts'), 'utf8')
+  await expect(studioPage).resolves.toContain('createStudioPage')
+  await expect(studioPage).resolves.toContain('@framekit/generated/studio-client')
+  await expect(studioPage).resolves.toContain("export const runtime = 'nodejs'")
+  await expect(studioPage).resolves.toContain("export const dynamic = 'force-dynamic'")
+  await expect(loginPage).resolves.toContain('createLoginPage')
+  await expect(loginPage).resolves.toContain("export const runtime = 'nodejs'")
+  await expect(loginPage).resolves.toContain("export const dynamic = 'force-dynamic'")
+  await expect(accessRoute).resolves.toContain('createStudioAccessHandler')
+  await expect(accessRoute).resolves.toContain("export const runtime = 'nodejs'")
+  await expect(accessRoute).resolves.toContain("export const dynamic = 'force-dynamic'")
+  await expect(accessRoute).resolves.toContain('export const GET = handler')
+  await expect(accessRoute).resolves.toContain('export const POST = handler')
+  await expect(accessRoute).resolves.toContain('export const PATCH = handler')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'editor', '[[...slug]]', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'brand', '[[...slug]]', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })

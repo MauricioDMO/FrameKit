@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import { access, cp, readdir } from 'node:fs/promises'
+import { access, cp, readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { check } from './check'
@@ -52,6 +52,15 @@ async function findStandaloneServer (projectRoot: string): Promise<string> {
 
 async function copyStandaloneAssets (projectRoot: string): Promise<void> {
   const serverDirectory = path.dirname(await findStandaloneServer(projectRoot))
+  const serverPackagePath = path.join(serverDirectory, 'package.json')
+  if (await exists(serverPackagePath)) {
+    const packageJson = JSON.parse(await readFile(serverPackagePath, 'utf8')) as Record<string, unknown>
+    if (packageJson.type === 'module') {
+      delete packageJson.type
+      await writeFile(serverPackagePath, `${JSON.stringify(packageJson)}\n`, 'utf8')
+    }
+  }
+
   const publicDirectory = path.join(projectRoot, 'public')
 
   if (await exists(publicDirectory)) {

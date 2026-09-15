@@ -1,0 +1,128 @@
+import { randomUUID } from 'node:crypto'
+
+import type { StudioUser } from '../../../studio/types'
+
+import { getDatabase } from '../database'
+import { hashPassword } from '../passwords'
+import {
+  duplicateUsernameError,
+  lastAdministratorError,
+  userNotFoundError,
+  UserDomainError
+} from './errors'
+import {
+  isActiveValue,
+  isRecord,
+  isUserRole,
+  normalizeUpdate,
+  requirePassword,
+  requireUserId,
+  requireUsername,
+  toStudioUser,
+  type CreateUserInput,
+  type UpdateUserInput
+} from './validation'
+import {
+  countActiveAdministrators as countActiveAdministratorsIn,
+  isDuplicateUsernameError,
+  readUserById,
+  readUserState,
+  usernameExists,
+  withImmediateTransaction
+} from './repository'
+
+export function getUserById (userId: unknown): StudioUser | undefined {
+  if (typeof userId !== 'string' || userId.length === 0) return undefined
+  const row = readUserById(getDatabase(), userId)
+  return toStudioUser(row)
+}
+
+export async function createUser (input: CreateUserInput): Promise<StudioUser> {
+  const value: Record<string, unknown> = isRecord(input) ? input : {}
+  const username = requireUsername(value.username)
+  const password = requirePassword(value.password)
+  const role = value.role === undefined ? 'user' : value.role
+  if (!isUserRole(role)) throw new UserDomainError('invalid_role', 'User role is invalid')
+
+  const passwordHash = await hashPassword(password)
+  const userId = randomUUID()
+  const now = Date.now()
+  const database = getDatabase()
+
+  try {
+    return withImmediateTransaction(database, () => {
+      if (usernameExists(database, username)) throw duplicateUsernameError()
+      database.prepare(`
+        INSERT INTO users (id, username, password_hash, role, active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(userId, username, passwordHash, role, 1, now, now)
+      return { id: userId, username, role }
+    })
+  } catch (error) {
+    if (isDuplicateUsernameError(error)) throw duplicateUsernameError()
+    throw error
+  }
+}
+
+export function updateUser (userId: unknown, input: UpdateUserInput): StudioUser {
+  const id = requireUserId(userId)
+  const updates = normalizeUpdate(input)
+  const database = getDatabase()
+
+  try {
+    return withImmediateTransaction(database, () => {
+      const current = readUserState(database, id)
+      const currentUser = toStudioUser(current)
+      if (current === undefined || currentUser === undefined || !isActiveValue(current.active)) throw userNotFoundError()
+
+      const nextUsername = updates.username ?? currentUser.username
+      const nextRole = updates.role ?? currentUser.role
+      const nextActive = updates.active === undefined ? current.active : updates.active ? 1 : 0
+      if (!isUserRole(nextRole)) throw new UserDomainError('invalid_user_state', 'User role is invalid')
+
+      if (current.role === 'admin' && current.active === 1 && (nextRole !== 'admin' || nextActive !== 1) && countActiveAdministratorsIn(database) <= 1) {
+        throw lastAdministratorError()
+      }
+
+      if (updates.username !== undefined && usernameExists(database, nextUsername, id)) throw duplicateUsernameError()
+      database.prepare('UPDATE users SET username = ?, role = ?, active = ?, updated_at = ? WHERE id = ?').run(nextUsername, nextRole, nextActive, Date.now(), id)
+      if (nextActive === 0) database.prepare('DELETE FROM sessions WHERE user_id = ?').run(id)
+      return { id: currentUser.id, username: nextUsername, role: nextRole }
+    })
+  } catch (error) {
+    if (isDuplicateUsernameError(error)) throw duplicateUsernameError()
+    throw error
+  }
+}
+
+export function updateUsername (userId: unknown, username: unknown): StudioUser {
+  return updateUser(userId, { username: requireUsername(username) })
+}
+
+export async function setPassword (userId: unknown, password: unknown): Promise<void> {
+  const id = requireUserId(userId)
+  const validPassword = requirePassword(password)
+  const passwordHash = await hashPassword(validPassword)
+
+  const database = getDatabase()
+  withImmediateTransaction(database, () => {
+    if (readUserState(database, id) === undefined) throw userNotFoundError()
+    database.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, Date.now(), id)
+    database.prepare('DELETE FROM sessions WHERE user_id = ?').run(id)
+  })
+}
+
+export function countActiveAdministrators (): number {
+  return countActiveAdministratorsIn(getDatabase())
+}
+
+export function deleteUser (userId: unknown): void {
+  const id = requireUserId(userId)
+  const database = getDatabase()
+  withImmediateTransaction(database, () => {
+    const current = readUserState(database, id)
+    if (current === undefined) throw userNotFoundError()
+    if (current.role === 'admin' && current.active === 1 && countActiveAdministratorsIn(database) <= 1) throw lastAdministratorError()
+    database.prepare('DELETE FROM users WHERE id = ?').run(id)
+  })
+}

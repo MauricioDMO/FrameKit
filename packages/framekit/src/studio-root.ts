@@ -1,2 +1,2 @@
 export { FrameKitStudioRoot } from './studio/root'
-export { createStudioPage } from './studio/page'
+export { createLoginPage, createStudioPage } from './studio/page'

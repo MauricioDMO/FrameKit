@@ -34,6 +34,7 @@ export const studioUser = {
 FrameKitStudio({ templates })
 FrameKitStudio({ brands })
 FrameKitStudio({ templates, brands })
+FrameKitStudio({ templates, user: studioUser })
 
 // @ts-expect-error at least one manifest is required
 FrameKitStudio({})

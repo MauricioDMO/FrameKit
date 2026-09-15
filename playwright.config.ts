@@ -16,10 +16,14 @@ export default defineConfig({
   },
   webServer: {
     command: 'pnpm --filter @mauriciodmo/framekit build && pnpm --filter studio build && pnpm --filter studio start',
-    url: 'http://localhost:3000/editor',
+    url: 'http://localhost:3000/login',
     env: {
       FRAMEKIT_HOST: 'localhost',
+      HOSTNAME: 'localhost',
       FRAMEKIT_API_KEY: 'framekit-e2e-api-key',
+      FRAMEKIT_ADMIN_USERNAME: 'admin',
+      FRAMEKIT_ADMIN_PASSWORD: 'framekit-e2e-password',
+      FRAMEKIT_DATABASE_PATH: ':memory:',
       FRAMEKIT_INTERNAL_ORIGIN: 'http://localhost:3000',
       PORT: '3000',
       NEXT_TELEMETRY_DISABLED: '1',

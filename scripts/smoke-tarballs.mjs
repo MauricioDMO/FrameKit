@@ -16,6 +16,9 @@ const creatorPackageRoot = path.join(repoRoot, 'packages', 'create-framekit')
 const templateRoot = path.join(creatorPackageRoot, 'template')
 const legacyNamespacePattern = /__framekit|%5F%5Fframekit/i
 const nodeBuiltinNames = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
+const smokeAdminUsername = 'admin'
+const smokeAdminPassword = 'framekit-smoke-password'
+const smokeHost = 'localhost'
 const publicCoreSpecifiers = [
   '@mauriciodmo/framekit',
   '@mauriciodmo/framekit/client',
@@ -146,7 +149,7 @@ function isForbiddenArchiveEntry(entry) {
   if (/\.(?:test|spec)\.[^/]+$/i.test(basename)) return true
   if (/^\.env(?:\.[^/]+)?$/i.test(basename) && basename !== '.env.example') return true
   if (/(^|\/)(?:secrets?|credentials?)(?:\/|$)/i.test(normalizedEntry)) return true
-  if (/(?:id_(?:rsa|dsa|ecdsa|ed25519)|[^/]*(?:secret|credential|password|token|private[-_]?key|service[-_]?account|api[-_]?key)[^/]*)$/i.test(basename)) return true
+  if (normalizedEntry !== 'package/dist/server/access/passwords.js' && /(?:id_(?:rsa|dsa|ecdsa|ed25519)|[^/]*(?:secret|credential|password|token|private[-_]?key|service[-_]?account|api[-_]?key)[^/]*)$/i.test(basename)) return true
   if (/\.(?:pem|key|p12|pfx)$/i.test(basename)) return true
   if (/(^|\/)(?:\.?ms-playwright|\.?local-browsers)(?:\/|$)/i.test(normalizedEntry)) return true
   if (/^(?:chrome|chromium|chrome-headless-shell|headless[_-]shell|firefox|webkit|ffmpeg)(?:\.exe)?$/i.test(basename)) return true
@@ -271,13 +274,15 @@ async function assertGeneratedConsumerShape(consumerRoot) {
 
   assert.deepEqual(appFiles, [
     '[section]/[[...slug]]/page.tsx',
+    'api/framekit/[...action]/route.ts',
     'api/v1/images/route.ts',
     'framekit/render/[id]/page.tsx',
     'globals.css',
     'layout.tsx',
+    'login/page.tsx',
   ], 'creator consumer src/app contains unexpected files')
   assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit'))), 'creator consumer copied generated FrameKit bindings')
-  console.log('[PASS] creator consumer has the five-file app and generated-only client bindings')
+  console.log('[PASS] creator consumer has the seven-file app and generated-only client bindings')
 }
 
 async function assertGeneratedBindings(consumerRoot) {
@@ -450,7 +455,14 @@ function startServer(consumerRoot, port) {
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx'
   const child = spawn(command, ['--no-install', 'framekit', 'start'], {
     cwd: consumerRoot,
-    env: { ...process.env, HOSTNAME: '127.0.0.1', PORT: String(port) },
+    env: {
+      ...process.env,
+      HOSTNAME: smokeHost,
+      PORT: String(port),
+      FRAMEKIT_ADMIN_USERNAME: smokeAdminUsername,
+      FRAMEKIT_ADMIN_PASSWORD: smokeAdminPassword,
+      FRAMEKIT_DATABASE_PATH: ':memory:',
+    },
     detached: process.platform !== 'win32',
     shell: false,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -468,8 +480,8 @@ async function runStartSmoke(consumerRoot, temporaryRoot) {
   const child = startServer(consumerRoot, port)
   let stopped = false
   try {
-    const status = await waitForHttp(child, `http://127.0.0.1:${port}/editor`, temporaryRoot)
-    console.log(`[PASS] framekit start HTTP readiness /editor returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
+    const status = await waitForHttp(child, `http://${smokeHost}:${port}/login`, temporaryRoot)
+    console.log(`[PASS] framekit start HTTP readiness /login returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
     await runStudioRouteSmoke(port)
     await runProductionRenderSmoke(port)
   } finally {
@@ -479,26 +491,51 @@ async function runStartSmoke(consumerRoot, temporaryRoot) {
 }
 
 async function runStudioRouteSmoke(port) {
-  const origin = `http://127.0.0.1:${port}`
+  const origin = `http://${smokeHost}:${port}`
   const rootResponse = await fetch(`${origin}/`, { redirect: 'manual' })
   await rootResponse.text()
   assert.equal(rootResponse.status, 307, 'root route did not return a temporary redirect')
   assert.equal(rootResponse.headers.get('location'), '/editor', 'root route redirected to an unexpected path')
 
-  for (const pathname of ['/editor', '/editor/example', '/brand', '/brand/catalog/hero']) {
+  const protectedPaths = ['/editor', '/editor/example', '/brand', '/brand/catalog/hero']
+  const loginPage = await fetch(`${origin}/login`, { redirect: 'manual' })
+  await loginPage.text()
+  assert.equal(loginPage.status, 200, 'public login route did not resolve')
+
+  for (const pathname of protectedPaths) {
     const response = await fetch(`${origin}${pathname}`, { redirect: 'manual' })
     await response.text()
-    assert.equal(response.status, 200, `${pathname} did not resolve through the unified section route`)
+    assert.equal(response.status, 307, `${pathname} did not redirect without credentials`)
+    assert.equal(response.headers.get('location'), '/login', `${pathname} redirected to an unexpected path`)
+  }
+
+  const loginResponse = await fetch(`${origin}/api/framekit/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', Origin: origin },
+    body: JSON.stringify({ username: smokeAdminUsername, password: smokeAdminPassword }),
+  })
+  assert.equal(loginResponse.status, 200, `login returned ${loginResponse.status}`)
+  const setCookie = loginResponse.headers.get('set-cookie')
+  assert.match(setCookie ?? '', /^framekit_session=[^;]+;/, 'login did not set a session cookie')
+  const sessionCookie = setCookie.split(';', 1)[0]
+
+  for (const pathname of protectedPaths) {
+    const response = await fetch(`${origin}${pathname}`, {
+      headers: { Cookie: sessionCookie },
+      redirect: 'manual',
+    })
+    await response.text()
+    assert.equal(response.status, 200, `${pathname} did not resolve with a session`)
   }
 
   const invalidSection = await fetch(`${origin}/preview/example`, { redirect: 'manual' })
   await invalidSection.text()
   assert.equal(invalidSection.status, 404, 'unknown section did not return not-found')
-  console.log('[PASS] unified Studio route preserved root redirect, nested sections, and invalid-section 404')
+  console.log('[PASS] public login, unauthenticated redirects, authenticated Studio routes, root redirect, nested sections, and invalid-section 404')
 }
 
 async function runProductionRenderSmoke(port) {
-  const origin = `http://127.0.0.1:${port}`
+  const origin = `http://${smokeHost}:${port}`
   const smokeRoute = `${origin}/framekit-smoke`
   const createJob = async () => {
     const response = await fetch(smokeRoute, { method: 'POST' })

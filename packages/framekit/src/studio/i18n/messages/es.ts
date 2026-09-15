@@ -2,6 +2,16 @@ import { FrameKitStudioMessages } from '@/studio'
 
 const esMessages = {
   metadata: { title: 'FrameKit', description: 'Editor de imágenes basado en plantillas React' },
+  login: {
+    title: 'Inicia sesión en Studio',
+    description: 'Usa tu cuenta de FrameKit para continuar.',
+    usernameLabel: 'Usuario',
+    passwordLabel: 'Contraseña',
+    submitLabel: 'Iniciar sesión',
+    pendingLabel: 'Iniciando sesión...',
+    invalidCredentials: 'El usuario o la contraseña no son válidos.',
+    serverError: 'No se pudo iniciar sesión. Inténtalo de nuevo.'
+  },
   sidebar: {
     workshop: 'Taller visual',
     navigationLabel: 'Plantillas',

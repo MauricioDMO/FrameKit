@@ -6,6 +6,10 @@ export type FrameKitLocale = 'es' | 'en'
 
 export interface FrameKitStudioMessages {
   metadata: { title: string, description: string }
+  login: {
+    title: string, description: string, usernameLabel: string, passwordLabel: string
+    submitLabel: string, pendingLabel: string, invalidCredentials: string, serverError: string
+  }
   sidebar: {
     workshop: string, navigationLabel: string, templatesLabel: string, brandsLabel: string
     noTemplates: string, noBrands: string, languageLabel: string

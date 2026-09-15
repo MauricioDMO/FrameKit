@@ -21,11 +21,12 @@ function createStudioClientModule (): string {
 'use client'
 
 import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
+import type { StudioUser } from '@mauriciodmo/framekit/studio'
 import { templates } from '${templatesImport}'
 import { brands } from '${brandsImport}'
 
-export function StudioClient () {
-  return <FrameKitStudio templates={templates} brands={brands} />
+export function StudioClient ({ user }: { user: StudioUser }) {
+  return <FrameKitStudio templates={templates} brands={brands} user={user} />
 }
 `
 }

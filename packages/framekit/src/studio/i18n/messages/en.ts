@@ -2,6 +2,16 @@ import { FrameKitStudioMessages } from '@/studio'
 
 const enMessages = {
   metadata: { title: 'FrameKit', description: 'A React template-based image editor' },
+  login: {
+    title: 'Sign in to Studio',
+    description: 'Use your FrameKit account to continue.',
+    usernameLabel: 'Username',
+    passwordLabel: 'Password',
+    submitLabel: 'Sign in',
+    pendingLabel: 'Signing in...',
+    invalidCredentials: 'Invalid username or password.',
+    serverError: 'Unable to sign in right now. Please try again.'
+  },
   sidebar: {
     workshop: 'Visual workshop',
     navigationLabel: 'Templates',

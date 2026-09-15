@@ -15,5 +15,5 @@ export interface FrameKitStudioBrand {
 }
 
 export type FrameKitStudioProps =
-  | { templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[] }
-  | { templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[] }
+  | { templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[], user?: StudioUser }
+  | { templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[], user?: StudioUser }
