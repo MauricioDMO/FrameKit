@@ -1,6 +1,6 @@
 # Studio Access, API Tokens, and Server-backed Export
 
-- **Status:** Proposed.
+- **Status:** Phase 4 implemented and verified on 2026-09-15; Phases 5-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
@@ -25,6 +25,11 @@ Most technical evidence originally assigned to Server Image Rendering Step 8
 has already been recorded against the API-key and browser-export baseline. That
 evidence remains useful, but final Step 8 closure must wait until this plan is
 complete and the resulting architecture is reverified.
+
+Phase 4 is implemented and verified on 2026-09-15. Phases 5-8 remain pending;
+the Studio access UI and authenticated image API/session export are not yet
+implemented. Server Image Rendering Step 8 final revalidation and closure remain
+blocked until this plan is complete.
 
 ## Target architecture
 

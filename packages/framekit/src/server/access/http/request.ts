@@ -73,11 +73,16 @@ export async function readAccessJson (request: Request): Promise<unknown> {
   }
 }
 
-export function exactBody (value: unknown, keys: readonly string[]): Record<string, unknown> {
+export function exactBody (
+  value: unknown,
+  keys: readonly string[],
+  optionalKeys: readonly string[] = []
+): Record<string, unknown> {
   if (!isPlainObject(value)) fail('invalid_request', 400)
 
   const actualKeys = Object.keys(value)
-  if (actualKeys.length !== keys.length || actualKeys.some((key) => !keys.includes(key)) || keys.some((key) => !Object.hasOwn(value, key))) {
+  const allowedKeys = [...keys, ...optionalKeys]
+  if (actualKeys.length === 0 || actualKeys.some((key) => !allowedKeys.includes(key)) || keys.some((key) => !Object.hasOwn(value, key))) {
     fail('invalid_request', 400)
   }
 

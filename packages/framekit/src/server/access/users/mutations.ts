@@ -25,16 +25,52 @@ import {
 import {
   countActiveAdministrators as countActiveAdministratorsIn,
   isDuplicateUsernameError,
+  readManagedUserById,
   readUserById,
   readUserState,
+  readUsers,
   usernameExists,
   withImmediateTransaction
 } from './repository'
+
+interface ManagedUser {
+  id: string
+  username: string
+  role: StudioUser['role']
+  active: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+function toManagedUser (value: unknown): ManagedUser | undefined {
+  if (!isRecord(value)) return undefined
+  const user = toStudioUser(value)
+  if (user === undefined || !isUserRole(value.role) || !isActiveValue(value.active)) return undefined
+  if (typeof value.created_at !== 'number' || !Number.isSafeInteger(value.created_at) || typeof value.updated_at !== 'number' || !Number.isSafeInteger(value.updated_at)) return undefined
+
+  return {
+    ...user,
+    active: value.active === 1,
+    createdAt: value.created_at,
+    updatedAt: value.updated_at
+  }
+}
 
 export function getUserById (userId: unknown): StudioUser | undefined {
   if (typeof userId !== 'string' || userId.length === 0) return undefined
   const row = readUserById(getDatabase(), userId)
   return toStudioUser(row)
+}
+
+export function getManagedUserById (userId: unknown): ManagedUser | undefined {
+  if (typeof userId !== 'string' || userId.length === 0) return undefined
+  return toManagedUser(readManagedUserById(getDatabase(), userId))
+}
+
+export function listUsers (): ManagedUser[] {
+  return readUsers(getDatabase())
+    .map(toManagedUser)
+    .filter((user): user is ManagedUser => user !== undefined)
 }
 
 export async function createUser (input: CreateUserInput): Promise<StudioUser> {

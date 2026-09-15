@@ -1,5 +1,7 @@
 import { authenticateBearer, ImageRenderError, parseImageApiConfig, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import type {
+  ApiTokenMetadata,
+  CreatedApiToken,
   ImageApiConfig,
   ImageRenderErrorCode,
   ImageRenderFailure,
@@ -7,6 +9,20 @@ import type {
   ImageRenderRuntimeConfig,
   ResolvedRenderPayload
 } from '@mauriciodmo/framekit/server'
+
+const tokenMetadata = {
+  id: 'token-id',
+  name: 'deploy',
+  tokenPrefix: 'fk_abc',
+  createdAt: 1,
+  lastUsedAt: null,
+  revokedAt: null
+} satisfies ApiTokenMetadata
+
+const createdToken = {
+  ...tokenMetadata,
+  token: 'fk_secret'
+} satisfies CreatedApiToken
 
 const request = {
   template: 'social/post',
@@ -45,4 +61,12 @@ const parsedConfig = parseImageApiConfig({
 const authorized: boolean = authenticateBearer('Bearer secret', parsedConfig.apiKey)
 const rendered: Promise<Buffer> = renderTemplateImage({ payload, config: runtime, signal: new AbortController().signal })
 
-export { payload, errorCode, error, authorized, rendered }
+export {
+  tokenMetadata,
+  createdToken,
+  payload,
+  errorCode,
+  error,
+  authorized,
+  rendered
+}

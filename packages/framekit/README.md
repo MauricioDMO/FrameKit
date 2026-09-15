@@ -4,7 +4,8 @@ FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js.
 Studio export is browser-based and supports PNG only. The server-only
 `@mauriciodmo/framekit/server` facade exposes configuration and authentication
-helpers, the `createImageHandler` PNG API, image preparation and rendering,
+helpers, the `createStudioAccessHandler` session and token/user management
+handler, the `createImageHandler` PNG API, image preparation and rendering,
 temporary render jobs, and the private `createRenderPage` handoff used by
 production rendering.
 
@@ -162,7 +163,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
-import { authenticateBearer, createImageHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, createImageHandler, createStudioAccessHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
@@ -180,9 +181,52 @@ export const RenderClient = createRenderClient(templates)
 ```
 
 The server-only `./server` facade exposes configuration and authentication
-helpers, `createImageHandler`, `prepareRenderInputs`, `renderTemplateImage`,
-temporary render jobs, and the private `createRenderPage` handoff. Keep the
-`./dev` and `./server` entry points out of browser/client imports.
+helpers, `createStudioAccessHandler`, `createImageHandler`,
+`prepareRenderInputs`, `renderTemplateImage`, temporary render jobs, and the
+private `createRenderPage` handoff. It also exports the type-only
+`ApiTokenMetadata` and `CreatedApiToken` contracts. Keep the `./dev` and
+`./server` entry points out of browser/client imports.
+
+### Studio access
+
+`createStudioAccessHandler(): (request: Request) => Promise<Response>` returns a
+Node.js handler for these session, account, token, and user routes:
+
+```text
+POST  /api/framekit/login                 POST  /api/framekit/logout
+GET/PATCH /api/framekit/account            POST  /api/framekit/account/password
+GET/POST /api/framekit/tokens              DELETE /api/framekit/tokens/:id
+GET/POST /api/framekit/users               PATCH/DELETE /api/framekit/users/:id
+POST  /api/framekit/users/:id/password     GET  /api/framekit/users/:id/tokens
+```
+
+Mount it from a server-only route and expose the methods above. Login sets the
+`framekit_session` cookie. Authenticated users manage their own account and
+tokens; administrators also manage users, inspect any user's token metadata,
+and revoke any token. Login, account, and user creation/update responses expose
+only the safe `StudioUser` fields `id`, `username`, and `role`; administrator
+user lists additionally expose `active`, `createdAt`, and `updatedAt`. No
+response exposes password hashes, session secrets, token hashes, or previously
+returned token secrets. A created token's full secret is returned once, in the
+`201` response; later metadata responses contain only safe metadata, and storage
+contains only that metadata and the token hash. API-token Bearer lookup accepts a
+bounded, non-empty credential, hashes it, requires an unrevoked token with an
+active owner, and updates `lastUsedAt`. The generated-token `fk_` prefix is not
+required, so imported legacy credentials can be used. A legacy non-empty
+`FRAMEKIT_API_KEY` is imported only during first-user bootstrap and is not
+synchronized afterward.
+
+Session-protected account, token, and user-management operations return `401`
+for missing or invalid sessions; invalid login credentials also return `401`.
+Logout is idempotent and returns `200` while expiring the cookie. Role,
+ownership, or cross-origin unsafe-request failures return `403`; unknown or
+inaccessible targets return `404`; unsupported methods return `405`; duplicate
+usernames and last-active-administrator conflicts return `409`. Unsafe requests
+require a same-origin `Origin` header.
+
+`POST /api/v1/images` continues to use `FRAMEKIT_API_KEY`, and Download PNG and
+Copy PNG continue to use the current browser exporter. Server-backed
+Download/Copy and the Studio access UI remain later phases.
 
 ### Server image API
 

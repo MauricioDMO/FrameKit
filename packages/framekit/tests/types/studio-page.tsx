@@ -1,4 +1,5 @@
 import { createStudioPage } from '@mauriciodmo/framekit/studio/root'
+import type { StudioUser } from '@mauriciodmo/framekit/studio'
 
 function StudioClient () {
   return <div />
@@ -9,7 +10,7 @@ const StudioPage = createStudioPage(StudioClient)
 StudioPage({ params: Promise.resolve({ section: 'editor' }) })
 StudioPage({ params: Promise.resolve({ section: 'brand', slug: ['catalog', 'hero'] }) })
 
-function OptionalPropsClient ({ label }: { label?: string }) {
+function OptionalPropsClient ({ label }: { user: StudioUser, label?: string }) {
   return <div>{label}</div>
 }
 

@@ -17,12 +17,12 @@ migración histórica](./migration-v0.8.0.md).
   mediante la ruta `POST /api/v1/images` del consumidor generado; instala
   explícitamente su headless shell de Chromium con `framekit browser install`
   antes de servir solicitudes.
-- Las Fases 1 a 3 de Studio Access & API Rendering (SQLite, migraciones,
-  usuarios, contraseñas, bootstrap, sesiones, acceso HTTP y protección de rutas)
-  están implementadas. Las fases 4-8 siguen sin estar disponibles. El Paso 8
-  de Server Image Rendering continúa bloqueado hasta completar ese plan; los
-  endpoints de tokens API y la exportación server-side de Studio todavía no
-  están disponibles.
+- La Fase 4 de Studio Access & API Rendering (SQLite, migraciones, usuarios,
+  contraseñas, bootstrap, sesiones, acceso HTTP, protección de rutas y gestión
+  de tokens/usuarios) está implementada. Las fases posteriores de renderizado
+  server-side siguen sin estar disponibles. El Paso 8 de Server Image Rendering
+  continúa bloqueado hasta completar ese plan; la exportación server-side de
+  Studio todavía no está disponible.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -53,16 +53,18 @@ eso el runtime mínimo es Node.js `>=22.13.0`. La base de la Fase 1 solo prepara
 tablas vacías; la Fase 2 las usa para el bootstrap lazy, en tiempo de solicitud,
 del primer administrador y para las credenciales locales. La Fase 3 añade el
 login y las sesiones HTTP, las rutas protegidas de Studio y los uploads
-autenticados de assets en desarrollo. Los endpoints de tokens API y la
-exportación server-side pertenecen a fases posteriores. `FRAMEKIT_ADMIN_USERNAME`
-y `FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
+autenticados de assets en desarrollo. La Fase 4 añade rutas autenticadas de
+gestión de tokens y usuarios. La UI de acceso de Studio y Download/Copy
+server-side pertenecen a fases posteriores. `FRAMEKIT_ADMIN_USERNAME` y
+`FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
 `FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
 de imágenes continúa leyéndola de forma independiente.
 
-Mientras las fases 4-8 no estén implementadas, la ruta `POST /api/v1/images`
-continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
-usando el exportador actual del navegador. Esta base tampoco migra datos de
-plantillas, assets ni estado persistido del editor.
+Con la Fase 4 implementada, la ruta `POST /api/v1/images` continúa
+autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen usando el
+exportador actual del navegador. La UI de acceso de Studio y Download/Copy
+server-side siguen siendo fases posteriores. Esta base tampoco migra datos de plantillas,
+assets ni estado persistido del editor.
 
 La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
 duración por contenedor. Los render jobs son locales al proceso, desaparecen al
@@ -92,19 +94,19 @@ HTTP ni UI.
   restablecer una contraseña, y desactivar un usuario, elimina sus sesiones; una
   transacción impide eliminar, desactivar o degradar al último administrador
   activo.
-- La Fase 3 ya proporciona el login y las sesiones HTTP y las rutas protegidas de
-  Studio. Los endpoints de tokens API y la descarga y copia PNG en el servidor
-  todavía no están disponibles. `POST /api/v1/images` sigue usando
-  `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen usando el exportador del
-  navegador.
+- La Fase 3 proporciona el login, las sesiones HTTP y las rutas protegidas de
+  Studio. La Fase 4 proporciona rutas de gestión de tokens y usuarios.
+  `POST /api/v1/images` sigue usando `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG
+  siguen usando el exportador del navegador; sus versiones server-side siguen
+  siendo fases posteriores.
 
-## Acceso A Studio, Sesiones Y Protección De Rutas
+## Acceso A Studio, Sesiones, Protección Y Gestión De Rutas
 
-La Fase 3 de Studio Access & API Rendering está implementada. Las fases 1-3 ya
-están disponibles; las fases 4-8 siguen pendientes, incluidas la gestión de
-tokens API y la exportación server-side de Studio.
+La Fase 4 de Studio Access & API Rendering está implementada. Las fases 1-4 ya
+están disponibles; la UI de acceso de Studio y Download/Copy server-side siguen
+siendo fases posteriores.
 
-El handler de acceso expone exactamente estas cinco rutas:
+El handler de acceso expone estas rutas:
 
 ```text
 POST  /api/framekit/login
@@ -112,7 +114,53 @@ POST  /api/framekit/logout
 GET   /api/framekit/account
 PATCH /api/framekit/account
 POST  /api/framekit/account/password
+GET   /api/framekit/tokens
+POST  /api/framekit/tokens
+DELETE /api/framekit/tokens/:id
+GET   /api/framekit/users
+POST  /api/framekit/users
+PATCH /api/framekit/users/:id
+DELETE /api/framekit/users/:id
+POST  /api/framekit/users/:id/password
+GET   /api/framekit/users/:id/tokens
 ```
+
+El login crea la sesión que usan las rutas autenticadas. Un usuario normal puede
+leer y actualizar su cuenta, cambiar su contraseña, crear/listar/revocar sus
+propios tokens API y listar los metadatos de sus propios tokens. Un administrador
+también puede listar/crear/actualizar/eliminar usuarios, restablecer contraseñas,
+listar metadatos de tokens de cualquier usuario y revocar cualquier token. Las
+respuestas de login, cuenta y creación/actualización de usuarios solo exponen
+los campos seguros de `StudioUser`: `id`, `username` y `role`; la lista
+administrativa de usuarios también expone `active`, `createdAt` y `updatedAt`.
+Ninguna respuesta expone hashes de contraseñas, secretos de sesión, hashes de
+tokens ni secretos de tokens ya devueltos.
+
+Al crear un token, su valor completo `token` se devuelve una sola vez, en la
+respuesta `201`. Las listas posteriores y la base de datos contienen solo
+metadatos y un hash, nunca el secreto completo. Los metadatos incluyen `id`,
+`name`, `tokenPrefix`, `createdAt`, `lastUsedAt` y `revokedAt`. La búsqueda
+Bearer de tokens API calcula el hash de la credencial presentada, acotada y no
+vacía, exige un token no revocado cuyo propietario esté activo y registra
+`lastUsedAt` cuando la búsqueda es correcta. No exige el prefijo `fk_` de los
+tokens generados, por lo que admite credenciales heredadas importadas. El
+contrato Bearer de la API clásica de imágenes sigue usando `FRAMEKIT_API_KEY`;
+estas rutas de gestión de Studio usan la cookie de sesión.
+
+Solo durante el primer bootstrap, un `FRAMEKIT_API_KEY` no vacío se importa como
+token API heredado del primer administrador. Su secreto se guarda como hash y no
+se vuelve a importar ni sincronizar después de que exista cualquier usuario.
+
+Las operaciones protegidas de cuenta, tokens y gestión de usuarios devuelven
+`401` cuando falta la sesión o no es válida; las credenciales de login inválidas
+también devuelven `401`. Logout es idempotente: devuelve `200` y expira la cookie
+incluso sin una sesión válida. Los usuarios normales reciben `403` en
+operaciones exclusivas de administradores o al consultar metadatos de tokens de
+otro usuario. Los usuarios desconocidos, los destinos de tokens no disponibles
+y las revocaciones fuera de los permisos del actor devuelven `404`; los métodos
+no admitidos devuelven `405`; los nombres de usuario duplicados y los intentos
+de eliminar, desactivar o degradar al último administrador activo devuelven
+`409`.
 
 Un login correcto establece una cookie `framekit_session` con `HttpOnly`,
 `SameSite=Lax`, `Path=/` y una duración de 30 días mediante `Expires`/`Max-Age`.
@@ -121,7 +169,10 @@ guarda el hash SHA-256 de la sesión y sus metadatos de usuario, creación y
 expiración; el secreto crudo solo se devuelve en la cookie. Logout elimina la
 sesión guardada actual y expira la cookie del navegador. Cambiar la contraseña
 invalida todas las sesiones del usuario y expira la cookie actual. Las respuestas
-públicas solo exponen el DTO seguro `StudioUser`: `id`, `username` y `role`.
+de login, cuenta y creación/actualización de usuarios solo exponen los campos
+seguros de `StudioUser`: `id`, `username` y `role`; las listas administrativas
+de usuarios también incluyen los campos seguros `active`, `createdAt` y
+`updatedAt`.
 
 El login y cada solicitud insegura autenticada por cookie requieren un header
 `Origin` cuyo valor coincida exactamente con el origen canónico de la solicitud.
@@ -157,10 +208,10 @@ asset.
 Su ID interno de render job y `x-framekit-render-token` continúan siendo la única
 frontera de autenticación de esa ruta privada.
 
-La Fase 3 no introduce migración de plantillas, assets, estado del editor ni
+La Fase 4 no introduce migración de plantillas, assets, estado del editor ni
 versión de release. El comportamiento existente de la API de imágenes y del
-exportador del navegador no cambia hasta implementar las futuras fases de tokens
-API y exportación server-side.
+exportador del navegador no cambia; la UI de acceso de Studio y Download/Copy
+server-side siguen siendo fases posteriores.
 
 ## Integración De Renderizado En Servidor
 

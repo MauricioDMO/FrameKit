@@ -207,9 +207,10 @@ función de renderizado de la plantilla.
 
 Las ediciones del editor se persisten por plantilla y variante bajo
 `framekit:<slug>:v2`. El estado anterior se invalida intencionalmente en lugar de
-migrarse. La vista previa y el renderizado usan valores tipados confirmados; la
-descarga y la copia validan los datos confirmados actuales antes de producir la
-salida y enfocan el primer control inválido.
+migrarse. La vista previa y el renderizado usan valores tipados confirmados; los
+botones actuales de Download y Copy usan el exportador del navegador, validan
+los datos confirmados actuales antes de producir la salida y enfocan el primer
+control inválido.
 
 **Exportaciones del entorno de ejecución**
 
@@ -296,10 +297,11 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para los contratos implementados de los Pasos 1-7: configuración y
-autenticación, el handler público de imágenes, preparación de inputs de
-imagen, trabajos temporales, renderizado PNG en navegador y el handoff privado
-de la página de renderizado. No se debe importar en bundles del navegador.
+para los contratos implementados del Acceso de Studio de la Fase 4 y del
+renderizado de imágenes: configuración y autenticación, el handler de acceso
+de Studio, el handler público de imágenes, preparación de inputs de imagen,
+trabajos temporales, renderizado PNG en navegador y el handoff privado de la
+página de renderizado. No se debe importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
@@ -307,6 +309,7 @@ de la página de renderizado. No se debe importar en bundles del navegador.
 | ---------------------- | --------------------------------------------------------------------------------------------------- |
 | `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
 | `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
+| `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; crea el handler autenticado de sesiones y de gestión de tokens/usuarios de Studio |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
 | `createImageHandler`   | `createImageHandler(templates): (request: Request) => Promise<Response>`; crea el handler autenticado de la API de imágenes PNG |
 | `prepareRenderInputs`  | `prepareRenderInputs(options)`; valida los datos de la solicitud y prepara inputs de imagen locales, data URLs y remotos permitidos para renderizar |
@@ -315,6 +318,54 @@ de la página de renderizado. No se debe importar en bundles del navegador.
 | `loadRenderRequest`    | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
 | `deleteRenderJob`      | `deleteRenderJob(id: string, options?): void`; elimina un trabajo privado de renderizado |
 | `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff privado de página de servidor que valida el token de renderizado y pasa el payload resuelto al componente cliente |
+
+#### Handler de acceso de Studio
+
+`createStudioAccessHandler()` devuelve el handler de Node.js para estas rutas:
+
+```text
+POST  /api/framekit/login                 POST  /api/framekit/logout
+GET/PATCH /api/framekit/account            POST  /api/framekit/account/password
+GET/POST /api/framekit/tokens              DELETE /api/framekit/tokens/:id
+GET/POST /api/framekit/users               PATCH/DELETE /api/framekit/users/:id
+POST  /api/framekit/users/:id/password     GET  /api/framekit/users/:id/tokens
+```
+
+Móntalo desde una ruta exclusiva del servidor y expón los métodos usados arriba.
+El login establece la cookie `framekit_session`; las operaciones de cuenta,
+contraseña, tokens y usuarios requieren una sesión autenticada. Los usuarios
+normales gestionan su propia cuenta y sus tokens, mientras que los
+administradores también gestionan usuarios, consultan la metadata de tokens de
+cualquier usuario y revocan cualquier token. Las respuestas de login, cuenta y
+creación/actualización de usuarios solo exponen los campos seguros de
+`StudioUser`: `id`, `username` y `role`; la lista administrativa de usuarios
+añade `active`, `createdAt` y `updatedAt`. Ninguna respuesta expone hashes de
+contraseñas, secretos de sesión, hashes de tokens ni secretos de tokens ya
+devueltos. Crear un token devuelve su secreto completo una sola vez; las
+respuestas posteriores contienen únicamente metadata segura y el almacenamiento
+contiene únicamente el hash y esa metadata. La búsqueda Bearer de tokens API
+calcula el hash de la credencial acotada y no vacía, la acepta solo si el token
+no está revocado y su propietario está activo, y actualiza `lastUsedAt` cuando
+tiene éxito. No exige el prefijo `fk_` de los tokens generados, por lo que
+admite credenciales heredadas importadas. Un `FRAMEKIT_API_KEY` heredado no vacío
+se importa como token únicamente durante el bootstrap del primer usuario y no
+se sincroniza después.
+
+Las operaciones protegidas de cuenta, tokens y gestión de usuarios devuelven
+`401` cuando falta la sesión o no es válida; las credenciales de login inválidas
+también devuelven `401`. Logout es idempotente: devuelve `200` y expira la cookie
+incluso sin una sesión válida. El handler devuelve `403` para operaciones
+prohibidas de usuarios normales o entre orígenes en solicitudes inseguras, `404`
+para objetivos desconocidos o inaccesibles y `405` para métodos no admitidos.
+Devuelve `409` para nombres de usuario duplicados o intentos de eliminar,
+desactivar o degradar al último administrador activo. Las solicitudes inseguras
+requieren la comprobación de `Origin` del mismo origen descrita en la guía de
+migración.
+
+Este handler de la Fase 4 no reemplaza la ruta clásica de imágenes:
+`POST /api/v1/images` sigue exigiendo `Authorization: Bearer <FRAMEKIT_API_KEY>`.
+Download/Copy actuales siguen siendo del navegador, mientras que la UI de acceso
+de Studio y Download/Copy server-side siguen siendo fases posteriores.
 
 `parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
 `FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
@@ -355,6 +406,8 @@ malformados devuelven `false`.
 | `RenderJobTestOptions`       | Sobrescrituras opcionales del reloj y la fuente de identificadores para tests deterministas       |
 | `ImageRenderErrorCode`       | Unión pública de códigos: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
 | `ImageRenderFailure`         | Forma para construir errores con `code`, `message`, `fields` opcional y `cause` opcional           |
+| `ApiTokenMetadata`            | Metadata segura de un token de API: `id`, `name`, `tokenPrefix`, `createdAt`, `lastUsedAt` y `revokedAt`; nunca contiene el secreto del token |
+| `CreatedApiToken`             | `ApiTokenMetadata` más `token`; el token completo se devuelve únicamente al crear un token |
 
 `ImageRenderError` conserva un `cause` opcional en la instancia del error, pero
 `toSafeFailure()` y `toJSON()` lo omiten. Por tanto, la serialización JSON solo

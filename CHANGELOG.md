@@ -73,5 +73,13 @@
   security boundary, protected Studio routes and login behavior, and authenticated
   development asset uploads; no release-version or persisted-content migration
   is introduced. See the [sessions, HTTP, and route protection phase plan](Docs/Plans/studio-access-and-api-rendering/03-sessions-http-and-route-protection.md).
+- Implemented and verified Studio Access Phase 4 with owner-scoped token
+  creation/listing/revocation, administrator user management and token
+  metadata/revocation, one-time generated `fk_` secrets stored only as SHA-256
+  hashes, active-owner credential lookup with `last_used_at`, safe DTOs,
+  transactional last-active-administrator protection, exact access routes, and
+  DELETE route adapters. Studio UI and authenticated image API/session export
+  remain pending phases 5-8. See the [API tokens, users, and authorization phase
+  plan](Docs/Plans/studio-access-and-api-rendering/04-api-tokens-users-and-authorization.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

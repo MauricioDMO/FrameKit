@@ -6,6 +6,7 @@ import path from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createStudioAccessHandler } from '@/server'
+import { authenticateApiToken } from '@/server/access/api-tokens'
 import { getDatabase, resetDatabaseForTests } from '@/server/access/database'
 import { hashPassword } from '@/server/access/passwords'
 import { createSession, getSession } from '@/server/access/sessions'
@@ -429,7 +430,7 @@ describe('createStudioAccessHandler', () => {
 
   it('matches exact paths and methods without disclosing route names', async () => {
     const requests = [
-      { request: emptyRequest('/api/framekit/tokens', 'GET'), status: 404, allow: null },
+      { request: emptyRequest('/api/framekit/tokens', 'GET'), status: 401, allow: null },
       { request: emptyRequest('/api/framekit/login/', 'POST'), status: 404, allow: null },
       { request: emptyRequest('/api/framekit/login', 'GET'), status: 405, allow: 'POST' },
       { request: emptyRequest('/api/framekit/account', 'POST'), status: 405, allow: 'GET, PATCH' },
@@ -444,6 +445,319 @@ describe('createStudioAccessHandler', () => {
       expect(response.headers.get('allow')).toBe(allow)
       expect(JSON.stringify(body)).not.toContain('framekit')
       expect(JSON.stringify(body)).not.toContain('account')
+    }
+  })
+
+  it('enforces owner and administrator access while returning safe token and user DTOs', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const owner = insertUser('owner', 'Owner')
+    const other = insertUser('other', 'Other')
+    const administratorSecret = createSession(administrator.id)
+    const ownerSecret = createSession(owner.id)
+
+    const created = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: '  Owner token  ' }, { Cookie: sessionCookie(ownerSecret) }))
+    const createdBody = await responseBody(created)
+    expect(created.status).toBe(201)
+    expect(createdBody.name).toBe('Owner token')
+    expect(Object.keys(createdBody)).toEqual(['id', 'name', 'tokenPrefix', 'createdAt', 'lastUsedAt', 'revokedAt', 'token'])
+    expect(createdBody.token).toMatch(/^fk_[A-Za-z0-9_-]{43}$/)
+    const token = createdBody.token as string
+    const tokenId = createdBody.id as string
+
+    const ownerTokens = await handler(emptyRequest('/api/framekit/tokens', 'GET', { Cookie: sessionCookie(ownerSecret) }))
+    const ownerTokenBody = await ownerTokens.json() as Array<Record<string, unknown>>
+    expect(ownerTokens.status).toBe(200)
+    expect(ownerTokenBody).toEqual([expect.objectContaining({ id: tokenId, name: 'Owner token', revokedAt: null })])
+    expect(ownerTokenBody[0]).not.toHaveProperty('token')
+
+    const ownerTargetTokens = await handler(emptyRequest(`/api/framekit/users/${owner.id}/tokens`, 'GET', { Cookie: sessionCookie(ownerSecret) }))
+    expect(ownerTargetTokens.status).toBe(200)
+    expect(await ownerTargetTokens.json()).toEqual(ownerTokenBody)
+
+    const administratorTargetTokens = await handler(emptyRequest(`/api/framekit/users/${owner.id}/tokens`, 'GET', { Cookie: sessionCookie(administratorSecret) }))
+    expect(administratorTargetTokens.status).toBe(200)
+    expect(await administratorTargetTokens.json()).toEqual(ownerTokenBody)
+
+    const forbiddenTargetTokens = await handler(emptyRequest(`/api/framekit/users/${other.id}/tokens`, 'GET', { Cookie: sessionCookie(ownerSecret) }))
+    expect(forbiddenTargetTokens.status).toBe(403)
+    expect(await responseBody(forbiddenTargetTokens)).toEqual({ error: 'forbidden', message: 'Forbidden' })
+
+    const users = await handler(emptyRequest('/api/framekit/users', 'GET', { Cookie: sessionCookie(administratorSecret) }))
+    const usersBody = await users.json() as Array<Record<string, unknown>>
+    expect(users.status).toBe(200)
+    expect(usersBody).toEqual(expect.arrayContaining([
+      { id: administrator.id, username: administrator.username, role: administrator.role, active: true, createdAt: 1, updatedAt: 1 },
+      { id: owner.id, username: owner.username, role: owner.role, active: true, createdAt: 1, updatedAt: 1 }
+    ]))
+    expect(Object.keys(usersBody[0])).toEqual(['id', 'username', 'role', 'active', 'createdAt', 'updatedAt'])
+    expect(JSON.stringify(usersBody)).not.toContain('password')
+    expect(JSON.stringify(usersBody)).not.toContain('token')
+
+    const normalUserList = await handler(emptyRequest('/api/framekit/users', 'GET', { Cookie: sessionCookie(ownerSecret) }))
+    expect(normalUserList.status).toBe(403)
+
+    const normalUserCreate = jsonRequest('/api/framekit/users', 'POST', { username: 'new-user', password }, { Cookie: sessionCookie(ownerSecret) })
+    const normalUserCreateResponse = await handler(normalUserCreate)
+    expect(normalUserCreateResponse.status).toBe(403)
+    expect(normalUserCreate.bodyUsed).toBe(false)
+    expect(getDatabase().prepare('SELECT COUNT(*) AS count FROM users WHERE username = ?').get('new-user')?.count).toBe(0)
+
+    const otherToken = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: 'Other token' }, { Cookie: sessionCookie(other.id === owner.id ? ownerSecret : createSession(other.id)) }))
+    const otherTokenBody = await responseBody(otherToken)
+    const ownerRevokeOther = await handler(emptyRequest(`/api/framekit/tokens/${otherTokenBody.id as string}`, 'DELETE', { Cookie: sessionCookie(ownerSecret), Origin: origin }))
+    expect(ownerRevokeOther.status).toBe(404)
+
+    const administratorRevoke = await handler(emptyRequest(`/api/framekit/tokens/${tokenId}`, 'DELETE', { Cookie: sessionCookie(administratorSecret), Origin: origin }))
+    expect(administratorRevoke.status).toBe(200)
+    expect(await responseBody(administratorRevoke)).toEqual({ status: 'ok' })
+    expect(authenticateApiToken(token)).toBeUndefined()
+    expect((await (await handler(emptyRequest('/api/framekit/tokens', 'GET', { Cookie: sessionCookie(ownerSecret) }))).json() as Array<Record<string, unknown>>)[0].revokedAt).toEqual(expect.any(Number))
+  }, 30_000)
+
+  it('validates management bodies before mutation and maps token and username conflicts', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const target = insertUser('target', 'Target')
+    const administratorSecret = createSession(administrator.id)
+    const cookie = sessionCookie(administratorSecret)
+
+    const created = await handler(jsonRequest('/api/framekit/users', 'POST', { username: 'CreatedUser', password, role: 'user' }, { Cookie: cookie }))
+    const createdBody = await responseBody(created)
+    expect(created.status).toBe(201)
+    expect(Object.keys(createdBody)).toEqual(['id', 'username', 'role'])
+    expect(JSON.stringify(createdBody)).not.toContain(password)
+    expect(JSON.stringify(createdBody)).not.toContain('password_hash')
+
+    const duplicate = await handler(jsonRequest('/api/framekit/users', 'POST', { username: 'createduser', password }, { Cookie: cookie }))
+    expect(duplicate.status).toBe(409)
+    expect(await responseBody(duplicate)).toEqual({ error: 'conflict', message: 'Conflict' })
+
+    const invalidUserBodies = [
+      { username: 'MissingPassword' },
+      { username: 'UnknownKey', password, extra: true },
+      { username: 'BadRole', password, role: 'owner' }
+    ]
+    for (const body of invalidUserBodies) {
+      const response = await handler(jsonRequest('/api/framekit/users', 'POST', body, { Cookie: cookie }))
+      expect(response.status).toBe(400)
+      expect(await responseBody(response)).toEqual({ error: 'invalid_request', message: 'Invalid request' })
+    }
+
+    const tokenName = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: '   ' }, { Cookie: cookie }))
+    expect(tokenName.status).toBe(400)
+    expect(await responseBody(tokenName)).toEqual({ error: 'invalid_request', message: 'Invalid request' })
+
+    const emptyUpdate = await handler(jsonRequest(`/api/framekit/users/${target.id}`, 'PATCH', {}, { Cookie: cookie }))
+    expect(emptyUpdate.status).toBe(400)
+    const unknownUpdate = await handler(jsonRequest(`/api/framekit/users/${target.id}`, 'PATCH', { extra: true }, { Cookie: cookie }))
+    expect(unknownUpdate.status).toBe(400)
+    const invalidUpdate = await handler(jsonRequest(`/api/framekit/users/${target.id}`, 'PATCH', { active: 'false' }, { Cookie: cookie }))
+    expect(invalidUpdate.status).toBe(400)
+    expect(getDatabase().prepare('SELECT username, role, active FROM users WHERE id = ?').get(target.id)).toEqual({ username: target.username, role: target.role, active: 1 })
+
+    const malformedPassword = await handler(jsonRequest(`/api/framekit/users/${target.id}/password`, 'POST', { password, extra: true }, { Cookie: cookie }))
+    expect(malformedPassword.status).toBe(400)
+    expect(getSession(createSession(target.id))).toEqual(target)
+
+    const invalidContentType = await handler(rawRequest('/api/framekit/users', 'POST', JSON.stringify({ username: 'WrongType', password }), { 'content-type': 'text/plain', Cookie: cookie }))
+    expect(invalidContentType.status).toBe(400)
+    expect(getDatabase().prepare('SELECT COUNT(*) AS count FROM users WHERE username = ?').get('WrongType')?.count).toBe(0)
+  }, 30_000)
+
+  it('applies disable, reactivation, reset, revocation, and deletion state transitions', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const owner = insertUser('owner', 'Owner')
+    const administratorSecret = createSession(administrator.id)
+    const ownerSecret = createSession(owner.id)
+    const administratorCookie = sessionCookie(administratorSecret)
+    const ownerCookie = sessionCookie(ownerSecret)
+
+    const firstTokenResponse = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: 'First token' }, { Cookie: ownerCookie }))
+    const firstToken = await responseBody(firstTokenResponse)
+    const secondTokenResponse = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: 'Second token' }, { Cookie: ownerCookie }))
+    const secondToken = await responseBody(secondTokenResponse)
+    const revokeSecond = await handler(emptyRequest(`/api/framekit/tokens/${secondToken.id as string}`, 'DELETE', { Cookie: ownerCookie, Origin: origin }))
+    expect(revokeSecond.status).toBe(200)
+
+    const disabled = await handler(jsonRequest(`/api/framekit/users/${owner.id}`, 'PATCH', { active: false }, { Cookie: administratorCookie }))
+    expect(disabled.status).toBe(200)
+    expect(getSession(ownerSecret)).toBeUndefined()
+    expect(authenticateApiToken(firstToken.token as string)).toBeUndefined()
+
+    const enabled = await handler(jsonRequest(`/api/framekit/users/${owner.id}`, 'PATCH', { active: true }, { Cookie: administratorCookie }))
+    expect(enabled.status).toBe(200)
+    expect(getSession(ownerSecret)).toBeUndefined()
+    expect(authenticateApiToken(firstToken.token as string)).toEqual(owner)
+    expect(authenticateApiToken(secondToken.token as string)).toBeUndefined()
+
+    const replacementSession = createSession(owner.id)
+    const reset = await handler(jsonRequest(`/api/framekit/users/${owner.id}/password`, 'POST', { password: changedPassword }, { Cookie: administratorCookie }))
+    expect(reset.status).toBe(200)
+    expect(getSession(replacementSession)).toBeUndefined()
+    expect(authenticateApiToken(firstToken.token as string)).toEqual(owner)
+    expect(getDatabase().prepare('SELECT COUNT(*) AS count FROM api_tokens WHERE user_id = ?').get(owner.id)?.count).toBe(2)
+
+    const deleted = await handler(emptyRequest(`/api/framekit/users/${owner.id}`, 'DELETE', { Cookie: administratorCookie, Origin: origin }))
+    expect(deleted.status).toBe(200)
+    expect(getDatabase().prepare('SELECT COUNT(*) AS count FROM sessions WHERE user_id = ?').get(owner.id)?.count).toBe(0)
+    expect(getDatabase().prepare('SELECT COUNT(*) AS count FROM api_tokens WHERE user_id = ?').get(owner.id)?.count).toBe(0)
+    expect(authenticateApiToken(firstToken.token as string)).toBeUndefined()
+  }, 30_000)
+
+  it('allows self-targeted administrator demotion, disable, and deletion while another administrator remains active', async () => {
+    const remaining = insertUser('remaining-administrator', 'RemainingAdministrator', { role: 'admin' })
+    const demoting = insertUser('demoting-administrator', 'DemotingAdministrator', { role: 'admin' })
+    const disabling = insertUser('disabling-administrator', 'DisablingAdministrator', { role: 'admin' })
+    const deleting = insertUser('deleting-administrator', 'DeletingAdministrator', { role: 'admin' })
+    const remainingSecret = createSession(remaining.id)
+    const demotingSecret = createSession(demoting.id)
+    const disablingSecret = createSession(disabling.id)
+    const deletingSecret = createSession(deleting.id)
+
+    const demoted = await handler(jsonRequest(`/api/framekit/users/${demoting.id}`, 'PATCH', { role: 'user' }, { Cookie: sessionCookie(demotingSecret) }))
+    expect(demoted.status).toBe(200)
+    expect(await responseBody(demoted)).toEqual({ ...demoting, role: 'user' })
+    expect(demoted.headers.get('set-cookie')).toBeNull()
+    expect(getSession(demotingSecret)).toEqual({ ...demoting, role: 'user' })
+
+    const disabled = await handler(jsonRequest(`/api/framekit/users/${disabling.id}`, 'PATCH', { active: false }, { Cookie: sessionCookie(disablingSecret) }))
+    expect(disabled.status).toBe(200)
+    expect(await responseBody(disabled)).toEqual(disabling)
+    expect(responseCookie(disabled)).toContain('framekit_session=;')
+    expect(getSession(disablingSecret)).toBeUndefined()
+
+    const deleted = await handler(emptyRequest(`/api/framekit/users/${deleting.id}`, 'DELETE', { Cookie: sessionCookie(deletingSecret), Origin: origin }))
+    expect(deleted.status).toBe(200)
+    expect(await responseBody(deleted)).toEqual({ status: 'ok' })
+    expect(responseCookie(deleted)).toContain('framekit_session=;')
+    expect(getSession(deletingSecret)).toBeUndefined()
+
+    expect(getSession(remainingSecret)).toEqual(remaining)
+    const usersResponse = await handler(emptyRequest('/api/framekit/users', 'GET', { Cookie: sessionCookie(remainingSecret) }))
+    const usersBody = await usersResponse.json() as Array<Record<string, unknown>>
+    expect(usersResponse.status).toBe(200)
+    expect(usersBody).toEqual(expect.arrayContaining([
+      { id: remaining.id, username: remaining.username, role: 'admin', active: true, createdAt: 1, updatedAt: 1 },
+      { id: demoting.id, username: demoting.username, role: 'user', active: true, createdAt: 1, updatedAt: expect.any(Number) },
+      { id: disabling.id, username: disabling.username, role: 'admin', active: false, createdAt: 1, updatedAt: expect.any(Number) }
+    ]))
+    expect(usersBody.some((user) => user.id === deleting.id)).toBe(false)
+  })
+
+  it('invalidates a self-targeted administrator password reset without removing admin management access', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const otherAdministrator = insertUser('other-administrator', 'OtherAdministrator', { role: 'admin' })
+    const secret = createSession(administrator.id)
+
+    const reset = await handler(jsonRequest(`/api/framekit/users/${administrator.id}/password`, 'POST', { password: changedPassword }, { Cookie: sessionCookie(secret) }))
+    expect(reset.status).toBe(200)
+    expect(await responseBody(reset)).toEqual({ status: 'ok' })
+    expect(responseCookie(reset)).toContain('framekit_session=;')
+    expect(getSession(secret)).toBeUndefined()
+
+    const oldSessionManagement = await handler(emptyRequest('/api/framekit/users', 'GET', { Cookie: sessionCookie(secret) }))
+    expect(oldSessionManagement.status).toBe(401)
+
+    const login = await handler(jsonRequest('/api/framekit/login', 'POST', { username: administrator.username, password: changedPassword }))
+    expect(login.status).toBe(200)
+    expect(await responseBody(login)).toEqual(administrator)
+    const newCookie = responseCookie(login).split(';', 1)[0]
+
+    const management = await handler(emptyRequest('/api/framekit/users', 'GET', { Cookie: newCookie }))
+    expect(management.status).toBe(200)
+    expect(await management.json()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: administrator.id, role: 'admin', active: true }),
+      expect.objectContaining({ id: otherAdministrator.id, role: 'admin', active: true })
+    ]))
+  }, 30_000)
+
+  it('lets an administrator list token metadata for an inactive target', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const target = insertUser('target', 'Target')
+    const administratorSecret = createSession(administrator.id)
+    const targetSecret = createSession(target.id)
+
+    const created = await handler(jsonRequest('/api/framekit/tokens', 'POST', { name: 'Inactive target token' }, { Cookie: sessionCookie(targetSecret) }))
+    const createdBody = await responseBody(created)
+    expect(created.status).toBe(201)
+
+    const disabled = await handler(jsonRequest(`/api/framekit/users/${target.id}`, 'PATCH', { active: false }, { Cookie: sessionCookie(administratorSecret) }))
+    expect(disabled.status).toBe(200)
+    expect(getSession(targetSecret)).toBeUndefined()
+
+    const listed = await handler(emptyRequest(`/api/framekit/users/${target.id}/tokens`, 'GET', { Cookie: sessionCookie(administratorSecret) }))
+    const listedBody = await listed.json() as Array<Record<string, unknown>>
+    expect(listed.status).toBe(200)
+    expect(listedBody).toEqual([{
+      id: createdBody.id,
+      name: createdBody.name,
+      tokenPrefix: createdBody.tokenPrefix,
+      createdAt: createdBody.createdAt,
+      lastUsedAt: null,
+      revokedAt: null
+    }])
+    expect(listedBody[0]).not.toHaveProperty('token')
+  })
+
+  it('rejects malformed dynamic paths before initializing SQLite', async () => {
+    const malformedPaths = [
+      rawRequest('/api/framekit/users/target/extra', 'PATCH', '{'),
+      rawRequest('/api/framekit/users/target/', 'PATCH', '{'),
+      rawRequest('/api/framekit/tokens/', 'DELETE', '{'),
+      emptyRequest('/api/framekit/users/%2F/tokens', 'GET'),
+      emptyRequest('/api/framekit/users/%ZZ/tokens', 'GET')
+    ]
+
+    expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+    for (const request of malformedPaths) {
+      const response = await handler(request)
+      expect(response.status).toBe(404)
+      expect(await responseBody(response)).toEqual({ error: 'not_found', message: 'Not found' })
+      expect(request.bodyUsed).toBe(false)
+      expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+    }
+  })
+
+  it('protects the last active administrator and rejects malformed dynamic paths before body reads', async () => {
+    const administrator = insertUser('administrator', 'Administrator', { role: 'admin' })
+    const secret = createSession(administrator.id)
+    const cookie = sessionCookie(secret)
+
+    for (const body of [{ active: false }, { role: 'user' }]) {
+      const response = await handler(jsonRequest(`/api/framekit/users/${administrator.id}`, 'PATCH', body, { Cookie: cookie }))
+      expect(response.status).toBe(409)
+      expect(await responseBody(response)).toEqual({ error: 'conflict', message: 'Conflict' })
+    }
+
+    const deleted = await handler(emptyRequest(`/api/framekit/users/${administrator.id}`, 'DELETE', { Cookie: cookie, Origin: origin }))
+    expect(deleted.status).toBe(409)
+    expect(await responseBody(deleted)).toEqual({ error: 'conflict', message: 'Conflict' })
+    expect(getSession(secret)).toEqual(administrator)
+
+    const malformedPaths = [
+      rawRequest(`/api/framekit/users/${administrator.id}/extra`, 'PATCH', '{'),
+      rawRequest(`/api/framekit/users/${administrator.id}/`, 'PATCH', '{'),
+      rawRequest('/api/framekit/tokens/', 'DELETE', '{'),
+      emptyRequest('/api/framekit/users/%2F/tokens', 'GET'),
+      emptyRequest('/api/framekit/users/%ZZ/tokens', 'GET')
+    ]
+    for (const request of malformedPaths) {
+      const response = await handler(request)
+      expect(response.status).toBe(404)
+      expect(await responseBody(response)).toEqual({ error: 'not_found', message: 'Not found' })
+      expect(request.bodyUsed).toBe(false)
+    }
+
+    const methodCases = [
+      { path: `/api/framekit/tokens/${administrator.id}`, method: 'GET', allow: 'DELETE' },
+      { path: `/api/framekit/users/${administrator.id}`, method: 'GET', allow: 'PATCH, DELETE' },
+      { path: `/api/framekit/users/${administrator.id}/password`, method: 'GET', allow: 'POST' },
+      { path: `/api/framekit/users/${administrator.id}/tokens`, method: 'POST', allow: 'GET' }
+    ]
+    for (const { path, method, allow } of methodCases) {
+      const response = await handler(emptyRequest(path, method))
+      expect(response.status).toBe(405)
+      expect(response.headers.get('allow')).toBe(allow)
+      expect(await responseBody(response)).toEqual({ error: 'method_not_allowed', message: 'Method not allowed' })
     }
   })
 })

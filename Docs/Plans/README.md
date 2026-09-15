@@ -701,13 +701,18 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 * [x] Fase 1: SQLite and Migrations.
 * [x] Fase 2: Users, Passwords, and Bootstrap.
 * [x] Fase 3: Sessions, HTTP, and Route Protection.
-* [ ] Fase 4: API Tokens, Users, and Authorization.
+* [x] Fase 4: API Tokens, Users, and Authorization (implementada y verificada el 2026-09-15).
 * [ ] Fase 5: Studio Access UI.
 * [ ] Fase 6: Authenticated Image API and Export.
 * [ ] Fase 7: Generated Consumer and Docker.
 * [ ] Fase 8: Verification, Documentation, and Rollout.
 * [ ] Reabrir el gate final de Server Image Rendering Step 8 sobre el nuevo
   baseline.
+
+La fase 4 esta implementada y verificada. Las fases 5 a 8 siguen pendientes;
+la UI de acceso de Studio y la API de imagen autenticada/export de sesion de la
+fase 6 no estan implementadas. El gate final del Step 8 permanece bloqueado
+hasta completar este bloque.
 
 ## 5. Maintainability: fase 6
 
@@ -877,3 +882,4 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 | 2026-08-31 | Usar una issue paraguas para server rendering; crear subissues solo si aparece trabajo paralelo real                               |
 | 2026-09-13 | Insertar Studio Access & API Rendering entre Server Steps 1-7 y la reverificación/cierre final de Step 8                           |
 | 2026-09-13 | Persistir usuarios, sesiones y API tokens en SQLite sin cambiar el store temporal `globalThis + Map` de los render jobs             |
+| 2026-09-15 | Completar y verificar la fase 4 de Studio Access; mantener las fases 5-8 pendientes y el Step 8 bloqueado                         |

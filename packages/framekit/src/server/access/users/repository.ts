@@ -5,6 +5,8 @@ export interface UserStateRow {
   username?: unknown
   role?: unknown
   active?: unknown
+  created_at?: unknown
+  updated_at?: unknown
 }
 
 export interface AuthenticationRow extends UserStateRow {
@@ -17,6 +19,18 @@ export function readUserById (database: DatabaseSync, id: string): UserStateRow 
 
 export function readUserState (database: DatabaseSync, id: string): UserStateRow | undefined {
   return database.prepare('SELECT id, username, role, active FROM users WHERE id = ?').get(id) as UserStateRow | undefined
+}
+
+export function readManagedUserById (database: DatabaseSync, id: string): UserStateRow | undefined {
+  return database.prepare('SELECT id, username, role, active, created_at, updated_at FROM users WHERE id = ?').get(id) as UserStateRow | undefined
+}
+
+export function readUsers (database: DatabaseSync): UserStateRow[] {
+  return database.prepare(`
+    SELECT id, username, role, active, created_at, updated_at
+    FROM users
+    ORDER BY created_at ASC, id ASC
+  `).all() as UserStateRow[]
 }
 
 export function readAuthenticationUser (database: DatabaseSync, username: string): AuthenticationRow | undefined {

@@ -16,11 +16,11 @@ guide](./migration-v0.8.0.md).
   server image-generation API is available through the generated consumer's
   `POST /api/v1/images` route; install its Chromium headless shell explicitly
   with `framekit browser install` before serving requests.
-- Studio Access and API Rendering Phases 1-3 (SQLite, migrations, users,
-  passwords, bootstrap, sessions, HTTP access, and route protection) are
-  implemented. Phases 4-8 remain unavailable. Server Image Rendering Step 8
-  remains blocked until that plan is complete; API-token endpoints and
-  server-backed Studio export are not available yet.
+- Studio Access and API Rendering Phase 4 (SQLite, migrations, users,
+  passwords, bootstrap, sessions, HTTP access, route protection, and token/user
+  management) is implemented. Later phases remain unavailable. Server Image
+  Rendering Step 8 remains blocked until that plan is complete; the Studio
+  access UI and server-backed Download/Copy remain later phases.
 
 This rolling guide is the documentation deliverable for [GitHub issue
 #14](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -50,15 +50,17 @@ Studio routes protected yet.
 runtime remains Node.js `>=22.13.0`. The Phase 1 foundation only prepares empty
 tables; Phase 2 uses them for lazy, request-time first-administrator bootstrap
 and local credentials. Phase 3 adds login/session HTTP, protected Studio routes,
-and authenticated development asset uploads. API-token endpoints and
-server-backed Studio export belong to later phases.
+and authenticated development asset uploads. Phase 4 adds authenticated token
+and user management routes. The Studio access UI and server-backed Download/Copy
+belong to later phases.
 `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD` apply only during the
 first bootstrap; `FRAMEKIT_API_KEY` is imported only then, while the classic
 image handler continues reading it independently.
 
-Until Phases 4-8 are implemented, `POST /api/v1/images` continues to use
+With Phase 4 implemented, `POST /api/v1/images` continues to use
 `FRAMEKIT_API_KEY`, and Download PNG and Copy PNG continue to use the current
-browser exporter. This foundation does not migrate template data, assets, or
+browser exporter. The Studio access UI and server-backed Download/Copy remain
+later phases. This foundation does not migrate template data, assets, or
 persisted editor state.
 
 The server image API remains bounded to one long-lived Node.js process per
@@ -84,18 +86,19 @@ safe user operations without adding HTTP handlers or UI yet.
   resets, and deletion. Password changes and deactivation delete that user's
   sessions; a transaction prevents deleting, deactivating, or demoting the
   last active administrator.
-- Phase 3 now provides login/session HTTP and protected Studio routes.
-  API-token endpoints and server-backed Download PNG/Copy PNG are not available
-  yet. `POST /api/v1/images` still uses `FRAMEKIT_API_KEY`, while Download PNG
-  and Copy PNG still use the browser exporter.
+- Phase 3 provides login/session HTTP and protected Studio routes. Phase 4
+  provides token and user management routes. `POST /api/v1/images` still uses
+  `FRAMEKIT_API_KEY`, while Download PNG and Copy PNG still use the browser
+  exporter; the Studio access UI and server-backed Download/Copy remain later
+  phases.
 
-## Studio Access, Sessions, and Route Protection
+## Studio Access, Sessions, Route Protection, and Management
 
-Studio Access and API Rendering Phase 3 is implemented. Phases 1-3 are now
-available; Phases 4-8 remain pending, including API-token management and
-server-backed Studio export.
+Studio Access and API Rendering Phase 4 is implemented. Phases 1-4 are
+available; the Studio access UI and server-backed Download/Copy remain later
+phases.
 
-The access handler exposes exactly these five routes:
+The access handler exposes these routes:
 
 ```text
 POST  /api/framekit/login
@@ -103,7 +106,50 @@ POST  /api/framekit/logout
 GET   /api/framekit/account
 PATCH /api/framekit/account
 POST  /api/framekit/account/password
+GET   /api/framekit/tokens
+POST  /api/framekit/tokens
+DELETE /api/framekit/tokens/:id
+GET   /api/framekit/users
+POST  /api/framekit/users
+PATCH /api/framekit/users/:id
+DELETE /api/framekit/users/:id
+POST  /api/framekit/users/:id/password
+GET   /api/framekit/users/:id/tokens
 ```
+
+Login creates the session used by the authenticated routes. A normal user can
+read and update their account, change their password, create/list/revoke their
+own API tokens, and list their own token metadata. An administrator can also
+list/create/update/delete users, reset a user's password, list token metadata
+for any user, and revoke any token. Login, account, and user creation/update
+responses expose only the safe `StudioUser` fields: `id`, `username`, and
+`role`. The administrator's user list also exposes `active`, `createdAt`, and
+`updatedAt`; no response exposes password hashes, session secrets, token hashes,
+or previously returned token secrets.
+
+Creating a token returns its full `token` value once, in the `201` response.
+Later listings and the database contain only metadata and a hash, never the
+full secret. Metadata includes `id`, `name`, `tokenPrefix`, `createdAt`,
+`lastUsedAt`, and `revokedAt`. API-token Bearer lookup hashes the bounded,
+non-empty presented credential, requires an unrevoked token whose owner is
+active, and records `lastUsedAt` on a successful lookup. The generated-token
+`fk_` prefix is not required, so imported legacy credentials can be used. The
+classic image API's Bearer contract still uses `FRAMEKIT_API_KEY`; these Studio
+management routes use the session cookie.
+
+On the first bootstrap only, a non-empty `FRAMEKIT_API_KEY` is imported as a
+legacy API token for the first administrator. Its secret is stored as a hash
+and is not re-imported or synchronized after any user exists.
+
+Session-protected account, token, and user-management operations return `401`
+when the session is missing or invalid; invalid login credentials also return
+`401`. Logout is idempotent: it returns `200` and expires the cookie even when
+the request has no valid session. Normal users receive `403` for
+administrator-only operations or another user's token metadata. Unknown users,
+unavailable token targets, and token revocations outside the actor's permission
+return `404`; unsupported methods return `405`; duplicate usernames and
+attempts to remove, disable, or demote the last active administrator return
+`409`.
 
 Successful login sets a `framekit_session` cookie with `HttpOnly`,
 `SameSite=Lax`, `Path=/`, and a 30-day `Expires`/`Max-Age` lifetime. It also
@@ -111,8 +157,10 @@ sets `Secure` when `NODE_ENV=production`. The database stores only the
 SHA-256 session hash and its user, creation, and expiry metadata; the raw
 secret is returned only in the cookie. Logout deletes the current stored
 session and expires the browser cookie. Password changes invalidate every
-session for the user and expire the current cookie. Public responses expose
-only the safe `StudioUser` DTO: `id`, `username`, and `role`.
+session for the user and expire the current cookie. Login, account, and user
+creation/update responses expose only the safe `StudioUser` fields: `id`,
+`username`, and `role`; administrator user lists also include the safe `active`,
+`createdAt`, and `updatedAt` fields.
 
 Login and every cookie-authenticated unsafe request require an `Origin` header
 whose value exactly matches the canonical request origin. For direct requests,
@@ -146,9 +194,9 @@ session and the same-origin `Origin` before it handles or writes an asset.
 internal render-job ID and `x-framekit-render-token` are still the only
 authentication boundary for that private route.
 
-Phase 3 introduces no template, asset, editor-state, or release-version
-migration. The existing image API and browser export behavior remain unchanged
-until the future API-token and server-backed export phases are implemented.
+Phase 4 introduces no template, asset, editor-state, or release-version
+migration. The existing image API and browser export behavior remain unchanged;
+the Studio access UI and server-backed Download/Copy remain later phases.
 
 ## Server Rendering Integration
 

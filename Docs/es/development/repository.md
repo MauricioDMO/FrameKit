@@ -61,7 +61,7 @@ Esto enlaza el directorio del paquete en disco, mientras sus `exports` apuntan a
 
 Ejecutar `pnpm dev` desde dentro de un directorio de paquete evita este ordenamiento y fallará porque el `dist/` que intenta importar aún no existe.
 
-El paquete público exporta `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. La fachada de servidor `./server` expone helpers de configuración y autenticación, la API PNG pública `createImageHandler`, preparación de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff privado de la página. La instalación del navegador es explícita mediante `framekit browser install`; el proyecto generado usa la versión publicada del paquete, no `workspace:*`.
+El paquete público exporta `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server` y `./styles.css`. Los imports desde `packages/framekit/src/*` no forman parte del contrato del consumidor. La fachada de servidor `./server` expone el handler de acceso de Studio y sus tipos seguros de respuesta de tokens API, helpers de configuración y autenticación, la API PNG pública `createImageHandler`, preparación de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff privado de la página. La instalación del navegador es explícita mediante `framekit browser install`; el proyecto generado usa la versión publicada del paquete, no `workspace:*`.
 
 ## Comandos enfocados en paquetes específicos
 

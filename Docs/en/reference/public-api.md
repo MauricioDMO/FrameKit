@@ -201,8 +201,9 @@ control and are not passed to the template render function.
 
 Editor edits persist per template and variant under `framekit:<slug>:v2`.
 Older state is intentionally invalidated rather than migrated. Preview and render
-use committed typed values; download and copy validate the current committed data
-before producing output and focus the first invalid control.
+use committed typed values; the current Download and Copy buttons use the browser
+exporter, validate the current committed data before producing output, and focus
+the first invalid control.
 
 See the [brand catalog reference](./brand-catalog.md) for the `src/brand`
 discovery contract, generated registries, and `/brand` behavior.
@@ -284,10 +285,11 @@ modules, and synchronizes template assets under `public/framekit/templates`.
 
 ### `@mauriciodmo/framekit/server`
 
-The server entry point is a Node.js/server-only facade for the implemented Steps
-1-7 contracts: configuration and authentication, the public image handler,
-image-input preparation, temporary render jobs, PNG browser rendering, and the
-private render-page handoff. Do not import it into browser bundles.
+The server entry point is a Node.js/server-only facade for the implemented
+Studio Access Phase 4 and image-rendering contracts: configuration and
+authentication, the Studio access handler, the public image handler, image-input
+preparation, temporary render jobs, PNG browser rendering, and the private
+render-page handoff. Do not import it into browser bundles.
 
 **Runtime exports**
 
@@ -295,6 +297,7 @@ private render-page handoff. Do not import it into browser bundles.
 | -------------------- | ------------------------------------------------------------------------------------------- |
 | `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
 | `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
+| `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; creates the authenticated Studio session and token/user management handler |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
 | `createImageHandler` | `createImageHandler(templates): (request: Request) => Promise<Response>`; creates the authenticated PNG image API handler |
 | `prepareRenderInputs` | `prepareRenderInputs(options)`; validates request data and prepares local, data-URL, and allowed remote image inputs for rendering |
@@ -303,6 +306,50 @@ private render-page handoff. Do not import it into browser bundles.
 | `loadRenderRequest`   | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
 | `deleteRenderJob`     | `deleteRenderJob(id: string, options?): void`; removes a private render job |
 | `createRenderPage`    | `createRenderPage(RenderClient)`; creates the private server page handoff that validates the render token and passes the resolved payload to the client component |
+
+#### Studio Access handler
+
+`createStudioAccessHandler()` returns the Node.js handler for these routes:
+
+```text
+POST  /api/framekit/login                 POST  /api/framekit/logout
+GET/PATCH /api/framekit/account            POST  /api/framekit/account/password
+GET/POST /api/framekit/tokens              DELETE /api/framekit/tokens/:id
+GET/POST /api/framekit/users               PATCH/DELETE /api/framekit/users/:id
+POST  /api/framekit/users/:id/password     GET /api/framekit/users/:id/tokens
+```
+
+Mount it from a server-only route and expose the methods used above. Login sets
+the `framekit_session` cookie; account, password, token, and user operations
+require an authenticated session. Normal users manage their own account and
+tokens, while administrators also manage users, inspect any user's token
+metadata, and revoke any token. Login, account, and user creation/update
+responses expose only the safe `StudioUser` fields `id`, `username`, and `role`;
+the administrator's user list additionally exposes `active`, `createdAt`, and
+`updatedAt`. No response exposes password hashes, session secrets, token hashes,
+or previously returned token secrets. Creating a token returns its full secret
+once; subsequent metadata responses and storage contain only the hash and safe
+metadata. API-token Bearer lookup hashes the bounded, non-empty credential and
+accepts it only when the token is unrevoked and its owner is active, updating
+`lastUsedAt` on success. The generated-token `fk_` prefix is not required, so
+imported legacy credentials can be used. A legacy non-empty
+`FRAMEKIT_API_KEY` is imported as a token only during first-user bootstrap, and
+is not synchronized afterward.
+
+Session-protected account, token, and user-management operations return `401`
+when the session is missing or invalid; invalid login credentials also return
+`401`. Logout is idempotent: it returns `200` and expires the cookie even when
+the request has no valid session. The handler returns `403` for forbidden
+normal-user or cross-origin unsafe operations, `404` for unknown or inaccessible
+targets, and `405` for unsupported methods. It returns `409` for duplicate
+usernames or attempts to remove, disable, or demote the last active
+administrator. Unsafe requests require the same-origin `Origin` check described
+in the migration guide.
+
+This Phase 4 handler does not replace the classic image route:
+`POST /api/v1/images` still requires `Authorization: Bearer <FRAMEKIT_API_KEY>`.
+Current Download/Copy remain browser-based, while the Studio access UI and
+server-backed Download/Copy remain later phases.
 
 `parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
 `FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
@@ -340,6 +387,8 @@ malformed authorization values return `false`.
 | `RenderJobTestOptions`     | Optional clock and identifier source overrides for deterministic render-job tests              |
 | `ImageRenderErrorCode`     | Public error-code union: `invalid_request`, `unauthorized`, `template_not_found`, `request_too_large`, `unsupported_image`, `invalid_template_data`, `image_host_not_allowed`, `image_fetch_failed`, `api_not_configured`, `render_capacity_exhausted`, `render_timeout`, `render_failed` |
 | `ImageRenderFailure`       | Error construction shape with `code`, `message`, optional `fields`, and optional `cause`          |
+| `ApiTokenMetadata`         | Safe API-token metadata: `id`, `name`, `tokenPrefix`, `createdAt`, `lastUsedAt`, and `revokedAt`; it never contains the token secret |
+| `CreatedApiToken`          | `ApiTokenMetadata` plus `token`; the full token is returned only when a token is created |
 
 `ImageRenderError` retains an optional `cause` on the error instance, but
 `toSafeFailure()` and `toJSON()` omit it. JSON serialization therefore contains

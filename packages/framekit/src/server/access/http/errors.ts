@@ -55,9 +55,10 @@ export function responseForError (error: unknown): Response {
 
   if (error instanceof UserDomainError) {
     if (error.code === 'duplicate_username') return errorResponse('conflict', 409)
+    if (error.code === 'last_active_administrator') return errorResponse('conflict', 409)
     if (error.code === 'bootstrap_configuration') return errorResponse('service_unavailable', 503)
     if (error.code === 'user_not_found') return errorResponse('unauthorized', 401)
-    if (error.code === 'invalid_username' || error.code === 'invalid_password' || error.code === 'invalid_update' || error.code === 'invalid_role' || error.code === 'invalid_active' || error.code === 'invalid_user_state') return errorResponse('invalid_request', 400)
+    if (error.code === 'invalid_username' || error.code === 'invalid_password' || error.code === 'invalid_token_name' || error.code === 'invalid_update' || error.code === 'invalid_role' || error.code === 'invalid_active' || error.code === 'invalid_user_state') return errorResponse('invalid_request', 400)
   }
 
   return errorResponse('internal_error', 500)

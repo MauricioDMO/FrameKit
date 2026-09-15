@@ -1,5 +1,11 @@
 # Phase 4 - API Tokens, Users, and Authorization
 
+## Status
+
+Implemented and verified on 2026-09-15. Phases 5-8 remain pending; the Studio
+access UI and authenticated image API/session export are not implemented in this
+phase.
+
 ## Goal
 
 Complete owner-scoped API tokens and administrator user management behind one
@@ -62,7 +68,7 @@ conflicts.
 
 ## HTTP actions
 
-Extend `createStudioAccessHandler()` with:
+Implemented in `createStudioAccessHandler()` with these exact routes:
 
 ```text
 GET    /api/framekit/tokens
@@ -77,9 +83,12 @@ POST   /api/framekit/users/:id/password
 GET    /api/framekit/users/:id/tokens
 ```
 
-`DELETE /tokens/:id` permits only the owner or an administrator. The users token
-listing returns metadata only. Creation and password-reset payloads accept a
-plaintext password only for that request and never return it.
+`DELETE /api/framekit/tokens/:id` permits only the owner or an administrator.
+The user-token listing returns metadata only. Creation and password-reset
+payloads accept a plaintext password only for that request and never return it.
+The generated consumer and Studio App Router adapters export `GET`, `POST`,
+`PATCH`, and `DELETE` to the same handler, including the required DELETE
+adapter.
 
 Use prepared statements and exact DTO projections. Never return database row
 objects directly.
@@ -98,7 +107,8 @@ objects directly.
 
 ```text
 packages/framekit/src/server/access/api-tokens.ts
-packages/framekit/src/server/access/http.ts
+packages/framekit/src/server/access/http/index.ts
+packages/framekit/src/server/access/http/routes.ts
 packages/framekit/src/server.ts
 packages/framekit/tests/types/
 ```
@@ -106,27 +116,62 @@ packages/framekit/tests/types/
 Keep low-level database operations internal. Export only the handler factories
 and types that consumers need through supported package facades.
 
+## Implementation record
+
+- Owner operations create, list, and revoke only the owner's API tokens. An
+  administrator can inspect another user's token metadata and revoke that user's
+  token, but never receives its secret.
+- Generated tokens use `fk_` plus 32 random bytes encoded as base64url. The full
+  generated secret is returned only by the creation response; storage keeps its
+  SHA-256 hash and safe metadata (`tokenPrefix`, name, timestamps, and
+  revocation state). Imported legacy credentials remain hash-only and may use a
+  non-`fk_` format.
+- Bounded Bearer credentials are looked up by SHA-256 hash only when the token
+  is unrevoked and its owner is active. Successful lookup updates
+  `last_used_at`.
+- User and token responses use explicit safe DTO projections. Password hashes,
+  session secrets, token hashes, and previously created token secrets are not
+  returned.
+- The last-active-administrator check and mutation run in one immediate
+  transaction. Delete, deactivation, and demotion are rejected with `409` when
+  they would remove the last active administrator.
+- The exact access routes are covered by the handler, including path and method
+  matching for token deletion and user-management actions. The adapters at
+  `apps/studio/src/app/api/framekit/[...action]/route.ts` and
+  `packages/create-framekit/template/src/app/api/framekit/[...action]/route.ts`
+  export the DELETE method.
+
 ## Focused tests
 
-- generated token format and entropy;
-- creation response shows the secret once;
-- database stores only SHA-256 and safe metadata;
-- token names enforce trimming and length limits;
-- owner lists and revokes only owned tokens;
-- normal user cannot list or mutate users;
-- administrator can manage users and inspect/revoke token metadata;
-- no endpoint returns password/session/token hashes or old token secrets;
-- revoked token authentication fails;
-- inactive owner authentication fails;
-- reactivation restores only unrevoked tokens;
-- successful authentication updates `last_used_at`;
-- password reset deletes sessions but preserves tokens;
-- delete cascades owned sessions and tokens;
-- every last-active-administrator mutation returns `409`;
-- duplicate username conflicts are case-insensitive;
-- malformed IDs, JSON, methods, and paths fail without mutation.
+- [x] generated token format and entropy;
+- [x] creation response shows the secret once;
+- [x] database stores only SHA-256 and safe metadata;
+- [x] token names enforce trimming and length limits;
+- [x] owner lists and revokes only owned tokens;
+- [x] normal user cannot list or mutate users;
+- [x] administrator can manage users and inspect/revoke token metadata;
+- [x] no endpoint returns password/session/token hashes or old token secrets;
+- [x] revoked token authentication fails;
+- [x] inactive owner authentication fails;
+- [x] reactivation restores only unrevoked tokens;
+- [x] successful authentication updates `last_used_at`;
+- [x] password reset deletes sessions but preserves tokens;
+- [x] delete cascades owned sessions and tokens;
+- [x] every last-active-administrator mutation returns `409`;
+- [x] duplicate username conflicts are case-insensitive;
+- [x] malformed IDs, JSON, methods, and paths fail without mutation.
+
+Verification passed on 2026-09-15:
+
+- `pnpm --filter @mauriciodmo/framekit exec vitest run src/server/access/__tests__/api-tokens.test.ts src/server/access/__tests__/http.test.ts src/server/access/__tests__/users.test.ts` (3 files, 43 tests).
+- `pnpm --filter @mauriciodmo/framekit test -- src/server/access/__tests__/api-tokens.test.ts src/server/access/__tests__/http.test.ts src/server/access/__tests__/users.test.ts` (74 files, 794 tests).
+- `pnpm --filter @mauriciodmo/framekit typecheck`.
+- `pnpm --filter @mauriciodmo/framekit lint`.
+- `pnpm --filter @mauriciodmo/framekit build`.
 
 ## Exit gate
+
+**Status: Passed on 2026-09-15.**
 
 Phase 4 is complete when token ownership and administrator authorization are
 enforced server-side, secrets are one-time and hash-only, user state transitions

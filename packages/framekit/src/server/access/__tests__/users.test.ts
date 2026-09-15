@@ -13,8 +13,10 @@ import {
   countActiveAdministrators,
   createUser,
   deleteUser,
+  getManagedUserById,
   getUserById,
   isValidUsername,
+  listUsers,
   setPassword,
   updateUser,
   updateUsername,
@@ -244,6 +246,42 @@ describe('user mutations', () => {
     deleteUser(second.id)
     expect(database.prepare('SELECT COUNT(*) AS count FROM sessions WHERE user_id = ?').get(second.id)?.count).toBe(0)
     expect(database.prepare('SELECT COUNT(*) AS count FROM api_tokens WHERE user_id = ?').get(second.id)?.count).toBe(0)
+  }, 30_000)
+
+  it('returns safe managed-user projections with active state and timestamps', async () => {
+    const first = await createUser({ username: 'FirstUser', password })
+    const second = await createUser({ username: 'SecondUser', password, role: 'admin' })
+    updateUser(first.id, { active: false })
+
+    expect(getManagedUserById(first.id)).toEqual({
+      id: first.id,
+      username: first.username,
+      role: first.role,
+      active: false,
+      createdAt: expect.any(Number),
+      updatedAt: expect.any(Number)
+    })
+    expect(listUsers()).toEqual(expect.arrayContaining([
+      {
+        id: first.id,
+        username: first.username,
+        role: first.role,
+        active: false,
+        createdAt: expect.any(Number),
+        updatedAt: expect.any(Number)
+      },
+      {
+        id: second.id,
+        username: second.username,
+        role: second.role,
+        active: true,
+        createdAt: expect.any(Number),
+        updatedAt: expect.any(Number)
+      }
+    ]))
+    expect(Object.keys(listUsers()[0])).toEqual(['id', 'username', 'role', 'active', 'createdAt', 'updatedAt'])
+    expect(listUsers().every((user) => !('passwordHash' in user))).toBe(true)
+    expect(getManagedUserById('missing-user')).toBeUndefined()
   }, 30_000)
 })
 

@@ -5,6 +5,7 @@ export type UserDomainErrorCode =
   | 'invalid_active'
   | 'invalid_update'
   | 'invalid_user_state'
+  | 'invalid_token_name'
   | 'bootstrap_configuration'
   | 'user_not_found'
   | 'duplicate_username'
