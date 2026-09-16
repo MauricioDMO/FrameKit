@@ -19,6 +19,6 @@ export default defineConfig({
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   sourcemap: false,
   logLevel: 'error',
-  external: ['next', 'react', 'react-dom', '@tabler/icons-react', 'modern-screenshot', 'chokidar', 'tsx', 'playwright-core'],
+  external: ['next', 'react', 'react-dom', '@tabler/icons-react', 'chokidar', 'tsx', 'playwright-core'],
   outDir: 'dist'
 })
