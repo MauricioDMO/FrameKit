@@ -80,10 +80,13 @@ credentials cannot enter source control or image build contexts.
 
 ## Docker persistence
 
-Phase 7 is still pending. The current template Dockerfile does not set
-`FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite` or create `/data`. Keep the
+Phase 7 implementation is present in the current checkout. Docker exit-gate
+verification remains blocked because the available published
+`@mauriciodmo/framekit@0.8.1` lacks `playwright-core`, the browser-runtime
+dependency. The template Dockerfile sets
+`FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite` and creates `/data`. Keep the
 current multi-stage build, pinned Chromium installation, `tini`, and non-root
-runtime; the following is the target runner-stage extension for this phase:
+runtime; the runner-stage extension is:
 
 ```dockerfile
 ENV FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite

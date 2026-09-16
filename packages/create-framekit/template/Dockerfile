@@ -37,6 +37,7 @@ ENV NODE_ENV=production \
   PORT=3000 \
   FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000 \
   PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite
 
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 RUN apt-get update \
@@ -47,6 +48,7 @@ RUN apt-get update \
 
 COPY --from=builder --chown=node:node /app/.framekit/next/standalone ./
 
+RUN mkdir -p /data && chown node:node /data
 USER node
 EXPOSE 3000
 ENTRYPOINT ["/usr/bin/tini", "--"]

@@ -52,8 +52,10 @@ in the generated project before `docker build`; npm or Yarn scaffolds and
 scaffolds created without dependency installation (including `-n`) are not
 Docker-ready or validated by this path. Its Studio bootstrap credentials,
 database path, and deployment-specific render settings are supplied at runtime
-rather than baked into the image. Repository smoke
-checks inspect the deployment files but do not perform a live Docker build.
+rather than baked into the image. Tarball checks inspect deployment artifacts;
+`pnpm smoke:docker -- <exact-published-framekit-version>` performs the live
+Docker build and two-container smoke when the published package includes the
+browser runtime.
 
 ## Runtime configuration
 

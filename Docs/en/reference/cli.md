@@ -121,9 +121,12 @@ reads `PORT`, which defaults to `3000`; `PORT` must be an integer from `1` to
 The canonical generated `Dockerfile` sets `NODE_ENV=production`,
 `HOSTNAME=0.0.0.0`, `PORT=3000`,
 `FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
-`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` in the final image. Provide the other
-application variables when starting the container. Docker dependency stages
-use `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`; the final image installs the browser
+`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` in the final image, along with the
+database default `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`. The final image
+creates and chowns `/data`; operators must mount `/data` as persistent storage.
+Provide credentials and deployment-specific application settings when starting
+the container. Docker dependency stages use
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`; the final image installs the browser
 explicitly with `framekit browser install --with-deps`.
 
 #### CI

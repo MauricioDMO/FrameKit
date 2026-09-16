@@ -365,13 +365,12 @@ public assets, package metadata, lockfile, or required Next configuration.
   not a runtime renderer setting; browser installation is explicit through
   `framekit browser install`.
 - `FRAMEKIT_DATABASE_PATH` is consumed by `getDatabase()` and defaults to
-  `.framekit-data/framekit.sqlite`, resolved relative to `process.cwd()`; in the
-  generated runner this is `/app/.framekit-data/framekit.sqlite`. Parent
-  directories are created for file-backed databases. `:memory:` is the only
-  special value and there is no additional FrameKit path validation. The
-  Dockerfile does not set this variable, create `/data`, or declare a `VOLUME`;
-  persistent deployments should set it to a writable mounted path such as
-  `/data/framekit.sqlite`. The database volume stores access data only; render
+  `.framekit-data/framekit.sqlite`, resolved relative to `process.cwd()`; the
+  generated Dockerfile overrides this with `/data/framekit.sqlite` and creates
+  and chowns `/data` before `USER node`. Parent directories are created for
+  file-backed databases. `:memory:` is the only special value and there is no
+  additional FrameKit path validation. Persistent deployments must mount `/data`
+  as persistent storage. The database volume stores access data only; render
   jobs remain in process memory.
 - `FRAMEKIT_ADMIN_USERNAME` is consumed by `bootstrapUsers()` only when the
   database has no users. It defaults to `admin` and must contain 3-64 ASCII

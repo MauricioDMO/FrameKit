@@ -259,8 +259,10 @@ password hashes, sessions, and API-token hashes and metadata survive restarts;
 headless shell before serving this route.
 
 The generated template also includes the canonical `Dockerfile`,
-`.dockerignore`, and `.env.example`. The repository smoke checks inspect these
-deployment files but do not perform a live Docker build or browser download.
+`.dockerignore`, and `.env.example`. Tarball checks inspect these deployment
+artifacts. `pnpm smoke:docker -- <exact-published-framekit-version>` performs
+the live Docker build and two-container smoke when the published package
+includes the browser runtime.
 
 ### Published color palette
 

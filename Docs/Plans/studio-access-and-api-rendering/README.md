@@ -1,6 +1,6 @@
 # Studio Access, API Tokens, and Server-backed Export
 
-- **Status:** Phases 4-5.5 implemented and verified on 2026-09-15; Phase 6 implemented and verified on 2026-09-16; Phases 7-8 remain pending.
+- **Status:** Phases 4-5.5 implemented and verified on 2026-09-15; Phase 6 implemented and verified on 2026-09-16; Phase 7 implementation is present in the current checkout, but Docker exit-gate verification remains blocked because the available published `@mauriciodmo/framekit@0.8.1` lacks `playwright-core`, the browser-runtime dependency; Phase 8 remains pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
@@ -41,9 +41,12 @@ Download and Copy request PNGs from the authenticated image route and the
   browser capture and the legacy API-key contract have been removed. The
   FrameKit package suite passes 76 test files and 788 tests, creator tests pass 2
   files and 31 tests, Studio tests pass 3 files and 7 tests, and the E2E suite
-  passes 3 tests. Workspace build, typecheck, and lint pass. Phases 7-8 remain
-  pending. Server Image Rendering Step 8 final revalidation and closure remain
-  blocked until this plan is complete.
+  passes 3 tests. Workspace build, typecheck, and lint pass. Phase 7
+  implementation is present in the current checkout, but Docker exit-gate
+  verification remains blocked because the available published
+  `@mauriciodmo/framekit@0.8.1` lacks `playwright-core`, the browser-runtime
+  dependency; Phase 8 remains pending. Server Image Rendering Step 8 final
+  revalidation and closure remain blocked until this plan is complete.
 
 ## Target architecture
 
@@ -310,7 +313,7 @@ client bindings remain ignored output and are not copied into the starter.
 ```text
 # First empty-database boot only
 FRAMEKIT_ADMIN_USERNAME=admin
-FRAMEKIT_ADMIN_PASSWORD=replace-with-a-secure-password
+FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password
 
 # Persistent access data
 FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite
@@ -323,9 +326,9 @@ FRAMEKIT_RENDER_TIMEOUT_MS=30000
 
 ```
 
-The current Dockerfile leaves `FRAMEKIT_DATABASE_PATH` unset. Phase 7 proposes
-setting `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`; `/data` must be a
-writable persistent volume owned by the runtime user.
+The template Dockerfile sets `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite` and
+creates `/data` as a writable directory owned by the runtime user. Deploy
+`/data` as a persistent volume.
 
 ## Ordered phases
 

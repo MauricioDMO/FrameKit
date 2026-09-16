@@ -670,6 +670,7 @@ async function runSmoke({ keepTemp }) {
         'package/template/src/app/framekit/render/[id]/page.tsx',
         'package/template/src/app/globals.css',
         'package/template/src/app/layout.tsx',
+        'package/template/src/app/login/page.tsx',
         'package/README.md',
         'package/LICENSE',
       ],

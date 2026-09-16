@@ -81,13 +81,15 @@ runtime image:
 | `HOSTNAME` | `0.0.0.0` | Listen on all container interfaces |
 | `PORT` | `3000` | HTTP port exposed by the container |
 | `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` | Private render origin inside the container |
+| `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | SQLite access-data path |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Installed Chromium browser location |
 
-Provide bootstrap credentials, a writable persistent `FRAMEKIT_DATABASE_PATH`,
-and any deployment-specific `FRAMEKIT_ALLOWED_IMAGE_HOSTS` through the runtime
-environment. The optional render limits can also be overridden there. Do not
-place secrets or deployment-specific allowlists in the Dockerfile or image
-layers.
+The Dockerfile creates and chowns `/data`, but operators must mount `/data` as
+persistent storage when deploying. Provide bootstrap credentials and any
+deployment-specific `FRAMEKIT_ALLOWED_IMAGE_HOSTS` through the runtime
+environment; `FRAMEKIT_DATABASE_PATH` and the optional render limits can also be
+overridden there. Do not place secrets or deployment-specific allowlists in the
+Dockerfile or image layers.
 
 ## Documentation
 
