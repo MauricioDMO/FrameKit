@@ -36,14 +36,19 @@ describe('Studio app adapters', () => {
     expect(loginSource).toContain('export default createLoginPage()')
     expect(loginSource).not.toContain('cookies')
 
-    expect(accessSource).toContain("import { createStudioAccessHandler } from '@mauriciodmo/framekit/server'")
+    expect(accessSource).toContain("import { createFrameKitApiHandler } from '@mauriciodmo/framekit/server'")
+    expect(accessSource).toContain("import { templates } from '@framekit/generated/templates'")
     expect(accessSource).toContain("export const runtime = 'nodejs'")
     expect(accessSource).toContain("export const dynamic = 'force-dynamic'")
-    expect(accessSource).toContain('const handler = createStudioAccessHandler()')
+    expect(accessSource).toContain('const handler = createFrameKitApiHandler(templates)')
     expect(accessSource).toContain('export const GET = handler')
     expect(accessSource).toContain('export const POST = handler')
     expect(accessSource).toContain('export const PATCH = handler')
+    expect(accessSource).toContain('export const DELETE = handler')
+    expect(accessSource).not.toContain('createStudioAccessHandler')
     expect(accessSource).not.toContain('getSession')
+    await expect(readAppFile('api', 'v1', 'images', 'route.ts')).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(readAppFile('api', 'framekit', 'images', 'route.ts')).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('uses forwarded HTTPS origin headers through the actual Next route adapter', async () => {

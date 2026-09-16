@@ -85,5 +85,12 @@
   login, account, token, and administrator user UI, safe `StudioUser` handoff,
   `/settings` section routing, accessible confirmation flows, and English/Spanish
   message coverage. See the [Studio access UI phase plan](Docs/Plans/studio-access-and-api-rendering/05-studio-access-ui.md).
+- Implemented and verified Studio Access Phase 5.5 with the public
+  `createFrameKitApiHandler(templates)` dispatcher, one catch-all
+  `/api/framekit/[...action]` adapter in Studio and generated consumers,
+  canonical API-key image rendering at `POST /api/framekit/images/render`, and
+  removal of the unshipped `/api/v1/images` route. The image pipeline and
+  existing access-handler security boundaries remain unchanged. See the
+  [FrameKit API namespace phase plan](Docs/Plans/studio-access-and-api-rendering/05.5-framekit-api-namespace.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

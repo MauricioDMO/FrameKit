@@ -1,10 +1,15 @@
 import { expect, test } from '@playwright/test'
 
-const endpoint = '/api/v1/images'
+const endpoint = '/api/framekit/images/render'
 const template = 'redes-sociales/instagram/promocion-cuadrada'
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
 test('renders a PNG through the authenticated image API', async ({ request }) => {
+  const removedEndpoint = await request.post('/api/v1/images', {
+    data: { template }
+  })
+  expect(removedEndpoint.status()).toBe(404)
+
   const unauthorized = await request.post(endpoint, {
     data: { template }
   })

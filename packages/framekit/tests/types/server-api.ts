@@ -1,4 +1,4 @@
-import { authenticateBearer, ImageRenderError, parseImageApiConfig, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, createFrameKitApiHandler, ImageRenderError, parseImageApiConfig, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import type {
   ApiTokenMetadata,
   CreatedApiToken,
@@ -60,6 +60,7 @@ const parsedConfig = parseImageApiConfig({
 })
 const authorized: boolean = authenticateBearer('Bearer secret', parsedConfig.apiKey)
 const rendered: Promise<Buffer> = renderTemplateImage({ payload, config: runtime, signal: new AbortController().signal })
+const apiHandler: (request: Request) => Promise<Response> = createFrameKitApiHandler([])
 
 export {
   tokenMetadata,
@@ -68,5 +69,6 @@ export {
   errorCode,
   error,
   authorized,
-  rendered
+  rendered,
+  apiHandler
 }

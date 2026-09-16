@@ -14,11 +14,13 @@ migración histórica](./migration-v0.8.0.md).
   La selección de versión de release es un paso separado de los maintainers.
 - El comportamiento canónico existente de runtime y Studio descrito aquí está
   implementado. La API de generación de imágenes en servidor está disponible
-  mediante la ruta `POST /api/v1/images` del consumidor generado; instala
-  explícitamente su headless shell de Chromium con `framekit browser install`
-  antes de servir solicitudes.
-- Las Fases 4-5 de Studio Access & API Rendering están implementadas. La Fase 5
-  añade la UI autenticada de acceso de Studio; la API de imágenes autenticada y
+  mediante la ruta canónica `POST /api/framekit/images/render` del consumidor
+  generado; instala explícitamente su headless shell de Chromium con
+  `framekit browser install` antes de servir solicitudes. La ruta anterior
+  `/api/v1/images` fue eliminada y devuelve `404`.
+- Las Fases 4-5.5 de Studio Access & API Rendering están implementadas. La Fase
+  5 añade la UI autenticada de acceso de Studio y la Fase 5.5 establece el
+  namespace API unificado y sin versión; la API de imágenes autenticada y
   Download/Copy server-side de la Fase 6 siguen pendientes. Las Fases 7-8 también
   siguen pendientes y el Paso 8 de Server Image Rendering continúa bloqueado
   hasta completar el plan.
@@ -59,10 +61,10 @@ Fase 5; Download/Copy server-side pertenece a la Fase 6. `FRAMEKIT_ADMIN_USERNAM
 `FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
 de imágenes continúa leyéndola de forma independiente.
 
-Con la Fase 5 implementada, la ruta `POST /api/v1/images` continúa
-autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen usando el
-exportador actual del navegador hasta la Fase 6. Esta base tampoco migra datos
-de plantillas, assets ni estado persistido del editor.
+Con la Fase 5.5 implementada, la ruta `POST /api/framekit/images/render`
+continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
+usando el exportador actual del navegador hasta la Fase 6. Esta base tampoco
+migra datos de plantillas, assets ni estado persistido del editor.
 
 La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
 duración por contenedor. Los render jobs son locales al proceso, desaparecen al
@@ -94,16 +96,16 @@ HTTP ni UI.
   activo.
 - La Fase 3 proporciona el login, las sesiones HTTP y las rutas protegidas de
   Studio. La Fase 4 proporciona rutas de gestión de tokens y usuarios.
-  `POST /api/v1/images` sigue usando `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG
-  siguen usando el exportador del navegador; sus versiones server-side siguen
-  siendo fases posteriores.
+  `POST /api/framekit/images/render` sigue usando `FRAMEKIT_API_KEY`, y Download
+  PNG y Copy PNG siguen usando el exportador del navegador; sus versiones
+  server-side siguen siendo fases posteriores.
 
 ## Acceso A Studio, Sesiones, Protección Y Gestión De Rutas
 
-Las Fases 1-5 de Studio Access & API Rendering están disponibles. La Fase 5
-proporciona la UI de acceso de Studio; la API de imágenes autenticada y
-Download/Copy server-side siguen pendientes en la Fase 6, y las Fases 7-8
-también siguen pendientes.
+Las Fases 1-5.5 de Studio Access & API Rendering están disponibles. La Fase 5
+proporciona la UI de acceso de Studio y la Fase 5.5 proporciona el namespace API
+unificado; la API de imágenes autenticada y Download/Copy server-side siguen
+pendientes en la Fase 6, y las Fases 7-8 también siguen pendientes.
 
 El handler de acceso expone estas rutas:
 
@@ -212,9 +214,9 @@ Su ID interno de render job y `x-framekit-render-token` continúan siendo la ún
 frontera de autenticación de esa ruta privada.
 
 La Fase 4 no introduce migración de plantillas, assets, estado del editor ni
-versión de release. La Fase 5 añade la UI de acceso sin cambiar el
-comportamiento existente de la API de imágenes ni del exportador del navegador;
-Download/Copy server-side sigue pendiente en la Fase 6.
+versión de release. La Fase 5 añade la UI de acceso y la Fase 5.5 solo cambia la
+ubicación de la ruta de la API de imágenes; el comportamiento del exportador del
+navegador no cambia y Download/Copy server-side sigue pendiente en la Fase 6.
 
 ## UI autenticada de acceso de Studio (Fase 5)
 
@@ -281,12 +283,40 @@ opcionalmente, `FRAMEKIT_ADMIN_USERNAME` (por defecto `admin`). Un
 como token heredado; su secreto no se expone en metadata y los valores de entorno
 no vuelven a sincronizar usuarios existentes.
 
+## Namespace API De FrameKit (Fase 5.5)
+
+La Fase 5.5 mueve la acción clásica de imágenes de servidor a la ruta canónica
+sin versión `POST /api/framekit/images/render`. El consumidor generado y el
+Studio de primera parte exponen un único adapter catch-all en
+`src/app/api/framekit/[...action]/route.ts`; este delega las acciones de acceso
+al handler de sesiones y la acción de imágenes a
+`createImageHandler(templates)`.
+
+El body de la solicitud de imágenes, el contrato
+`Authorization: Bearer <FRAMEKIT_API_KEY>`, la configuración de render y la
+respuesta PNG no cambian. Las solicitudes de imágenes no requieren un header
+`Origin` porque los clientes API pueden no ser navegadores. Las mutaciones de
+acceso conservan su requisito de `Origin` del mismo origen.
+
+`POST /api/v1/images` fue eliminado y devuelve `404`. No agregues un alias,
+redirect, ruta de compatibilidad ni negociación de versión. Este cambio solo
+mueve la ruta HTTP: no migra plantillas, assets, estado del editor ni el
+comportamiento de renderizado. La Fase 6 cambiará por separado la autenticación
+de imágenes y Download/Copy de Studio.
+
+En una aplicación existente, elimina `src/app/api/v1/images/route.ts` y haz que
+`src/app/api/framekit/[...action]/route.ts` importe `templates` y
+`createFrameKitApiHandler(templates)`, y exporte sus bindings `GET`, `POST`,
+`PATCH` y `DELETE`. No agregues un archivo separado
+`src/app/api/framekit/images/route.ts`.
+
 ## Integración De Renderizado En Servidor
 
 Los proyectos generados incluyen la ruta aditiva de PNG en servidor. El
 `next.config.ts` generado usa `withFrameKit()`, la ruta unificada de secciones
-conserva las URLs existentes `/editor`, `/brand` y `/settings`, y las rutas explícitas de la
-API y del render privado siguen siendo propiedad de la aplicación. `framekit
+conserva las URLs existentes `/editor`, `/brand` y `/settings`, y las rutas
+catch-all de la API y del render privado siguen siendo propiedad de la
+aplicación. `framekit
 generate` recrea los bindings `studio-client.tsx` y `render-client.tsx` bajo
 `src/generated/framekit/`; no edites esos archivos manualmente ni agregues un
 binding de render hermano dentro del directorio de la ruta.

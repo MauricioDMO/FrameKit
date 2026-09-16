@@ -87,9 +87,11 @@ este camino.
 
 ## API de imágenes del servidor
 
-El consumidor generado expone la ruta `POST /api/v1/images`, exclusiva del
-runtime Node.js, mediante `createImageHandler(templates)` de
-`@mauriciodmo/framekit/server`. La solicitud JSON contiene el slug obligatorio
+El consumidor generado expone la ruta `POST /api/framekit/images/render`,
+exclusiva del runtime Node.js, mediante el adapter unificado
+`createFrameKitApiHandler(templates)` de
+`@mauriciodmo/framekit/server`. La acción de imágenes delega en
+`createImageHandler(templates)`. La solicitud JSON contiene el slug obligatorio
 `template` y `variant` y `data` opcionales:
 
 ```json
@@ -104,8 +106,9 @@ variables opcionales `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
 acceso a imágenes remotas y los límites de renderizado. La API requiere el
 headless shell instalado explícitamente.
 
-El smoke de tarballs comprueba la ruta generada y los archivos de despliegue; no
-afirma un build real de Docker ni una validación del contenedor/navegador.
+La ruta anterior `/api/v1/images` no se mantiene y devuelve `404`. El smoke de
+tarballs comprueba la ruta generada y los archivos de despliegue; no afirma un
+build real de Docker ni una validación del contenedor/navegador.
 
 ---
 

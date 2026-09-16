@@ -14,12 +14,14 @@ guide](./migration-v0.8.0.md).
   version. Release version selection is a separate maintainer step.
 - The existing runtime and Studio baseline described here is implemented. The
   server image-generation API is available through the generated consumer's
-  `POST /api/v1/images` route; install its Chromium headless shell explicitly
-  with `framekit browser install` before serving requests.
-- Studio Access and API Rendering Phases 4-5 are implemented. Phase 5 adds the
-  authenticated Studio access UI; Phase 6 authenticated image API and
-  server-backed Download/Copy remain pending. Phases 7-8 also remain pending,
-  and Server Image Rendering Step 8 remains blocked until the plan is complete.
+  canonical `POST /api/framekit/images/render` route; install its Chromium
+  headless shell explicitly with `framekit browser install` before serving
+  requests. The previous `/api/v1/images` route is removed and returns `404`.
+- Studio Access and API Rendering Phases 4-5.5 are implemented. Phase 5 adds
+  the authenticated Studio access UI and Phase 5.5 establishes the unified,
+  unversioned API namespace; Phase 6 authenticated image API and server-backed
+  Download/Copy remain pending. Phases 7-8 also remain pending, and Server
+  Image Rendering Step 8 remains blocked until the plan is complete.
 
 This rolling guide is the documentation deliverable for [GitHub issue
 #14](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -56,7 +58,7 @@ server-backed Download/Copy belong to Phase 6.
 first bootstrap; `FRAMEKIT_API_KEY` is imported only then, while the classic
 image handler continues reading it independently.
 
-With Phase 5 implemented, `POST /api/v1/images` continues to use
+With Phase 5.5 implemented, `POST /api/framekit/images/render` continues to use
 `FRAMEKIT_API_KEY`, and Download PNG and Copy PNG continue to use the current
 browser exporter until Phase 6. This foundation does not migrate template data,
 assets, or persisted editor state.
@@ -85,15 +87,16 @@ safe user operations without adding HTTP handlers or UI yet.
   sessions; a transaction prevents deleting, deactivating, or demoting the
   last active administrator.
 - Phase 3 provides login/session HTTP and protected Studio routes. Phase 4
-  provides token and user management routes. `POST /api/v1/images` still uses
-  `FRAMEKIT_API_KEY`, while Download PNG and Copy PNG still use the browser
-  exporter until Phase 6 server-backed export.
+  provides token and user management routes. `POST /api/framekit/images/render`
+  still uses `FRAMEKIT_API_KEY`, while Download PNG and Copy PNG still use the
+  browser exporter until Phase 6 server-backed export.
 
 ## Studio Access, Sessions, Route Protection, and Management
 
-Studio Access and API Rendering Phases 1-5 are available. Phase 5 provides the
-Studio access UI; authenticated image API and server-backed Download/Copy remain
-pending in Phase 6, with Phases 7-8 still pending.
+Studio Access and API Rendering Phases 1-5.5 are available. Phase 5 provides the
+Studio access UI and Phase 5.5 provides the unified API namespace; authenticated
+image API and server-backed Download/Copy remain pending in Phase 6, with Phases
+7-8 still pending.
 
 The access handler exposes these routes:
 
@@ -196,8 +199,9 @@ internal render-job ID and `x-framekit-render-token` are still the only
 authentication boundary for that private route.
 
 Phase 4 introduces no template, asset, editor-state, or release-version
-migration. Phase 5 adds the access UI without changing the existing image API
-or browser export behavior; server-backed Download/Copy remain pending in Phase 6.
+migration. Phase 5 adds the access UI, and Phase 5.5 changes only the image API
+route placement; browser export behavior is unchanged and server-backed
+Download/Copy remain pending in Phase 6.
 
 ## Authenticated Studio access UI (Phase 5)
 
@@ -262,12 +266,37 @@ database boot, set `FRAMEKIT_ADMIN_PASSWORD` and optionally
 imported once for the first administrator as a legacy token; its secret is not
 exposed in metadata and environment values do not resynchronize existing users.
 
+## FrameKit API Namespace (Phase 5.5)
+
+Phase 5.5 moves the classic server image action to the unversioned canonical
+route `POST /api/framekit/images/render`. The generated consumer and first-party
+Studio expose one `src/app/api/framekit/[...action]/route.ts` catch-all adapter;
+it delegates access actions to the session handler and the image action to
+`createImageHandler(templates)`.
+
+The image request body, `Authorization: Bearer <FRAMEKIT_API_KEY>` contract,
+render settings, and PNG response are unchanged. Image requests do not require
+an `Origin` header because API-key clients may be non-browser clients. Access
+mutations retain their same-origin `Origin` requirement.
+
+`POST /api/v1/images` is removed and returns `404`. Do not add an alias,
+redirect, compatibility route, or version negotiation. This is an HTTP route
+placement change only: it does not migrate templates, assets, editor state, or
+render behavior. Phase 6 will change image authentication and Studio
+Download/Copy separately.
+
+For an existing application, remove `src/app/api/v1/images/route.ts` and make
+`src/app/api/framekit/[...action]/route.ts` import `templates` and
+`createFrameKitApiHandler(templates)`, then export its `GET`, `POST`, `PATCH`,
+and `DELETE` bindings. Do not add a separate
+`src/app/api/framekit/images/route.ts` file.
+
 ## Server Rendering Integration
 
 Generated projects include the additive server-side PNG path. The generated
 `next.config.ts` uses `withFrameKit()`, the unified section route serves the
-existing `/editor`, `/brand`, and `/settings` URLs, and the explicit API and private render
-routes remain application-owned. `framekit generate` recreates the
+existing `/editor`, `/brand`, and `/settings` URLs, and the catch-all API and
+private render routes remain application-owned. `framekit generate` recreates the
 `studio-client.tsx` and `render-client.tsx` bindings under
 `src/generated/framekit/`; do not hand-edit those files or add a sibling render
 binding to the route directory.

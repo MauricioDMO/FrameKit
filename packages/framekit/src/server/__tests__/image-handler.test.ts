@@ -58,7 +58,7 @@ function setEnvironment (overrides: Record<string, string> = {}): void {
 }
 
 function requestFor (body: unknown, headers: Record<string, string> = {}, signal?: AbortSignal): Request {
-  return new Request('http://framekit.test/api/v1/images', {
+  return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: {
       authorization: 'Bearer secret',
@@ -71,7 +71,7 @@ function requestFor (body: unknown, headers: Record<string, string> = {}, signal
 }
 
 function rawRequest (body: string, headers: Record<string, string> = {}): Request {
-  return new Request('http://framekit.test/api/v1/images', {
+  return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: {
       authorization: 'Bearer secret',
@@ -119,7 +119,7 @@ describe('createImageHandler', () => {
 
   it('authenticates before reading the body or loading a template', async () => {
     const body = new ReadableStream<Uint8Array>()
-    const request = new Request('http://framekit.test/api/v1/images', {
+    const request = new Request('http://framekit.test/api/framekit/images/render', {
       method: 'POST',
       headers: { authorization: 'Bearer wrong', 'content-type': 'application/json' },
       body,

@@ -177,7 +177,6 @@ async function expectProjectFiles (
     .sort()).toEqual([
     '[section]/[[...slug]]/page.tsx',
     'api/framekit/[...action]/route.ts',
-    'api/v1/images/route.ts',
     'framekit/render/[id]/page.tsx',
     'globals.css',
     'layout.tsx',
@@ -193,18 +192,21 @@ async function expectProjectFiles (
   await expect(loginPage).resolves.toContain('createLoginPage')
   await expect(loginPage).resolves.toContain("export const runtime = 'nodejs'")
   await expect(loginPage).resolves.toContain("export const dynamic = 'force-dynamic'")
-  await expect(accessRoute).resolves.toContain('createStudioAccessHandler')
+  await expect(accessRoute).resolves.toContain('createFrameKitApiHandler')
+  await expect(accessRoute).resolves.toContain('@framekit/generated/templates')
   await expect(accessRoute).resolves.toContain("export const runtime = 'nodejs'")
   await expect(accessRoute).resolves.toContain("export const dynamic = 'force-dynamic'")
   await expect(accessRoute).resolves.toContain('export const GET = handler')
   await expect(accessRoute).resolves.toContain('export const POST = handler')
   await expect(accessRoute).resolves.toContain('export const PATCH = handler')
+  await expect(accessRoute).resolves.toContain('export const DELETE = handler')
   await expect(readFile(path.join(destination, 'src', 'app', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'editor', '[[...slug]]', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'brand', '[[...slug]]', 'page.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('createRenderPage')
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'page.tsx'), 'utf8')).resolves.toContain('@framekit/generated/render-client')
-  await expect(readFile(path.join(destination, 'src', 'app', 'api', 'v1', 'images', 'route.ts'), 'utf8')).resolves.toContain('createImageHandler(templates)')
+  await expect(readFile(path.join(destination, 'src', 'app', 'api', 'v1', 'images', 'route.ts'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+  await expect(readFile(path.join(destination, 'src', 'app', 'api', 'framekit', 'images', 'route.ts'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'app', 'framekit', 'render', '[id]', 'render-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'generated', 'framekit', 'studio-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
   await expect(readFile(path.join(destination, 'src', 'generated', 'framekit', 'render-client.tsx'), 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })

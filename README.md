@@ -77,14 +77,16 @@ Studio renders this React node in the preview and exports a PNG named after the 
   Chromium headless-shell installation with `framekit browser install`.
 - Client-side PNG export at the template's declared width and height.
 - The server-only `@mauriciodmo/framekit/server` facade with the public
-  `createImageHandler` PNG API, image-input preparation, PNG rendering,
-  temporary render jobs, and the private render-page handoff.
+  `createFrameKitApiHandler` API adapter and `createImageHandler` PNG API,
+  image-input preparation, PNG rendering, temporary render jobs, and the private
+  render-page handoff.
 
 ## Known limitations
 
 - Beta software: APIs and generated project details may change between releases.
 - Studio export supports PNG only in the browser. The generated consumer also
-  provides a server-side `POST /api/v1/images` PNG API; GIF/video export,
+  provides a server-side `POST /api/framekit/images/render` PNG API; the old
+  `/api/v1/images` route returns `404`; GIF/video export,
   alternate image formats, scale, and DPI controls are not supported.
 - Studio stores editor changes in the browser's `localStorage`; image uploads replace source files only while `framekit dev` is running.
 - Templates must live under `src/templates` and use a `template.tsx` entry file. The CLI does not currently provide an alternate templates directory or configuration file.

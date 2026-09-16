@@ -87,7 +87,7 @@ empty test database
   -> login
   -> open editor
   -> modify template fields and variant
-  -> Download PNG through /api/v1/images
+  -> Download PNG through /api/framekit/images/render
   -> verify filename, PNG signature, and dimensions
   -> create API token
   -> call image API with Bearer token
@@ -190,7 +190,7 @@ erasing completed history:
 - retain Steps 1-7 evidence;
 - mark Step 8 final closure as blocked by this plan;
 - state that SQLite persists access data, not render jobs;
-- keep the five-file starter target marked historical and seven files active;
+- keep the five-file starter target marked historical and six files active;
 - keep shared-API-key-only canonical authentication marked historical;
 - keep browser-based Studio export marked historical;
 - rerun every affected Step 8 assertion before closing that plan.
@@ -202,7 +202,7 @@ Revalidate Maintainability Phase 6 against:
 - client-safe `StudioUser` handoff;
 - access and authenticated-image route adapters;
 - development tooling's authenticated asset boundary;
-- the seven-file canonical starter;
+- the six-file canonical starter;
 - persistent application data versus ephemeral render jobs.
 
 ## Migration and compatibility

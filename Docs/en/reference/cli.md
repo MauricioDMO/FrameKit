@@ -85,9 +85,11 @@ installation such as `-n`, are not Docker-ready or validated by this path.
 
 ## Server image API
 
-The generated consumer exposes a Node.js-only `POST /api/v1/images` route using
-`createImageHandler(templates)` from `@mauriciodmo/framekit/server`. The JSON
-request contains a required `template` slug and optional `variant` and `data`:
+The generated consumer exposes a Node.js-only `POST /api/framekit/images/render`
+route using the unified `createFrameKitApiHandler(templates)` adapter from
+`@mauriciodmo/framekit/server`. The image action delegates to
+`createImageHandler(templates)`. The JSON request contains a required `template`
+slug and optional `variant` and `data`:
 
 ```json
 { "template": "example", "variant": "en", "data": {} }
@@ -100,8 +102,9 @@ Send `Authorization: Bearer <FRAMEKIT_API_KEY>`. Success returns `200` with
 `FRAMEKIT_RENDER_TIMEOUT_MS` variables configure remote-image access and render
 limits. The API requires the explicitly installed headless shell.
 
-The tarball smoke checks the generated route and deployment files; it does not
-claim a live Docker build or browser/container validation.
+The old `/api/v1/images` route is not maintained and returns `404`. The tarball
+smoke checks the generated route and deployment files; it does not claim a live
+Docker build or browser/container validation.
 
 ---
 

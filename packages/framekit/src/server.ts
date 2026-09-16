@@ -4,6 +4,7 @@ export type { ImageApiConfig, ImageRenderRequest, ImageRenderRuntimeConfig, Reso
 export { ImageRenderError } from './server/errors'
 export type { ImageRenderErrorCode, ImageRenderFailure } from './server/errors'
 export { prepareRenderInputs } from './server/image-input/index'
+export { createFrameKitApiHandler } from './server/api-handler'
 export { createImageHandler } from './server/image-handler'
 export { createStudioAccessHandler } from './server/access/http'
 export type { ApiTokenMetadata, CreatedApiToken } from './server/access/api-tokens'

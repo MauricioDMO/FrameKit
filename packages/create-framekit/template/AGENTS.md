@@ -18,8 +18,8 @@ campaign graphics, branded compositions, and similar fixed-size exports.
 
 It is not a general CMS, a design-token system, an arbitrary/public rendering
 service, a collaboration service, or a replacement for the application's
-general UI. The shipped `/api/v1/images` route supports synchronous server-side
-PNG generation for defined templates. Studio export is browser-based and
+general UI. The shipped `/api/framekit/images/render` route supports synchronous
+server-side PNG generation for defined templates. Studio export is browser-based and
 currently supports PNG.
 
 ## Project map

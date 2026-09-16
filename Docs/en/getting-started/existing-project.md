@@ -166,10 +166,13 @@ See the [CLI reference](../reference/cli.md#framekit-dev) for the authoritative 
 
 Studio frame exports (preview, download, and browser PNG generation) happen in
 the browser. The generated consumer also provides the Node.js-only
-`POST /api/v1/images` server image API through `createImageHandler`; install the
+`POST /api/framekit/images/render` server image API through the unified
+`createFrameKitApiHandler` adapter; it continues to delegate image work to
+`createImageHandler` and requires `FRAMEKIT_API_KEY` until Phase 6. Install the
 Chromium headless shell explicitly with `framekit browser install` before
-serving requests. The private render-job/page handoff remains an internal
-implementation detail of that API and the generated render page.
+serving requests. The previous `/api/v1/images` route returns `404`. The private
+render-job/page handoff remains an internal detail of that API and the generated
+render page.
 
 ---
 

@@ -2,14 +2,16 @@
 
 ## Goal
 
-Use the existing Chromium renderer for Studio Download PNG and Copy PNG while
-preserving classic API-key consumers and one shared request/render pipeline.
+Use the existing Chromium renderer for Studio Download PNG and Copy PNG through
+`POST /api/framekit/images/render`, while preserving classic API-key consumers
+and one shared request/render pipeline.
 
 ## Depends on
 
 - Phase 3 session authentication.
 - Phase 4 API-token authentication.
 - Phase 5 Studio user experience.
+- Phase 5.5's unversioned `/api/framekit` namespace and catch-all adapter.
 - The verified `createImageHandler()` and private-render implementation.
 
 ## Shared handler design
@@ -134,15 +136,17 @@ packages/framekit/src/server/config.ts
 packages/framekit/src/server.ts
 packages/framekit/src/editor/framekit-editor.tsx
 packages/framekit/src/editor/export/export-template.ts
-packages/create-framekit/template/src/app/api/v1/images/route.ts
-apps/studio/src/app/api/v1/images/route.ts
+packages/create-framekit/template/src/app/api/framekit/[...action]/route.ts
+apps/studio/src/app/api/framekit/[...action]/route.ts
 packages/framekit/package.json
 packages/framekit/tsdown.config.ts
 pnpm-lock.yaml
 ```
 
-The two application routes remain thin `POST` bindings with Node/dynamic route
-configuration.
+The two application routes remain thin catch-all bindings with Node/dynamic
+route configuration. Phase 5.5 owns their unified dispatch; this phase changes
+the image handler behind `/api/framekit/images/render` without adding another
+route file.
 
 ## Focused tests
 

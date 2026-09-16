@@ -1,6 +1,6 @@
 # Studio Access, API Tokens, and Server-backed Export
 
-- **Status:** Phases 4-5 implemented and verified on 2026-09-15; Phases 6-8 pending.
+- **Status:** Phases 4-5.5 implemented and verified on 2026-09-15; Phases 6-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
@@ -31,10 +31,13 @@ verified on 2026-09-15: the reusable Studio provides authenticated login,
 Settings account and token workflows, administrator user management, the
 three-section route model, safe `StudioUser` handoff, and English/Spanish
 accessibility coverage. The focused Studio checks passed 11 test files and 73
-tests; the full FrameKit package suite passed 75 test files and 810 tests, and
-package typecheck and lint passed. Production HTTP smoke covered the protected
-redirect and default localhost login; no browser-level visual or responsive
-smoke was run. Phases 6-8
+tests; the full FrameKit package suite passed 76 test files and 812 tests, and
+package typecheck and lint passed. Phase 5.5 now exposes the unified
+`/api/framekit/[...action]` adapter in Studio and the generated consumer,
+dispatches `POST /api/framekit/images/render` to the classic API-key image
+handler, and removes `/api/v1/images`. Production HTTP smoke covered the
+protected redirect and default localhost login; no browser-level visual or
+responsive smoke was run. Phases 6-8
 remain pending: authenticated image API and server-backed Download/Copy,
 generated-consumer/Docker persistence, and final rollout verification are not
 complete. Server Image Rendering Step 8 final revalidation and closure remain
@@ -56,7 +59,7 @@ blocked until this plan is complete.
              +--------------+--------------+
                             |
                             v
-                POST /api/v1/images
+              POST /api/framekit/images/render
                             |
                  session or token auth
                             |
@@ -215,11 +218,13 @@ account is inactive. Existing unrevoked API tokens become usable again after
 reactivation. Password changes and resets invalidate sessions but do not revoke
 API tokens. Deleting a user cascades sessions and API tokens.
 
-## HTTP access contract
+## HTTP API contract
 
-One thin catch-all route delegates to `createStudioAccessHandler()`:
+One thin catch-all route exposes the access and image actions:
 
 ```text
+POST   /api/framekit/images/render
+
 POST   /api/framekit/login
 POST   /api/framekit/logout
 
@@ -245,6 +250,9 @@ status codes. Cookie-authenticated unsafe requests, including login, require a
 same-origin `Origin` header. Client-side visibility is never an authorization
 boundary.
 
+The access actions delegate to `createStudioAccessHandler()`. Image dispatch is
+owned by the unified API handler and remains API-key-only until Phase 6.
+
 ## Image authentication contract
 
 The existing public signature remains supported:
@@ -256,6 +264,10 @@ createImageHandler(templates)
 It continues to require `FRAMEKIT_API_KEY` and preserves existing consumers.
 
 The canonical Studio/generated route changes to:
+
+```text
+POST /api/framekit/images/render
+```
 
 ```ts
 createStudioImageHandler(templates)
@@ -288,14 +300,13 @@ again. The canonical handler uses the imported database token. The classic
 
 ## Canonical application shape
 
-The starter grows from five to seven maintained files under `src/app`:
+The starter grows from five to six maintained files under `src/app`:
 
 ```text
 src/app/
   [section]/[[...slug]]/page.tsx
   login/page.tsx
   api/framekit/[...action]/route.ts
-  api/v1/images/route.ts
   framekit/render/[id]/page.tsx
   globals.css
   layout.tsx
@@ -336,8 +347,9 @@ writable persistent volume owned by the runtime user.
 | 3 | [Sessions, HTTP, and route protection](./03-sessions-http-and-route-protection.md) | Login/logout, protected Studio pages, and protected dev upload | Phase 2 |
 | 4 | [API tokens, users, and authorization](./04-api-tokens-users-and-authorization.md) | Owner/admin operations and token authentication | Phase 3 |
 | 5 | [Studio access UI](./05-studio-access-ui.md) | Login, account, token, and user interfaces (implemented and verified 2026-09-15) | Phase 4 |
-| 6 | [Authenticated image API and export](./06-authenticated-image-api-and-export.md) | Shared image auth pipeline and server-backed Download/Copy | Phases 3-5 |
-| 7 | [Generated consumer and Docker](./07-generated-consumer-and-docker.md) | Seven-file starter and persistent production volume | Phases 1-6 |
+| 5.5 | [FrameKit API namespace](./05.5-framekit-api-namespace.md) | Unversioned catch-all API and `/images/render` route | Phases 3-5; image-render baseline |
+| 6 | [Authenticated image API and export](./06-authenticated-image-api-and-export.md) | Shared image auth pipeline and server-backed Download/Copy | Phases 3-5.5 |
+| 7 | [Generated consumer and Docker](./07-generated-consumer-and-docker.md) | Six-file starter and persistent production volume | Phases 1-6 |
 | 8 | [Verification, documentation, and rollout](./08-verification-documentation-and-rollout.md) | Cross-workspace proof and final plan integration | Phases 1-7 |
 
 Execute phases in order. Each phase includes focused tests and an exit gate; do
@@ -367,10 +379,10 @@ Maintainability 6
 - Administrators can revoke other users' tokens without seeing their secrets.
 - Disabled users cannot use sessions, API tokens, or the development asset
   endpoint.
-- `/api/v1/images` accepts a valid session or API token through the canonical
-  handler.
+- `/api/framekit/images/render` accepts a valid session or API token through the
+  canonical handler.
 - The classic API-key handler remains compatible.
-- Studio Download PNG and Copy PNG use `/api/v1/images`.
+- Studio Download PNG and Copy PNG use `/api/framekit/images/render`.
 - `modern-screenshot` has no remaining runtime, build, test, lockfile, or
   documentation reference.
 - The private Chromium route still uses only its independent internal token.
@@ -378,7 +390,7 @@ Maintainability 6
   exposing it in token metadata.
 - SQLite persists users, sessions, and tokens across container replacement.
 - Render jobs still clear on process restart.
-- The creator produces a functional seven-file application with authentication.
+- The creator produces a functional six-file application with authentication.
 - Focused, repository, E2E, package, tarball, and Docker persistence gates pass.
 - Public documentation states the HTTPS, external throttling, single-process,
   persistent-volume, and public-asset limitations.

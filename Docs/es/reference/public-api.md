@@ -337,6 +337,7 @@ pendiente. No se debe importar en bundles del navegador.
 | ---------------------- | --------------------------------------------------------------------------------------------------- |
 | `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
 | `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
+| `createFrameKitApiHandler` | `createFrameKitApiHandler(templates): (request: Request) => Promise<Response>`; compone las rutas de acceso y la ruta canónica de imágenes bajo `/api/framekit` |
 | `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; crea el handler autenticado de sesiones y de gestión de tokens/usuarios de Studio |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
 | `createImageHandler`   | `createImageHandler(templates): (request: Request) => Promise<Response>`; crea el handler autenticado de la API de imágenes PNG |
@@ -346,6 +347,23 @@ pendiente. No se debe importar en bundles del navegador.
 | `loadRenderRequest`    | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
 | `deleteRenderJob`      | `deleteRenderJob(id: string, options?): void`; elimina un trabajo privado de renderizado |
 | `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff privado de página de servidor que valida el token de renderizado y pasa el payload resuelto al componente cliente |
+
+#### Handler API unificado de FrameKit
+
+`createFrameKitApiHandler(templates)` es la factory de integración de la
+aplicación para el namespace sin versión `/api/framekit`. Delega las rutas de
+acceso en `createStudioAccessHandler()` y `POST /api/framekit/images/render` en
+`createImageHandler(templates)`. El consumidor generado y el Studio de primera
+parte montan esta factory desde un único adapter catch-all en
+`src/app/api/framekit/[...action]/route.ts` y exportan `GET`, `POST`, `PATCH` y
+`DELETE`.
+
+La acción de imágenes continúa exigiendo `Authorization: Bearer
+<FRAMEKIT_API_KEY>` y no requiere un header `Origin`. Las mutaciones de acceso
+conservan la autenticación por sesión y la protección de `Origin` del mismo
+origen. Las rutas desconocidas devuelven `404`; los métodos no admitidos para la
+acción de imágenes devuelven `405` con `Allow: POST`. La ruta anterior
+`/api/v1/images` no tiene adapter mantenido y devuelve `404`.
 
 #### Handler de acceso de Studio
 
@@ -390,12 +408,11 @@ desactivar o degradar al último administrador activo. Las solicitudes inseguras
 requieren la comprobación de `Origin` del mismo origen descrita en la guía de
 migración.
 
-Este handler de la Fase 4 no reemplaza la ruta clásica de imágenes:
-`POST /api/v1/images` sigue exigiendo `Authorization: Bearer <FRAMEKIT_API_KEY>`.
 La UI de acceso de Studio de la Fase 5 está disponible mediante las factories de
 página autenticada anteriores. Download/Copy actuales siguen siendo del
 navegador; la API de imágenes autenticada y Download/Copy server-side de la Fase
-6 siguen pendientes.
+6 siguen pendientes. El handler clásico de imágenes con API key se monta en
+`POST /api/framekit/images/render` mediante el adapter unificado.
 
 `parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
 `FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
@@ -447,7 +464,8 @@ objeto no nulo que no sea un array.
 
 `createImageHandler(templates)` recibe un registro generado y devuelve un
 handler de solicitudes para Node.js. El consumidor generado canónico lo monta
-en `POST /api/v1/images` con `runtime = 'nodejs'` y
+mediante `createFrameKitApiHandler(templates)` en
+`POST /api/framekit/images/render` con `runtime = 'nodejs'` y
 `dynamic = 'force-dynamic'`. Las solicitudes usan esta forma JSON:
 
 ```json
@@ -466,7 +484,7 @@ fallos contienen las propiedades JSON estables `error`, `message` y
 Una solicitud real usando la plantilla generada `example` es:
 
 ```http
-POST /api/v1/images HTTP/1.1
+POST /api/framekit/images/render HTTP/1.1
 Authorization: Bearer framekit-smoke-api-key
 Content-Type: application/json
 

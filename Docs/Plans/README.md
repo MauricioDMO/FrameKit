@@ -680,7 +680,7 @@ No iniciar Maintainability 6 hasta confirmar:
 * [ ] Los jobs temporales usan exclusivamente memoria de proceso.
 * [ ] Chromium no tiene acceso arbitrario a imágenes remotas.
 * [ ] El consumer generado funciona fuera del workspace.
-* [ ] El consumer generado usa la forma final de siete archivos mantenidos.
+* [ ] El consumer generado usa la forma final de seis archivos mantenidos.
 * [ ] SQLite persiste acceso mientras los render jobs permanecen en memoria.
 * [x] Docker genera correctamente un PNG mediante Chromium.
 * [ ] La issue paraguas está cerrada.
@@ -695,7 +695,7 @@ Este bloque se ejecuta después de Server Image Rendering 1 a 7 y antes de su
 Paso 8 final. Sus fases son obligatoriamente secuenciales:
 
 ```text
-1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+1 → 2 → 3 → 4 → 5 → 5.5 → 6 → 7 → 8
 ```
 
 * [x] Fase 1: SQLite and Migrations.
@@ -703,17 +703,20 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 * [x] Fase 3: Sessions, HTTP, and Route Protection.
 * [x] Fase 4: API Tokens, Users, and Authorization (implementada y verificada el 2026-09-15).
 * [x] Fase 5: Studio Access UI (implementada y verificada el 2026-09-15).
+* [x] Fase 5.5: FrameKit API Namespace (implementada y verificada el 2026-09-15).
 * [ ] Fase 6: Authenticated Image API and Export.
 * [ ] Fase 7: Generated Consumer and Docker.
 * [ ] Fase 8: Verification, Documentation, and Rollout.
 * [ ] Reabrir el gate final de Server Image Rendering Step 8 sobre el nuevo
   baseline.
 
-Las fases 4 y 5 están implementadas y verificadas el 2026-09-15. La fase 5
+Las fases 4, 5 y 5.5 están implementadas y verificadas el 2026-09-15. La fase 5
 incluye la UI de login y Ajustes, el modelo de tres secciones, el handoff
 seguro de `StudioUser`, los flujos de tokens y usuarios administradores, y
-cobertura de accesibilidad e i18n. Pasan los checks enfocados de Studio (11
-archivos, 73 tests), la suite completa del paquete FrameKit (75 archivos, 810
+cobertura de accesibilidad e i18n. La fase 5.5 unifica los adapters de acceso e
+imagen bajo `/api/framekit/[...action]`, conserva el handler de imagen con API
+key y elimina `/api/v1/images`. Pasan los checks enfocados de Studio (11
+archivos, 73 tests), la suite completa del paquete FrameKit (76 archivos, 812
 tests), el typecheck y el lint. El smoke HTTP de producción cubrió la redirección
 protegida y el login local predeterminado; no se ejecutó smoke visual o responsive
 en navegador. Las fases 6 a
@@ -740,7 +743,7 @@ Antes de implementarla, actualiza su baseline para incluir:
 * `src/server/access/**` y `node:sqlite`;
 * los boundaries server-only de `./studio/root`;
 * las rutas de acceso y el handler de imagen autenticado;
-* la forma final de siete archivos mantenidos del consumer;
+* la forma final de seis archivos mantenidos del consumer;
 * SQLite persistente separado de los render jobs en memoria.
 
 No implementes las reglas de la fase 6 usando el mapa anterior de seis exports.
@@ -852,7 +855,7 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 * [ ] Usuarios, sesiones y API tokens se almacenan bajo el contrato SQLite final.
 * [ ] Download PNG y Copy PNG usan exclusivamente el renderer server-side.
 * [ ] El handler clásico conserva compatibilidad con `FRAMEKIT_API_KEY`.
-* [ ] El starter final contiene siete archivos mantenidos bajo `src/app`.
+* [ ] El starter final contiene seis archivos mantenidos bajo `src/app`.
 * [ ] Docker preserva SQLite entre containers y limpia jobs al reiniciar proceso.
 
 ### Repository gates

@@ -149,7 +149,8 @@ function isForbiddenArchiveEntry(entry) {
   if (/\.(?:test|spec)\.[^/]+$/i.test(basename)) return true
   if (/^\.env(?:\.[^/]+)?$/i.test(basename) && basename !== '.env.example') return true
   if (/(^|\/)(?:secrets?|credentials?)(?:\/|$)/i.test(normalizedEntry)) return true
-  if (normalizedEntry !== 'package/dist/server/access/passwords.js' && /(?:id_(?:rsa|dsa|ecdsa|ed25519)|[^/]*(?:secret|credential|password|token|private[-_]?key|service[-_]?account|api[-_]?key)[^/]*)$/i.test(basename)) return true
+  const allowedRuntimeEntries = /(^|\/)(?:passwords|api-tokens|token-list|token-settings)\.(?:js|d\.ts)$/i
+  if (!allowedRuntimeEntries.test(normalizedEntry) && /(?:id_(?:rsa|dsa|ecdsa|ed25519)|[^/]*(?:secret|credential|password|token|private[-_]?key|service[-_]?account|api[-_]?key)[^/]*)$/i.test(basename)) return true
   if (/\.(?:pem|key|p12|pfx)$/i.test(basename)) return true
   if (/(^|\/)(?:\.?ms-playwright|\.?local-browsers)(?:\/|$)/i.test(normalizedEntry)) return true
   if (/^(?:chrome|chromium|chrome-headless-shell|headless[_-]shell|firefox|webkit|ffmpeg)(?:\.exe)?$/i.test(basename)) return true
@@ -275,14 +276,13 @@ async function assertGeneratedConsumerShape(consumerRoot) {
   assert.deepEqual(appFiles, [
     '[section]/[[...slug]]/page.tsx',
     'api/framekit/[...action]/route.ts',
-    'api/v1/images/route.ts',
     'framekit/render/[id]/page.tsx',
     'globals.css',
     'layout.tsx',
     'login/page.tsx',
   ], 'creator consumer src/app contains unexpected files')
   assert(!(await exists(path.join(consumerRoot, 'src', 'generated', 'framekit'))), 'creator consumer copied generated FrameKit bindings')
-  console.log('[PASS] creator consumer has the seven-file app and generated-only client bindings')
+  console.log('[PASS] creator consumer has the six-file app and generated-only client bindings')
 }
 
 async function assertGeneratedBindings(consumerRoot) {
@@ -531,7 +531,20 @@ async function runStudioRouteSmoke(port) {
   const invalidSection = await fetch(`${origin}/preview/example`, { redirect: 'manual' })
   await invalidSection.text()
   assert.equal(invalidSection.status, 404, 'unknown section did not return not-found')
-  console.log('[PASS] public login, unauthenticated redirects, authenticated Studio routes, root redirect, nested sections, and invalid-section 404')
+
+  const removedImageRoute = await fetch(`${origin}/api/v1/images`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  })
+  await removedImageRoute.text()
+  assert.equal(removedImageRoute.status, 404, 'removed versioned image route did not return not-found')
+
+  const unsupportedImageMethod = await fetch(`${origin}/api/framekit/images/render`)
+  await unsupportedImageMethod.text()
+  assert.equal(unsupportedImageMethod.status, 405, 'unsupported canonical image method did not return method-not-allowed')
+  assert.equal(unsupportedImageMethod.headers.get('allow'), 'POST', 'canonical image method did not advertise POST')
+  console.log('[PASS] public login, unauthenticated redirects, authenticated Studio routes, root redirect, nested sections, invalid-section 404, and API namespace dispatch')
 }
 
 async function runProductionRenderSmoke(port) {
@@ -653,7 +666,7 @@ async function runSmoke({ keepTemp }) {
         'package/template/package.json',
         'package/template/next.config.ts',
         'package/template/src/app/[section]/[[...slug]]/page.tsx',
-        'package/template/src/app/api/v1/images/route.ts',
+        'package/template/src/app/api/framekit/[...action]/route.ts',
         'package/template/src/app/framekit/render/[id]/page.tsx',
         'package/template/src/app/globals.css',
         'package/template/src/app/layout.tsx',

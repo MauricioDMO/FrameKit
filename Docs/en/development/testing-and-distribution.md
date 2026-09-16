@@ -153,9 +153,10 @@ The script keeps all temporary consumers outside the workspace and verifies:
   tarball, including public export resolution and `generate`, `check`, and
   `build`;
 - a creator-generated consumer, including a clean install, `generate`, `check`,
-  `build`, the seven-file `src/app` shape, the public login route, protected
-  route redirects, authenticated Studio routes, the public `/api/v1/images`
-  route, deployment files, standalone `start`, HTTP readiness, and clean
+  `build`, the six-file `src/app` shape, the public login route, protected
+  route redirects, authenticated Studio routes, the canonical
+  `/api/framekit/images/render` route and removed `/api/v1/images` route,
+  deployment files, standalone `start`, HTTP readiness, and clean
   shutdown/cleanup. Generated client bindings must be absent before generation
   and present afterward.
 

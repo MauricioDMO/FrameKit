@@ -323,6 +323,7 @@ pending. Do not import it into browser bundles.
 | -------------------- | ------------------------------------------------------------------------------------------- |
 | `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
 | `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
+| `createFrameKitApiHandler` | `createFrameKitApiHandler(templates): (request: Request) => Promise<Response>`; composes the access routes and canonical image route under `/api/framekit` |
 | `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; creates the authenticated Studio session and token/user management handler |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
 | `createImageHandler` | `createImageHandler(templates): (request: Request) => Promise<Response>`; creates the authenticated PNG image API handler |
@@ -332,6 +333,23 @@ pending. Do not import it into browser bundles.
 | `loadRenderRequest`   | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
 | `deleteRenderJob`     | `deleteRenderJob(id: string, options?): void`; removes a private render job |
 | `createRenderPage`    | `createRenderPage(RenderClient)`; creates the private server page handoff that validates the render token and passes the resolved payload to the client component |
+
+#### Unified FrameKit API handler
+
+`createFrameKitApiHandler(templates)` is the application integration factory for
+the unversioned `/api/framekit` namespace. It delegates the access routes to
+`createStudioAccessHandler()` and `POST /api/framekit/images/render` to
+`createImageHandler(templates)`. The generated consumer and first-party Studio
+mount this factory from one catch-all
+`src/app/api/framekit/[...action]/route.ts` adapter and export `GET`, `POST`,
+`PATCH`, and `DELETE`.
+
+The image action continues to require `Authorization: Bearer
+<FRAMEKIT_API_KEY>` and does not require an `Origin` header. Access mutations
+retain session authentication and same-origin `Origin` protection. Unknown
+paths return `404`; unsupported methods for the image action return `405` with
+`Allow: POST`. The old `/api/v1/images` route has no maintained adapter and
+returns `404`.
 
 #### Studio Access handler
 
@@ -372,11 +390,11 @@ usernames or attempts to remove, disable, or demote the last active
 administrator. Unsafe requests require the same-origin `Origin` check described
 in the migration guide.
 
-This Phase 4 handler does not replace the classic image route:
-`POST /api/v1/images` still requires `Authorization: Bearer <FRAMEKIT_API_KEY>`.
 The Phase 5 Studio access UI is now available through the authenticated page
 factories above. Current Download/Copy remain browser-based; the Phase 6
-authenticated image API and server-backed Download/Copy remain pending.
+authenticated image API and server-backed Download/Copy remain pending. The
+classic API-key image handler is mounted at
+`POST /api/framekit/images/render` by the unified adapter.
 
 `parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
 `FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
@@ -424,9 +442,10 @@ only `code`, `message`, and, when present, `fields`; `cause` is not enumerable.
 non-null, non-array object.
 
 `createImageHandler(templates)` accepts a generated registry and returns a
-Node.js request handler. The canonical generated consumer mounts it at
-`POST /api/v1/images` with `runtime = 'nodejs'` and `dynamic = 'force-dynamic'`.
-Requests use the following JSON shape:
+Node.js request handler. The canonical generated consumer mounts it through
+`createFrameKitApiHandler(templates)` at `POST /api/framekit/images/render`
+with `runtime = 'nodejs'` and `dynamic = 'force-dynamic'`. Requests use the
+following JSON shape:
 
 ```json
 { "template": "example", "variant": "en", "data": {} }
@@ -443,7 +462,7 @@ handler reads `FRAMEKIT_API_KEY`, `FRAMEKIT_INTERNAL_ORIGIN`, and the optional
 An actual request using the generated `example` template is:
 
 ```http
-POST /api/v1/images HTTP/1.1
+POST /api/framekit/images/render HTTP/1.1
 Authorization: Bearer framekit-smoke-api-key
 Content-Type: application/json
 

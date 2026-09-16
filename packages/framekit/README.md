@@ -166,7 +166,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
-import { authenticateBearer, createImageHandler, createStudioAccessHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { authenticateBearer, createFrameKitApiHandler, createImageHandler, createStudioAccessHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
@@ -184,7 +184,7 @@ export const RenderClient = createRenderClient(templates)
 ```
 
 The server-only `./server` facade exposes configuration and authentication
-helpers, `createStudioAccessHandler`, `createImageHandler`,
+helpers, `createFrameKitApiHandler`, `createStudioAccessHandler`, `createImageHandler`,
 `prepareRenderInputs`, `renderTemplateImage`, temporary render jobs, and the
 private `createRenderPage` handoff. It also exports the type-only
 `ApiTokenMetadata` and `CreatedApiToken` contracts. Keep the `./dev` and
@@ -227,15 +227,18 @@ inaccessible targets return `404`; unsupported methods return `405`; duplicate
 usernames and last-active-administrator conflicts return `409`. Unsafe requests
 require a same-origin `Origin` header.
 
-`POST /api/v1/images` continues to use `FRAMEKIT_API_KEY`, and Download PNG and
-Copy PNG continue to use the current browser exporter. The authenticated Studio
-access UI is implemented; authenticated image API migration and server-backed
-Download/Copy remain pending for Phase 6.
+`POST /api/framekit/images/render` continues to use `FRAMEKIT_API_KEY`, and
+Download PNG and Copy PNG continue to use the current browser exporter. The
+previous `/api/v1/images` route is removed and returns `404`. The authenticated
+Studio access UI is implemented; authenticated image API migration and
+server-backed Download/Copy remain pending for Phase 6.
 
 ### Server image API
 
-The generated consumer template exposes a Node.js-only `POST /api/v1/images`
-route backed by `createImageHandler(templates)`. Send JSON with the generated
+The generated consumer template exposes a Node.js-only
+`POST /api/framekit/images/render` route backed by
+`createFrameKitApiHandler(templates)`, which delegates image work to
+`createImageHandler(templates)`. Send JSON with the generated
 template slug, an optional variant, and optional field data:
 
 ```json

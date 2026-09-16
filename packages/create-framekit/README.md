@@ -1,8 +1,8 @@
 # @mauriciodmo/create-framekit
 
 Scaffold a new FrameKit project with one command. The generated project
-includes browser-based Studio export and a server-side `POST /api/v1/images`
-PNG API.
+includes browser-based Studio export and a server-side
+`POST /api/framekit/images/render` PNG API.
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
@@ -47,7 +47,9 @@ checks inspect the deployment files but do not perform a live Docker build.
 
 The API route accepts JSON containing `template`, optional `variant`, and
 optional `data`, authenticates `Authorization: Bearer <FRAMEKIT_API_KEY>`, and
-returns `image/png` on success. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md).
+returns `image/png` on success. It is mounted at
+`POST /api/framekit/images/render`; the old `/api/v1/images` route is not
+maintained. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md).
 
 To update the official agent skills in an existing project, run this from the project root:
 

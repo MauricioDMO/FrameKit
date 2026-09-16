@@ -4,7 +4,7 @@ import { ImageRenderError } from '@/server/errors'
 import { readJsonBody } from '@/server/request-body'
 
 function createRequest (body: BodyInit | null, headers: Record<string, string> = {}): Request {
-  return new Request('http://framekit.test/api/v1/images', {
+  return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...headers },
     body
@@ -12,7 +12,7 @@ function createRequest (body: BodyInit | null, headers: Record<string, string> =
 }
 
 function createStreamRequest (body: ReadableStream<Uint8Array>, headers: Record<string, string> = {}): Request {
-  return new Request('http://framekit.test/api/v1/images', {
+  return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...headers },
     body,
@@ -42,7 +42,7 @@ describe('readJsonBody', () => {
 
   it.each([null, 'text/plain', 'application/jsonp', 'application/json; charset=utf-16'])('rejects a non-JSON content type: %s', async (contentType) => {
     const request = contentType === null
-      ? new Request('http://framekit.test/api/v1/images', { method: 'POST', body: '{}' })
+      ? new Request('http://framekit.test/api/framekit/images/render', { method: 'POST', body: '{}' })
       : createRequest('{}', { 'content-type': contentType })
     await expectCode(readJsonBody(request), 'invalid_request')
   })
