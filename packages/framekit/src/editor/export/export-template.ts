@@ -100,5 +100,10 @@ export async function copyTemplate (slug: string, variant: string, data: ExportD
   }
 
   const blob = await requestImage(slug, variant, data)
+  if (!document.hasFocus()) {
+    await new Promise<void>((resolve) => {
+      window.addEventListener('focus', () => resolve(), { once: true })
+    })
+  }
   await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 }

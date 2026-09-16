@@ -24,6 +24,7 @@ beforeEach(() => {
   vi.stubGlobal('ClipboardItem', class ClipboardItem {
     constructor (readonly items: Record<string, Blob>) {}
   })
+  vi.spyOn(document, 'hasFocus').mockReturnValue(true)
 })
 
 afterEach(() => {
@@ -90,6 +91,20 @@ describe('copyTemplate', () => {
     const item = write.mock.calls[0]?.[0]?.[0] as { items: Record<string, Blob> }
     expect(write).toHaveBeenCalledTimes(1)
     expect(item.items).toEqual({ 'image/png': clipboardBlob })
+  })
+
+  it('waits for focus before writing the PNG to the clipboard', async () => {
+    const write = setupClipboard()
+    vi.spyOn(document, 'hasFocus').mockReturnValue(false)
+
+    const copyPromise = copyTemplate('social/campaign', 'en', { title: 'Edited' })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(write).not.toHaveBeenCalled()
+    window.dispatchEvent(new Event('focus'))
+    await copyPromise
+
+    expect(write).toHaveBeenCalledTimes(1)
   })
 
   it('rejects before requesting when clipboard support is unavailable', async () => {
