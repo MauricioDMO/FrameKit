@@ -20,7 +20,6 @@ export default defineConfig({
     env: {
       FRAMEKIT_HOST: 'localhost',
       HOSTNAME: 'localhost',
-      FRAMEKIT_API_KEY: 'framekit-e2e-api-key',
       FRAMEKIT_ADMIN_USERNAME: 'admin',
       FRAMEKIT_ADMIN_PASSWORD: 'framekit-e2e-password',
       FRAMEKIT_DATABASE_PATH: ':memory:',

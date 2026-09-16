@@ -18,6 +18,28 @@ for definition and content-variant errors.
   registry. Use the catalog route rather than treating this visual state as an
   HTTP 404.
 
+## Render configuration or authentication failure
+
+- **Render configuration failure** (`api_not_configured` or “Image rendering
+  API is not configured”) means the server rejected its render configuration
+  before rendering. Check the runtime configuration of the server process and
+  use the [CLI reference's server image API section](../../../../en/reference/cli.md#server-image-api)
+  for the supported product settings. This is separate from template
+  validation.
+- **Authentication failure** (`unauthorized` or “Unauthorized”) means the
+  request has neither an active same-origin Studio session nor a valid API
+  token. Sign in again for Studio export; for an API request, send a valid
+  bearer token as described in the [public API reference](../../../../en/reference/public-api.md).
+  When an `Authorization` header is present, it must be valid; the handler does
+  not fall back to a session cookie.
+- `CI`, `NEXT_TELEMETRY_DISABLED`, `PLAYWRIGHT_BROWSERS_PATH`,
+  `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`, and `NO_COLOR` do not configure image API
+  authentication or rendering. Do not use test/tooling variables to fix these
+  responses.
+- `NODE_EXTRA_CA_CERTS` is reserved for an isolated HTTPS smoke fixture with a
+  private test CA. It is not a normal Studio setting or an image API
+  authentication/configuration fix.
+
 ## Data or persistence error
 
 Studio resolves typed string, finite-number, and boolean values for the
@@ -46,8 +68,9 @@ types: text/color/image strings, finite numbers, choice strings, and booleans.
 
 ## PNG export fails
 
-For PNG failures, validate resolved data, loaded fonts, cross-origin images, and
-browser DOM/canvas support. Export is PNG-only at the template dimensions and
-scale 1. Export and Copy PNG validate committed resolved data first, associate
-validation errors with fields, and focus the first invalid field. Capture or
-clipboard failures show Studio's localized export error/alert.
+For PNG failures, validate resolved data, the active Studio session, same-origin
+cookie requests, Chromium availability, and the remote-image allowlist. Export
+is PNG-only at the template dimensions. Export and Copy PNG validate committed
+resolved data first, associate structured server validation errors with fields,
+and focus the first invalid field. Render, download, or clipboard failures show
+Studio's localized export error/alert.

@@ -18,8 +18,38 @@
 
 - A target directory must not already exist, including an empty directory.
 - Native dependency installation failures require Python, make, and a C++ toolchain when no compatible prebuilt binary exists.
-- Do not treat `pnpm install --ignore-scripts` as a general fix. Use it only for diagnosis; rebuild affected packages and verify with `pnpm check` and `pnpm build` afterward.
+- Do not treat `pnpm install --ignore-scripts` as a general fix. Use it only for diagnosis; rebuild affected packages and verify the consumer with `framekit check` and `framekit build` afterward.
 - `create-framekit` keeps a partially created project when installation fails so it can be diagnosed.
+
+## Environment-sensitive failures
+
+- `create-framekit` detects the package manager from `npm_config_user_agent`. npm
+  and pnpm normally provide it; when it is absent or unknown, interactive runs
+  prompt for a manager and `-y`/`-n` runs default to pnpm.
+- On Windows, creator child commands run through `ComSpec`, falling back to
+  `cmd.exe`. A missing package-manager or Git command is usually a `PATH` issue;
+  confirm the required executable resolves before changing FrameKit settings.
+- `NO_COLOR=1` only disables creator terminal styling. It does not change
+  generation, validation, or build behavior.
+- `PLAYWRIGHT_BROWSERS_PATH` is inherited by `framekit browser install` and tells
+  Playwright where to discover browser binaries. Use it only when the release
+  environment needs a non-default browser registry. The Docker template sets
+  `/ms-playwright` itself.
+- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is Docker build plumbing: the generated
+  Dockerfile uses it during dependency installation and installs Chromium later
+  with `framekit browser install --with-deps`.
+- `CI` changes Playwright's reporter, retry, and focused-test behavior. The
+  Docker smoke also passes `CI=1` to its child commands. It is not a consumer
+  application setting.
+- `NEXT_TELEMETRY_DISABLED=1` is passed to Next.js by repository CI and the
+  Playwright web server; it disables Next.js telemetry for those checks and is
+  not required by a normal consumer.
+- `FRAMEKIT_TEST_FAIL` belongs only to the creator test fakes. It makes a fake
+  npm or pnpm command exit with code `7` when its first argument matches the
+  variable; never use it to diagnose a real installation.
+- `NODE_EXTRA_CA_CERTS` is release-smoke plumbing only for an HTTPS fixture that
+  uses a private test CA. The current tarball and Docker smokes do not need it;
+  keep TLS verification enabled and do not treat it as consumer configuration.
 
 ## Development Diagnostics
 

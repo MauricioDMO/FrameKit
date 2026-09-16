@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -24,7 +23,7 @@ import {
 } from '@/server/access/users'
 
 const password = 'correct horse battery staple'
-const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_API_KEY'] as const
+const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD'] as const
 
 let originalEnvironment: Partial<Record<typeof environmentKeys[number], string>>
 let temporaryRoot = ''
@@ -53,10 +52,6 @@ afterEach(async () => {
 
 function userCount (): number {
   return getDatabase().prepare('SELECT COUNT(*) AS count FROM users').get()?.count as number
-}
-
-function tokenCount (): number {
-  return getDatabase().prepare('SELECT COUNT(*) AS count FROM api_tokens').get()?.count as number
 }
 
 function expectDomainError (action: () => unknown, code: UserDomainError['code']): void {
@@ -91,9 +86,8 @@ describe('user bootstrap', () => {
     expect(userCount()).toBe(0)
   })
 
-  it('creates one administrator and imports only the legacy API-key hash', async () => {
+  it('creates one administrator without creating API tokens', async () => {
     process.env.FRAMEKIT_ADMIN_PASSWORD = password
-    process.env.FRAMEKIT_API_KEY = 'legacy-secret'
 
     const user = await bootstrapUsers()
     expect(user).toMatchObject({ username: 'admin', role: 'admin' })
@@ -107,16 +101,7 @@ describe('user bootstrap', () => {
     expect(Number.isInteger(storedUser?.created_at)).toBe(true)
     expect(Number.isInteger(storedUser?.updated_at)).toBe(true)
 
-    const storedToken = database.prepare('SELECT id, user_id, name, token_prefix, token_hash, created_at FROM api_tokens').get()
-    expect(storedToken).toEqual({
-      id: expect.stringMatching(/^[0-9a-f-]{36}$/),
-      user_id: user?.id,
-      name: 'Legacy FRAMEKIT_API_KEY',
-      token_prefix: 'legacy',
-      token_hash: createHash('sha256').update('legacy-secret', 'utf8').digest('hex'),
-      created_at: storedUser?.created_at
-    })
-    expect(storedToken?.token_hash).not.toContain('legacy-secret')
+    expect(database.prepare('SELECT COUNT(*) AS count FROM api_tokens').get()?.count).toBe(0)
     expect(getUserById(user?.id)).toEqual(user)
     expect(countActiveAdministrators()).toBe(1)
   }, 30_000)
@@ -124,41 +109,20 @@ describe('user bootstrap', () => {
   it('is idempotent and ignores changed bootstrap environment after first boot', async () => {
     process.env.FRAMEKIT_ADMIN_USERNAME = 'FirstAdmin'
     process.env.FRAMEKIT_ADMIN_PASSWORD = password
-    process.env.FRAMEKIT_API_KEY = 'first-secret'
     const firstUser = await bootstrapUsers()
     if (!firstUser) throw new Error('Expected bootstrap user')
 
     updateUsername(firstUser.id, 'RenamedAdmin')
     process.env.FRAMEKIT_ADMIN_USERNAME = 'not valid'
     process.env.FRAMEKIT_ADMIN_PASSWORD = 'short'
-    process.env.FRAMEKIT_API_KEY = 'second-secret'
 
     expect(await bootstrapUsers()).toBeUndefined()
     expect(getUserById(firstUser.id)).toEqual({ id: firstUser.id, username: 'RenamedAdmin', role: 'admin' })
     expect(userCount()).toBe(1)
-    expect(tokenCount()).toBe(1)
-    expect(getDatabase().prepare('SELECT token_hash FROM api_tokens').get()?.token_hash).toBe(createHash('sha256').update('first-secret', 'utf8').digest('hex'))
 
     resetDatabaseForTests()
     expect(await bootstrapUsers()).toBeUndefined()
     expect(getUserById(firstUser.id)).toEqual({ id: firstUser.id, username: 'RenamedAdmin', role: 'admin' })
-  }, 30_000)
-
-  it('rolls back the administrator when legacy-token insertion fails', async () => {
-    getDatabase().exec(`
-      CREATE TRIGGER fail_legacy_token
-      BEFORE INSERT ON api_tokens
-      WHEN NEW.name = 'Legacy FRAMEKIT_API_KEY'
-      BEGIN
-        SELECT RAISE(ABORT, 'legacy token insert failed');
-      END
-    `)
-    process.env.FRAMEKIT_ADMIN_PASSWORD = password
-    process.env.FRAMEKIT_API_KEY = 'legacy-secret'
-
-    await expect(bootstrapUsers()).rejects.toThrow('legacy token insert failed')
-    expect(userCount()).toBe(0)
-    expect(tokenCount()).toBe(0)
   }, 30_000)
 })
 

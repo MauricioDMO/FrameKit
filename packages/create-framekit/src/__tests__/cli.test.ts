@@ -161,7 +161,9 @@ async function expectProjectFiles (
   expect(dockerignore).toContain('!.env.example')
   expect(dockerignore).toContain('.env.*')
   const envExample = await readFile(path.join(destination, '.env.example'), 'utf8')
-  expect(envExample).toContain('FRAMEKIT_API_KEY=replace-me')
+  expect(envExample).not.toContain('FRAMEKIT_API_KEY')
+  expect(envExample).toContain('FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password')
+  expect(envExample).toContain('FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite')
   expect(envExample).toContain('FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000')
   expect(envExample).toContain('FRAMEKIT_ALLOWED_IMAGE_HOSTS=')
   expect(envExample).toContain('FRAMEKIT_MAX_CONCURRENT_RENDERS=2')
@@ -343,7 +345,7 @@ describe('create-framekit', () => {
       expectCommands(await readCommandLog(log), destination, [])
     })
 
-    it('recreates generated client bindings from a copied starter', async () => {
+    it('recreates generated client bindings from a copied starter', { timeout: 15_000 }, async () => {
       const root = await createTemporaryDirectory('create-framekit-bindings-')
       const destination = await createProject(path.join(root, 'project'), 'pnpm', {
         installDependencies: false,

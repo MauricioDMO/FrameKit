@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { defineTemplate, field } from '@/index'
 
-import { copyTemplateMock, exportTemplateMock } from './mocks'
+import { copyTemplateMock, ExportValidationErrorMock, exportTemplateMock } from './mocks'
 import { renderDefinition, renderEditor } from './fixtures'
 import { messages } from './messages'
 import { setupFrameKitEditorTests } from './setup'
@@ -35,7 +35,7 @@ describe('FrameKitEditor export', () => {
       data: expect.objectContaining({ accentColor: '' })
     })))
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
-    await waitFor(() => expect(exportTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100))
+    await waitFor(() => expect(exportTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', { accentColor: '' }))
   })
 
   it('copies a valid template PNG', async () => {
@@ -45,8 +45,7 @@ describe('FrameKitEditor export', () => {
     fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))
 
     await waitFor(() => {
-      expect(copyTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 100, 100)
-      expect(copyTemplateMock.mock.calls[0]?.[0].matches('[data-framekit-render-root]')).toBe(true)
+      expect(copyTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', expect.objectContaining({ title: 'Ready', accentColor: '#123456' }))
     })
   })
 
@@ -63,7 +62,7 @@ describe('FrameKitEditor export', () => {
 
     expect(button.disabled).toBe(true)
     expect(button.textContent).toContain(messages.generating)
-    expect(exportTemplateMock).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'social/campaign', 100, 100)
+    expect(exportTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', {})
 
     fireEvent.click(button)
     expect(exportTemplateMock).toHaveBeenCalledTimes(1)
@@ -72,6 +71,18 @@ describe('FrameKitEditor export', () => {
     await waitFor(() => {
       expect(button.disabled).toBe(false)
       expect(button.textContent).toContain(messages.downloadPng)
+    })
+  })
+
+  it('merges structured server validation errors and focuses the first field', async () => {
+    copyTemplateMock.mockRejectedValueOnce(new ExportValidationErrorMock({ title: { code: 'required' } }))
+    renderEditor()
+
+    fireEvent.click(screen.getByRole('button', { name: messages.copyPng }))
+
+    await waitFor(() => {
+      expect(screen.getByText(messages.errorRequired, { exact: true })).toBeTruthy()
+      expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }))
     })
   })
 

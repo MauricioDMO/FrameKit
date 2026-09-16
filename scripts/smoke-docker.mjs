@@ -14,7 +14,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const templateRoot = path.join(repoRoot, 'packages', 'create-framekit', 'template')
 const args = process.argv.slice(2).filter((argument) => argument !== '--')
 const version = args[0]
-const apiKey = 'framekit-docker-smoke'
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
 async function run (command, args, cwd = repoRoot) {
@@ -53,12 +52,31 @@ async function verifyApi (origin) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ template: 'example' })
   })
-  assert.equal(unauthorized.status, 401, 'missing API key must return 401')
+  assert.equal(unauthorized.status, 401, 'missing session or API token must return 401')
+
+  const login = await fetch(`${origin}/api/framekit/login`, {
+    method: 'POST',
+    headers: { origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ username: 'admin', password: 'framekit-docker-smoke-password' })
+  })
+  const loginBody = await login.text()
+  assert.equal(login.status, 200, `login returned ${login.status}: ${loginBody}`)
+  const sessionCookie = login.headers.get('set-cookie')?.split(';', 1)[0]
+  assert(sessionCookie, 'login did not return a session cookie')
+
+  const tokenResponse = await fetch(`${origin}/api/framekit/tokens`, {
+    method: 'POST',
+    headers: { cookie: sessionCookie, origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Docker smoke token' })
+  })
+  const tokenBody = await tokenResponse.json()
+  assert.equal(tokenResponse.status, 201, `token creation returned ${tokenResponse.status}: ${JSON.stringify(tokenBody)}`)
+  assert.equal(typeof tokenBody.token, 'string', 'token creation did not return a token')
 
   const response = await fetch(`${origin}/api/framekit/images/render`, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${apiKey}`,
+      authorization: `Bearer ${tokenBody.token}`,
       'content-type': 'application/json'
     },
     body: JSON.stringify({ template: 'example' }),
@@ -116,7 +134,7 @@ async function smoke () {
     await run('docker', [
       'run', '--detach', '--rm', '--name', container,
       '--publish', '127.0.0.1::3000',
-      '--env', `FRAMEKIT_API_KEY=${apiKey}`,
+      '--env', 'FRAMEKIT_ADMIN_PASSWORD=framekit-docker-smoke-password',
       tag
     ])
     started = true

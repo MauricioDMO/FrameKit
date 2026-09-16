@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import { mkdtemp, rm } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -149,7 +149,7 @@ describe('API-token boundary', () => {
     expect(revoked).not.toHaveProperty('token')
   })
 
-  it('authenticates generated and legacy credentials, updates last use, and respects revocation and owner activity', () => {
+  it('authenticates generated credentials, updates last use, and respects revocation and owner activity', () => {
     const owner = insertUser('owner', 'Owner')
     const generated = createApiToken(owner.id, 'Generated token')
     const beforeLookup = Date.now()
@@ -163,23 +163,14 @@ describe('API-token boundary', () => {
     expect(lastUsedAt).toBeGreaterThanOrEqual(beforeLookup)
     expect(authenticateApiToken(generated.token)).toEqual(owner)
 
-    const legacySecret = 'legacy-secret'
-    getDatabase().prepare(`
-      INSERT INTO api_tokens (id, user_id, name, token_prefix, token_hash, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run('legacy-token', owner.id, 'Legacy token', 'legacy', createHash('sha256').update(legacySecret, 'utf8').digest('hex'), 1)
-    expect(authenticateApiToken(legacySecret)).toEqual(owner)
-
     expect(revokeApiToken(generated.id, owner)).toBe(true)
     expect(authenticateApiToken(generated.token)).toBeUndefined()
 
     const reactivating = createApiToken(owner.id, 'Reactivating token')
     updateUser(owner.id, { active: false })
-    expect(authenticateApiToken(legacySecret)).toBeUndefined()
     expect(authenticateApiToken(reactivating.token)).toBeUndefined()
 
     updateUser(owner.id, { active: true })
-    expect(authenticateApiToken(legacySecret)).toEqual(owner)
     expect(authenticateApiToken(reactivating.token)).toEqual(owner)
     expect(revokeApiToken(reactivating.id, owner)).toBe(true)
     expect(authenticateApiToken(reactivating.token)).toBeUndefined()

@@ -93,7 +93,6 @@
   "dependencies": {
     "chokidar": "^5.0.0",
     "@tabler/icons-react": "^3.45.0",
-    "modern-screenshot": "^4.7.0",
     "playwright-core": "1.62.1",
     "tsx": "^4"
   },

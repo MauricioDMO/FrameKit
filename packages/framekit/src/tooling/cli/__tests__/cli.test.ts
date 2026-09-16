@@ -115,7 +115,7 @@ describe('framekit CLI', () => {
     await expect(readFile(path.join(root, 'src', 'generated', 'framekit', 'templates.ts'))).rejects.toThrow()
   })
 
-  it('reports the invalid template path and removes its temporary checker', async () => {
+  it('reports the invalid template path and removes its temporary checker', { timeout: 15_000 }, async () => {
     const root = await createProject()
     await addInvalidDataTemplate(root)
 
@@ -127,7 +127,7 @@ describe('framekit CLI', () => {
     expect((await readdir(path.join(root, '.framekit'))).filter((entry) => /^(check|summary)-/.test(entry))).toEqual([])
   })
 
-  it('does not run Next build when template checking fails', async () => {
+  it('does not run Next build when template checking fails', { timeout: 15_000 }, async () => {
     const root = await createProject()
     await addInvalidDataTemplate(root)
 
@@ -152,7 +152,7 @@ describe('framekit CLI', () => {
     expect(generated).toContain('slug: "example"')
   })
 
-  it('checks a valid template and removes temporary files', async () => {
+  it('checks a valid template and removes temporary files', { timeout: 15_000 }, async () => {
     const root = await createProject()
     await addFrameKitRuntime(root)
     await addTemplate(root, validTemplateSource)

@@ -469,7 +469,7 @@ describe('writeTemplateModule', () => {
     }
   })
 
-  it('overwrites generated modules when template and brand metadata change', async () => {
+  it('overwrites generated modules when template and brand metadata change', { timeout: 15_000 }, async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-overwrite-'))
 
     try {

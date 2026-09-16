@@ -16,11 +16,6 @@ export interface ImageRenderRuntimeConfig {
   renderTimeoutMs: number
 }
 
-export interface ImageApiConfig {
-  apiKey: string
-  render: ImageRenderRuntimeConfig
-}
-
 export interface ResolvedRenderPayload {
   template: string
   variant: string
@@ -148,17 +143,11 @@ function parsePositiveInteger (value: string | undefined, fallback: number, maxi
   return parsed
 }
 
-export function parseImageApiConfig (env: NodeJS.ProcessEnv): ImageApiConfig {
-  const apiKey = env.FRAMEKIT_API_KEY
-  if (typeof apiKey !== 'string' || apiKey.length === 0) configurationFailure(missingConfigurationMessage)
-
+export function parseImageRenderConfig (env: NodeJS.ProcessEnv): ImageRenderRuntimeConfig {
   return {
-    apiKey,
-    render: {
-      internalOrigin: parseInternalOrigin(env.FRAMEKIT_INTERNAL_ORIGIN),
-      allowedImageHosts: parseAllowedImageHosts(env.FRAMEKIT_ALLOWED_IMAGE_HOSTS),
-      maxConcurrentRenders: parsePositiveInteger(env.FRAMEKIT_MAX_CONCURRENT_RENDERS, 2, 32),
-      renderTimeoutMs: parsePositiveInteger(env.FRAMEKIT_RENDER_TIMEOUT_MS, 30_000, 120_000)
-    }
+    internalOrigin: parseInternalOrigin(env.FRAMEKIT_INTERNAL_ORIGIN),
+    allowedImageHosts: parseAllowedImageHosts(env.FRAMEKIT_ALLOWED_IMAGE_HOSTS),
+    maxConcurrentRenders: parsePositiveInteger(env.FRAMEKIT_MAX_CONCURRENT_RENDERS, 2, 32),
+    renderTimeoutMs: parsePositiveInteger(env.FRAMEKIT_RENDER_TIMEOUT_MS, 30_000, 120_000)
   }
 }

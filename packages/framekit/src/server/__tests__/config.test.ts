@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  parseImageApiConfig,
-  type ImageApiConfig,
+  parseImageRenderConfig,
   type ImageRenderRequest,
+  type ImageRenderRuntimeConfig,
   type ResolvedRenderPayload
 } from '@/server/config'
 import { ImageRenderError, type ImageRenderErrorCode, type ImageRenderFailure } from '@/server/errors'
 
 const baseEnvironment: NodeJS.ProcessEnv = {
   NODE_ENV: 'test',
-  FRAMEKIT_API_KEY: 'production-secret',
   FRAMEKIT_INTERNAL_ORIGIN: 'http://127.0.0.1:3000'
 }
 
@@ -35,7 +34,7 @@ function environment (overrides: Partial<NodeJS.ProcessEnv> = {}): NodeJS.Proces
 
 function expectConfigurationFailure (env: NodeJS.ProcessEnv): ImageRenderError {
   try {
-    parseImageApiConfig(env)
+    parseImageRenderConfig(env)
     throw new Error('Expected configuration parsing to fail')
   } catch (error) {
     expect(error).toBeInstanceOf(ImageRenderError)
@@ -115,21 +114,7 @@ describe('server render contracts', () => {
   })
 })
 
-describe('parseImageApiConfig', () => {
-  it.each([undefined, ''])('rejects a missing or empty API key: %s', (apiKey) => {
-    const failure = expectConfigurationFailure(environment({ FRAMEKIT_API_KEY: apiKey }))
-
-    expect(failure.message).not.toContain('production-secret')
-    expect(failure.toSafeFailure()).not.toHaveProperty('cause')
-  })
-
-  it('preserves the API key exactly', () => {
-    const apiKey = '  key with intentional whitespace  '
-    const config = parseImageApiConfig(environment({ FRAMEKIT_API_KEY: apiKey }))
-
-    expect(config.apiKey).toBe(apiKey)
-  })
-
+describe('parseImageRenderConfig', () => {
   it.each([
     undefined,
     '',
@@ -154,23 +139,23 @@ describe('parseImageApiConfig', () => {
     ['http://[::1]:4321', 'http://[::1]:4321/'],
     ['http://localhost', 'http://localhost/']
   ])('accepts and normalizes a loopback origin', (internalOrigin, expected) => {
-    const config = parseImageApiConfig(environment({ FRAMEKIT_INTERNAL_ORIGIN: internalOrigin }))
+    const config = parseImageRenderConfig(environment({ FRAMEKIT_INTERNAL_ORIGIN: internalOrigin }))
 
-    expect(config.render.internalOrigin.href).toBe(expected)
+    expect(config.internalOrigin.href).toBe(expected)
   })
 
   it.each([undefined, '', ' , , '])('returns an empty host set for empty input: %s', (allowedImageHosts) => {
-    const config = parseImageApiConfig(environment({ FRAMEKIT_ALLOWED_IMAGE_HOSTS: allowedImageHosts }))
+    const config = parseImageRenderConfig(environment({ FRAMEKIT_ALLOWED_IMAGE_HOSTS: allowedImageHosts }))
 
-    expect(config.render.allowedImageHosts.size).toBe(0)
+    expect(config.allowedImageHosts.size).toBe(0)
   })
 
   it('normalizes, trims, and deduplicates image hosts', () => {
-    const config = parseImageApiConfig(environment({
+    const config = parseImageRenderConfig(environment({
       FRAMEKIT_ALLOWED_IMAGE_HOSTS: ' Example.COM, example.com, CDN.Example , , cdn.example '
     }))
 
-    expect([...config.render.allowedImageHosts]).toEqual(['example.com', 'cdn.example'])
+    expect([...config.allowedImageHosts]).toEqual(['example.com', 'cdn.example'])
   })
 
   it.each([
@@ -196,20 +181,20 @@ describe('parseImageApiConfig', () => {
   })
 
   it('uses the documented numeric defaults', () => {
-    const config: ImageApiConfig = parseImageApiConfig(environment())
+    const config: ImageRenderRuntimeConfig = parseImageRenderConfig(environment())
 
-    expect(config.render.maxConcurrentRenders).toBe(2)
-    expect(config.render.renderTimeoutMs).toBe(30_000)
+    expect(config.maxConcurrentRenders).toBe(2)
+    expect(config.renderTimeoutMs).toBe(30_000)
   })
 
   it('accepts bounded positive base-10 integers', () => {
-    const config = parseImageApiConfig(environment({
+    const config = parseImageRenderConfig(environment({
       FRAMEKIT_MAX_CONCURRENT_RENDERS: '0002',
       FRAMEKIT_RENDER_TIMEOUT_MS: '120000'
     }))
 
-    expect(config.render.maxConcurrentRenders).toBe(2)
-    expect(config.render.renderTimeoutMs).toBe(120_000)
+    expect(config.maxConcurrentRenders).toBe(2)
+    expect(config.renderTimeoutMs).toBe(120_000)
   })
 
   it.each(['', '0', '-1', '+1', '1.5', '1e2', 'NaN', 'Infinity', '-Infinity', '33', '9007199254740992', ' 2'])('rejects invalid concurrent render limits: %s', (value) => {

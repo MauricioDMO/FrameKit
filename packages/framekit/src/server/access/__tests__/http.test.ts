@@ -18,7 +18,7 @@ const password = 'correct horse battery staple'
 const changedPassword = 'another correct battery staple'
 const accessRequestLimit = 64 * 1024
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000
-const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_API_KEY', 'FRAMEKIT_PUBLIC_ORIGIN', 'NODE_ENV'] as const
+const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_PUBLIC_ORIGIN', 'NODE_ENV'] as const
 
 let passwordHash = ''
 let originalEnvironment: Partial<Record<typeof environmentKeys[number], string>>

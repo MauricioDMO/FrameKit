@@ -1,37 +1,104 @@
-async function renderTemplate (element: HTMLDivElement, width: number, height: number) {
-  // The screenshot library captures rendered pixels, so fonts must finish loading first.
-  await document.fonts.ready
-  const { domToPng } = await import('modern-screenshot')
+import type { TemplateDataValidationError } from '../../core/validation'
 
-  // Studio scales an ancestor for fit-to-view; capture an untransformed root instead.
-  const capture = element.cloneNode(true) as HTMLDivElement
-  capture.style.position = 'fixed'
-  capture.style.top = '0'
-  capture.style.left = '-100000px'
-  capture.style.transform = 'none'
-  document.body.append(capture)
+type ExportData = Record<string, string | number | boolean>
 
-  try {
-    return await domToPng(capture, { width, height, scale: 1 })
-  } finally {
-    capture.remove()
+export class ExportValidationError extends Error {
+  constructor (readonly fields: Record<string, TemplateDataValidationError>) {
+    super('Image export data is invalid')
+    Object.setPrototypeOf(this, new.target.prototype)
+    this.name = 'ExportValidationError'
   }
 }
 
-export async function exportTemplate (element: HTMLDivElement, slug: string, width: number, height: number) {
-  const image = await renderTemplate(element, width, height)
-  const link = document.createElement('a')
-  link.href = image
-  link.download = `${slug.replaceAll('/', '-')}.png`
-  link.click()
+function isRecord (value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export async function copyTemplate (element: HTMLDivElement, width: number, height: number) {
+function finiteNumber (value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function parseFieldError (value: unknown): TemplateDataValidationError | undefined {
+  if (!isRecord(value) || typeof value.code !== 'string') return undefined
+
+  switch (value.code) {
+    case 'required':
+    case 'invalid_number':
+    case 'invalid_color':
+    case 'invalid_choice':
+    case 'invalid_boolean':
+      return { code: value.code }
+    case 'number_too_small':
+      return finiteNumber(value.min) ? { code: value.code, min: value.min } : undefined
+    case 'number_too_large':
+      return finiteNumber(value.max) ? { code: value.code, max: value.max } : undefined
+    case 'invalid_step':
+      return finiteNumber(value.step) ? { code: value.code, step: value.step } : undefined
+    case 'text_too_short':
+      return finiteNumber(value.minLength) ? { code: value.code, minLength: value.minLength } : undefined
+    case 'text_too_long':
+      return finiteNumber(value.maxLength) ? { code: value.code, maxLength: value.maxLength } : undefined
+    default:
+      return undefined
+  }
+}
+
+function parseValidationFields (value: unknown): Record<string, TemplateDataValidationError> | undefined {
+  if (!isRecord(value)) return undefined
+
+  const fields: Record<string, TemplateDataValidationError> = {}
+  for (const [key, fieldError] of Object.entries(value)) {
+    const parsed = parseFieldError(fieldError)
+    if (parsed === undefined) return undefined
+    fields[key] = parsed
+  }
+  return Object.keys(fields).length > 0 ? fields : undefined
+}
+
+async function throwExportFailure (response: Response): Promise<never> {
+  const body: unknown = await response.json().catch(() => undefined)
+  if (isRecord(body) && body.error === 'invalid_template_data') {
+    const fields = parseValidationFields(body.fields)
+    if (fields !== undefined) throw new ExportValidationError(fields)
+  }
+
+  throw new Error(`Image export failed with HTTP ${response.status}`)
+}
+
+async function requestImage (slug: string, variant: string, data: ExportData): Promise<Blob> {
+  const response = await fetch('/api/framekit/images/render', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ template: slug, variant, data })
+  })
+
+  if (!response.ok) return throwExportFailure(response)
+
+  const contentType = response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase()
+  if (contentType !== 'image/png') throw new Error('Image export returned an invalid content type')
+  return response.blob()
+}
+
+export async function exportTemplate (slug: string, variant: string, data: ExportData) {
+  const blob = await requestImage(slug, variant, data)
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${slug.replaceAll('/', '-')}.png`
+  document.body.append(link)
+  try {
+    link.click()
+  } finally {
+    URL.revokeObjectURL(url)
+    link.remove()
+  }
+}
+
+export async function copyTemplate (slug: string, variant: string, data: ExportData) {
   if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
     throw new Error('Image clipboard support is unavailable')
   }
 
-  const image = await renderTemplate(element, width, height)
-  const blob = await (await fetch(image)).blob()
-  await navigator.clipboard.write([new ClipboardItem({ [blob.type || 'image/png']: blob })])
+  const blob = await requestImage(slug, variant, data)
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 }

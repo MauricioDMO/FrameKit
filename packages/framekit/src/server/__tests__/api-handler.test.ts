@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { defineTemplate } from '@/index'
 import { createFrameKitApiHandler } from '@/server'
+import { createApiToken } from '@/server/access/api-tokens'
+import { getDatabase, resetDatabaseForTests } from '@/server/access/database'
 import type { TemplateAssetManifest, TemplateRegistryEntry } from '@/types'
 
 const mocks = vi.hoisted(() => ({
@@ -14,6 +16,7 @@ vi.mock('@/server/render-image', () => ({ renderTemplateImage: mocks.render }))
 
 const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
+let imageToken = ''
 const definition = defineTemplate({
   meta: { title: 'API handler test' },
   width: 1200,
@@ -42,7 +45,7 @@ function imageRequest (method = 'POST', pathname = '/api/framekit/images/render'
   return new Request(`http://framekit.test${pathname}`, {
     method,
     headers: {
-      authorization: 'Bearer secret',
+      authorization: `Bearer ${imageToken}`,
       'content-type': 'application/json',
       ...headers
     },
@@ -55,12 +58,18 @@ async function responseBody (response: Response): Promise<Record<string, unknown
 }
 
 beforeEach(() => {
-  vi.stubEnv('FRAMEKIT_API_KEY', 'secret')
+  resetDatabaseForTests()
+  vi.stubEnv('FRAMEKIT_DATABASE_PATH', ':memory:')
   vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', 'http://127.0.0.1:3000')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', '')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', '2')
   vi.stubEnv('FRAMEKIT_RENDER_TIMEOUT_MS', '30000')
   vi.clearAllMocks()
+  getDatabase().prepare(`
+    INSERT INTO users (id, username, password_hash, role, active, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run('api-user', 'api-user', 'test-hash', 'user', 1, 1, 1)
+  imageToken = createApiToken('api-user', 'API handler test').token
   mocks.prepare.mockImplementation(async ({ data, assets }: { data: Record<string, unknown>; assets: TemplateAssetManifest }) => ({
     edits: data,
     assets
@@ -69,6 +78,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  resetDatabaseForTests()
   vi.unstubAllEnvs()
 })
 

@@ -1,6 +1,9 @@
-import { authenticateBearer } from '../auth'
-import type { ImageApiConfig } from '../config'
-import { parseImageApiConfig } from '../config'
+import { authenticateApiToken } from '../access/api-tokens'
+import { getSession } from '../access/sessions'
+import { isSameOrigin } from '../access/http/origin'
+import { readSessionCookie } from '../access/http/session'
+import type { ImageRenderRuntimeConfig } from '../config'
+import { parseImageRenderConfig } from '../config'
 import type { TemplateRegistryEntry } from '../../types'
 import { renderTemplateImage } from '../render-image'
 import { readJsonBody } from '../request-body'
@@ -10,18 +13,39 @@ import { parseImageRequest } from './parse-request'
 import { loadDefinition, resolveRenderPayload } from './render-payload'
 import { errorResponse, successResponse } from './response'
 
-export function createImageHandler (templates: readonly TemplateRegistryEntry[]): (request: Request) => Promise<Response> {
+function readBearerCredential (authorization: string | null): string | undefined {
+  if (authorization === null) return undefined
+
+  const match = /^Bearer ([^\s,]+)$/i.exec(authorization)
+  if (match === null || match[0] !== authorization) return undefined
+  return match[1]
+}
+
+function authenticateStudioImageRequest (request: Request): boolean {
+  const authorization = request.headers.get('authorization')
+  if (authorization !== null) {
+    const credential = readBearerCredential(authorization)
+    return credential !== undefined && authenticateApiToken(credential) !== undefined
+  }
+
+  if (!isSameOrigin(request)) return false
+  return getSession(readSessionCookie(request)) !== undefined
+}
+
+function createStudioImageHandlerInternal (
+  templates: readonly TemplateRegistryEntry[]
+): (request: Request) => Promise<Response> {
   return async function imageHandler (request: Request): Promise<Response> {
-    let config: ImageApiConfig
+    let config: ImageRenderRuntimeConfig
     try {
-      config = parseImageApiConfig(process.env)
+      config = parseImageRenderConfig(process.env)
     } catch (error) {
       return errorResponse(failure('api_not_configured', error))
     }
 
-    const deadline = createRequestDeadline(request, config.render.renderTimeoutMs)
+    const deadline = createRequestDeadline(request, config.renderTimeoutMs)
     try {
-      if (!authenticateBearer(request.headers.get('authorization'), config.apiKey)) {
+      if (!authenticateStudioImageRequest(request)) {
         return errorResponse(failure('unauthorized'))
       }
 
@@ -36,12 +60,12 @@ export function createImageHandler (templates: readonly TemplateRegistryEntry[])
         entry,
         definition,
         request: requestData,
-        config: config.render,
+        config,
         deadline
       })
       throwIfAborted(deadline)
 
-      const bytes = await awaitWithAbort(() => renderTemplateImage({ payload, config: config.render, signal: deadline.signal }), deadline.signal)
+      const bytes = await awaitWithAbort(() => renderTemplateImage({ payload, config, signal: deadline.signal }), deadline.signal)
       throwIfAborted(deadline)
       return successResponse(entry.slug, bytes)
     } catch (error) {
@@ -50,4 +74,8 @@ export function createImageHandler (templates: readonly TemplateRegistryEntry[])
       deadline.cleanup()
     }
   }
+}
+
+export function createStudioImageHandler (templates: readonly TemplateRegistryEntry[]): (request: Request) => Promise<Response> {
+  return createStudioImageHandlerInternal(templates)
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { resolveTemplateData } from '../core/template-data/resolve-template-data'
@@ -12,7 +12,7 @@ import { EditorControls } from './controls/editor-controls'
 import { TemplateCanvas } from './components/template-canvas'
 import { TemplateMetadataDialog } from './components/template-metadata-dialog'
 import { TemplatePreview } from './components/template-preview'
-import { copyTemplate, exportTemplate } from './export/export-template'
+import { copyTemplate, ExportValidationError, exportTemplate } from './export/export-template'
 import { useEditorState } from './state/use-editor-state'
 import type { EditorMessages } from './types'
 import { translateValidationError } from './validation'
@@ -41,7 +41,6 @@ function readFileAsBase64 (file: File): Promise<string> {
 
 export function FrameKitEditor<Definition extends TemplateBase> ({ template, definition, messages, sidebarCollapsed = false }: FrameKitEditorProps<Definition>) {
   const { slug, assets } = template
-  const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState(false)
   const [metadataOpen, setMetadataOpen] = useState(false)
   const { selectedVariant, userEdits, errors, setErrors, changeVariant, clearVariant, changeField, resetVersion } = useEditorState(slug, definition)
@@ -90,25 +89,36 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
     }
   }
 
-  async function runExport (action: (element: HTMLDivElement) => Promise<void>) {
-    const element = exportRef.current
-    if (!element || exporting) return
+  async function runExport (action: () => Promise<void>) {
+    if (exporting) return
 
-    const validationErrors = validateTemplateData(definition, resolvedData)
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors((current) => ({ ...current, ...Object.fromEntries(Object.entries(validationErrors).map(([key, error]) => [key, translateValidationError(error, messages)])) }))
-      const firstErrorKey = Object.keys(validationErrors)[0]
-      const fieldContainer = Array.from(document.querySelectorAll<HTMLElement>('[data-field-key]')).find((candidate) => candidate.dataset.fieldKey === firstErrorKey)
+    function focusField (key: string) {
+      const fieldContainer = Array.from(document.querySelectorAll<HTMLElement>('[data-field-key]')).find((candidate) => candidate.dataset.fieldKey === key)
       const visibleControl = fieldContainer?.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('textarea, select, input:not(.sr-only)')
       const control = visibleControl ?? fieldContainer?.querySelector<HTMLInputElement>('input')
       control?.focus()
+    }
+
+    function showValidationErrors (validationErrors: Record<string, TemplateDataValidationError>) {
+      setErrors((current) => ({ ...current, ...Object.fromEntries(Object.entries(validationErrors).map(([key, error]) => [key, translateValidationError(error, messages)])) }))
+      const firstErrorKey = Object.keys(validationErrors)[0]
+      if (firstErrorKey !== undefined) focusField(firstErrorKey)
+    }
+
+    const validationErrors = validateTemplateData(definition, resolvedData)
+    if (Object.keys(validationErrors).length > 0) {
+      showValidationErrors(validationErrors)
       return
     }
 
     try {
       setExporting(true)
-      await action(element)
+      await action()
     } catch (error) {
+      if (error instanceof ExportValidationError) {
+        showValidationErrors(error.fields)
+        return
+      }
       console.error(messages.exportError, error)
       window.alert(messages.exportAlert)
     } finally {
@@ -117,11 +127,11 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
   }
 
   function exportPng () {
-    return runExport((element) => exportTemplate(element, slug, definition.width, definition.height))
+    return runExport(() => exportTemplate(slug, selectedVariant, userEdits))
   }
 
   function copyPng () {
-    return runExport((element) => copyTemplate(element, definition.width, definition.height))
+    return runExport(() => copyTemplate(slug, selectedVariant, userEdits))
   }
 
   return (
@@ -130,7 +140,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
         <EditorControls key={resetVersion} definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onFieldValidationError={changeFieldValidation} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
         <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
-          <TemplateCanvas<Definition> definition={definition} data={resolvedData} assets={assets} variant={selectedVariant as TemplateRenderProps<Definition>['variant']} canvasRef={exportRef} />
+          <TemplateCanvas<Definition> definition={definition} data={resolvedData} assets={assets} variant={selectedVariant as TemplateRenderProps<Definition>['variant']} />
         </TemplatePreview>
       </div>
       <TemplateMetadataDialog open={metadataOpen} meta={template.meta} messages={messages} onClose={closeMetadata} />

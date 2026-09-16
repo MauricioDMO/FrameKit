@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as templateData from '@/core/template-data/resolve-template-data'
 import * as validation from '@/core/validation'
 import { defineTemplate, field } from '@/index'
-import { createImageHandler } from '@/server/image-handler'
+import { createApiToken } from '@/server/access/api-tokens'
+import { getDatabase, resetDatabaseForTests } from '@/server/access/database'
+import { createStudioImageHandler } from '@/server/image-handler'
 import { ImageRenderError, type ImageRenderErrorCode } from '@/server/errors'
 import type { ImageRenderRuntimeConfig } from '@/server/config'
 import type { TemplateAssetManifest, TemplateRegistryEntry } from '@/types'
@@ -18,6 +20,7 @@ vi.mock('@/server/render-image', () => ({ renderTemplateImage: mocks.render }))
 
 const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }
+let imageToken = ''
 const definition = defineTemplate({
   meta: { title: 'Image handler test' },
   width: 1200,
@@ -50,7 +53,6 @@ function createEntry (overrides: Partial<TemplateRegistryEntry> = {}): TemplateR
 }
 
 function setEnvironment (overrides: Record<string, string> = {}): void {
-  vi.stubEnv('FRAMEKIT_API_KEY', overrides.FRAMEKIT_API_KEY ?? 'secret')
   vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', overrides.FRAMEKIT_INTERNAL_ORIGIN ?? 'http://127.0.0.1:3000')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', overrides.FRAMEKIT_ALLOWED_IMAGE_HOSTS ?? 'images.example.com')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', overrides.FRAMEKIT_MAX_CONCURRENT_RENDERS ?? '2')
@@ -61,7 +63,7 @@ function requestFor (body: unknown, headers: Record<string, string> = {}, signal
   return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: {
-      authorization: 'Bearer secret',
+      authorization: `Bearer ${imageToken}`,
       'content-type': 'application/json',
       ...headers
     },
@@ -74,7 +76,7 @@ function rawRequest (body: string, headers: Record<string, string> = {}): Reques
   return new Request('http://framekit.test/api/framekit/images/render', {
     method: 'POST',
     headers: {
-      authorization: 'Bearer secret',
+      authorization: `Bearer ${imageToken}`,
       'content-type': 'application/json',
       ...headers
     },
@@ -91,8 +93,15 @@ async function responseJson (response: Response): Promise<Record<string, unknown
 }
 
 beforeEach(() => {
+  resetDatabaseForTests()
   setEnvironment()
+  vi.stubEnv('FRAMEKIT_DATABASE_PATH', ':memory:')
   vi.clearAllMocks()
+  getDatabase().prepare(`
+    INSERT INTO users (id, username, password_hash, role, active, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run('image-user', 'image-user', 'test-hash', 'user', 1, 1, 1)
+  imageToken = createApiToken('image-user', 'Image handler test').token
   mocks.prepare.mockImplementation(async ({ data, assets }: { data: Record<string, unknown>; assets: TemplateAssetManifest }) => ({
     edits: data,
     assets
@@ -101,15 +110,16 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  resetDatabaseForTests()
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
   vi.useRealTimers()
 })
 
-describe('createImageHandler', () => {
+describe('createStudioImageHandler', () => {
   it('binds the registry without running request-time work', () => {
     const entry = createEntry()
-    const handler = createImageHandler([entry])
+    const handler = createStudioImageHandler([entry])
 
     expect(handler).toBeTypeOf('function')
     expect(entry.load).not.toHaveBeenCalled()
@@ -127,7 +137,7 @@ describe('createImageHandler', () => {
     } as RequestInit)
     const entry = createEntry()
 
-    const response = await createImageHandler([entry])(request)
+    const response = await createStudioImageHandler([entry])(request)
 
     expect(response.status).toBe(401)
     expect(response.headers.get('www-authenticate')).toBe('Bearer')
@@ -139,8 +149,8 @@ describe('createImageHandler', () => {
 
   it('parses environment values per request', async () => {
     const entry = createEntry()
-    const handler = createImageHandler([entry])
-    vi.stubEnv('FRAMEKIT_API_KEY', '')
+    const handler = createStudioImageHandler([entry])
+    vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', '')
 
     const unconfigured = await handler(requestFor({ template: entry.slug }))
     expect(unconfigured.status).toBe(503)
@@ -168,7 +178,7 @@ describe('createImageHandler', () => {
     ['invalid data', () => rawRequest('{"template":"social/card","data":null}')]
   ])('rejects %s before template work', async (_name, makeRequest) => {
     const entry = createEntry()
-    const response = await createImageHandler([entry])(makeRequest())
+    const response = await createStudioImageHandler([entry])(makeRequest())
 
     expect(response.status).toBe(400)
     expect((await responseJson(response)).error).toBe('invalid_request')
@@ -178,7 +188,7 @@ describe('createImageHandler', () => {
 
   it('requires JSON content and rejects compressed bodies', async () => {
     const entry = createEntry()
-    const handler = createImageHandler([entry])
+    const handler = createStudioImageHandler([entry])
 
     const contentType = await handler(rawRequest('{}', { 'content-type': 'text/plain' }))
     const compressed = await handler(rawRequest('{}', { 'content-encoding': 'gzip' }))
@@ -190,7 +200,7 @@ describe('createImageHandler', () => {
 
   it('finds an exact slug and selects the default or requested variant', async () => {
     const entry = createEntry()
-    const handler = createImageHandler([entry])
+    const handler = createStudioImageHandler([entry])
 
     const missing = await handler(requestFor({ template: 'social/other' }))
     expect(missing.status).toBe(404)
@@ -214,7 +224,7 @@ describe('createImageHandler', () => {
     ['definition failure', () => Promise.resolve({ default: {} as never })]
   ])('maps %s to a generic render failure', async (_name, load) => {
     const entry = createEntry({ load: vi.fn(load) })
-    const response = await createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const response = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     const body = await responseJson(response)
 
     expect(response.status).toBe(500)
@@ -250,7 +260,7 @@ describe('createImageHandler', () => {
       return png
     })
 
-    const response = await createImageHandler([entry])(requestFor({
+    const response = await createStudioImageHandler([entry])(requestFor({
       template: entry.slug,
       data: { title: 'Prepared', count: 2 }
     }))
@@ -267,7 +277,7 @@ describe('createImageHandler', () => {
     const resolve = vi.spyOn(templateData, 'resolveTemplateData')
     const validate = vi.spyOn(validation, 'validateTemplateData')
 
-    const response = await createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const response = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     const body = await responseJson(response)
 
     expect(response.status).toBe(422)
@@ -291,7 +301,7 @@ describe('createImageHandler', () => {
     const entry = createEntry()
     mocks.prepare.mockRejectedValueOnce(responseError(code))
 
-    const response = await createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const response = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     const body = await responseJson(response)
 
     expect(response.status).toBe(status)
@@ -308,7 +318,7 @@ describe('createImageHandler', () => {
     const entry = createEntry()
     mocks.render.mockRejectedValueOnce(responseError(code))
 
-    const response = await createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const response = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     const body = await responseJson(response)
 
     expect(response.status).toBe(status)
@@ -319,7 +329,7 @@ describe('createImageHandler', () => {
 
   it('returns raw PNG bytes with safe no-store headers', async () => {
     const entry = createEntry()
-    const response = await createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const response = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
 
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('image/png')
@@ -340,7 +350,7 @@ describe('createImageHandler', () => {
       return new Promise(() => undefined)
     })
 
-    const pending = createImageHandler([entry])(requestFor({ template: entry.slug }))
+    const pending = createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     await Promise.resolve()
     await vi.advanceTimersByTimeAsync(1)
     const response = await pending
@@ -360,7 +370,7 @@ describe('createImageHandler', () => {
       return new Promise(() => undefined)
     })
 
-    const pending = createImageHandler([entry])(requestFor({ template: entry.slug }, {}, caller.signal))
+    const pending = createStudioImageHandler([entry])(requestFor({ template: entry.slug }, {}, caller.signal))
     await vi.waitFor(() => expect(mocks.prepare).toHaveBeenCalledOnce())
     caller.abort()
     const response = await pending

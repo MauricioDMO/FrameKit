@@ -1,8 +1,7 @@
-import { authenticateBearer, createFrameKitApiHandler, ImageRenderError, parseImageApiConfig, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { createFrameKitApiHandler, createStudioImageHandler, ImageRenderError, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import type {
   ApiTokenMetadata,
   CreatedApiToken,
-  ImageApiConfig,
   ImageRenderErrorCode,
   ImageRenderFailure,
   ImageRenderRequest,
@@ -37,11 +36,6 @@ const runtime = {
   renderTimeoutMs: 30_000
 } satisfies ImageRenderRuntimeConfig
 
-const config = {
-  apiKey: 'secret',
-  render: runtime
-} satisfies ImageApiConfig
-
 const payload = {
   template: request.template,
   variant: request.variant ?? 'launch',
@@ -54,13 +48,9 @@ const payload = {
 const failure: ImageRenderFailure = { code: 'render_failed', message: 'Render failed' }
 const errorCode: ImageRenderErrorCode = failure.code
 const error = new ImageRenderError(failure)
-const parsedConfig = parseImageApiConfig({
-  FRAMEKIT_API_KEY: config.apiKey,
-  FRAMEKIT_INTERNAL_ORIGIN: runtime.internalOrigin.toString()
-})
-const authorized: boolean = authenticateBearer('Bearer secret', parsedConfig.apiKey)
 const rendered: Promise<Buffer> = renderTemplateImage({ payload, config: runtime, signal: new AbortController().signal })
 const apiHandler: (request: Request) => Promise<Response> = createFrameKitApiHandler([])
+const studioImageHandler: (request: Request) => Promise<Response> = createStudioImageHandler([])
 
 export {
   tokenMetadata,
@@ -68,7 +58,7 @@ export {
   payload,
   errorCode,
   error,
-  authorized,
   rendered,
-  apiHandler
+  apiHandler,
+  studioImageHandler
 }
