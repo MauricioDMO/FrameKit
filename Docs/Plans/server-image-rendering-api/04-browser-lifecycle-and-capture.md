@@ -1,5 +1,8 @@
 # Step 4 - Browser Lifecycle and Capture
 
+- **Status:** Implemented and verified. The planning language and sequencing
+  below are retained as a historical Step 4 record, not as pending work.
+
 ## Goal
 
 Implement a deliberately small `playwright-core` browser manager for the
@@ -9,6 +12,79 @@ long-lived Node.js runtime and one bounded operation that turns a
 The browser shares one Chromium process per Node.js process, creates one isolated
 `BrowserContext` per render, blocks browser access to external networks, and
 uses the in-memory job protocol from Step 3.
+
+Render jobs, browser state, and render contexts are process-local and ephemeral.
+That does not remove the deployment persistence requirement for the access layer:
+sessions and database API-token records use `FRAMEKIT_DATABASE_PATH`, whose
+containing directory must be persisted when those routes are used.
+
+## Current runtime configuration
+
+`parseImageRenderConfig` in `packages/framekit/src/server/config.ts` is the only
+current image-render configuration parser. It reads these four variables on
+each image-handler invocation:
+
+| Variable | Consumption | Default/valid range |
+|---|---|---|
+| `FRAMEKIT_INTERNAL_ORIGIN` | Validated origin used by `renderTemplateImage` for the private page and exact internal browser requests | Required; `http://` loopback only (`localhost`, `127.0.0.1`, or `[::1]`), with an optional port and no path/query/fragment |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Exact hostname set passed to Node-side image preparation | Optional; unset/empty means no remote hosts; comma-separated DNS hostnames only, no IP literals, wildcards, ports, or paths |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Synchronous process-local capacity in `reserveRender` | Optional; defaults to `2`, accepts positive base-10 integers from `1` through `32` |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | End-to-end renderer deadline and Playwright timeouts | Optional; defaults to `30000`, accepts positive base-10 integers from `1` through `120000` |
+
+`FRAMEKIT_INTERNAL_ORIGIN` has no parser default. The generated Dockerfile sets
+it to `http://127.0.0.1:3000`; that image value is a deployment default, not a
+package-parser default. The database/bootstrap variables are not read by this
+browser manager: the current access layer uses `FRAMEKIT_DATABASE_PATH`
+(default `.framekit-data/framekit.sqlite`) for SQLite and reads
+`FRAMEKIT_ADMIN_USERNAME` (default `admin`) and the required
+`FRAMEKIT_ADMIN_PASSWORD` (12-256 UTF-8 bytes) only when bootstrapping an empty
+database.
+
+The generated Dockerfile also sets `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
+`PORT=3000`, and `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. `NODE_ENV` selects
+production behavior, including the `Secure` session-cookie attribute; the
+standalone Next.js server consumes `HOSTNAME` and `PORT`. The FrameKit
+`browser install` command inherits `PLAYWRIGHT_BROWSERS_PATH`, and Playwright
+uses it for browser installation and executable lookup. The Dockerfile sets
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` inline only for its dependency-install
+stages; it is not a runtime renderer setting. The source does not define
+additional defaults or ranges for `HOSTNAME`, `PORT`, or
+`PLAYWRIGHT_BROWSERS_PATH`.
+
+`framekit browser install` delegates to Playwright as
+`install chromium --only-shell`; the generated Docker runner adds
+`--with-deps`. With `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`, this installs the
+Chromium headless shell under `/ms-playwright`, which is also where the runtime
+looks for it.
+
+`FRAMEKIT_API_KEY` belongs to the historical shared-API-key design and is not
+read by the current runtime. `FRAMEKIT_PUBLIC_ORIGIN` is also not a current
+runtime setting; it is not consumed as a fallback for
+`FRAMEKIT_INTERNAL_ORIGIN` or for request-origin handling. Neither variable is
+part of the current image-render configuration.
+
+## Current generated-consumer and build baseline
+
+The canonical starter currently maintains exactly six files under `src/app`:
+
+```text
+src/app/layout.tsx
+src/app/globals.css
+src/app/[section]/[[...slug]]/page.tsx
+src/app/login/page.tsx
+src/app/api/framekit/[...action]/route.ts
+src/app/framekit/render/[id]/page.tsx
+```
+
+Generated registry/client bindings under `src/generated/framekit/` are
+disposable output and are not part of this maintained-file count. The older
+five-file starter description is historical and superseded by this six-file
+shape.
+
+The generated `next.config.ts` calls `withFrameKit()`, which currently enforces
+`distDir: '.framekit/next'` and `output: 'standalone'`. The generated example
+template is `1200x800`; that is an example fixture, not a renderer-wide size
+default.
 
 ## Depends on
 
@@ -42,6 +118,7 @@ Suggested state:
 interface BrowserManagerState {
   browser: Browser | null
   launching: Promise<Browser> | null
+  closing: Promise<void> | null
   activeRenders: number
 }
 ```
@@ -96,6 +173,8 @@ Rules:
 
 - production is always headless;
 - no caller-provided browser args;
+- `HEADLESS`, `SLOW_MO`, arbitrary browser arguments, and arbitrary selectors are
+  unsupported configuration/input;
 - executable discovery is Playwright-owned via `PLAYWRIGHT_BROWSERS_PATH`;
 - selected `playwright-core` version and installed browser revision must match;
 - attach a `disconnected` listener that clears the cached browser reference;
@@ -253,17 +332,18 @@ load.
 - Do not capture body margin, Studio chrome, private status UI, borders/shadows,
   or preview scaling.
 - Return the screenshot bytes as a Node `Buffer`.
-- Verify the standard eight-byte PNG signature.
-- Runtime may also verify IHDR dimensions against payload width/height; Step 8
-  smoke must verify them.
+- Runtime verifies only the standard eight-byte PNG signature.
+- The current `1200x800` smoke check verifies IHDR dimensions separately;
+  that check is not part of the runtime renderer.
 
 Missing/multiple roots, explicit error marker, failed image decode, empty buffer,
-bad PNG signature, or dimension mismatch become `render_failed` unless the
-end-to-end deadline expired.
+or bad PNG signature become `render_failed` unless the end-to-end deadline
+expired.
 
 ## Timeout and request abort
 
-Apply one 30-second default end-to-end deadline covering:
+Apply the configured end-to-end deadline, which defaults to 30 seconds and is
+bounded by `FRAMEKIT_RENDER_TIMEOUT_MS` at `1`-`120000` milliseconds, covering:
 
 - browser cold start;
 - job creation;
@@ -322,6 +402,11 @@ the production server domain. Compile-time type fixtures remain under
 `tests/e2e/`.
 
 No startup instrumentation file is required by this step.
+
+> **Historical plan record:** The expected-file list, implementation sequence,
+> focused-test list, and exit gate below preserve the original Step 4 delivery
+> plan. Step 4 is already implemented; current behavior is determined by the
+> checked-in source and the current sections above.
 
 ## Implementation sequence
 

@@ -18,12 +18,12 @@ migración histórica](./migration-v0.8.0.md).
   generado; instala explícitamente su headless shell de Chromium con
   `framekit browser install` antes de servir solicitudes. La ruta anterior
   `/api/v1/images` fue eliminada y devuelve `404`.
-- Las Fases 4-5.5 de Studio Access & API Rendering están implementadas. La Fase
-  5 añade la UI autenticada de acceso de Studio y la Fase 5.5 establece el
-  namespace API unificado y sin versión; la API de imágenes autenticada y
-  Download/Copy server-side de la Fase 6 siguen pendientes. Las Fases 7-8 también
-  siguen pendientes y el Paso 8 de Server Image Rendering continúa bloqueado
-  hasta completar el plan.
+- Las Fases 4-6 de Studio Access & API Rendering están implementadas y verificadas.
+  La Fase 6 añade renderizado de imágenes autenticado y Download/Copy server-side;
+  las solicitudes de imágenes usan únicamente sesiones o tokens API de la base de
+  datos. Las Fases 7-8 siguen pendientes y el Paso 8 de Server Image Rendering
+  continúa bloqueado hasta completar el plan; el handler heredado de imágenes
+  basado en API key y el contrato `FRAMEKIT_API_KEY` se eliminaron.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -57,19 +57,24 @@ login y las sesiones HTTP, las rutas protegidas de Studio y los uploads
 autenticados de assets en desarrollo. La Fase 4 añade rutas autenticadas de
 gestión de tokens y usuarios. La UI de acceso de Studio está implementada en la
 Fase 5; Download/Copy server-side pertenece a la Fase 6. `FRAMEKIT_ADMIN_USERNAME` y
-`FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
-`FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
-de imágenes continúa leyéndola de forma independiente.
+`FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap. Las
+solicitudes de imágenes usan únicamente sesiones o tokens API de la base de
+datos.
 
-Con la Fase 5.5 implementada, la ruta `POST /api/framekit/images/render`
-continúa autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen
-usando el exportador actual del navegador hasta la Fase 6. Esta base tampoco
-migra datos de plantillas, assets ni estado persistido del editor.
+Con la Fase 6 implementada, la ruta `POST /api/framekit/images/render` acepta una
+sesión de Studio o un token API, y Download PNG y Copy PNG usan el renderizador
+del servidor. Esta base tampoco migra datos de plantillas, assets ni estado
+persistido del editor.
 
 La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
 duración por contenedor. Los render jobs son locales al proceso, desaparecen al
 reiniciar, no se guardan en SQLite y no admiten ejecución serverless ni múltiples
 réplicas.
+
+Para el despliegue de un proyecto actual, usa la [tabla completa de variables de
+entorno de la guía de proyecto existente](./existing-project.md#variables-de-entorno).
+También documenta los requisitos de headers de forwarding del reverse proxy y
+que `FRAMEKIT_PUBLIC_ORIGIN` no se lee.
 
 ## Credenciales y bootstrap del primer administrador
 
@@ -78,34 +83,38 @@ locales y operaciones seguras de usuarios, pero todavía no incorpora handlers
 HTTP ni UI.
 
 - Las contraseñas deben tener entre 12 y 256 bytes UTF-8. Se calculan de forma
-  asíncrona con el perfil fijo `scrypt:v1` y salts aleatorias; la base de datos
-  solo guarda hashes de contraseñas y de secretos de API importados. El DTO
-  seguro `StudioUser` solo expone `id`, `username` y `role`.
-- En la primera inicialización perezosa, en tiempo de solicitud, de una base
-  vacía, `FRAMEKIT_ADMIN_PASSWORD` es obligatorio y
-  `FRAMEKIT_ADMIN_USERNAME` usa `admin` por defecto. `FRAMEKIT_DATABASE_PATH`
-  continúa seleccionando la ruta de la base de datos.
-- Si `FRAMEKIT_API_KEY` no está vacío durante ese primer bootstrap, se importa
-  una sola vez como hash SHA-256 de un token API heredado. Cuando ya existe
-  cualquier usuario, se ignoran los valores de entorno del bootstrap y la
-  cuenta no vuelve a sincronizarse desde el entorno.
+  asíncrona con el perfil fijo `scrypt:v1` y salts aleatorias; solo se guardan
+  hashes de contraseñas. El DTO seguro `StudioUser` solo expone `id`, `username`
+  y `role`.
+- En la primera solicitud válida `POST /api/framekit/login` contra una base
+  vacía, el bootstrap se ejecuta de forma perezosa, en tiempo de solicitud,
+  antes de autenticar las credenciales. `FRAMEKIT_ADMIN_PASSWORD` es obligatorio
+  y `FRAMEKIT_ADMIN_USERNAME` usa `admin` por defecto; si faltan valores de
+  bootstrap o no son válidos, la respuesta es `503` y no se guarda ningún
+  usuario. `FRAMEKIT_DATABASE_PATH` continúa seleccionando la ruta de la base de
+  datos.
+- El bootstrap actual crea únicamente el primer administrador; no importa ni crea
+  implícitamente un token API.
+- Cuando ya existe cualquier usuario, se ignoran los valores de entorno del
+  bootstrap y la cuenta no vuelve a sincronizarse desde el entorno.
 - Las mutaciones validan el nombre de usuario, el rol, el estado activo, los
   cambios y restablecimientos de contraseña y la eliminación. Cambiar o
   restablecer una contraseña, y desactivar un usuario, elimina sus sesiones; una
   transacción impide eliminar, desactivar o degradar al último administrador
   activo.
 - La Fase 3 proporciona el login, las sesiones HTTP y las rutas protegidas de
-  Studio. La Fase 4 proporciona rutas de gestión de tokens y usuarios.
-  `POST /api/framekit/images/render` sigue usando `FRAMEKIT_API_KEY`, y Download
-  PNG y Copy PNG siguen usando el exportador del navegador; sus versiones
-  server-side siguen siendo fases posteriores.
+  Studio. La Fase 4 proporciona rutas de gestión de tokens y usuarios. La Fase
+  6 hace que `POST /api/framekit/images/render` acepte sesiones y tokens API, y
+  mueve Download PNG y Copy PNG al renderizador del servidor.
 
 ## Acceso A Studio, Sesiones, Protección Y Gestión De Rutas
 
-Las Fases 1-5.5 de Studio Access & API Rendering están disponibles. La Fase 5
-proporciona la UI de acceso de Studio y la Fase 5.5 proporciona el namespace API
-unificado; la API de imágenes autenticada y Download/Copy server-side siguen
-pendientes en la Fase 6, y las Fases 7-8 también siguen pendientes.
+Las Fases 1-5.5 de Studio Access & API Rendering están disponibles. La Fase 6
+está implementada en el checkout actual y su gate final de verificación focalizada
+y de integración está pendiente. La Fase 5 proporciona la UI de acceso de Studio,
+la Fase 5.5 proporciona el namespace API unificado y la Fase 6 proporciona
+renderizado autenticado y Download/Copy server-side. Las Fases 7-8 siguen
+pendientes.
 
 El handler de acceso expone estas rutas:
 
@@ -143,14 +152,9 @@ metadatos y un hash, nunca el secreto completo. Los metadatos incluyen `id`,
 `name`, `tokenPrefix`, `createdAt`, `lastUsedAt` y `revokedAt`. La búsqueda
 Bearer de tokens API calcula el hash de la credencial presentada, acotada y no
 vacía, exige un token no revocado cuyo propietario esté activo y registra
-`lastUsedAt` cuando la búsqueda es correcta. No exige el prefijo `fk_` de los
-tokens generados, por lo que admite credenciales heredadas importadas. El
-contrato Bearer de la API clásica de imágenes sigue usando `FRAMEKIT_API_KEY`;
-estas rutas de gestión de Studio usan la cookie de sesión.
-
-Solo durante el primer bootstrap, un `FRAMEKIT_API_KEY` no vacío se importa como
-token API heredado del primer administrador. Su secreto se guarda como hash y no
-se vuelve a importar ni sincronizar después de que exista cualquier usuario.
+`lastUsedAt` cuando la búsqueda es correcta. Los tokens creados desde Studio usan
+el prefijo visible `fk_`; estas rutas de gestión de Studio usan la cookie de
+sesión.
 
 Las operaciones protegidas de cuenta, tokens y gestión de usuarios devuelven
 `401` cuando falta la sesión o no es válida; las credenciales de login inválidas
@@ -214,9 +218,10 @@ Su ID interno de render job y `x-framekit-render-token` continúan siendo la ún
 frontera de autenticación de esa ruta privada.
 
 La Fase 4 no introduce migración de plantillas, assets, estado del editor ni
-versión de release. La Fase 5 añade la UI de acceso y la Fase 5.5 solo cambia la
-ubicación de la ruta de la API de imágenes; el comportamiento del exportador del
-navegador no cambia y Download/Copy server-side sigue pendiente en la Fase 6.
+versión de release. La Fase 5 añade la UI de acceso, la Fase 5.5 cambia la
+ubicación de la ruta de la API de imágenes y la Fase 6 mueve Download/Copy al
+pipeline de imágenes autenticado del servidor. La migración de plantillas,
+assets y estado del editor queda fuera de alcance.
 
 ## UI autenticada de acceso de Studio (Fase 5)
 
@@ -269,40 +274,37 @@ límite de autenticación.
 El control Apariencia sigue siendo responsable del locale de interfaz y del
 tema claro/oscuro. El idioma de interfaz es independiente de las variantes de
 plantilla: cambiarlo no cambia la variante seleccionada. Download PNG y Copy PNG
-continúan usando el navegador hasta la Fase 6. La ruta privada
-`/framekit/render/[id]` sigue protegida por su token interno independiente y no
-se autoriza mediante una sesión o token API de Studio.
+usan la API de imágenes autenticada. La ruta privada `/framekit/render/[id]`
+sigue protegida por su token interno independiente y no se autoriza mediante una
+sesión o token API de Studio.
 
 Para desplegar, usa HTTPS público y limita el login de usuario/contraseña en el
 reverse proxy o load balancer. Ejecuta un único proceso Node.js de larga duración
 por contenedor, guarda `FRAMEKIT_DATABASE_PATH` en almacenamiento persistente y
 recuerda que los render jobs son locales al proceso y se pierden al reiniciar.
-En el primer arranque de una base vacía, configura `FRAMEKIT_ADMIN_PASSWORD` y,
-opcionalmente, `FRAMEKIT_ADMIN_USERNAME` (por defecto `admin`). Un
-`FRAMEKIT_API_KEY` no vacío se importa una sola vez para el primer administrador
-como token heredado; su secreto no se expone en metadata y los valores de entorno
-no vuelven a sincronizar usuarios existentes.
+En la primera solicitud válida `POST /api/framekit/login` contra una base vacía,
+configura `FRAMEKIT_ADMIN_PASSWORD` y, opcionalmente,
+`FRAMEKIT_ADMIN_USERNAME` (por defecto `admin`).
 
-## Namespace API De FrameKit (Fase 5.5)
+## Namespace API De FrameKit (Fases 5.5 y 6)
 
-La Fase 5.5 mueve la acción clásica de imágenes de servidor a la ruta canónica
-sin versión `POST /api/framekit/images/render`. El consumidor generado y el
+La Fase 5.5 mueve la acción de imágenes de servidor a la ruta canónica sin
+versión `POST /api/framekit/images/render`. El consumidor generado y el
 Studio de primera parte exponen un único adapter catch-all en
 `src/app/api/framekit/[...action]/route.ts`; este delega las acciones de acceso
 al handler de sesiones y la acción de imágenes a
-`createImageHandler(templates)`.
+`createStudioImageHandler(templates)`.
 
-El body de la solicitud de imágenes, el contrato
-`Authorization: Bearer <FRAMEKIT_API_KEY>`, la configuración de render y la
-respuesta PNG no cambian. Las solicitudes de imágenes no requieren un header
-`Origin` porque los clientes API pueden no ser navegadores. Las mutaciones de
-acceso conservan su requisito de `Origin` del mismo origen.
+El body de la solicitud de imágenes, la configuración de render y la respuesta
+PNG no cambian. La acción canónica de imágenes acepta una sesión activa o
+`Authorization: Bearer <API_TOKEN>`; las solicitudes autenticadas por cookie
+requieren `Origin` del mismo origen y las solicitudes Bearer usan únicamente el
+token enviado.
 
 `POST /api/v1/images` fue eliminado y devuelve `404`. No agregues un alias,
-redirect, ruta de compatibilidad ni negociación de versión. Este cambio solo
-mueve la ruta HTTP: no migra plantillas, assets, estado del editor ni el
-comportamiento de renderizado. La Fase 6 cambiará por separado la autenticación
-de imágenes y Download/Copy de Studio.
+redirect, ruta de compatibilidad ni negociación de versión. Este cambio mueve la
+ruta HTTP y la autenticación: no migra plantillas, assets, estado del editor ni
+el protocolo privado de renderizado.
 
 En una aplicación existente, elimina `src/app/api/v1/images/route.ts` y haz que
 `src/app/api/framekit/[...action]/route.ts` importe `templates` y
@@ -331,8 +333,8 @@ framekit browser install --with-deps
 
 La segunda forma instala dependencias del sistema en Linux y puede requerir
 permisos de root o equivalentes. El Dockerfile generado es exclusivo de pnpm y
-requiere un `pnpm-lock.yaml` generado; las claves de API y la política de hosts
-de imágenes se suministran en runtime, no se incorporan a la imagen. Las
+requiere un `pnpm-lock.yaml` generado; las credenciales de acceso y la política
+de hosts de imágenes se suministran en runtime, no se incorporan a la imagen. Las
 aplicaciones existentes pueden conservar sus rutas manuales y su configuración
 de Next, pero deben ejecutar `framekit generate`, `framekit check`, `framekit
 build` y una petición PNG de producción después de adoptar la ruta de servidor.

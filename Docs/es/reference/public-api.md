@@ -209,9 +209,9 @@ función de renderizado de la plantilla.
 Las ediciones del editor se persisten por plantilla y variante bajo
 `framekit:<slug>:v2`. El estado anterior se invalida intencionalmente en lugar de
 migrarse. La vista previa y el renderizado usan valores tipados confirmados; los
-botones actuales de Download y Copy usan el exportador del navegador, validan
-los datos confirmados actuales antes de producir la salida y enfocan el primer
-control inválido.
+botones actuales de Download y Copy envían la plantilla, variante y edits del
+usuario a la API de imágenes autenticada después de la validación local, y enfocan
+el primer control inválido ante errores locales o del servidor.
 
 **Exportaciones del entorno de ejecución**
 
@@ -323,29 +323,25 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para el handler implementado de Acceso de Studio de la Fase 4 y los contratos
-existentes de renderizado de imágenes autenticados por API key: configuración y
-autenticación, el handler de acceso de Studio, el handler público de imágenes,
-preparación de inputs de imagen, trabajos temporales, renderizado PNG en
-navegador y el handoff privado de la página de renderizado. La migración de la
-API de imágenes autenticada y de Download/Copy server-side de la Fase 6 sigue
-pendiente. No se debe importar en bundles del navegador.
+para los contratos de acceso y renderizado de imágenes de Studio: configuración
+y autenticación, el handler de acceso, el manejo de imágenes por sesión/token API,
+preparación de inputs, trabajos temporales, renderizado
+PNG en navegador y handoff privado de la página de renderizado. No se debe
+importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
 | Exportación            | Descripción                                                                                         |
 | ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `parseImageApiConfig`  | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; analiza la configuración de la API de imágenes |
-| `authenticateBearer`   | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; comprueba un valor de autorización contra un token Bearer esperado con coincidencia exacta |
 | `createFrameKitApiHandler` | `createFrameKitApiHandler(templates): (request: Request) => Promise<Response>`; compone las rutas de acceso y la ruta canónica de imágenes bajo `/api/framekit` |
 | `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; crea el handler autenticado de sesiones y de gestión de tokens/usuarios de Studio |
 | `ImageRenderError`     | `new ImageRenderError(failure: ImageRenderFailure)`; tipo de error con un código público estable y serialización segura |
-| `createImageHandler`   | `createImageHandler(templates): (request: Request) => Promise<Response>`; crea el handler autenticado de la API de imágenes PNG |
+| `createStudioImageHandler` | `createStudioImageHandler(templates): (request: Request) => Promise<Response>`; crea el handler PNG autenticado por sesión/token API |
 | `prepareRenderInputs`  | `prepareRenderInputs(options)`; valida los datos de la solicitud y prepara inputs de imagen locales, data URLs y remotos permitidos para renderizar |
 | `renderTemplateImage`  | `renderTemplateImage(options): Promise<Buffer>`; renderiza un payload resuelto mediante la página privada y devuelve bytes PNG |
 | `createRenderJob`      | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; crea un identificador y un token temporales para un trabajo privado de renderizado |
 | `loadRenderRequest`    | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resuelve el payload de un trabajo privado válido |
-| `deleteRenderJob`      | `deleteRenderJob(id: string, options?): void`; elimina un trabajo privado de renderizado |
+| `deleteRenderJob`      | `deleteRenderJob(id: string): void`; elimina un trabajo privado de renderizado |
 | `createRenderPage`     | `createRenderPage(RenderClient)`; crea el handoff privado de página de servidor que valida el token de renderizado y pasa el payload resuelto al componente cliente |
 
 #### Handler API unificado de FrameKit
@@ -353,17 +349,17 @@ pendiente. No se debe importar en bundles del navegador.
 `createFrameKitApiHandler(templates)` es la factory de integración de la
 aplicación para el namespace sin versión `/api/framekit`. Delega las rutas de
 acceso en `createStudioAccessHandler()` y `POST /api/framekit/images/render` en
-`createImageHandler(templates)`. El consumidor generado y el Studio de primera
+`createStudioImageHandler(templates)`. El consumidor generado y el Studio de primera
 parte montan esta factory desde un único adapter catch-all en
 `src/app/api/framekit/[...action]/route.ts` y exportan `GET`, `POST`, `PATCH` y
 `DELETE`.
 
-La acción de imágenes continúa exigiendo `Authorization: Bearer
-<FRAMEKIT_API_KEY>` y no requiere un header `Origin`. Las mutaciones de acceso
-conservan la autenticación por sesión y la protección de `Origin` del mismo
-origen. Las rutas desconocidas devuelven `404`; los métodos no admitidos para la
-acción de imágenes devuelven `405` con `Allow: POST`. La ruta anterior
-`/api/v1/images` no tiene adapter mantenido y devuelve `404`.
+La acción de imágenes acepta una cookie `framekit_session` activa o
+`Authorization: Bearer <API_TOKEN>`. Las solicitudes autenticadas por cookie
+requieren un header `Origin` del mismo origen; las solicitudes Bearer solo
+evalúan el token enviado. Las rutas desconocidas devuelven `404`; los métodos no
+admitidos para la acción de imágenes devuelven `405` con `Allow: POST`. La ruta
+anterior `/api/v1/images` no tiene adapter mantenido y devuelve `404`.
 
 #### Handler de acceso de Studio
 
@@ -392,10 +388,7 @@ respuestas posteriores contienen únicamente metadata segura y el almacenamiento
 contiene únicamente el hash y esa metadata. La búsqueda Bearer de tokens API
 calcula el hash de la credencial acotada y no vacía, la acepta solo si el token
 no está revocado y su propietario está activo, y actualiza `lastUsedAt` cuando
-tiene éxito. No exige el prefijo `fk_` de los tokens generados, por lo que
-admite credenciales heredadas importadas. Un `FRAMEKIT_API_KEY` heredado no vacío
-se importa como token únicamente durante el bootstrap del primer usuario y no
-se sincroniza después.
+tiene éxito. Los tokens creados desde Studio usan el prefijo visible `fk_`.
 
 Las operaciones protegidas de cuenta, tokens y gestión de usuarios devuelven
 `401` cuando falta la sesión o no es válida; las credenciales de login inválidas
@@ -408,44 +401,43 @@ desactivar o degradar al último administrador activo. Las solicitudes inseguras
 requieren la comprobación de `Origin` del mismo origen descrita en la guía de
 migración.
 
-La UI de acceso de Studio de la Fase 5 está disponible mediante las factories de
-página autenticada anteriores. Download/Copy actuales siguen siendo del
-navegador; la API de imágenes autenticada y Download/Copy server-side de la Fase
-6 siguen pendientes. El handler clásico de imágenes con API key se monta en
-`POST /api/framekit/images/render` mediante el adapter unificado.
+La UI de acceso de Studio de la Fase 5 y la API de imágenes autenticada de la
+Fase 6 están disponibles mediante las factories anteriores. Download y Copy
+solicitan Blobs PNG a la acción canónica.
 
-`parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
-`FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de
-loopback (`localhost`, `127.0.0.1` o `[::1]` como host IPv6), con un puerto
-numérico válido opcional, sin una ruta distinta de `/` y sin query, fragmento ni
-credenciales. El esquema HTTP se acepta sin distinguir mayúsculas de
-minúsculas. `FRAMEKIT_ALLOWED_IMAGE_HOSTS` es opcional: acepta nombres de host
-DNS separados por comas, recorta y convierte a minúsculas cada entrada, ignora
-las entradas vacías y deduplica el resultado; un valor vacío o compuesto solo
-por comas produce un conjunto vacío. Cada nombre debe tener como máximo 253
-caracteres y usar la forma de nombre de host DNS. Se rechazan literales IP,
-comodines, puntos finales, puertos, rutas, queries y fragmentos. Las opciones
-opcionales `FRAMEKIT_MAX_CONCURRENT_RENDERS` y
-`FRAMEKIT_RENDER_TIMEOUT_MS` tienen valores predeterminados de `2` y `30000` ms,
-respectivamente, y solo aceptan strings de dígitos decimales en los rangos
-inclusivos `1..32` y `1..120000` ms. Se rechazan signos, puntos decimales,
-exponentes, espacios en blanco, cero y valores superiores al límite
-correspondiente.
-Si la configuración falta o es inválida, lanza `ImageRenderError` con el
-código `api_not_configured`.
+#### Variables de entorno de ejecución
 
-`authenticateBearer(authorization, expectedToken)` solo acepta un valor exacto
-`Bearer <token>`: el esquema `Bearer` no distingue mayúsculas de minúsculas,
-pero debe haber exactamente un espacio, un token no vacío sin espacios en
-blanco ni comas y ningún carácter adicional. La comparación del token sí
-distingue mayúsculas de minúsculas. Los valores de autorización ausentes o
-malformados devuelven `false`.
+Estas variables las lee el runtime de servidor Node.js. Mantén las credenciales
+y contraseñas en el servidor; no las expongas en bundles de cliente, URLs, logs ni
+ejemplos de solicitudes.
+
+| Variable | Estado requerido/opcional y validación | Dónde se consume y qué hace |
+| --- | --- | --- |
+| `FRAMEKIT_INTERNAL_ORIGIN` | Obligatoria para los handlers de imágenes. Debe ser un origen HTTP de loopback (`localhost`, `127.0.0.1` o `[::1]`), con puerto numérico opcional, sin una ruta distinta de `/`, y sin query, fragmento ni credenciales. El esquema HTTP no distingue mayúsculas de minúsculas. | `parseImageRenderConfig()` lo entrega a `renderTemplateImage()`, que construye la URL privada `/framekit/render/:id` y permite únicamente ese origen interno en el contexto de render del navegador. |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Opcional; por defecto es un conjunto vacío. Acepta nombres de host DNS separados por comas, recorta y convierte a minúsculas las entradas, ignora entradas vacías y las deduplica. Cada nombre puede tener como máximo 253 caracteres. Se rechazan literales IP, comodines, puntos finales, puertos, rutas, queries y fragmentos. Un valor vacío o compuesto solo por comas es válido. | El conjunto analizado se pasa a `prepareRenderInputs()` para los fields de imagen remotos. El hostname remoto debe coincidir exactamente con una entrada; por tanto, un conjunto vacío no permite hosts de imágenes remotas, aunque siguen disponibles las rutas relativas a la raíz seguras que acepta `isSafeRootRelativePath` (solo bajo `/assets/` o `/framekit/templates/`, con segmentos que empiezan por un carácter alfanumérico y continúan con caracteres alfanuméricos, `.`, `_` o `-`, sin query, fragmento, `%`, barra inversa ni caracteres de control) y las data URLs. |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Opcional; por defecto es `2`. Debe ser un string de dígitos decimales en el rango inclusivo `1..32`. Se rechazan signos, puntos decimales, exponentes, espacios en blanco, cero y valores superiores. | `parseImageRenderConfig()` pasa el límite al pipeline de renderizado, donde controla la capacidad de renders simultáneos dentro del proceso. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | Opcional; por defecto es `30000` ms. Debe ser un string de dígitos decimales en el rango inclusivo `1..120000` ms. Se rechazan signos, puntos decimales, exponentes, espacios en blanco, cero y valores superiores. | `parseImageRenderConfig()` pasa el valor al plazo de la solicitud y a los timeouts de navegación del navegador usados por `renderTemplateImage()`. |
+| `FRAMEKIT_DATABASE_PATH` | Opcional; por defecto es `.framekit-data/framekit.sqlite`. Salvo `:memory:`, la ruta se resuelve relativa a `process.cwd()` y se crea su directorio padre cuando hace falta. `:memory:` es local al proceso y no persiste entre reinicios. | `getDatabase()` lo usa para la base SQLite detrás de los usuarios de Studio, hashes de contraseñas, sesiones, hashes/metadata de tokens API y migraciones. Un archivo persistente conserva el estado de acceso y debe protegerse como datos del servidor. |
+| `FRAMEKIT_ADMIN_USERNAME` | Opcional; por defecto es `admin`. Solo se valida durante el bootstrap del primer usuario y debe tener 3–64 caracteres con únicamente letras ASCII, números, `.`, `_` o `-`. | `bootstrapUsers()` lo usa solo cuando la base seleccionada no tiene usuarios para crear el administrador activo inicial. Se almacena como el nombre de ese usuario; cambiar después la variable no lo renombra. |
+| `FRAMEKIT_ADMIN_PASSWORD` | Obligatoria cuando se ejecuta el bootstrap del primer usuario; no tiene valor predeterminado y debe tener entre 12 y 256 bytes UTF-8. No es necesaria después de que la base ya contiene un usuario. | `bootstrapUsers()` la usa solo para crear el administrador inicial y la hashea con scrypt antes de almacenar el hash de contraseña. La contraseña sin hash no se almacena; los cambios posteriores del entorno no cambian la contraseña existente. |
+
+La ruta de login de acceso llama a `bootstrapUsers()` antes de autenticar. En una
+base vacía, un `FRAMEKIT_ADMIN_PASSWORD` válido y el nombre opcional crean el
+primer administrador activo. Cuando ya existe un usuario, el bootstrap ignora
+`FRAMEKIT_ADMIN_USERNAME` y `FRAMEKIT_ADMIN_PASSWORD`. Si falta o es inválida la
+configuración de imágenes, se lanza `ImageRenderError` con el código
+`api_not_configured`; una configuración de bootstrap inválida devuelve el error
+de servicio no disponible de acceso.
+
+`FRAMEKIT_PUBLIC_ORIGIN` no es una configuración ni un fallback compatible. Las
+comprobaciones de mismo origen derivan el origen esperado de la URL de la
+solicitud y de sus headers de forwarding aceptados; el servidor no lee
+`FRAMEKIT_PUBLIC_ORIGIN`.
 
 **Exportaciones de tipos**
 
 | Tipo                         | Descripción                                                                                         |
 | ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `ImageApiConfig`             | Configuración analizada que contiene la clave de API y la configuración de ejecución de render     |
 | `ImageRenderRequest`         | Forma de solicitud con `template`, `variant` opcional y datos opcionales                             |
 | `ImageRenderRuntimeConfig`   | Configuración de ejecución con origen loopback, hosts de imagen permitidos, concurrencia y timeout |
 | `ResolvedRenderPayload`      | Datos de render resueltos y serializables con template, variante, datos, assets, width y height     |
@@ -462,9 +454,10 @@ contiene `code`, `message` y, cuando existe, `fields`; `cause` no es enumerable.
 `fields` solo se admite con el código `invalid_template_data` y debe ser un
 objeto no nulo que no sea un array.
 
-`createImageHandler(templates)` recibe un registro generado y devuelve un
-handler de solicitudes para Node.js. El consumidor generado canónico lo monta
-mediante `createFrameKitApiHandler(templates)` en
+`createStudioImageHandler(templates)` recibe un registro generado y devuelve el
+handler de solicitudes para Node.js que autentica una sesión activa o un token
+API. El consumidor generado canónico
+monta el handler de Studio mediante `createFrameKitApiHandler(templates)` en
 `POST /api/framekit/images/render` con `runtime = 'nodejs'` y
 `dynamic = 'force-dynamic'`. Las solicitudes usan esta forma JSON:
 
@@ -472,20 +465,18 @@ mediante `createFrameKitApiHandler(templates)` en
 { "template": "example", "variant": "en", "data": {} }
 ```
 
-La ruta exige `Authorization: Bearer <FRAMEKIT_API_KEY>`, resuelve y valida la
-plantilla seleccionada, prepara los inputs de imagen permitidos y devuelve los
-bytes PNG directamente. Las respuestas exitosas son `200 image/png`; los
-fallos contienen las propiedades JSON estables `error`, `message` y
-`fields` opcional. El handler lee `FRAMEKIT_API_KEY`,
-`FRAMEKIT_INTERNAL_ORIGIN` y las opciones de entorno opcionales
-`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS` y
-`FRAMEKIT_RENDER_TIMEOUT_MS`.
+La ruta de Studio exige una sesión activa o `Authorization: Bearer <API_TOKEN>`,
+resuelve y valida la plantilla seleccionada, prepara los inputs de imagen
+permitidos y devuelve los bytes PNG directamente. Las respuestas exitosas son
+`200 image/png`; los fallos contienen las propiedades JSON estables `error`,
+`message` y `fields` opcional. El handler de Studio usa las opciones de render
+descritas en [Variables de entorno de ejecución](#variables-de-entorno-de-ejecución).
 
 Una solicitud real usando la plantilla generada `example` es:
 
 ```http
 POST /api/framekit/images/render HTTP/1.1
-Authorization: Bearer framekit-smoke-api-key
+Authorization: Bearer <API_TOKEN>
 Content-Type: application/json
 
 {"template":"example","variant":"en","data":{"hero":"https://framekit-smoke.test/image.png"}}
@@ -513,12 +504,12 @@ validación canónica de datos de plantilla produjo errores por field.
 | Error | HTTP | Significado |
 | --- | ---: | --- |
 | `invalid_request` | 400 | JSON, forma, variante o input inválido |
-| `unauthorized` | 401 | Token Bearer ausente o incorrecto |
+| `unauthorized` | 401 | Sesión ausente o inválida, o token Bearer ausente o incorrecto |
 | `template_not_found` | 404 | Plantilla autenticada desconocida |
 | `request_too_large` | 413 | Request o imagen decodificada sobre su límite |
 | `unsupported_image` | 415 | MIME/firma de imagen no compatible o inconsistente |
 | `invalid_template_data` | 422 | Falló la validación de fields de la plantilla |
-| `image_host_not_allowed` | 422 | Host remoto fuera del allowlist exacto |
+| `image_host_not_allowed` | 422 | Host remoto fuera del allowlist exacto o URL HTTP no-HTTPS |
 | `image_fetch_failed` | 502 | No se pudo descargar de forma segura la imagen permitida |
 | `api_not_configured` | 503 | Falta configuración de ejecución requerida |
 | `render_capacity_exhausted` | 503 | La capacidad de render local del proceso está llena |

@@ -53,10 +53,10 @@ casos de prueba, comandos y exit gates detallados.
 
 El estado operativo del servidor es explícito: los límites 0.5 y 0.6 y los
 pasos 1 a 7 están implementados y verificados. La mayor parte de la evidencia
-técnica del Paso 8 también se ejecutó contra el baseline de API key compartida y
-export browser-side, pero su cierre final queda bloqueado por Studio Access & API
-Rendering y debe revalidarse contra esa arquitectura. La fase 6 de
-Maintainability también sigue pendiente.
+técnica del Paso 8 también se ejecutó contra el baseline histórico, ya retirado,
+de API key compartida y export browser-side, pero su cierre final queda bloqueado
+por Studio Access & API Rendering y debe revalidarse contra esa arquitectura. La
+fase 6 de Maintainability también sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -704,25 +704,27 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 * [x] Fase 4: API Tokens, Users, and Authorization (implementada y verificada el 2026-09-15).
 * [x] Fase 5: Studio Access UI (implementada y verificada el 2026-09-15).
 * [x] Fase 5.5: FrameKit API Namespace (implementada y verificada el 2026-09-15).
-* [ ] Fase 6: Authenticated Image API and Export.
+* [x] Fase 6: Authenticated Image API and Export (implementada y verificada el
+  2026-09-16).
 * [ ] Fase 7: Generated Consumer and Docker.
 * [ ] Fase 8: Verification, Documentation, and Rollout.
 * [ ] Reabrir el gate final de Server Image Rendering Step 8 sobre el nuevo
   baseline.
 
-Las fases 4, 5 y 5.5 están implementadas y verificadas el 2026-09-15. La fase 5
+Las fases 4, 5 y 5.5 están implementadas y verificadas el 2026-09-15. La fase 6
+está implementada y verificada el 2026-09-16. La fase 5
 incluye la UI de login y Ajustes, el modelo de tres secciones, el handoff
 seguro de `StudioUser`, los flujos de tokens y usuarios administradores, y
 cobertura de accesibilidad e i18n. La fase 5.5 unifica los adapters de acceso e
-imagen bajo `/api/framekit/[...action]`, conserva el handler de imagen con API
-key y elimina `/api/v1/images`. Pasan los checks enfocados de Studio (11
-archivos, 73 tests), la suite completa del paquete FrameKit (76 archivos, 812
-tests), el typecheck y el lint. El smoke HTTP de producción cubrió la redirección
-protegida y el login local predeterminado; no se ejecutó smoke visual o responsive
-en navegador. Las fases 6 a
-8 siguen pendientes; la API de imagen autenticada y la exportación server-side
-de la fase 6 aún no están implementadas. El gate final del Step 8 permanece
-bloqueado hasta completar este bloque.
+imagen bajo `/api/framekit/[...action]` y elimina `/api/v1/images`. La fase 6
+conecta el handler canónico autenticado por sesión o token y elimina el handler
+clásico.
+Pasan los checks enfocados de Studio (3 archivos, 7 tests), la suite completa del
+paquete FrameKit (76 archivos, 788 tests), los tests del creator (2 archivos, 31
+tests), la suite E2E (3 tests), el build, el typecheck y el lint. El handler
+clásico y `FRAMEKIT_API_KEY` fueron eliminados; la ruta canónica usa sesión o
+token API de base de datos. Las fases 7 y 8 siguen pendientes y el gate final del
+Step 8 permanece bloqueado hasta completar este bloque.
 
 ## 5. Maintainability: fase 6
 
@@ -854,9 +856,11 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 * [ ] Studio exige una sesión activa sin proteger la ruta privada con esa sesión.
 * [ ] Usuarios, sesiones y API tokens se almacenan bajo el contrato SQLite final.
 * [ ] Download PNG y Copy PNG usan exclusivamente el renderer server-side.
-* [ ] El handler clásico conserva compatibilidad con `FRAMEKIT_API_KEY`.
+* [ ] La ruta canónica de imagen acepta sesión o token API.
 * [ ] El starter final contiene seis archivos mantenidos bajo `src/app`.
 * [ ] Docker preserva SQLite entre containers y limpia jobs al reiniciar proceso.
+* [ ] Las siete variables de aplicación y la ausencia de soporte para
+  `FRAMEKIT_PUBLIC_ORIGIN` están verificadas y documentadas.
 
 ### Repository gates
 
@@ -894,3 +898,4 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 | 2026-09-13 | Persistir usuarios, sesiones y API tokens en SQLite sin cambiar el store temporal `globalThis + Map` de los render jobs             |
 | 2026-09-15 | Completar y verificar la fase 4 de Studio Access; mantener las fases 5-8 pendientes y el Step 8 bloqueado                         |
 | 2026-09-15 | Completar y verificar la fase 5 de Studio Access UI; mantener las fases 6-8 pendientes y el Step 8 bloqueado                     |
+| 2026-09-16 | Completar y verificar la fase 6; eliminar el contrato legado `FRAMEKIT_API_KEY`; mantener las fases 7-8 y el Step 8 bloqueados       |

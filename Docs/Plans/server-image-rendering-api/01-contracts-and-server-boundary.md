@@ -1,8 +1,40 @@
 # Step 1 - Contracts and Server Boundary
 
 - **Status:** Implemented and verified in the current checkout.
+- **Reading note:** This file preserves the historical Step 1 design and
+  sequence, but its contracts and boundary notes are reconciled with the
+  implementation currently shipped by the checkout.
 
-## Goal
+## Historical design vs current implementation
+
+The original Step 1 goal was to establish the contracts before image fetching,
+temporary jobs, browser capture, and Next.js routes were added. Those later
+pieces are now implemented, so wording such as “later steps” and “Step 6” below
+describes the historical delivery sequence, not pending work.
+
+The current public route adapter is:
+
+```typescript
+createFrameKitApiHandler(
+  templates: readonly TemplateRegistryEntry[]
+): (request: Request) => Promise<Response>
+```
+
+The generated Next.js adapter binds this handler to `GET`, `POST`, `PATCH`, and
+`DELETE` under `/api/framekit/[...action]`. The handler sends exactly
+`POST /api/framekit/images/render` to `createStudioImageHandler(templates)`;
+other requests are delegated to the access handler, and unsupported methods or
+unknown paths receive the access/API error response. `createStudioImageHandler`
+is also a supported lower-level image-handler export, but it is not the
+generated route adapter. Consumers do not call the configuration parser or
+authentication helpers themselves.
+
+The current image flow uses an active same-origin session or an active database
+API token. The historical single-shared-credential design is not a current
+contract. The render parser is internal to the image-handler flow and is not a
+supported export from `@mauriciodmo/framekit/server`.
+
+## Goal (historical Step 1 design)
 
 Establish the stable server vocabulary and package boundary before adding image
 fetching, in-memory jobs, browser behavior, or Next.js routes.
@@ -10,7 +42,9 @@ fetching, in-memory jobs, browser behavior, or Next.js routes.
 Later steps must depend on typed configuration and discriminated failures rather
 than parsing error text or importing route-specific code.
 
-This step is intentionally executable without Chromium.
+The contracts/configuration tests are intentionally executable without launching
+Chromium. The current `./server` facade also exports the later Next.js and
+Playwright-backed runtime helpers described above.
 
 ## Depends on
 
@@ -22,10 +56,10 @@ This step is intentionally executable without Chromium.
 ## Deliverables
 
 - A server-only source entry at `packages/framekit/src/server.ts`.
-- Server configuration types and strict environment parsing.
+- Server configuration types and strict environment parsing for render settings.
 - Public request and internal resolved-payload types independent of Next.js.
 - One discriminated render-error model with stable codes.
-- A constant-time Bearer authentication helper.
+- A server-only access boundary for session and API-token authentication.
 - Package build/export wiring for the `@mauriciodmo/framekit/server` facade.
 - Focused tests and public-import type fixtures.
 
@@ -49,23 +83,28 @@ The server package remains responsible for:
 
 - validating server option values;
 - stable render failure codes;
-- Bearer authentication comparison;
+- session and database API-token authentication at the access boundaries;
 - request/image helpers added in later steps;
 - the in-memory render-job store;
 - browser and capture orchestration;
-- the complete HTTP handler in Step 6, which passes `process.env` explicitly to
-  the pure parser at request time and constructs the outgoing `Response`.
+- the complete HTTP handler, now implemented by
+  `createFrameKitApiHandler`/`createStudioImageHandler`; the original plan
+  placed that work in Step 6. The image handler passes `process.env` explicitly
+  to the pure render parser at request time and constructs the outgoing
+  `Response`.
 
-Consumers using `createImageHandler(templates)` do not manually call the parser
-or orchestrate these lower-level helpers. The pure parser's contract is unchanged.
+Consumers using `createFrameKitApiHandler(templates)` do not manually call the
+parser or orchestrate these lower-level helpers. The pure render parser is kept
+inside the server-owned image handler.
 
 No type in the `./server` facade may reference `packages/create-framekit/template`,
 `apps/studio`, or `@framekit/generated/*`.
 
-## Public types
+## Public types (current facade)
 
-Names may change during implementation, but the separation must remain and the
-public surface should stay small.
+The current `@mauriciodmo/framekit/server` facade exports these contracts. The
+request type is public, but its runtime validation remains inside the image
+handler.
 
 ```typescript
 export interface ImageRenderRequest {
@@ -81,14 +120,12 @@ export interface ImageRenderRuntimeConfig {
   renderTimeoutMs: number
 }
 
-export interface ImageApiConfig {
-  apiKey: string
-  render: ImageRenderRuntimeConfig
-}
 ```
 
 The HTTP parser starts from `unknown`; `ImageRenderRequest` does not replace
-runtime validation.
+runtime validation. The current parser accepts only `template`, optional
+`variant`, and optional `data`, rejecting unknown keys and empty values before
+template loading.
 
 The public route resolves and validates data before browser work. The renderer
 therefore receives a final serializable payload:
@@ -113,8 +150,9 @@ object, or response object.
 
 ## Error model
 
-Use one error class or discriminated object owned by the server package. It must
-carry machine-readable information so the public route never matches messages.
+The current server package uses the exported `ImageRenderError` class. It
+carries machine-readable information so the public route never matches
+messages.
 
 ```typescript
 export type ImageRenderErrorCode =
@@ -151,30 +189,28 @@ Rules:
 - unknown thrown values are normalized once at the public route boundary to
   `render_failed` unless a lower layer already created a semantic failure.
 
-Browser, job, request-body, and image modules throw semantic failures; they do
-not create `Response` objects.
+Lower-level browser, job, request-body, image-input, and render modules throw
+semantic failures; they do not create `Response` objects. The image-handler
+boundary is the exception: it normalizes those failures and creates the public
+`Response`.
 
-## Environment parser
+## Environment parser (current implementation)
 
-Implement one pure parser that accepts an explicit environment record:
+The current pure render parser accepts an explicit environment record:
 
 ```typescript
-parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig
+parseImageRenderConfig(env: NodeJS.ProcessEnv): ImageRenderRuntimeConfig
 ```
 
-Do not read `process.env` throughout browser/image/job modules.
+It lives in `packages/framekit/src/server/config.ts`, is invoked with
+`process.env` by `createStudioImageHandler` for each request, and is not exported
+by the supported `./server` facade. Browser/image/job modules receive the
+parsed config instead of reading `process.env` throughout their own logic.
 
-The public route uses `apiKey` for authentication and passes only
-`config.render` to image preparation/render orchestration. The API key must never
+The parser validates only render settings. `createStudioImageHandler` passes its
+result to image preparation/render orchestration and authenticates either an
+active same-origin session or an unrevoked database API token. Credentials never
 enter the render payload, Map job, browser state, page request, or logs.
-
-### `FRAMEKIT_API_KEY`
-
-- The current parser rejects an absent or empty value for every environment
-  record; production therefore fails closed.
-- Do not trim the configured key or incoming token; accidental whitespace should
-  fail rather than silently change a secret.
-- Never include the key value in an error/log.
 
 ### `FRAMEKIT_INTERNAL_ORIGIN`
 
@@ -218,8 +254,23 @@ Parsing rules:
 
 - parse base-10 integers only;
 - reject decimals, exponent notation, `NaN`, infinities, negatives, and zero;
-- apply conservative upper bounds;
+- reject values above `32` simultaneous renders or `120000` milliseconds;
 - defaults are `2` simultaneous renders and `30000` milliseconds.
+
+### Current access variables
+
+The four render variables above plus the following three access/bootstrap
+variables are the seven current application variables consumed by the checkout:
+
+- `FRAMEKIT_DATABASE_PATH` is consumed by the SQLite access layer. It defaults
+  to `.framekit-data/framekit.sqlite`, resolves relative to `process.cwd()`,
+  creates parent directories for file-backed databases, and accepts `:memory:`
+  for an in-memory database.
+- `FRAMEKIT_ADMIN_USERNAME` is read by `bootstrapUsers` only when the database
+  has no users. It defaults to `admin` and must be 3-64 ASCII letters, numbers,
+  `.`, `_`, or `-`.
+- `FRAMEKIT_ADMIN_PASSWORD` is read by `bootstrapUsers` only for that initial
+  bootstrap. It has no default and must be 12-256 UTF-8 bytes.
 
 Request/body/image-size constants can remain package constants in v1 rather than
 expanding the environment surface prematurely.
@@ -230,27 +281,75 @@ Production server rendering is always headless in v1. Do not add public
 `HEADLESS`, `SLOW_MO`, arbitrary launch args, or browser-selection environment
 variables until an actual supported deployment requires them.
 
-## Authentication helper contract
+### Related runtime and build variables
 
-Define a pure server helper now; Step 6 integrates it with the route.
+The following runtime/build variables may appear in a generated deployment but
+are not part of the seven FrameKit application variables above:
 
-Requirements:
+- `NODE_ENV=production` is consumed by the standalone Next.js runtime; the access
+  cookie helper also adds `Secure` only when it equals `production`.
+- `HOSTNAME=0.0.0.0` and `PORT=3000` configure the standalone server's container
+  bind address and port. They do not change the strict loopback internal origin.
+- `PLAYWRIGHT_BROWSERS_PATH` is consumed by Playwright's installer and runtime
+  executable lookup. Installer and renderer must use the same path.
+- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is build-only and suppresses browser
+  downloads during dependency installation; the runner installs the pinned shell
+  explicitly through FrameKit's browser command.
 
-- accept exactly one `Authorization` header value;
-- require case-insensitive `Bearer` scheme and one non-empty token;
-- reject comma-joined/repeated credentials and non-Bearer schemes;
-- compare token bytes with Node's timing-safe comparison;
-- normalize unequal lengths without returning based on matching prefix/content;
-- return only success/failure;
-- never log or return either compared value.
+The parser does not consume `NODE_ENV`, `HOSTNAME`, or `PORT`, and current code
+does not consume `FRAMEKIT_PUBLIC_ORIGIN`, `HEADLESS`, `SLOW_MO`, arbitrary browser
+arguments, or browser selectors.
 
-Configuration failure is distinct from client authentication failure:
+## HTTP route and adapter (current implementation)
 
-- missing server key -> `api_not_configured`;
-- missing or wrong request token -> `unauthorized`.
+The generated consumer route is a thin Next.js adapter:
 
-One shared API key is the complete v1 public auth model. Accounts, multiple keys,
-JWT, OAuth, scopes, and persistence are out of scope.
+```typescript
+import { createFrameKitApiHandler } from '@mauriciodmo/framekit/server'
+import { templates } from '@framekit/generated/templates'
+
+const handler = createFrameKitApiHandler(templates)
+
+export const GET = handler
+export const POST = handler
+export const PATCH = handler
+export const DELETE = handler
+```
+
+The canonical image endpoint is exactly:
+
+```text
+POST /api/framekit/images/render
+```
+
+`createFrameKitApiHandler` matches that pathname before delegating every other
+request to the access handler. Only `POST` is accepted for the image endpoint;
+other methods return `405` with `Allow: POST` before the request body is read.
+The image-handler path uses the four render settings and the access layer's
+three database/bootstrap settings, authenticates the request, validates/resolves
+the template payload, and returns PNG bytes with `Content-Type: image/png`.
+Configuration, authentication, validation, capacity, timeout, and render
+failures are returned as the documented machine-readable image errors with
+`Cache-Control: no-store`.
+
+## Authentication boundary
+
+The access layer owns session and API-token authentication. The image handler:
+
+- accepts exactly one strict `Authorization: Bearer <token>` credential;
+- validates the token against the active, unrevoked SQLite user/token records;
+- accepts a session cookie only for a same-origin request when no Authorization
+  header is present;
+- rejects an invalid Bearer credential without falling back to a session;
+- does not require same-origin for a valid Bearer credential, while the session
+  path does require it;
+- checks authentication before reading the image request body (after the render
+  configuration has been parsed);
+- returns only success/failure and never logs compared credentials.
+
+Configuration failure is distinct from client authentication failure: missing or
+invalid render settings return `api_not_configured`, while missing or wrong
+session/token credentials return `unauthorized`.
 
 ## Server-only export rules
 
@@ -258,24 +357,24 @@ The supported import is:
 
 ```typescript
 import {
-  parseImageApiConfig,
-  authenticateBearer
-  // later steps also export runtime/page helpers and createImageHandler
+  createFrameKitApiHandler,
+  createStudioImageHandler
 } from '@mauriciodmo/framekit/server'
 ```
 
-The example identifies the Step 1 subset, not the current full facade. Steps 2-5
-and 0.5 have already added runtime/page helpers; Step 6 plans `createImageHandler`.
-Step 0.6 separately introduces the configuration-only `./next` facade. Do not add
-`server/*`, `browser`, `auth`, or `shared` public subpaths.
+`createFrameKitApiHandler` is the public route adapter; `createStudioImageHandler`
+is the lower-level public image handler. The current facade also exports the
+access handler, image-input/render helpers, private render-page/job helpers,
+and their supported types. Do not add `server/*`, `browser`, `auth`, or `shared`
+public subpaths.
 
 Rules:
 
 - `./server` may import Node built-ins and `playwright-core`.
 - root, `./client`, `./editor`, and the `./studio` client graph must not import the
   server entry at runtime; `./dev` is Node tooling, not a client-capable export.
-- the new `./next` configuration entry must not import request-bound Next APIs or
-  the server/browser runtime; see Step 0.6 for its import-time contract.
+- the existing `./next` configuration entry must not import request-bound Next
+  APIs or the server/browser runtime; see Step 0.6 for its import-time contract.
 - importing `@mauriciodmo/framekit` or `/editor` must never pull Playwright into a
   client bundle.
 - generated apps must consume supported package exports, never repository source
@@ -290,8 +389,6 @@ packages/framekit/src/server.ts
 packages/framekit/src/server/config.ts
 packages/framekit/src/server/__tests__/config.test.ts
 packages/framekit/src/server/errors.ts
-packages/framekit/src/server/auth.ts
-packages/framekit/src/server/__tests__/auth.test.ts
 packages/framekit/tests/types/server-api.ts
 packages/framekit/package.json
 packages/framekit/tsdown.config.ts
@@ -309,7 +406,7 @@ interfaces for speculative implementations.
 1. Add stable error codes and one semantic failure representation.
 2. Add `ResolvedRenderPayload` and configuration contracts.
 3. Implement strict pure environment parsing.
-4. Implement the constant-time Bearer helper.
+4. Integrate session and API-token authentication at the image-handler boundary.
 5. Create `packages/framekit/src/server.ts` and export only completed symbols.
 6. Wire `./server` into tsdown and `package.json`.
 7. Add positive/negative tests and supported-import type fixture.
@@ -319,7 +416,8 @@ interfaces for speculative implementations.
 
 - Every documented error code is accepted and arbitrary strings are rejected.
 - `ResolvedRenderPayload` contains only serializable render values and assets.
-- Missing API key fails closed in every environment.
+- Missing or invalid render settings fail closed for `parseImageRenderConfig` in
+  every environment.
 - The pure parser stays strict regardless of `NODE_ENV`; any development
   fallback remains outside the parser.
 - Internal origin accepts loopback with a port and rejects public hosts,
@@ -328,9 +426,8 @@ interfaces for speculative implementations.
   path/port/IP values.
 - Numeric parsing accepts defaults/bounded integers and rejects coercion edge
   cases.
-- Bearer parsing rejects empty, repeated, Basic, malformed, and wrong tokens.
-- Equal and unequal-length token comparisons take the same helper path and never
-  expose values.
+- Strict Bearer parsing rejects empty, repeated, Basic, malformed, and wrong
+  tokens; invalid Bearer credentials do not fall back to a session.
 - `./server` compiles through the public package export.
 - root/editor imports do not resolve server-only dependencies.
 

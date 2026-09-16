@@ -212,7 +212,9 @@ Instala `python`, `make` y una cadena de herramientas de C++ (como `build-essent
 
 **Causa: otro proceso ocupa el puerto solicitado**
 
-El puerto por defecto es `3000`. Si algo más ya está escuchando en el puerto solicitado, `framekit dev` prueba el siguiente puerto. Termina con un error si no encuentra un puerto utilizable antes de `65535`.
+El puerto por defecto es `3000`. Si otro proceso ya está escuchando en el
+puerto solicitado, `framekit dev` termina con un error; no prueba
+automáticamente el siguiente puerto.
 
 **Solución: establece un puerto diferente**
 
@@ -227,6 +229,47 @@ PORT=3001 framekit dev
 ```
 FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 ```
+
+---
+
+## El desarrollo y la producción usan variables de host distintas
+
+`framekit dev` resuelve la dirección de enlace como
+`FRAMEKIT_HOST` → `HOST` → `localhost`, y lee `PORT`, cuyo valor predeterminado
+es `3000`. `framekit start` no realiza esa asignación: inicia el `server.js`
+standalone de Next con el entorno heredado del proceso padre. Next lee
+`HOSTNAME`, `PORT` y `KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` y `HOST` no se
+asignan a `HOSTNAME`. Consulta la [referencia de CLI](../reference/cli.md) para
+ver las tablas de cada comando.
+
+---
+
+## El primer login devuelve un error de servicio no disponible
+
+En el primer `POST /api/framekit/login`, FrameKit crea el administrador solo
+cuando la base de datos configurada no tiene usuarios. Debes definir
+`FRAMEKIT_ADMIN_PASSWORD`, que debe contener entre 12 y 256 bytes UTF-8.
+`FRAMEKIT_ADMIN_USERNAME` es opcional y usa `admin` por defecto; debe tener
+entre 3 y 64 letras ASCII, números, `.`, `_` o `-`.
+
+Si la base de datos ya contiene un usuario, cambiar estas variables no lo
+modifica. La base de datos predeterminada es
+`.framekit-data/framekit.sqlite`, resuelta en relación con el directorio de
+trabajo del proceso. En un contenedor, usa un volumen persistente para el
+directorio que contiene la ruta configurada de la base de datos.
+
+---
+
+## La API de imágenes informa errores de configuración
+
+La ruta generada `POST /api/framekit/images/render` requiere
+`FRAMEKIT_INTERNAL_ORIGIN`. Debe ser un origen HTTP de loopback, como
+`http://127.0.0.1:3000` o `http://localhost:3000`, sin credenciales, ruta,
+query ni fragmento. Si falta, informa `api_not_configured`; un valor inválido
+produce el mismo fallo de configuración en lugar de renderizar.
+
+Autentica la ruta generada con una cookie de sesión de Studio del mismo origen o
+con un token de API de la base de datos.
 
 ---
 
@@ -319,23 +362,23 @@ El otro fallo de inicio en producción se reporta con código `1` y el mensaje l
 
 La exportación requiere que todos los datos de la plantilla sean válidos. Los campos requeridos vacíos, los colores o choices inválidos, los valores que no sean booleanos, el texto fuera de los límites de longitud declarados y los números fuera de su rango finito o `step` declarado causan fallos de validación que impiden que la exportación produzca una imagen utilizable.
 
-**Causa: las fuentes aún no se han cargado**
+**Causa: falló el renderizado autenticado del servidor**
 
-Se espera `document.fonts.ready` antes de la captura, pero si tu plantilla carga fuentes de forma diferida o usa fuentes web que no logran cargarse, la imagen exportada puede mostrar fuentes de respaldo en lugar de las deseadas.
+Studio envía la plantilla, la variante y los edits del usuario a
+`POST /api/framekit/images/render`. Confirma que el navegador tenga una sesión
+activa de Studio, que las solicitudes por cookie incluyan el `Origin` del mismo
+origen y que la aplicación pueda iniciar su shell de Chromium configurado. La
+respuesta del servidor contiene un código estable para fallos de configuración,
+inputs de imagen, capacidad, timeout o renderizado.
 
-**Causa: imágenes de origen cruzado bloqueadas por el navegador**
+**Causa: la política de imágenes remotas rechazó un input**
 
-Si la plantilla usa imágenes de un origen diferente y el servidor no envía las cabeceras CORS apropiadas, el navegador bloquea que la imagen se incluya en la captura del canvas.
+Los hosts de imágenes remotas deben estar incluidos en
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS`. El servidor valida y descarga las imágenes
+raster remotas permitidas antes de crear el trabajo privado; CORS del navegador
+no controla la exportación de Studio.
 
-**Causa: el navegador carece de las capacidades requeridas**
-
-La exportación PNG usa `modern-screenshot` (que depende de DOM y canvas). Algunos entornos — como navegadores headless sin soporte completo de DOM — no pueden realizar la captura.
-
-**Nota:** La exportación de Studio es enteramente del lado del navegador. El
-renderizado de PNG en servidor usa por separado el handoff privado de
-trabajo/página.
-
-**Nota:** La exportación actual no ofrece opciones de formato ni escala: solo PNG, a las dimensiones declaradas en la definición de la plantilla, a escala 1.
+**Nota:** La exportación actual no ofrece opciones de formato ni escala: solo PNG, a las dimensiones declaradas en la definición de la plantilla.
 
 ---
 

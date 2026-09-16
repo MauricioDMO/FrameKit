@@ -41,6 +41,54 @@ For complex layouts, see the extracted definition pattern with
 - `pnpm build` — validate and build for production
 - `pnpm start` — start the production server
 
+## Runtime configuration
+
+`.env.example` lists the seven current FrameKit runtime variables. Provide real
+values through the process environment or your deployment secret manager; it is
+a reference file, not a source for secrets.
+
+| Variable | Consumed by / used for | Required or default |
+| --- | --- | --- |
+| `FRAMEKIT_ADMIN_USERNAME` | `/api/framekit/login` → `bootstrapUsers()`; username for the first administrator | Optional on first login to an empty database; defaults to `admin` |
+| `FRAMEKIT_ADMIN_PASSWORD` | `/api/framekit/login` → `bootstrapUsers()`; password for the first administrator | Required only on first login to an empty database; no default; 12-256 UTF-8 bytes |
+| `FRAMEKIT_DATABASE_PATH` | `getDatabase()`; persistent SQLite storage for users, password hashes, sessions, and API-token data | Optional; defaults to `.framekit-data/framekit.sqlite` relative to the working directory; persist its directory |
+| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig()` for `POST /api/framekit/images/render`; private server-render origin | Required by the image route; HTTP loopback origin, normally `http://127.0.0.1:3000` |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig()` → `prepareRenderInputs()`; exact remote-image host allowlist | Optional; empty disables remote images |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig()` → render pipeline; process-local render capacity | Optional; defaults to `2`, range `1..32` |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig()` → request/render deadline and browser timeouts | Optional; defaults to `30000`, range `1..120000` ms |
+
+The first login request calls `bootstrapUsers()` before authentication. With an
+empty database, a valid administrator password and optional username create the
+first active administrator; once a user exists, changing either bootstrap
+variable does not change that user. A successful login sets the HttpOnly
+`framekit_session` cookie. Account, token, and user-management routes use that
+session; unsafe session requests require the same-origin `Origin` header.
+
+`POST /api/framekit/images/render` accepts either an active same-origin session
+cookie or a valid API token in `Authorization: Bearer <API_TOKEN>`. Create API
+tokens from Studio settings; the full token is returned only when it is created.
+Keep the directory containing the configured database path on persistent storage
+when deploying the project; `:memory:` is process-local and is not persistent.
+
+## Docker
+
+The included Dockerfile uses pnpm and sets these non-secret defaults in the
+runtime image:
+
+| Variable | Docker default | Purpose |
+| --- | --- | --- |
+| `NODE_ENV` | `production` | Production Next.js runtime |
+| `HOSTNAME` | `0.0.0.0` | Listen on all container interfaces |
+| `PORT` | `3000` | HTTP port exposed by the container |
+| `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` | Private render origin inside the container |
+| `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Installed Chromium browser location |
+
+Provide bootstrap credentials, a writable persistent `FRAMEKIT_DATABASE_PATH`,
+and any deployment-specific `FRAMEKIT_ALLOWED_IMAGE_HOSTS` through the runtime
+environment. The optional render limits can also be overridden there. Do not
+place secrets or deployment-specific allowlists in the Dockerfile or image
+layers.
+
 ## Documentation
 
 - [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)

@@ -18,6 +18,33 @@ lane de CI construye los paquetes públicos antes de esos checks.
 - `pnpm lint` — ejecuta ESLint en todos los workspaces
 - `pnpm build` — reconstruye todos los workspaces completamente; el paquete central se construye primero, luego todos los workspaces dependientes
 
+## Variables de entorno para tooling
+
+Las variables siguientes pertenecen al gestor de paquetes, navegador, CI o al
+plumbing de los smoke tests. No son configuración de plantillas ni del servidor
+de FrameKit. Un consumidor normal por lo general no necesita definirlas
+manualmente.
+
+| Variable | Consumida por | Uso | Acción para un consumidor normal |
+| --- | --- | --- | --- |
+| `NO_COLOR` | Helpers de terminal de `create-framekit` | Cualquier valor no vacío desactiva el estilo ANSI cuando el creator escribe en un TTY. | Opcional; define `NO_COLOR=1` cuando necesites salida sin formato. |
+| `npm_config_user_agent` | `create-framekit` y la comprobación de runtime de `framekit` | El creator detecta `pnpm` o `npm` mediante el user agent del gestor y lee desde él la versión de pnpm. El CLI de FrameKit lo usa para validar una versión de pnpm detectada. | No lo definas manualmente; normalmente lo proporcionan npm o pnpm. |
+| `ComSpec` | `create-framekit` en Windows | Selecciona el intérprete de comandos usado para ejecutar gestores de paquetes y otros procesos hijos; si falta, usa `cmd.exe`. | No lo definas para el uso normal; Windows suele proporcionarlo. |
+| `PATH` | El sistema operativo y los procesos hijos | Resuelve comandos como `pnpm`, `npm`, `git` y Docker. Las pruebas pueden anteponer comandos falsos, y la imagen Docker generada añade el directorio de instalación de pnpm. | Normalmente déjalo al sistema operativo; corrígelo solo si no se encuentra un ejecutable necesario. |
+| `CI` | Configuración de Playwright y `scripts/smoke-docker.mjs` | Cuando es truthy, Playwright prohíbe tests enfocados, activa un reintento y usa su reporter de línea. El smoke de Docker pasa `CI=1` a sus procesos hijos. | No lo definas durante el desarrollo normal; lo proporcionan el proveedor de CI o el script de smoke. |
+| `NEXT_TELEMETRY_DISABLED` | Next.js, mediante el CI del repositorio y el entorno del servidor web de Playwright | Se define como `1` en estas comprobaciones para desactivar la telemetría de Next.js durante su ejecución. | No es necesario para un consumidor normal. |
+| `PLAYWRIGHT_BROWSERS_PATH` | El proceso hijo de `browser install` de FrameKit y Playwright | Indica a Playwright dónde descubrir los binarios del navegador; `framekit browser install` usa el mismo registro. La imagen Docker generada la define como `/ms-playwright`. | Opcional; defínela solo si usas un registro de navegadores no predeterminado. |
+| `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | El Dockerfile generado durante la instalación de dependencias | Se define como `1` durante la instalación para que la imagen instale el navegador explícitamente después con `framekit browser install --with-deps`. | Normalmente no hace falta; es plumbing de build/contenedor. |
+| `FRAMEKIT_TEST_FAIL` | Solo los dobles de prueba de `create-framekit` | Hace que un comando npm o pnpm falso termine con código `7` para un subcomando indicado, con el fin de probar el manejo de fallos. | No la definas en un proyecto consumidor. |
+| `NODE_EXTRA_CA_CERTS` | TLS de Node.js en un proceso de smoke HTTPS separado | Añade una CA privada de prueba al almacén de confianza de ese proceso y mantiene activa la verificación de certificados. | Solo para smoke; los smoke actuales de tarballs y Docker no la necesitan, y un consumidor normal no debe definirla. |
+
+`framekit browser install` es el comando explícito para instalar el navegador;
+usa el runtime de Playwright fijado por el paquete y hereda
+`PLAYWRIGHT_BROWSERS_PATH` para descubrir el navegador. Consulta la [referencia
+del CLI de FrameKit](../reference/cli.md) y la [guía de instalación de
+navegadores de Playwright](https://playwright.dev/docs/browsers) para los
+detalles del comando y del directorio del navegador.
+
 `pnpm lint` es el gate completo de lint del repositorio. El hook de pre-commit lo
 ejecuta antes de `pnpm sync:skills` y después añade explícitamente las copias de
 skills sincronizadas. JavaScript y TypeScript bajo lint usan dos espacios,
@@ -118,7 +145,7 @@ pnpm --filter @mauriciodmo/framekit pack
 
 La lista `files` del paquete incluye `bin/`, `dist/`, `README.md` y `LICENSE`.
 
-tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `@tabler/icons-react`, `modern-screenshot`, `chokidar`, `tsx`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
+tsdown produce una salida ESM sin bundle. Los siguientes paquetes permanecen como externos (no se incluyen en el bundle): `react`, `react-dom`, `next`, `@tabler/icons-react`, `chokidar`, `tsx`, `playwright-core`. El CSS se compila por separado vía Tailwind CLI y se coloca en `dist/styles.css`.
 
 Una verificación posterior al build (`check-dist.ts`) escanea recursivamente todos los archivos `.js` emitidos bajo `dist/` en busca de violaciones de frontera de imports, verificando que los imports relativos se resuelvan en archivos dentro del paquete. También comprueba que los targets string de `exports` y `bin` sean rutas `./...` hacia archivos existentes dentro del paquete.
 
@@ -172,10 +199,11 @@ gates operativos separados.
 
 ## E2E de la API de imágenes
 
-`pnpm test:e2e` inicia Studio con una clave exclusiva para pruebas y ejercita la
-API de imágenes con Chromium real. `tests/e2e/image-api.spec.ts` comprueba el
-rechazo de autenticación y una respuesta PNG correcta, incluidos headers, firma
-y dimensiones.
+`pnpm test:e2e` inicia Studio con credenciales administrativas exclusivas para
+pruebas y una base de datos en memoria, y después ejercita la API de imágenes
+con Chromium real. `tests/e2e/image-api.spec.ts` comprueba el rechazo de
+autenticación y respuestas PNG correctas mediante sesión y token API, incluidos
+headers, firma y dimensiones.
 
 Los casos detallados de autenticación, parsing, política de imágenes remotas,
 capacidad, timeout, abort y limpieza permanecen en las suites Vitest enfocadas.
@@ -191,10 +219,11 @@ pnpm smoke:docker -- <versión-framekit-publicada-exacta>
 El script copia el consumidor canónico a un directorio temporal, crea su lockfile
 con esa versión del registro, construye e inicia la imagen Docker generada,
 verifica el usuario `node` no root y el entrypoint `tini`, rechaza una solicitud
-sin autenticación y renderiza un PNG con el asset local empaquetado. No repite la
-matriz detallada de Vitest ni requiere un fixture HTTPS. Se mantiene separado
-porque el smoke de tarball pre-publicación y un build Docker desde el registro
-ejercitan artefactos distintos.
+sin autenticación, inicia sesión y crea un token API de la base de datos, y
+renderiza un PNG con el asset local empaquetado. No repite la matriz detallada de
+Vitest ni requiere un fixture HTTPS. Se mantiene separado porque el smoke de
+tarball pre-publicación y un build Docker desde el registro ejercitan artefactos
+distintos.
 
 La secuencia shell siguiente es un procedimiento manual opcional del camino de
 creator. Audita ambos archivos, pero su flujo de consumidor solo crea y ejecuta
@@ -248,7 +277,7 @@ npm init -y
 npm install "$CREATOR_TGZ"
 npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
 
-# Sustituye la dependencia generada por el tarball del core y usa el gestor de paquetes del proyecto generado.
+# Sustituye la dependencia generada por el tarball del core e instala el proyecto generado con npm.
 cd "$SMOKE_DIR/consumer"
 node --input-type=module - "$CORE_TGZ" <<'NODE'
 import { readFile, writeFile } from 'node:fs/promises'

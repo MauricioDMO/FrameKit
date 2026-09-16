@@ -1,14 +1,23 @@
 # @mauriciodmo/create-framekit
 
 Scaffold a new FrameKit project with one command. The generated project
-includes browser-based Studio export and a server-side
+includes a local Studio preview, server-backed Download/Copy, and a server-side
 `POST /api/framekit/images/render` PNG API.
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
 cd my-project
+# Required before the first login when the database is empty.
+export FRAMEKIT_ADMIN_PASSWORD='replace-with-a-strong-password'
+# Required for server-side rendering on the default local port.
+export FRAMEKIT_INTERNAL_ORIGIN='http://127.0.0.1:3000'
 pnpm dev
 ```
+
+The first login against an empty database creates the administrator and needs
+`FRAMEKIT_ADMIN_PASSWORD` (12–256 UTF-8 bytes). `FRAMEKIT_ADMIN_USERNAME` is
+optional and defaults to `admin`; these bootstrap values are used only while
+the database has no users.
 
 ## Compatibility
 
@@ -41,15 +50,29 @@ includes a pnpm-only `Dockerfile` that uses
 `framekit browser install --with-deps`. A suitable `pnpm-lock.yaml` must exist
 in the generated project before `docker build`; npm or Yarn scaffolds and
 scaffolds created without dependency installation (including `-n`) are not
-Docker-ready or validated by this path. Its API key and image-host allowlist
-are supplied at runtime rather than baked into the image. Repository smoke
+Docker-ready or validated by this path. Its Studio bootstrap credentials,
+database path, and deployment-specific render settings are supplied at runtime
+rather than baked into the image. Repository smoke
 checks inspect the deployment files but do not perform a live Docker build.
 
+## Runtime configuration
+
+`FRAMEKIT_DATABASE_PATH` is optional and defaults to
+`.framekit-data/framekit.sqlite`, relative to the project working directory.
+Persist the directory containing this database when deploying. The image route
+requires `FRAMEKIT_INTERNAL_ORIGIN`, an HTTP loopback origin; the included
+Dockerfile sets the default `http://127.0.0.1:3000`. Optional render settings are
+`FRAMEKIT_ALLOWED_IMAGE_HOSTS` (empty disables remote images),
+`FRAMEKIT_MAX_CONCURRENT_RENDERS` (default `2`), and
+`FRAMEKIT_RENDER_TIMEOUT_MS` (default `30000` ms). Supply credentials and these
+settings through the runtime environment or deployment secret manager.
+
 The API route accepts JSON containing `template`, optional `variant`, and
-optional `data`, authenticates `Authorization: Bearer <FRAMEKIT_API_KEY>`, and
-returns `image/png` on success. It is mounted at
+optional `data`, authenticates an active Studio session or an API token created
+from Studio settings, and returns `image/png` on success. It is mounted at
 `POST /api/framekit/images/render`; the old `/api/v1/images` route is not
-maintained. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md).
+maintained. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
+for runtime variables, authentication, validation, bootstrap, and persistence details.
 
 To update the official agent skills in an existing project, run this from the project root:
 

@@ -3,8 +3,8 @@
 ## Goal
 
 Use the existing Chromium renderer for Studio Download PNG and Copy PNG through
-`POST /api/framekit/images/render`, while preserving classic API-key consumers
-and one shared request/render pipeline.
+`POST /api/framekit/images/render`, using the current session/API-token
+authentication and one shared request/render pipeline.
 
 ## Depends on
 
@@ -12,13 +12,11 @@ and one shared request/render pipeline.
 - Phase 4 API-token authentication.
 - Phase 5 Studio user experience.
 - Phase 5.5's unversioned `/api/framekit` namespace and catch-all adapter.
-- The verified `createImageHandler()` and private-render implementation.
+- The current `createStudioImageHandler()` and private-render implementation.
 
 ## Shared handler design
 
-Do not copy the current image pipeline into a second factory. Extract the
-smallest internal composition point that allows authentication to vary while
-retaining one implementation of:
+Keep one image pipeline and one internal composition point for:
 
 ```text
 configuration
@@ -33,38 +31,38 @@ PNG/error response
 cleanup
 ```
 
-Preserve:
-
-```ts
-createImageHandler(templates)
-```
-
-It continues to parse `FRAMEKIT_API_KEY` and authenticate the existing shared
-Bearer secret exactly as before.
-
-Add:
-
 ```ts
 createStudioImageHandler(templates)
 ```
 
-It parses render settings without requiring `FRAMEKIT_API_KEY`, then accepts an
-API token or Studio session. Refactor configuration so the reusable render
-settings parser is internal while the existing public `parseImageApiConfig()`
-and `ImageApiConfig` contract remain compatible.
+The current factory parses render settings with `parseImageRenderConfig()` and
+does not require an external render credential. It accepts a database API token
+or Studio session. The old API-key-only factory/configuration contract is removed
+and is not a compatibility requirement.
+
+The seven current application variables and their defaults, validation,
+first-boot, persistence, and security semantics are defined in Phase 5.5. In
+particular, `FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not a fallback or a
+replacement configuration setting.
 
 ## Authentication order
 
 For the Studio handler:
 
-1. Load and validate database/render configuration.
-2. If `Authorization` exists, validate only its Bearer API token.
+1. Load and validate render configuration; database-backed authentication uses
+   the configured database as needed.
+2. If `Authorization` exists, validate only its strict Bearer database API
+   token.
 3. Otherwise validate the session cookie and same-origin `Origin` header.
 4. Return `401` before reading the body when authentication fails.
 5. Continue through the existing pipeline only after authentication succeeds.
 
 An invalid Authorization header must not fall back to an ambient browser
-session. Update `last_used_at` when API-token authentication succeeds.
+session. Update `last_used_at` when API-token authentication succeeds. Session
+secrets and API-token secrets are stored only as hashes in the configured
+SQLite database; sessions expire and tokens can be revoked. The session path
+uses the validated request/forwarding origin rules, not an environment origin
+fallback.
 
 Do not change `/framekit/render/[id]`, render jobs, browser header injection, or
 private-token comparison.
@@ -114,11 +112,12 @@ Copy:
 Both actions share the existing pending guard. The preview remains local and
 must not wait for the server renderer.
 
-## Removing browser capture
+## Removing client-side browser capture
 
 Only after the server-backed integration tests pass:
 
-- remove DOM capture, cloning, `document.fonts.ready`, and data-URL conversion;
+- remove client-side DOM capture, cloning, and data-URL conversion; retain the
+  server-side `document.fonts.ready` wait in `packages/framekit/src/server/render-image.ts`;
 - remove the editor export ref when it has no other consumer;
 - remove `modern-screenshot` from `packages/framekit/package.json`;
 - remove it from `tsdown.config.ts` externals;
@@ -150,15 +149,14 @@ route file.
 
 ## Focused tests
 
-- classic `createImageHandler()` still requires and accepts `FRAMEKIT_API_KEY`;
-- Studio handler succeeds with a valid API token;
+- Studio handler succeeds with a valid API token without an external render key;
 - Studio handler succeeds with a valid same-origin session;
 - Studio handler accepts the same-origin session through the verified HTTPS
   reverse-proxy topology;
 - invalid Bearer does not fall back to a valid session;
 - revoked token, inactive user, expired session, and cross-origin session fail
   before body/template/browser work;
-- both factories call one shared parse/resolve/render implementation;
+- the Studio factory uses one shared parse/resolve/render implementation;
 - Studio sends exact template, selected variant, and user edits;
 - Studio does not send resolved defaults/assets;
 - Download receives a PNG Blob and revokes its object URL;
@@ -173,6 +171,7 @@ route file.
 ## Exit gate
 
 Phase 6 is complete when Studio download and copy use the authenticated server
-endpoint, the classic handler remains compatible, all image work still flows
-through one pipeline, browser capture code and dependency are gone, and the
-private renderer's security contract is unchanged.
+endpoint, all image work flows through one pipeline, the removed client-side
+browser capture code and legacy API-key contract remain absent, the private
+renderer retains its `document.fonts.ready` wait, and its security contract is
+unchanged.

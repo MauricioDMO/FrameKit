@@ -1,6 +1,6 @@
 # Step 7 - Packaging and Docker
 
-- **Status:** Implemented and locally reverified on 2026-09-13; Step 8 remains pending.
+- **Status:** Implemented; historical local verification is recorded below from 2026-09-13; Step 8 remains pending.
 
 ## Goal
 
@@ -8,8 +8,10 @@ Make the future server renderer a valid public package feature and produce a gen
 consumer Docker image containing the matching Chromium headless shell, required
 system libraries, Next.js standalone server, and no embedded secrets.
 
-The planned final runtime uses in-memory jobs only; no writable render-job
-directory or persistent volume is required.
+The planned final runtime keeps render jobs in process memory. SQLite access data
+is separate: deployments that retain users, sessions, or API tokens need a
+writable `FRAMEKIT_DATABASE_PATH` on persistent storage; no render-job directory
+or render-job volume is used.
 
 ## Depends on
 
@@ -135,11 +137,12 @@ Dockerfile
 .dockerignore
 .env.example
 next.config.ts
-src/app/layout.tsx
-src/app/globals.css
 src/app/[section]/[[...slug]]/page.tsx
-src/app/api/v1/images/route.ts
+src/app/api/framekit/[...action]/route.ts
 src/app/framekit/render/[id]/page.tsx
+src/app/globals.css
+src/app/layout.tsx
+src/app/login/page.tsx
 ```
 
 No browser-shutdown `src/instrumentation.ts` is required by the v1 design.
@@ -148,7 +151,7 @@ Creator-focused assertions:
 
 - deployment files copied with exact names;
 - hidden `.dockerignore` preserved;
-- exactly five maintained files exist under starter `src/app`;
+- exactly six maintained files exist under starter `src/app`;
 - the old home/editor/brand pages and local render-client binding are absent;
 - generated client bindings are absent from the copied template/tarball and
   recreated alongside the registries through normal FrameKit commands;
@@ -233,7 +236,8 @@ Runtime steps:
 11. Start `node server.js`.
 
 There is no FrameKit temp render directory to create/chown because jobs live in
-process memory.
+process memory. The SQLite access database is not copied into the image and is
+not covered by that in-memory job store.
 
 ## Dockerfile shape
 
@@ -280,11 +284,12 @@ arguments, pnpm standalone layout, ownership, and whether copying all production
 build proves it can contain only the standalone traced dependencies plus browser
 install/runtime requirements.
 
-## Verification record
+## Historical verification record
 
-The current checkout was reverified locally on 2026-09-13 without publishing
-packages. The runtime contract, focused CLI/creator/render tests, full workspace
-suite (736 tests), lint, typecheck, and workspace build passed.
+The following is historical local smoke evidence from 2026-09-13, captured
+without publishing packages; it is not a current Step 8 pass. The runtime
+contract, focused CLI/creator/render tests, full workspace suite (736 tests),
+lint, typecheck, and workspace build passed at that time.
 
 The pre-publication tarball smoke passed for both the independent consumer and
 the creator-generated consumer. It verified package targets and exports, absence
@@ -302,7 +307,8 @@ authentication.
 The committed `scripts/smoke-docker.mjs` remains a registry smoke and requires an
 exact published FrameKit version. It was not run against npm because no package
 was published; the temporary local Docker run covered the same image/runtime
-assertions before publication.
+assertions before publication. The script uses one ephemeral container and does
+not mount or reuse database storage, so it is not a persistence check.
 
 ## `.dockerignore`
 
@@ -311,6 +317,7 @@ Exclude at minimum:
 ```text
 node_modules
 .framekit
+.framekit-data/
 .next
 dist
 coverage
@@ -327,11 +334,70 @@ public assets, package metadata, lockfile, or required Next configuration.
 
 ## Runtime secrets and configuration
 
-- `FRAMEKIT_API_KEY` is supplied at runtime, never Docker `ARG`/baked secret.
-- `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is supplied at runtime.
-- `FRAMEKIT_INTERNAL_ORIGIN` may default in the image because it is non-secret and
-  tied to container topology.
-- max concurrency/render timeout may be runtime env values.
+- The generated Dockerfile sets `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
+  `PORT=3000`, `FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
+  `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. These are image defaults; runtime
+  environment values can override them.
+- `NODE_ENV` has no FrameKit parser default or validation. The current runtime
+  checks whether it is exactly `production` when adding the session-cookie
+  `Secure` attribute (`packages/framekit/src/server/access/http/session.ts`), and
+  when disabling editor image upload (`packages/framekit/src/editor/framekit-editor.tsx`).
+- `HOSTNAME` has no FrameKit parser default or validation. The generated Next
+  standalone `server.js` consumes the Docker value for its bind address; FrameKit's
+  development server instead consumes `FRAMEKIT_HOST`, then `HOST`, then
+  `localhost` (`packages/framekit/src/tooling/dev/server-options.ts`).
+- `PORT` is consumed by the generated Next standalone server in production. For
+  `framekit dev`, it defaults to `3000` and must be an integer from `1` through
+  `65535`.
+- `FRAMEKIT_INTERNAL_ORIGIN` has no parser default. `parseImageRenderConfig`
+  requires an exact, trimmed `http://` loopback origin (`localhost`, `127.0.0.1`,
+  or `[::1]`), with an optional port and only the root path; credentials,
+  query/fragment, and other paths are invalid. The parsed value is consumed by
+  `createStudioImageHandler` and `renderTemplateImage` for the private render URL
+  and browser request allowlist. The Docker value is valid for the container's
+  local standalone server.
+- `PLAYWRIGHT_BROWSERS_PATH` has no FrameKit parser default or validation. The
+  FrameKit browser command inherits it when delegating to `playwright-core`, and
+  Playwright uses it to locate/install the Chromium headless shell. The Docker
+  default is `/ms-playwright`.
+- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is build-only in the generated Dockerfile,
+  applied to the two `pnpm install` commands in `build-deps` and `prod-deps`. It is
+  not a runtime renderer setting; browser installation is explicit through
+  `framekit browser install`.
+- `FRAMEKIT_DATABASE_PATH` is consumed by `getDatabase()` and defaults to
+  `.framekit-data/framekit.sqlite`, resolved relative to `process.cwd()`; in the
+  generated runner this is `/app/.framekit-data/framekit.sqlite`. Parent
+  directories are created for file-backed databases. `:memory:` is the only
+  special value and there is no additional FrameKit path validation. The
+  Dockerfile does not set this variable, create `/data`, or declare a `VOLUME`;
+  persistent deployments should set it to a writable mounted path such as
+  `/data/framekit.sqlite`. The database volume stores access data only; render
+  jobs remain in process memory.
+- `FRAMEKIT_ADMIN_USERNAME` is consumed by `bootstrapUsers()` only when the
+  database has no users. It defaults to `admin` and must contain 3-64 ASCII
+  letters, numbers, `.`, `_`, or `-`.
+- `FRAMEKIT_ADMIN_PASSWORD` is consumed by `bootstrapUsers()` only when the
+  database has no users. It has no default and must be 12-256 UTF-8 bytes.
+- `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is consumed by `parseImageRenderConfig` and the
+  Node-side remote-image preparation. Unset or empty means an empty set and
+  disables remote hosts. Otherwise it is a comma-separated set of trimmed,
+  lowercased exact DNS hostnames; empty entries are ignored, while IP literals,
+  ports, wildcards, paths, invalid hostnames, and names over 253 characters fail
+  configuration.
+- `FRAMEKIT_MAX_CONCURRENT_RENDERS` is consumed by `parseImageRenderConfig` and
+  the process-local render-slot check. It defaults to `2` and accepts only
+  positive decimal integers from `1` through `32`.
+- `FRAMEKIT_RENDER_TIMEOUT_MS` is consumed by `parseImageRenderConfig`, the image
+  request deadline, and browser/render timeouts. It defaults to `30000` ms and
+  accepts only positive decimal integers from `1` through `120000` ms.
+- The current `createFrameKitApiHandler` delegates the image path to
+  `createStudioImageHandler`, which parses render settings through
+  `parseImageRenderConfig` and authenticates with a same-origin session cookie or
+  a database API token. The historical `createImageHandler`,
+  `parseImageApiConfig`, `authenticateBearer`, and `FRAMEKIT_API_KEY` API-key
+  verification path are removed, not current runtime configuration.
+- `FRAMEKIT_PUBLIC_ORIGIN` is unsupported. It is not read and is not a fallback
+  for `FRAMEKIT_INTERNAL_ORIGIN` or request-origin handling.
 - never copy `.env` files into image layers.
 - document `docker run --env-file ...` only with placeholder/example values.
 
@@ -430,7 +496,7 @@ the production domain. Compile-time type fixtures remain under
   dependency install or other FrameKit commands.
 - FrameKit package emits valid `server` targets.
 - Client-capable entries remain free of server dependencies.
-- Creator copies deployment files and the five-file application integration;
+- Creator copies deployment files and the six-file application integration;
   generated bindings are reproduced and obsolete wrappers are absent.
 - Generated app contains no workspace-local dependency paths.
 - `framekit check` and production build succeed.

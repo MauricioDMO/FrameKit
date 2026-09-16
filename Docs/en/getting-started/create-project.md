@@ -55,6 +55,46 @@ pnpm --filter @mauriciodmo/create-framekit build && node packages/create-frameki
 
 The command uses the local `create-framekit` build and does not require publishing the package. The generated project still installs the FrameKit version declared by its template.
 
+## Configure the runtime
+
+Review the generated `.env.example` and provide these values through the
+runtime environment. On the first login, when the configured database has no
+users, `FRAMEKIT_ADMIN_PASSWORD` bootstraps the first administrator and
+`FRAMEKIT_ADMIN_USERNAME` optionally sets the username (default: `admin`).
+After a user exists, these bootstrap variables are ignored:
+
+| Variable | Purpose | Default or requirement |
+| --- | --- | --- |
+| `FRAMEKIT_ADMIN_USERNAME` | First administrator username | Optional; `admin` |
+| `FRAMEKIT_ADMIN_PASSWORD` | First administrator password | Required only on first login with an empty database; no default; 12-256 UTF-8 bytes |
+| `FRAMEKIT_DATABASE_PATH` | SQLite users, sessions, and API tokens | `.framekit-data/framekit.sqlite`, relative to the working directory |
+| `FRAMEKIT_INTERNAL_ORIGIN` | Private origin for server-side PNG rendering | Required by the image route; HTTP loopback origin |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Exact HTTPS hostnames permitted for remote raster images | Optional; empty disables remote images |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Concurrent server-render limit | Optional; `2` (maximum `32`) |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | Server-render timeout in milliseconds | Optional; `30000` (maximum `120000`) |
+
+After the first user exists, changing the administrator variables does not
+change that user. Persist the directory containing the database path when the
+project runs in a container. See the [runtime environment reference](../reference/public-api.md#runtime-environment-variables)
+for complete variable behavior and validation details, and the [CLI reference](../reference/cli.md)
+for the separate development and production environment rules.
+
+## Deploy with Docker
+
+The included Dockerfile sets these non-secret defaults in the runtime image:
+
+| Variable | Default |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `HOSTNAME` | `0.0.0.0` |
+| `PORT` | `3000` |
+| `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` |
+| `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` |
+
+Provide administrator credentials and any deployment-specific image-host
+allowlist through the runtime environment. Do not put secrets in the Dockerfile
+or bake them into image layers.
+
 ## Start development
 
 Navigate to the project directory and start the development server:

@@ -87,15 +87,14 @@ When zoomed in past the container edges, you can pan by dragging the preview are
 
 Two buttons sit in the lower-right corner of the preview: **Actual size** resets to 100% scale, and **Fit to view** refits the template to the container. Auto-refit on window resize only occurs while the preview is in fit-to-view mode; manual zoom positions are preserved on resize.
 
-## PNG export (browser-based through Phase 6)
+## PNG export
 
-The Export and Copy PNG buttons validate the current resolved, committed data before doing anything else. If any field fails validation, localized field errors are shown, the first invalid field receives focus, and the action stops. After validation passes, export waits for fonts to finish loading via `document.fonts.ready`, then captures the template at exactly its declared `width×height` at scale 1 using `modern-screenshot`; Copy PNG places the captured PNG on the clipboard when supported.
+The Export and Copy PNG buttons validate the current resolved, committed data before doing anything else. If any field fails validation, localized field errors are shown, the first invalid field receives focus, and the action stops. After validation passes, Studio sends the selected template, variant, and user edits to `POST /api/framekit/images/render`. The server applies defaults, assets, validation, and Chromium rendering; server-side field validation errors are translated back into the editor.
 
-Export then downloads a PNG file in the browser. The filename uses the template slug with `/` replaced by `-` (e.g., `social/instagram/post` becomes `social-instagram-post.png`). Copy PNG places the captured image on the clipboard instead of downloading it.
+Export then downloads the returned PNG Blob in the browser. The filename uses the template slug with `/` replaced by `-` (e.g., `social/instagram/post` becomes `social-instagram-post.png`). Copy PNG writes the returned PNG Blob to the clipboard when supported.
 
-Studio export runs entirely in the browser until Phase 6 server-backed export.
-Separate server-side PNG rendering uses the private render-job/page handoff; the
-current Studio export has no format options and no scale or DPI controls.
+Studio export has no format options and no scale or DPI controls. The preview
+remains local and does not wait for the server renderer.
 
 ## Theme
 
@@ -128,7 +127,7 @@ Studio displays different states depending on what is happening:
 - **Load error** — an entry's loader rejected, such as after a failed dynamic import. Raw loader errors are not exposed; Studio shows the localized template or brand load-error message.
 - **Data error** — the loaded template's resolved data is invalid, for example because of an unknown variant or field key or a wrong typed value. Studio shows its localized data-error message.
 - **Upload error** — an image upload callback failed. The affected field receives the localized upload-error message.
-- **Export error** — PNG capture or clipboard copying failed after validation. Studio reports the localized export alert; validation failures remain associated with their fields instead.
+- **Export error** — server PNG rendering, download, or clipboard copying failed after validation. Studio reports the localized export alert; structured validation failures remain associated with their fields instead.
 - **Not found** — the URL does not match an exact slug in the active catalog. Studio shows a localized visual 404 and a link back to `/editor` or `/brand`; this is not an HTTP 404.
 
 ---

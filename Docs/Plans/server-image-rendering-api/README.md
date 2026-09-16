@@ -11,11 +11,13 @@
 
 The current supported package facades are `.`, `./client`, `./editor`, `./studio`,
 `./studio/root`, `./dev`, `./server`, `./next`, and `./styles.css`. The `./server`
-facade currently exports the Steps 1-5 contracts, errors, configuration parser,
-Bearer authentication helper, image-input preparation API, temporary render jobs,
-PNG browser renderer, and Step 0.5 `createRenderPage`. The `./client` factory and
-the Step 0.6 configuration-only `./next` facade (`withFrameKit`) also exist. Step
-6 adds `createImageHandler` to `./server`. This plan does not propose `server/*`,
+facade currently exports the render contracts and errors, image-input preparation
+API, temporary render jobs, PNG browser renderer, `createRenderPage`, the
+session/API-token `createStudioAccessHandler` and `createStudioImageHandler`, the
+unified `createFrameKitApiHandler`, and API-token metadata types. The internal
+`parseImageRenderConfig` parser is used by the image handler and is not a public
+facade export. The `./client` factory and the Step 0.6 configuration-only `./next`
+facade (`withFrameKit`) also exist. This plan does not propose `server/*`,
 `browser`, `auth`, or `shared` public subpaths.
 
 ## Purpose of this plan
@@ -24,11 +26,11 @@ This directory is the implementation plan for an authenticated API that renders
 FrameKit templates to PNG on the server.
 
 A client sends a template slug, optional variant, and partial field data. The
-public route authenticates the request, validates and resolves the template data,
-materializes request-specific remote images through Node.js, stores the final
-render payload in a short-lived in-memory job, opens a private Next.js render
-page with Chromium, captures the exact template canvas through
-`playwright-core`, deletes the job, and returns the PNG bytes in the same HTTP
+canonical route authenticates an active Studio session or API token. It validates
+and resolves template data, materializes request-specific remote images through
+Node.js, stores the final render payload in a short-lived in-memory job, opens a
+private Next.js render page with Chromium, captures the exact template canvas
+through `playwright-core`, deletes the job, and returns PNG bytes in the same HTTP
 response.
 
 The first implementation intentionally targets one long-lived Node.js process per
@@ -42,15 +44,15 @@ README defines the cross-cutting contract and execution order.
 
 The verified Steps 1-7 implementation remains the rendering baseline. The
 [Studio Access, API Tokens, and Server-backed Export plan](../studio-access-and-api-rendering/README.md)
-must now run before Step 8 final closure. It supersedes the final assumptions of
-one canonical shared API key, five maintained starter files, no application
-persistent volume, and browser-based Studio export.
+must now run before Step 8 final closure. It supersedes the historical assumptions
+of a shared `FRAMEKIT_API_KEY` authentication model, five maintained starter files,
+no application persistent volume, and browser-based Studio export.
 
 SQLite introduced by that plan stores users, sessions, and API tokens only. It
 does not replace the temporary `globalThis + Map` render-job store described by
 this plan. Sections below that describe browser export, the five-file starter,
 or no persistent application data are historical Step 1-7 baseline records, not
-active Step 8 instructions. The Step 8 document uses the superseding seven-file,
+active Step 8 instructions. The Step 8 document uses the superseding six-file,
 session/API-token, server-backed-export baseline.
 
 ## How to execute the plan
@@ -73,7 +75,7 @@ their gates run after Step 5 and before Step 6.
 | 3 | [Temporary render jobs](./03-temporary-render-jobs.md) | Authenticated, expiring `globalThis Map` handoff | Step 1 |
 | 4 | [Browser lifecycle and capture](./04-browser-lifecycle-and-capture.md) | Shared Chromium, bounded contexts, loopback-only browser network, PNG capture | Steps 1-3 |
 | 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders already-resolved data | Steps 2-4 |
-| 6 | [Public image API route](./06-public-image-api-route.md) | Package-owned `createImageHandler(templates)` and a thin authenticated PNG route | Steps 0.5-0.6 and 1-5 |
+| 6 | [Public image API route](./06-public-image-api-route.md) | Package-owned authenticated image handler and a thin PNG route | Steps 0.5-0.6 and 1-5 |
 | 7 | [Packaging and Docker](./07-packaging-and-docker.md) | FrameKit-owned browser installation/versioning, minimal starter distribution, and production image | Steps 0.5-0.6 and 1-6 |
 | 8 | [Verification and rollout](./08-verification-and-rollout.md) | Final unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7, then Studio Access and API Rendering Phases 1-8 |
 
@@ -194,7 +196,7 @@ pass.
 
 See [the implementation phase](./00.6-minimal-consumer-integration.md). The
 historical post-Step-6 starter has five maintained files under `src/app`; the
-Studio Access plan supersedes that shape with seven. The pre-migration baseline
+Studio Access plan supersedes that shape with six. The pre-migration baseline
 was seven maintained files (the previous full-feature plan described eight); the
 verified pre-Step-6 result was four maintained `src/app` files. The historical
 five-file post-Step-6 result is:
@@ -252,10 +254,10 @@ for render readiness/fonts/images, captures and verifies PNG bytes, and cleans
 up context, jobs, and capacity on success, failure, timeout, or abort. Real
 Chromium validation remains a later integration gate.
 
-## Step 7 verification
+## Step 7 verification (historical pre-Phase 6 record)
 
 Step 7 was locally reverified on 2026-09-13 without publishing either package.
-The current checkout passed the runtime contract, focused CLI/creator/render
+The then-current checkout passed the runtime contract, focused CLI/creator/render
 tests, the full workspace suite (736 tests), lint, typecheck, and workspace
 build. The packed-package smoke also passed for an independent consumer and a
 creator-generated consumer, including public export resolution, generated
@@ -266,7 +268,9 @@ The packed FrameKit CLI installed its pinned Chromium headless shell while
 honoring `PLAYWRIGHT_BROWSERS_PATH`. A separate temporary Docker context using
 the freshly packed local package built the canonical image, installed the shell
 and system dependencies, ran as `node` under `tini`, rejected an unauthenticated
-request, and returned a `1200x800` PNG from the API. No package was published.
+request, and returned a `1200x800` PNG from the then-current classic API-key image
+handler. No package was published. This is historical evidence; the current
+canonical route uses the Studio session/API-token handler.
 
 The repository `smoke:docker` command remains intentionally registry-backed: it
 requires an exact published FrameKit version. That post-publication check is
@@ -286,10 +290,13 @@ Each step contains:
 Add a production-ready synchronous PNG endpoint with this external behavior:
 
 ```http
-POST /api/v1/images
-Authorization: Bearer <FRAMEKIT_API_KEY>
+POST /api/framekit/images/render
+Authorization: Bearer <API_TOKEN>
 Content-Type: application/json
 ```
+
+The canonical generated-consumer and Studio route accepts either an active
+`framekit_session` cookie with a same-origin `Origin`, or an unrevoked API token.
 
 ```json
 {
@@ -323,8 +330,8 @@ template model:
 
 - `packages/framekit/src/editor/framekit-editor.tsx` resolves data and invokes
   `definition.render(...)` inside an exact-size wrapper used by Studio.
-- `packages/framekit/src/editor/export/export-template.ts` exports PNG in the browser
-  with `modern-screenshot` after `document.fonts.ready`.
+- `packages/framekit/src/editor/export/export-template.ts` delegates PNG export to
+  the authenticated server image route.
 - `packages/framekit/src/core/template-data/resolve-template-data.ts` applies defaults,
   variant content, edits, and matching image assets.
 - `packages/framekit/src/tooling/dev/asset-upload.ts` already contains useful byte limits,
@@ -337,13 +344,12 @@ template model:
   `.framekit/next`.
 - `framekit build` already copies `public` and Next static assets beside the
   discovered standalone server.
-- Server Image Rendering remains incomplete: the public package now includes the
-  Steps 1-6 contracts, jobs, browser/capture runtime, private-page integration,
-  and public image API route; Step 7 also adds the browser installer and
-  production Dockerfile, while Step 8's final rollout verification remains.
+- Server Image Rendering now includes the package contracts, jobs, browser/capture
+  runtime, private-page integration, authenticated image API route, browser
+  installer, and production Dockerfile; final rollout verification remains.
 
-Studio's existing `modern-screenshot` export remains functional. The server API
-is additive in the first implementation.
+Studio Download PNG and Copy PNG use the authenticated server image route; local
+preview remains client-side.
 
 ## Accepted architecture
 
@@ -351,21 +357,21 @@ is additive in the first implementation.
 
 | Concern | Owner | Why |
 |---|---|---|
-| Public request types, configuration, auth helpers, and stable render errors | `@mauriciodmo/framekit/server` (Step 1) | One reusable server contract |
+| Public request types, configuration, access handler, and stable render errors | `@mauriciodmo/framekit/server` (Step 1) | One reusable server contract |
 | In-memory render-job store | `@mauriciodmo/framekit/server` (Step 3) | Public route and private page share one implementation |
 | Browser singleton, capacity, context lifecycle, and capture | `@mauriciodmo/framekit/server` (Step 4) | Browser fixes ship with FrameKit |
 | Image parsing, remote fetching, byte/signature validation | `@mauriciodmo/framekit/server` (Step 2) plus shared raster helper | Browser never needs external network access |
 | Shared exact-size render canvas | `@mauriciodmo/framekit/editor` | Studio and server page use the same render boundary |
 | Private client render lifecycle | `@mauriciodmo/framekit/client` (Step 0.5) | Client behavior ships once and remains separate from Node/server code |
 | Private page handoff behavior | `@mauriciodmo/framekit/server` (Step 0.5) | Header/job lookup is shared without moving the Next route convention |
-| Public HTTP pipeline and response mapping | `@mauriciodmo/framekit/server` (Step 6) | `createImageHandler(templates)` owns auth, parsing, preparation, cancellation, and PNG/errors |
-| Public App Router route adapter | Generated application | Exports static route config and the package-created `POST` handler |
+| Public HTTP pipeline and response mapping | `@mauriciodmo/framekit/server` (Step 6) | `createStudioImageHandler(templates)` owns auth, parsing, preparation, cancellation, and PNG/errors |
+| Public App Router route adapter | Generated application | Exports static route config and the package-created catch-all `GET`, `POST`, `PATCH`, and `DELETE` handlers |
 | Private render route shell and static config | Generated application | Next.js discovers routes from the consumer `app` tree |
 | Studio/private client registry bindings | Package codegen, emitted inside each consumer (Step 0.6) | Lazy loaders remain consumer-local without maintained wrapper files |
 | Studio section validation | `@mauriciodmo/framekit/studio/root` (Step 0.6) | One page adapter accepts only editor/brand sections |
 | Standard Next config and root redirect | `@mauriciodmo/framekit/next` (Step 0.6) | One configuration-time facade, free of request/browser dependencies |
 | Browser revision and explicit installation command | FrameKit package and CLI (Step 7) | Consumers do not synchronize a direct Playwright dependency |
-| API key and allowed image hosts | Generated application runtime environment | Secrets and deployment policy belong to the application |
+| Access credentials and allowed image hosts | SQLite and generated application runtime environment | Secrets and deployment policy belong to the application |
 | Dockerfile and `.dockerignore` | Generated application | Container construction is application-owned |
 | First-party integration | `apps/studio` | Dogfood supported public imports and protocol |
 
@@ -373,8 +379,9 @@ is additive in the first implementation.
 
 ```text
 Client
-  -> POST /api/v1/images                       generated application
-     -> createImageHandler(templates)           @mauriciodmo/framekit/server
+  -> POST /api/framekit/images/render            generated application
+     -> createFrameKitApiHandler(templates)     @mauriciodmo/framekit/server
+        -> createStudioImageHandler(templates)  @mauriciodmo/framekit/server
      -> auth + bounded request parsing          package-owned handler
      -> load template definition              generated registry
      -> prepare image inputs                   @mauriciodmo/framekit/server
@@ -412,15 +419,15 @@ add `services/`, `utils/`, `lib/`, or `commands/` layers.
 ## End-to-end lifecycle
 
 Step 6 implements Steps 1-11 and the final HTTP response once inside the package's
-`createImageHandler`, rather than copying them into consumer route adapters. The
+`createStudioImageHandler`, rather than copying them into consumer route adapters. The
 following lifecycle is the implemented target design; final rollout verification
 remains in Step 8.
 One request-wide deadline and abort signal cover body reading, image preparation,
 and capture; the browser stage does not renew the end-to-end timeout budget.
 
 1. The public route loads validated configuration.
-2. It authenticates the Bearer API key before parsing request data or revealing
-   template details.
+2. It authenticates the session or database API token before parsing request data
+   or revealing template details.
 3. It reads the JSON body with an encoded byte limit.
 4. It validates the exact top-level request shape.
 5. It finds the template in the generated registry and loads its definition.
@@ -460,7 +467,7 @@ and capture; the browser stage does not renew the end-to-end timeout budget.
 - The caller chooses a template slug, never an arbitrary page URL or HTML string.
 - Public authentication happens before body parsing, template lookup, or remote
   image fetching.
-- One shared API key is the initial public auth mechanism.
+- The canonical image route accepts a valid active-user session or API token.
 - Job ID and private token are generated independently.
 - The private token is sent only to the exact private document request; it is not
   configured as a global browser/page header.
@@ -490,7 +497,7 @@ and capture; the browser stage does not renew the end-to-end timeout budget.
 - The browser has a bounded number of simultaneous render contexts and no
   in-process wait queue in v1.
 - Success returns binary `image/png`, never a base64 JSON wrapper.
-- Logs never contain API keys, private tokens, request field values, data URLs,
+- Logs never contain session credentials, API tokens, private tokens, request field values, data URLs,
   or full signed remote URLs.
 
 ## Public HTTP summary
@@ -533,7 +540,7 @@ Only canonical field-validation errors may include `fields`.
 | Code | HTTP | Meaning |
 |---|---:|---|
 | `invalid_request` | 400 | Malformed JSON, shape, variant, or unsupported input form |
-| `unauthorized` | 401 | Missing or wrong Bearer token |
+| `unauthorized` | 401 | Missing or invalid session or API-token credential |
 | `template_not_found` | 404 | Authenticated request references an unknown template |
 | `request_too_large` | 413 | Request or decoded image exceeds a configured bound |
 | `unsupported_image` | 415 | Raster MIME/signature is unsupported or inconsistent |
@@ -547,27 +554,38 @@ Only canonical field-validation errors may include `fields`.
 
 ## Configuration summary
 
-Initial environment surface:
+The render parser reads these values on each handler request. It does not read
+`NODE_ENV` or provide development fallbacks:
 
-```text
-FRAMEKIT_API_KEY
-FRAMEKIT_INTERNAL_ORIGIN
-FRAMEKIT_ALLOWED_IMAGE_HOSTS
-FRAMEKIT_MAX_CONCURRENT_RENDERS
-FRAMEKIT_RENDER_TIMEOUT_MS
-```
+| Variable | Purpose and consumer | Default/valid values |
+|---|---|---|
+| `FRAMEKIT_INTERNAL_ORIGIN` | Strict render configuration used to build the private browser URL and permit the browser's internal requests. | Required `http://` loopback origin: `127.0.0.1`, `[::1]`, or `localhost`; root path only, with optional port. Docker uses `http://127.0.0.1:3000`. |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Comma-separated exact hostnames consumed by Node.js remote-image fetching. Chromium does not use this as a network permission. | Empty or unset means an empty set and disables remote HTTPS overrides. Entries are normalized; schemes, ports, paths, wildcards, and IP literals are invalid. |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Process-local render-slot limit consumed by the browser renderer. | Default `2`; base-10 integer `1`-`32`. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | Request/render deadline consumed by the image handler and browser renderer. | Default `30000`; base-10 integer `1`-`120000`. |
 
-Rules:
+The canonical `createFrameKitApiHandler(templates)` route uses the render parser
+and session/API-token authentication. Session credentials, API tokens, and private
+render tokens must not be placed in images, jobs, browser state, URLs, or logs.
 
-- `FRAMEKIT_API_KEY` is required by the current parser in every environment;
-  production therefore fails closed.
-- `FRAMEKIT_INTERNAL_ORIGIN` is loopback-only, normally
-  `http://127.0.0.1:3000` in Docker; the current parser also requires it in
-  every environment.
-- `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is a comma-separated exact-host allowlist used
-  only by the Node.js remote-image fetcher.
-- an empty host allowlist disables remote HTTPS image overrides.
-- production Chromium is always headless in v1.
+### Docker and production variables
+
+- `NODE_ENV=production` selects the production Next.js runtime; FrameKit's access
+  cookie helper also adds `Secure` to session cookies only when the value is exactly
+  `production`.
+- `HOSTNAME=0.0.0.0` and `PORT=3000` are consumed by the standalone Next.js server
+  for container binding. They do not replace the strict loopback
+  `FRAMEKIT_INTERNAL_ORIGIN` used for private rendering.
+- `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` is consumed by Playwright both when
+  `framekit browser install` resolves the browser location and when the renderer
+  launches Chromium. The installer and runtime must use the same path.
+- `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is build-only in the generated Dockerfile;
+  it prevents dependency installation from downloading browsers. The runner
+  installs the pinned Chromium headless shell explicitly with
+  `framekit browser install --with-deps`.
+
+Do not add or document `FRAMEKIT_PUBLIC_ORIGIN`, `HEADLESS`, `SLOW_MO`, arbitrary
+browser arguments, or browser selectors: current code does not consume them.
 
 ## Initial resource limits
 
@@ -598,7 +616,7 @@ packages/framekit/src/
   next/
     config.ts                      # withFrameKit()
     __tests__/
-  server.ts                        # current render facade; Step 6 adds createImageHandler
+  server.ts                        # current server/render facade and authenticated image handlers
   core/
     fields/
     template-data/
@@ -628,7 +646,7 @@ packages/framekit/src/
     discovery/
     dev/
   server/
-    auth.ts
+    access/                         # Studio sessions, API tokens, and access HTTP
     browser.ts
     config.ts
     errors.ts
@@ -657,7 +675,8 @@ packages/create-framekit/template/
   src/app/layout.tsx
   src/app/globals.css
   src/app/[section]/[[...slug]]/page.tsx
-  src/app/api/v1/images/route.ts
+  src/app/login/page.tsx
+  src/app/api/framekit/[...action]/route.ts
   src/app/framekit/render/[id]/page.tsx
 
 apps/studio/
@@ -665,7 +684,8 @@ apps/studio/
   src/app/layout.tsx
   src/app/globals.css
   src/app/[section]/[[...slug]]/page.tsx
-  src/app/api/v1/images/route.ts
+  src/app/login/page.tsx
+  src/app/api/framekit/[...action]/route.ts
   src/app/framekit/render/[id]/page.tsx
   src/__tests__/framekit/generation.integration.test.ts
 
@@ -697,10 +717,11 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 
 - Keep changes in the smallest owning layer.
 - Route adapters must not duplicate browser, image-fetch, or job-store logic.
-- The public adapter exports `POST = createImageHandler(templates)`; the package
-  also owns authentication order, bounded parsing, resolution, and HTTP mapping.
+- The canonical adapter binds `createFrameKitApiHandler(templates)` and exports
+  the catch-all `GET`, `POST`, `PATCH`, and `DELETE` methods; the package owns
+  authentication order, bounded parsing, resolution, and HTTP mapping.
 - Step 0.6 reduced its historical maintained starter `src/app` inventory from
-  eight to five files. The Studio Access plan supersedes it with seven; generated
+  eight to five files. The Studio Access plan supersedes it with six; generated
   bindings stay disposable and generation never rewrites routes.
 - `./next` must import without a Next request context and without pulling in
   `./server`, Playwright, Studio, or development-server initialization.
@@ -751,7 +772,7 @@ The feature is complete when:
 - final Docker runs standalone Next.js and matching Chromium as non-root under
   `tini`;
 - package tarballs work in an isolated creator-generated project;
-- the final starter has seven maintained `src/app` files, with existing URLs and
+- the final starter has six maintained `src/app` files, with existing URLs and
   project styling preserved and registry bindings reproducible through codegen;
 - the API adapter contains no HTTP pipeline logic, and browser installation uses
   FrameKit's pinned dependency without consumer-managed Playwright versions;
@@ -780,5 +801,6 @@ The feature is complete when:
 - SVG or other active uploaded/request image documents;
 - JPEG/WebP/PDF output, scale/DPI, quality, crop, or transparency controls;
 - Firefox/WebKit/browser selection;
-- replacing Studio's current `modern-screenshot` export;
+- reverting Studio Download/Copy to the historical browser-based `modern-screenshot`
+  export;
 - pixel-identical cross-platform visual regression guarantees.

@@ -202,9 +202,9 @@ control and are not passed to the template render function.
 
 Editor edits persist per template and variant under `framekit:<slug>:v2`.
 Older state is intentionally invalidated rather than migrated. Preview and render
-use committed typed values; the current Download and Copy buttons use the browser
-exporter, validate the current committed data before producing output, and focus
-the first invalid control.
+use committed typed values; the current Download and Copy buttons send the
+selected template, variant, and user edits to the authenticated image API after
+local validation, and focus the first invalid control on local or server errors.
 
 See the [brand catalog reference](./brand-catalog.md) for the `src/brand`
 discovery contract, generated registries, and `/brand` behavior.
@@ -309,29 +309,25 @@ modules, and synchronizes template assets under `public/framekit/templates`.
 
 ### `@mauriciodmo/framekit/server`
 
-The server entry point is a Node.js/server-only facade for the implemented
-Studio Access Phase 4 handler and the existing API-key-authenticated
+The server entry point is a Node.js/server-only facade for Studio access and
 image-rendering contracts: configuration and authentication, the Studio access
-handler, the public image handler, image-input preparation, temporary render
-jobs, PNG browser rendering, and the private render-page handoff. The Phase 6
-authenticated image API migration and server-backed Download/Copy remain
-pending. Do not import it into browser bundles.
+handler, session/API-token image handling, image-input
+preparation, temporary render jobs, PNG browser rendering, and the private
+render-page handoff. Do not import it into browser bundles.
 
 **Runtime exports**
 
 | Export               | Description                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------- |
-| `parseImageApiConfig` | `parseImageApiConfig(env: NodeJS.ProcessEnv): ImageApiConfig`; parses the image API configuration |
-| `authenticateBearer` | `authenticateBearer(authorization: string \| null \| undefined, expectedToken: string): boolean`; checks an authorization value against an expected Bearer token using an exact token match |
 | `createFrameKitApiHandler` | `createFrameKitApiHandler(templates): (request: Request) => Promise<Response>`; composes the access routes and canonical image route under `/api/framekit` |
 | `createStudioAccessHandler` | `createStudioAccessHandler(): (request: Request) => Promise<Response>`; creates the authenticated Studio session and token/user management handler |
 | `ImageRenderError`   | `new ImageRenderError(failure: ImageRenderFailure)`; error type with a stable public error code and safe serialization |
-| `createImageHandler` | `createImageHandler(templates): (request: Request) => Promise<Response>`; creates the authenticated PNG image API handler |
+| `createStudioImageHandler` | `createStudioImageHandler(templates): (request: Request) => Promise<Response>`; creates the session/API-token PNG image API handler |
 | `prepareRenderInputs` | `prepareRenderInputs(options)`; validates request data and prepares local, data-URL, and allowed remote image inputs for rendering |
 | `renderTemplateImage` | `renderTemplateImage(options): Promise<Buffer>`; renders a resolved payload through the private page and returns PNG bytes |
 | `createRenderJob`     | `createRenderJob(payload: ResolvedRenderPayload, options?): CreatedRenderJob`; creates a temporary private render job identifier and token |
 | `loadRenderRequest`   | `loadRenderRequest(id: string, token: string, options?): ResolvedRenderPayload \| undefined`; resolves a valid private render job payload |
-| `deleteRenderJob`     | `deleteRenderJob(id: string, options?): void`; removes a private render job |
+| `deleteRenderJob`     | `deleteRenderJob(id: string): void`; removes a private render job |
 | `createRenderPage`    | `createRenderPage(RenderClient)`; creates the private server page handoff that validates the render token and passes the resolved payload to the client component |
 
 #### Unified FrameKit API handler
@@ -339,14 +335,14 @@ pending. Do not import it into browser bundles.
 `createFrameKitApiHandler(templates)` is the application integration factory for
 the unversioned `/api/framekit` namespace. It delegates the access routes to
 `createStudioAccessHandler()` and `POST /api/framekit/images/render` to
-`createImageHandler(templates)`. The generated consumer and first-party Studio
+`createStudioImageHandler(templates)`. The generated consumer and first-party Studio
 mount this factory from one catch-all
 `src/app/api/framekit/[...action]/route.ts` adapter and export `GET`, `POST`,
 `PATCH`, and `DELETE`.
 
-The image action continues to require `Authorization: Bearer
-<FRAMEKIT_API_KEY>` and does not require an `Origin` header. Access mutations
-retain session authentication and same-origin `Origin` protection. Unknown
+The image action accepts an active `framekit_session` cookie or
+`Authorization: Bearer <API_TOKEN>`. Cookie-authenticated requests require a
+same-origin `Origin` header; Bearer requests use only the supplied token. Unknown
 paths return `404`; unsupported methods for the image action return `405` with
 `Allow: POST`. The old `/api/v1/images` route has no maintained adapter and
 returns `404`.
@@ -375,10 +371,7 @@ or previously returned token secrets. Creating a token returns its full secret
 once; subsequent metadata responses and storage contain only the hash and safe
 metadata. API-token Bearer lookup hashes the bounded, non-empty credential and
 accepts it only when the token is unrevoked and its owner is active, updating
-`lastUsedAt` on success. The generated-token `fk_` prefix is not required, so
-imported legacy credentials can be used. A legacy non-empty
-`FRAMEKIT_API_KEY` is imported as a token only during first-user bootstrap, and
-is not synchronized afterward.
+`lastUsedAt` on success. Tokens created by Studio use the visible `fk_` prefix.
 
 Session-protected account, token, and user-management operations return `401`
 when the session is missing or invalid; invalid login credentials also return
@@ -390,41 +383,44 @@ usernames or attempts to remove, disable, or demote the last active
 administrator. Unsafe requests require the same-origin `Origin` check described
 in the migration guide.
 
-The Phase 5 Studio access UI is now available through the authenticated page
-factories above. Current Download/Copy remain browser-based; the Phase 6
-authenticated image API and server-backed Download/Copy remain pending. The
-classic API-key image handler is mounted at
-`POST /api/framekit/images/render` by the unified adapter.
+The Phase 5 Studio access UI and Phase 6 authenticated image API are available
+through the authenticated page and handler factories above. Studio Download and
+Copy request PNG Blobs from the canonical image action.
 
-`parseImageApiConfig` requires non-empty `FRAMEKIT_API_KEY` and
-`FRAMEKIT_INTERNAL_ORIGIN`. The internal origin must be an HTTP loopback origin
-(`localhost`, `127.0.0.1`, or `[::1]` as the IPv6 host), with an optional valid
-numeric port, no path other than `/`, and no query, fragment, or credentials. The
-HTTP scheme is accepted case-insensitively. `FRAMEKIT_ALLOWED_IMAGE_HOSTS` is
-optional: it accepts comma-separated DNS hostnames, trims and lowercases each
-entry, ignores empty entries, and deduplicates the result; an empty or
-comma-only value produces an empty set. Each hostname must be at most 253
-characters and use the DNS hostname form. IP literals, wildcards, trailing
-dots, ports, paths, queries, and fragments are rejected. The optional
-`FRAMEKIT_MAX_CONCURRENT_RENDERS` and `FRAMEKIT_RENDER_TIMEOUT_MS` settings
-default to `2` and `30000` ms, respectively, and accept only base-10 digit
-strings in the inclusive ranges `1..32` and `1..120000` ms. Signs, decimal
-points, exponents, whitespace, zero, and values above the corresponding limit
-are rejected.
-Missing or invalid configuration throws `ImageRenderError` with the
-`api_not_configured` code.
+#### Runtime environment variables
 
-`authenticateBearer(authorization, expectedToken)` accepts only an exact
-`Bearer <token>` value: the `Bearer` scheme is case-insensitive, but there must
-be exactly one space, a non-empty token with no whitespace or commas, and no
-extra characters. The token comparison itself is case-sensitive. Missing or
-malformed authorization values return `false`.
+These variables are read by the Node.js server runtime. Keep credentials and
+passwords server-side; do not expose them in client bundles, URLs, logs, or
+request examples.
+
+| Variable | Required/optional status and validation | Where it is consumed and what it does |
+| --- | --- | --- |
+| `FRAMEKIT_INTERNAL_ORIGIN` | Required by the image handlers. It must be an HTTP loopback origin (`localhost`, `127.0.0.1`, or `[::1]`), with an optional numeric port, no path other than `/`, and no query, fragment, or credentials. The HTTP scheme is case-insensitive. | `parseImageRenderConfig()` supplies it to `renderTemplateImage()`, which builds the private `/framekit/render/:id` URL and permits only that internal origin in the browser render context. |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Optional; defaults to an empty set. It accepts comma-separated DNS hostnames, trims and lowercases entries, ignores empty entries, and deduplicates them. Each hostname is at most 253 characters. IP literals, wildcards, trailing dots, ports, paths, queries, and fragments are rejected. An empty or comma-only value is valid. | The parsed set is passed to `prepareRenderInputs()` for remote image fields. A remote hostname must exactly match an entry; an empty set therefore permits no remote image host, while safe root-relative paths under `/assets/` or `/framekit/templates/` and data URLs remain supported. |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Optional; defaults to `2`. It must be a base-10 digit string in the inclusive range `1..32`. Signs, decimal points, exponents, whitespace, zero, and larger values are rejected. | `parseImageRenderConfig()` passes the limit to `renderTemplateImage()`, which gives it to `reserveRender()` to enforce process-local simultaneous render capacity. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | Optional; defaults to `30000` ms. It must be a base-10 digit string in the inclusive range `1..120000` ms. Signs, decimal points, exponents, whitespace, zero, and larger values are rejected. | `parseImageRenderConfig()` passes the value to the request deadline and browser navigation/timeouts used by `renderTemplateImage()`. |
+| `FRAMEKIT_DATABASE_PATH` | Optional; defaults to `.framekit-data/framekit.sqlite`. Other than `:memory:`, the path is resolved relative to `process.cwd()` and its parent directory is created when needed. `:memory:` is process-local and is not persisted across restarts. | `getDatabase()` uses it for the SQLite database behind Studio users, password hashes, sessions, API-token hashes/metadata, and migrations. A persistent file therefore preserves access state and must be protected as server data. |
+| `FRAMEKIT_ADMIN_USERNAME` | Optional; defaults to `admin`. It is validated only for first-user bootstrap and must be 3–64 characters containing only ASCII letters, numbers, `.`, `_`, or `-`. | `bootstrapUsers()` uses it only when the selected database has no users to create the initial active administrator. It is stored as that user's username; changing the environment variable later does not rename the user. |
+| `FRAMEKIT_ADMIN_PASSWORD` | Required when first-user bootstrap runs; it has no default and must be between 12 and 256 UTF-8 bytes. It is not required after the database already contains a user. | `bootstrapUsers()` uses it only to create the initial administrator, hashing it with scrypt before storing the password hash. The raw password is not stored; later environment changes do not change the existing password. |
+
+The access login route calls `bootstrapUsers()` before authenticating. On an empty
+database, a valid `FRAMEKIT_ADMIN_PASSWORD` and optional username create the first
+active administrator. Once a user exists, `FRAMEKIT_ADMIN_USERNAME` and
+`FRAMEKIT_ADMIN_PASSWORD` are ignored by bootstrap. Image-render and first-user
+bootstrap configuration failures become safe `503` responses: image
+configuration uses `api_not_configured`, while invalid bootstrap configuration
+uses the access `service_unavailable` error. The underlying image parser raises
+`ImageRenderError`, but causes and credentials are not included in these
+responses.
+
+`FRAMEKIT_PUBLIC_ORIGIN` is not a supported setting or fallback. Same-origin
+checks derive the expected origin from the request URL and its accepted forwarding
+headers; the server does not read `FRAMEKIT_PUBLIC_ORIGIN`.
 
 **Type exports**
 
 | Type                       | Description                                                                                       |
 | -------------------------- | ------------------------------------------------------------------------------------------------- |
-| `ImageApiConfig`           | Parsed configuration containing the API key and render runtime configuration                      |
 | `ImageRenderRequest`       | Request shape with `template`, optional `variant`, and optional data                                |
 | `ImageRenderRuntimeConfig` | Runtime settings with loopback origin, allowed image hosts, concurrency, and timeout              |
 | `ResolvedRenderPayload`    | Serializable resolved render data with template, variant, data, assets, width, and height        |
@@ -441,29 +437,29 @@ only `code`, `message`, and, when present, `fields`; `cause` is not enumerable.
 `fields` is supported only for the `invalid_template_data` code and must be a
 non-null, non-array object.
 
-`createImageHandler(templates)` accepts a generated registry and returns a
-Node.js request handler. The canonical generated consumer mounts it through
-`createFrameKitApiHandler(templates)` at `POST /api/framekit/images/render`
-with `runtime = 'nodejs'` and `dynamic = 'force-dynamic'`. Requests use the
-following JSON shape:
+`createStudioImageHandler(templates)` accepts a generated registry and returns
+the Node.js request handler that authenticates an active session or API token.
+The canonical generated consumer
+mounts the Studio handler through `createFrameKitApiHandler(templates)` at
+`POST /api/framekit/images/render` with `runtime = 'nodejs'` and
+`dynamic = 'force-dynamic'`. Requests use the following JSON shape:
 
 ```json
 { "template": "example", "variant": "en", "data": {} }
 ```
 
-The route requires `Authorization: Bearer <FRAMEKIT_API_KEY>`, resolves and
-validates the selected template, prepares permitted image inputs, and returns
-PNG bytes directly. Success responses are `200 image/png`; failures contain
-the stable `error`, `message`, and optional `fields` JSON properties. The
-handler reads `FRAMEKIT_API_KEY`, `FRAMEKIT_INTERNAL_ORIGIN`, and the optional
-`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
-`FRAMEKIT_RENDER_TIMEOUT_MS` settings from the runtime environment.
+The Studio route requires an active session or `Authorization: Bearer
+<API_TOKEN>`, resolves and validates the selected template, prepares permitted
+image inputs, and returns PNG bytes directly. Success responses are `200
+image/png`; failures contain the stable `error`, `message`, and optional
+`fields` JSON properties. The handler uses the render settings described in
+[Runtime environment variables](#runtime-environment-variables).
 
 An actual request using the generated `example` template is:
 
 ```http
 POST /api/framekit/images/render HTTP/1.1
-Authorization: Bearer framekit-smoke-api-key
+Authorization: Bearer <API_TOKEN>
 Content-Type: application/json
 
 {"template":"example","variant":"en","data":{"hero":"https://framekit-smoke.test/image.png"}}
@@ -475,7 +471,9 @@ URLs must use HTTPS and may include a query string for signed CDN URLs, but must
 not contain a port, credentials, fragment, or IP literal. They are downloaded by
 Node.js before the render job is created.
 Chromium receives the resulting data URL and is blocked from arbitrary external
-network access. TLS verification must remain enabled; a private test
+network access. `data:` URLs are the explicit render-network exception;
+otherwise only the private internal origin is allowed. TLS verification must
+remain enabled; a private test
 certificate may be supplied only through `NODE_EXTRA_CA_CERTS` in the smoke
 process or its equivalent container mount.
 
@@ -491,7 +489,7 @@ canonical template-data validation produced field errors.
 | Error | HTTP | Meaning |
 | --- | ---: | --- |
 | `invalid_request` | 400 | Invalid JSON, shape, variant, or input form |
-| `unauthorized` | 401 | Missing or wrong Bearer token |
+| `unauthorized` | 401 | Missing or invalid session or API token |
 | `template_not_found` | 404 | Unknown authenticated template |
 | `request_too_large` | 413 | Request or decoded image exceeds its bound |
 | `unsupported_image` | 415 | Unsupported or inconsistent image MIME/signature |

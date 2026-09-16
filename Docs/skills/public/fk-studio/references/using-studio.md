@@ -25,9 +25,10 @@
 
 ## Export and theme
 
-- Export and Copy PNG validate current resolved committed data first and focus the first invalid field. Export then waits for `document.fonts.ready` and captures a PNG at the declared dimensions with scale 1; Copy PNG uses the captured PNG when clipboard support is available.
+- Export and Copy PNG validate current resolved committed data first and focus the first invalid field. They then send the selected template, variant, and user edits to `POST /api/framekit/images/render`; Studio authenticates this same-origin request with the active `framekit_session` cookie. Direct API callers can authenticate with `Authorization: Bearer <API_TOKEN>`. Download uses the returned PNG Blob and Copy writes that Blob to the clipboard when supported.
 - The download name replaces `/` in the slug with `-`, for example `social-instagram-post.png`.
-- Export runs in the browser and exposes no alternate format, scale, or DPI control.
+- Export uses the server renderer and exposes no alternate format, scale, or DPI control. The preview remains local. The server-side path requires the Chromium headless shell installed explicitly with `framekit browser install`; see the [CLI reference](../../../../en/reference/cli.md#framekit-browser-install) for browser installation and runtime configuration.
+- If the image API reports a render-configuration or authentication failure, see [Studio troubleshooting](./troubleshooting.md) and the [public API reference](../../../../en/reference/public-api.md).
 - The theme uses the `theme` cookie or browser color-scheme preference. Settings toggles it and persists the choice for one year.
 
 ## States

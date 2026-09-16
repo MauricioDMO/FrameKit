@@ -37,6 +37,16 @@ Create the parent directory immediately before opening the database. Do not use
 Tests may use `:memory:` or an isolated temporary directory. Production code
 must not silently fall back to memory when a file cannot be opened.
 
+`FRAMEKIT_DATABASE_PATH` is not a first-boot setting. `getDatabase()` resolves it
+when access code first needs SQLite, and reuses one connection per resolved path
+for the life of the process. A file path therefore persists users, password
+hashes, sessions, API-token hashes/metadata, and schema version across restarts;
+`:memory:` is process-local and does not persist. Path resolution does not
+validate that a configured location is writable in advance: an invalid or
+unopenable path must fail initialization rather than select another database.
+The database file and its WAL/SHM companions are server-side credentials and
+must not be exposed through the application or checked into source control.
+
 ## Connection lifecycle
 
 Use one `DatabaseSync` connection per resolved path under a package-specific

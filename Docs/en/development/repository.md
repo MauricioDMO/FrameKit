@@ -61,7 +61,7 @@ This links the package directory on disk, while its `exports` point consumers to
 
 Running `pnpm dev` from inside a package directory bypasses this ordering and will fail because the `dist/` it tries to import does not yet exist.
 
-The public package exports `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade exposes the Studio access handler and its safe API-token response types, configuration and authentication helpers, the public `createImageHandler` PNG API, image-input preparation, PNG rendering, temporary render jobs, and the private render-page handoff. Browser installation is explicit through `framekit browser install`; the generated project uses the published version of the package, not `workspace:*`.
+The public package exports `.`, `./client`, `./editor`, `./next`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`. Imports from `packages/framekit/src/*` are not part of the consumer contract. The server-only `./server` facade exposes the Studio access handler and its safe API-token response types, the unified `createFrameKitApiHandler`, the `createStudioImageHandler` session/token PNG API, image-input preparation, PNG rendering, temporary render jobs, and the private render-page handoff. Browser installation is explicit through `framekit browser install`; the generated project uses the published version of the package, not `workspace:*`.
 
 ## Focused package commands
 

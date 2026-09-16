@@ -212,7 +212,9 @@ Install `python`, `make`, and a C++ toolchain (like `build-essential` on Debian/
 
 **Cause: another process occupying the requested port**
 
-The default port is `3000`. If something else is already listening on the requested port, `framekit dev` tries the next port. It exits with an error if no usable port is found before `65535`.
+The default port is `3000`. If something else is already listening on the
+requested port, `framekit dev` exits with an error; it does not automatically
+try the next port.
 
 **Fix: set a different port**
 
@@ -227,6 +229,46 @@ PORT=3001 framekit dev
 ```
 FRAMEKIT_HOST=0.0.0.0 PORT=3000 framekit dev
 ```
+
+---
+
+## Development and production use different host variables
+
+`framekit dev` resolves its bind address as `FRAMEKIT_HOST` → `HOST` →
+`localhost`, and reads `PORT` with a default of `3000`. `framekit start` does
+not perform that mapping: it launches the Next standalone `server.js` with the
+parent environment. Next reads `HOSTNAME`, `PORT`, and
+`KEEP_ALIVE_TIMEOUT`; `FRAMEKIT_HOST` and `HOST` are not mapped to
+`HOSTNAME`. See the [CLI reference](../reference/cli.md) for the command tables.
+
+---
+
+## First login returns a service-unavailable error
+
+On the first `POST /api/framekit/login`, FrameKit creates the administrator only
+when the configured database contains no users. `FRAMEKIT_ADMIN_PASSWORD` must
+be set and must contain 12-256 UTF-8 bytes. `FRAMEKIT_ADMIN_USERNAME` is
+optional and defaults to `admin`; it must be 3-64 ASCII letters, numbers, `.`,
+`_`, or `-`.
+
+If the database already contains a user, changing these variables does not
+change that user. The default database is
+`.framekit-data/framekit.sqlite`, resolved relative to the process working
+directory. In a container, use a persistent volume for the directory containing
+the configured database path.
+
+---
+
+## Image API reports configuration errors
+
+The generated `POST /api/framekit/images/render` route requires
+`FRAMEKIT_INTERNAL_ORIGIN`. It must be an HTTP loopback origin such as
+`http://127.0.0.1:3000` or `http://localhost:3000`, with no credentials, path,
+query, or fragment. A missing value reports `api_not_configured`; an invalid
+value reports the same configuration failure instead of rendering.
+
+Authenticate the generated route with a same-origin Studio session cookie or a
+database API token.
 
 ---
 
@@ -319,22 +361,22 @@ The other production-start failure is reported with exit code `1` and the litera
 
 Export requires all template data to be valid. Empty required fields, invalid colors or choices, non-boolean values, text outside its declared length limits, and numbers outside their declared finite range or step cause validation failures that prevent export from producing a usable image.
 
-**Cause: fonts not loaded yet**
+**Cause: authenticated server render failed**
 
-`document.fonts.ready` is awaited before capture, but if your template lazy-loads fonts or uses web fonts that fail to load, the exported image may show fallback fonts instead of the intended ones.
+Studio sends the selected template, variant, and user edits to
+`POST /api/framekit/images/render`. Confirm that the browser has an active
+Studio session, that cookie requests include the same-origin `Origin`, and that
+the application can launch its configured Chromium shell. The server response
+contains a stable error code for configuration, image-input, capacity, timeout,
+or render failures.
 
-**Cause: cross-origin images blocked by browser**
+**Cause: remote image policy rejected an input**
 
-If the template uses images from a different origin and the server does not send appropriate CORS headers, the browser blocks the image from being included in the canvas screenshot.
+Remote image hosts must be listed in `FRAMEKIT_ALLOWED_IMAGE_HOSTS`. The server
+validates and downloads permitted remote raster images before creating the
+private render job; browser CORS settings do not control Studio export.
 
-**Cause: browser lacks required capabilities**
-
-PNG export uses `modern-screenshot` (which relies on DOM and canvas). Some environments — such as headless browsers without full DOM support — cannot perform the capture.
-
-**Note:** Studio export is entirely browser-side. Separate server-side PNG
-rendering uses the private render-job/page handoff.
-
-**Note:** The current export supports no format or scale options — PNG only, at the dimensions declared in the template definition, at scale 1.
+**Note:** The current export supports no format or scale options — PNG only, at the dimensions declared in the template definition.
 
 ---
 

@@ -88,16 +88,14 @@ Cuando se hace zoom más allá de los bordes del contenedor, se puede desplazar 
 
 Dos botones se encuentran en la esquina inferior derecha de la vista previa: **Tamaño real** restaura la escala al 100%, y **Ajustar** readapta la plantilla al contenedor. El autoajuste ante cambios de tamaño de la ventana solo ocurre mientras la vista previa está en modo ajustar; las posiciones de zoom manual se conservan al cambiar el tamaño.
 
-## Exportación PNG (del navegador hasta la Fase 6)
+## Exportación PNG
 
-Los botones Exportar y Copiar PNG validan los datos resueltos y confirmados actuales antes de hacer cualquier otra cosa. Si algún campo no pasa la validación, se muestran errores localizados, el primer campo inválido recibe el foco y la acción se detiene. Una vez superada la validación, Exportar espera a que las fuentes terminen de cargar mediante `document.fonts.ready`, y luego captura la plantilla exactamente en su `ancho×alto` declarado a escala 1 usando `modern-screenshot`; Copiar PNG coloca el PNG capturado en el portapapeles cuando es compatible.
+Los botones Exportar y Copiar PNG validan los datos resueltos y confirmados actuales antes de hacer cualquier otra cosa. Si algún campo no pasa la validación, se muestran errores localizados, el primer campo inválido recibe el foco y la acción se detiene. Una vez superada la validación, Studio envía la plantilla, la variante seleccionada y los edits del usuario a `POST /api/framekit/images/render`. El servidor aplica defaults, assets, validación y renderizado con Chromium; los errores de validación del servidor se traducen de vuelta al editor.
 
-Exportar descarga un archivo PNG en el navegador. El nombre del archivo usa el slug de la plantilla con `/` reemplazado por `-` (por ejemplo, `social/instagram/post` se convierte en `social-instagram-post.png`). Copiar PNG coloca la imagen capturada en el portapapeles en lugar de descargarla.
+Exportar descarga el Blob PNG devuelto en el navegador. El nombre del archivo usa el slug de la plantilla con `/` reemplazado por `-` (por ejemplo, `social/instagram/post` se convierte en `social-instagram-post.png`). Copiar PNG escribe el Blob PNG devuelto en el portapapeles cuando es compatible.
 
-La exportación de Studio se ejecuta íntegramente en el navegador hasta la Fase 6
-de exportación server-side. El renderizado de PNG en servidor se ofrece por separado mediante el handoff privado de
-trabajo/página; la exportación actual de Studio no tiene opciones de formato ni
-controles de escala o DPI.
+La exportación de Studio no tiene opciones de formato ni controles de escala o
+DPI. La vista previa permanece local y no espera al renderizador del servidor.
 
 ## Tema
 
@@ -130,7 +128,7 @@ Studio muestra diferentes estados según lo que esté ocurriendo:
 - **Error de carga** — el loader de una entrada rechazó la carga, por ejemplo tras fallar una importación dinámica. Los errores sin procesar del loader no se exponen; Studio muestra el mensaje localizado de error de carga de plantilla o de marca.
 - **Error de datos** — los datos resueltos de la plantilla cargada no son válidos, por ejemplo por una variante o key de field desconocida o por un valor con el tipo incorrecto. Studio muestra su mensaje localizado de error de datos.
 - **Error de upload** — falló un callback de upload de imagen. El field afectado recibe el mensaje localizado de error de upload.
-- **Error de exportación** — falló la captura PNG o la copia al portapapeles después de la validación. Studio muestra la alerta localizada de exportación; los fallos de validación siguen asociados a sus fields.
+- **Error de exportación** — falló el render PNG del servidor, la descarga o la copia al portapapeles después de la validación. Studio muestra la alerta localizada de exportación; los fallos estructurados de validación siguen asociados a sus fields.
 - **No encontrado** — la URL no coincide exactamente con un slug del catálogo activo. Studio muestra un 404 visual localizado y un enlace de vuelta a `/editor` o `/brand`; no es un error HTTP 404.
 
 ---

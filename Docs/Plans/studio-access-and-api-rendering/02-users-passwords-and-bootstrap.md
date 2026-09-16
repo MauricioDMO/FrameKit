@@ -2,8 +2,8 @@
 
 ## Goal
 
-Add local credentials, first-boot administrator creation, and one-time migration
-of the existing shared API key without introducing an identity framework.
+Add local credentials and first-boot administrator creation without introducing
+an identity framework.
 
 ## Depends on
 
@@ -74,13 +74,22 @@ When the table is empty:
 1. Require a valid `FRAMEKIT_ADMIN_PASSWORD`.
 2. Validate `FRAMEKIT_ADMIN_USERNAME` or use `admin`.
 3. Create one active administrator with `crypto.randomUUID()`.
-4. If `FRAMEKIT_API_KEY` is non-empty, insert its SHA-256 hash into
-   `api_tokens` for that administrator.
-5. Name that token `Legacy FRAMEKIT_API_KEY` and set `token_prefix` to `legacy`.
-6. Commit all bootstrap records together.
+4. Commit the administrator record together as one bootstrap transaction.
 
-When any user exists, ignore all three bootstrap environment values for account
-synchronization. Renaming the administrator in Studio must survive restarts.
+When any user exists, return without reading or validating the bootstrap
+environment values. Renaming the administrator in Studio must survive restarts.
+
+`FRAMEKIT_ADMIN_USERNAME` defaults to `admin`, is validated only while the
+selected database has no users, and is persisted as the initial user's submitted
+username. `FRAMEKIT_ADMIN_PASSWORD` has no default; it is required only for that
+empty-database bootstrap, must be 12-256 UTF-8 bytes, and is persisted only as a
+scrypt hash. Later changes to either variable do not rename the user or change
+the stored password.
+
+The current bootstrap creates only the first administrator and does not create
+an API token implicitly. API tokens created through the access API are separate
+persisted records whose secrets are returned once and whose hashes are stored in
+SQLite.
 
 A missing first-boot password is a clear fail-closed configuration error. It
 must not affect `next build`, because bootstrap remains request-time and lazy.
@@ -126,8 +135,7 @@ separate file becomes necessary during implementation.
 - bootstrap creates exactly one active administrator;
 - repeated initialization does not synchronize environment values;
 - a renamed administrator is not recreated after restart;
-- legacy API key import stores only SHA-256 and the literal `legacy` prefix;
-- administrator and legacy token roll back together on failure;
+- bootstrap does not create an API token implicitly;
 - the last active administrator cannot be deleted, disabled, or demoted;
 - a mutation succeeds when another active administrator exists.
 
@@ -136,7 +144,8 @@ separate file becomes necessary during implementation.
 1. Freeze and test the password format and input limits.
 2. Implement safe user DTOs and prepared statements.
 3. Implement transactional first-boot bootstrap.
-4. Add one-time legacy API-key insertion.
+4. Confirm bootstrap uses only administrator configuration and never synchronizes
+   account data after initialization.
 5. Implement user mutations and the last-admin invariant.
 6. Benchmark the fixed `v1` profile on the minimum Node 22/Docker baseline and
    record the result. The benchmark validates the contract; it does not select

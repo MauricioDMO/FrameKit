@@ -161,19 +161,67 @@ pnpm framekit start
 
 ## Variables de entorno
 
-Consulta la [referencia de la CLI](../reference/cli.md#framekit-dev) para la distinción normativa: `framekit dev` procesa `FRAMEKIT_HOST`, `HOST` y `PORT`, mientras [`framekit start`](../reference/cli.md#framekit-start) pasa el entorno heredado al servidor standalone de Next, que gestiona sus propias variables de producción.
+Las siguientes siete variables son leídas por el runtime de acceso y renderizado
+de imágenes. La [referencia de la API pública](../reference/public-api.md#handler-api-unificado-de-framekit)
+es normativa para el contrato de los handlers de imágenes.
+
+Las opciones de renderizado se leen desde `process.env` en cada solicitud del
+handler de imágenes; construir un handler no las lee. La capa de acceso lee la
+ruta de la base de datos de forma lazy, y el bootstrap solo lee
+`FRAMEKIT_ADMIN_USERNAME` y `FRAMEKIT_ADMIN_PASSWORD` cuando inicializa una base
+de datos vacía.
+
+La primera solicitud válida `POST /api/framekit/login` contra una base vacía
+ejecuta el bootstrap antes de autenticar las credenciales. Si faltan valores de
+bootstrap o no son válidos, la respuesta es `503` y no se guarda ningún usuario.
+Cuando ya existe un usuario, los valores de entorno del bootstrap se ignoran y
+los datos de la cuenta no se sincronizan desde el entorno.
+
+| Variable | Consumida por | Comportamiento |
+| --- | --- | --- |
+| `FRAMEKIT_DATABASE_PATH` | Capa de acceso SQLite (`getDatabase`) | Se lee de forma lazy cuando se necesitan datos de acceso. Las rutas relativas se resuelven desde el directorio de trabajo de la aplicación. Por defecto: `.framekit-data/framekit.sqlite`. En producción, configúrala en un volumen o ruta de almacenamiento persistente; la base contiene usuarios, sesiones y tokens API. `:memory:` es local al proceso y no persiste entre reinicios. |
+| `FRAMEKIT_ADMIN_PASSWORD` | Bootstrap de una base vacía (`bootstrapUsers`) | Obligatoria cuando se ejecuta el bootstrap del primer usuario. Debe tener entre 12 y 256 bytes UTF-8. No se lee después de que exista cualquier usuario. |
+| `FRAMEKIT_ADMIN_USERNAME` | Bootstrap de una base vacía (`bootstrapUsers`) | Se lee solo para el primer usuario. Por defecto es `admin`; de lo contrario debe tener entre 3 y 64 caracteres ASCII entre letras, números, `.`, `_` o `-`. No se lee después de que exista cualquier usuario. |
+| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig` → `renderTemplateImage` | Obligatoria para el renderizado en servidor. Debe ser un origen HTTP de loopback (`localhost`, `127.0.0.1` o `[::1]`), con un puerto numérico opcional y sin credenciales, query, fragmento ni ruta distinta de `/`. El esquema HTTP no distingue mayúsculas de minúsculas. |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig` → `prepareRenderInputs` | Opcional; por defecto es un conjunto vacío. Acepta nombres de host DNS exactos separados por comas, recorta, pasa a minúsculas y deduplica las entradas; las vacías se ignoran. Cada hostname puede tener como máximo 253 caracteres; los literales IP, comodines, puntos finales, puertos, rutas, queries y fragmentos son inválidos. Un valor vacío o compuesto solo por comas es válido. Las URLs remotas deben usar HTTPS y un host permitido exacto; las rutas seguras `/assets/...` y `/framekit/templates/...`, además de las data URLs, siguen disponibles. |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → límite de capacidad de renderizado | Opcional; por defecto es `2`. Debe ser un string de dígitos decimales en el rango inclusivo `1..32`; los valores inválidos hacen fallar la configuración. Las solicitudes que superan el límite de renders simultáneos dentro del proceso fallan con un error de capacidad. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → plazo de la solicitud y operaciones del navegador | Opcional; por defecto es `30000` ms. Debe ser un string de dígitos decimales en el rango inclusivo `1..120000`; los valores inválidos hacen fallar la configuración. Limita el plazo de la solicitud de imágenes y las operaciones del navegador. |
+
+`FRAMEKIT_PUBLIC_ORIGIN` no es compatible y el runtime actual no la lee; no es
+un fallback ni una variable de configuración de origen.
+La ruta canónica es la única ruta de API de imágenes admitida y usa una sesión o
+un token API de la base de datos para autenticarse.
+
+Detrás de un reverse proxy, el handler de acceso y las solicitudes de imágenes
+autenticadas por cookie obtienen el origen canónico a partir de un par validado
+de `x-forwarded-proto` y `x-forwarded-host`. Si se presenta cualquiera de los
+dos headers, ambos deben estar presentes con un único valor válido. Configura el
+proxy para sobrescribir o eliminar los headers de forwarding enviados por el
+cliente; usa un único valor válido `x-forwarded-proto: https` y una única
+autoridad válida en `x-forwarded-host` para el origen HTTPS público. Las
+solicitudes directas usan la URL de la solicitud y, para los hosts wildcard
+predeterminados, la autoridad `Host` validada. Un par de forwarding HTTP solo se
+acepta para los casos de origen interno o wildcard validado; los reverse proxy
+públicos deben usar HTTPS. `FRAMEKIT_PUBLIC_ORIGIN` no se usa.
+
+Consulta la [referencia de la CLI](../reference/cli.md#framekit-dev) para el
+comportamiento separado de los procesos: `framekit dev` procesa
+`FRAMEKIT_HOST`, `HOST` y `PORT`, mientras [`framekit start`](../reference/cli.md#framekit-start)
+pasa el entorno heredado al servidor standalone de Next.
 
 ## Límites de renderizado
 
-Las exportaciones de frames de Studio (vista previa, descarga y generación de
-PNG en el navegador) ocurren en el navegador. El consumidor generado también
-proporciona la API de imágenes de servidor exclusiva de Node.js
+La vista previa de Studio permanece local, mientras Download PNG y Copy PNG usan
+la API de imágenes exclusiva de Node.js
 `POST /api/framekit/images/render` mediante el adapter unificado
-`createFrameKitApiHandler`, que continúa delegando el trabajo de imágenes a
-`createImageHandler` y exige `FRAMEKIT_API_KEY` hasta la Fase 6. Instala
-explícitamente el headless shell de Chromium con `framekit browser install`
-antes de servir solicitudes. La ruta anterior `/api/v1/images` devuelve `404`.
-El handoff privado de trabajo/página sigue siendo un detalle interno de esa API
+`createFrameKitApiHandler`. La ruta delega en el handler de imágenes de Studio y
+acepta una cookie `framekit_session` activa o
+`Authorization: Bearer <API_TOKEN>`; las solicitudes autenticadas por cookie
+deben ser del mismo origen. Download PNG y Copy PNG solicitan sus bytes PNG a
+esta ruta canónica. Instala explícitamente el headless shell de Chromium con
+`framekit browser install` antes de servir solicitudes. La ruta anterior
+`/api/v1/images` devuelve `404`. El handoff privado de trabajo/página sigue
+siendo un detalle interno de esa API
 y de la página de renderizado generada.
 
 ---

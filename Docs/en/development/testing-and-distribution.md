@@ -18,6 +18,31 @@ before those checks.
 - `pnpm lint` — runs ESLint across all workspaces
 - `pnpm build` — full rebuild of all workspaces; the core package is built first, then all dependent workspaces
 
+## Environment variables for tooling
+
+The variables below belong to package-manager, browser, CI, or smoke-test
+plumbing. They are not FrameKit template or server configuration. A normal
+consumer generally does not need to set them manually.
+
+| Variable | Consumed by | Use | Normal consumer action |
+| --- | --- | --- | --- |
+| `NO_COLOR` | `create-framekit` terminal helpers | Any non-empty value disables ANSI styling when the creator writes to a TTY. | Optional; set `NO_COLOR=1` when plain output is required. |
+| `npm_config_user_agent` | `create-framekit` and the `framekit` runtime check | The creator detects `pnpm` or `npm` from the package-manager user agent and reads a pnpm version from it. The FrameKit CLI uses it to validate a detected pnpm version. | Do not set it manually; npm or pnpm normally supplies it. |
+| `ComSpec` | `create-framekit` on Windows | Selects the command interpreter used to run package-manager and other child commands; it falls back to `cmd.exe`. | Do not set it for normal use; Windows normally supplies it. |
+| `PATH` | The operating system and child-process launches | Resolves commands such as `pnpm`, `npm`, `git`, and Docker. Tests may prepend fake commands, and the generated Docker image adds pnpm's installation directory. | Normally leave it to the operating system; fix it only when a required executable is not found. |
+| `CI` | Playwright configuration and `scripts/smoke-docker.mjs` | Playwright forbids focused tests, enables one retry, and uses its line reporter when truthy. The Docker smoke passes `CI=1` to its child commands. | Do not set it for normal development; CI providers or the smoke script supply it. |
+| `NEXT_TELEMETRY_DISABLED` | Next.js, via repository CI and the Playwright web-server environment | Set to `1` in these checks so Next.js telemetry is disabled while they run. | Not required by a normal consumer. |
+| `PLAYWRIGHT_BROWSERS_PATH` | FrameKit's `browser install` child and Playwright | Tells Playwright where to discover browser binaries; `framekit browser install` uses the same registry path. The generated Docker image sets it to `/ms-playwright`. | Optional; set it only when using a non-default browser registry. |
+| `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` | The generated Dockerfile during dependency installation | Set to `1` while installing dependencies so the image can install the browser explicitly later with `framekit browser install --with-deps`. | Not normally needed; it is container/build plumbing. |
+| `FRAMEKIT_TEST_FAIL` | `create-framekit` test fakes only | Makes a fake npm or pnpm command exit with code `7` for a named subcommand so failure handling can be tested. | Never set it in a consumer project. |
+| `NODE_EXTRA_CA_CERTS` | Node.js TLS in a separate HTTPS smoke process | Adds a private test CA to that process's trust store while certificate verification remains enabled. | Smoke-only; current tarball and Docker smokes do not need it, and a normal consumer should not set it. |
+
+`framekit browser install` is the explicit browser-install command; it uses the
+package-pinned Playwright runtime and inherits `PLAYWRIGHT_BROWSERS_PATH` for
+browser discovery. See the [FrameKit CLI reference](../reference/cli.md) and
+the [Playwright browser installation guide](https://playwright.dev/docs/browsers)
+for the command and browser-path details.
+
 `pnpm lint` is the full repository lint gate. The pre-commit hook runs it before
 `pnpm sync:skills`, then explicitly stages the synchronized skill copies. Linted
 JavaScript and TypeScript use two spaces, single quotes, no semicolons, no
@@ -113,7 +138,7 @@ pnpm --filter @mauriciodmo/framekit pack
 
 The package's `files` list includes `bin/`, `dist/`, `README.md`, and `LICENSE`.
 
-tsdown produces an unbundled ESM output. The following packages remain external (not bundled): `react`, `react-dom`, `next`, `@tabler/icons-react`, `modern-screenshot`, `chokidar`, `tsx`. CSS is compiled separately via the Tailwind CLI and placed in `dist/styles.css`.
+tsdown produces an unbundled ESM output. The following packages remain external (not bundled): `react`, `react-dom`, `next`, `@tabler/icons-react`, `chokidar`, `tsx`, `playwright-core`. CSS is compiled separately via the Tailwind CLI and placed in `dist/styles.css`.
 
 A post-build check (`check-dist.ts`) recursively scans all emitted `.js` files under `dist/` for import-boundary violations, verifying that relative imports resolve to files inside the package. It also checks that string targets in `exports` and `bin` are `./...` paths to existing files inside the package.
 
@@ -166,10 +191,11 @@ operational gates.
 
 ## Image API E2E
 
-`pnpm test:e2e` starts Studio with a test-only runtime key and exercises the
-image API with real Chromium. `tests/e2e/image-api.spec.ts` verifies rejected
-authentication and one successful PNG response, including headers, signature,
-and dimensions.
+`pnpm test:e2e` starts Studio with test-only administrator credentials and an
+in-memory database, then exercises the image API with real Chromium.
+`tests/e2e/image-api.spec.ts` verifies rejected authentication and successful
+session- and API-token PNG responses, including headers, signature, and
+dimensions.
 
 Detailed authentication, request parsing, remote-image policy, capacity,
 timeout, abort, and cleanup cases remain in the focused Vitest suites. They are
@@ -184,10 +210,11 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 The script copies the canonical consumer to a temporary directory, creates its
 lockfile with that registry version, builds and starts the generated Docker
 image, verifies the non-root `node` user and `tini` entrypoint, rejects a request
-without authentication, and renders one PNG using the packaged local asset. It
-does not repeat the detailed Vitest matrix or require an HTTPS fixture. This
-stays separate because a pre-publication tarball smoke and a registry-backed
-Docker build exercise different artifacts.
+without authentication, logs in and creates a database API token, and renders
+one PNG using the packaged local asset. It does not repeat the detailed Vitest
+matrix or require an HTTPS fixture. This stays separate because a
+pre-publication tarball smoke and a registry-backed Docker build exercise
+different artifacts.
 
 The shell sequence below is an optional manual creator-path procedure. It audits
 both archives but its consumer flow only creates and runs the creator-generated
@@ -241,7 +268,7 @@ npm init -y
 npm install "$CREATOR_TGZ"
 npx --no-install create-framekit "$SMOKE_DIR/consumer" -n
 
-# Replace the generated registry dependency with the core tarball, then use the generated project's package manager.
+# Replace the generated registry dependency with the core tarball, then install the generated project with npm.
 cd "$SMOKE_DIR/consumer"
 node --input-type=module - "$CORE_TGZ" <<'NODE'
 import { readFile, writeFile } from 'node:fs/promises'

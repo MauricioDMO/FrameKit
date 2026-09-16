@@ -1,6 +1,6 @@
 # Studio Access, API Tokens, and Server-backed Export
 
-- **Status:** Phases 4-5.5 implemented and verified on 2026-09-15; Phases 6-8 pending.
+- **Status:** Phases 4-5.5 implemented and verified on 2026-09-15; Phase 6 implemented and verified on 2026-09-16; Phases 7-8 remain pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
@@ -22,26 +22,28 @@ the Studio client, generated bindings, application routes, Docker persistence,
 tests, and public documentation.
 
 Most technical evidence originally assigned to Server Image Rendering Step 8
-has already been recorded against the API-key and browser-export baseline. That
-evidence remains useful, but final Step 8 closure must wait until this plan is
-complete and the resulting architecture is reverified.
+has already been recorded against the browser-export baseline. That evidence
+remains useful, but final Step 8 closure must wait until this plan is complete
+and the resulting architecture is reverified.
 
 Phase 4 is implemented and verified on 2026-09-15. Phase 5 is implemented and
 verified on 2026-09-15: the reusable Studio provides authenticated login,
 Settings account and token workflows, administrator user management, the
 three-section route model, safe `StudioUser` handoff, and English/Spanish
-accessibility coverage. The focused Studio checks passed 11 test files and 73
-tests; the full FrameKit package suite passed 76 test files and 812 tests, and
+accessibility coverage. The focused Studio checks passed 3 test files and 7
+tests; the full FrameKit package suite passed 76 test files and 788 tests, and
 package typecheck and lint passed. Phase 5.5 now exposes the unified
 `/api/framekit/[...action]` adapter in Studio and the generated consumer,
-dispatches `POST /api/framekit/images/render` to the classic API-key image
-handler, and removes `/api/v1/images`. Production HTTP smoke covered the
-protected redirect and default localhost login; no browser-level visual or
-responsive smoke was run. Phases 6-8
-remain pending: authenticated image API and server-backed Download/Copy,
-generated-consumer/Docker persistence, and final rollout verification are not
-complete. Server Image Rendering Step 8 final revalidation and closure remain
-blocked until this plan is complete.
+dispatches `POST /api/framekit/images/render` to the Studio image handler, and
+removes `/api/v1/images`. The image route uses only session or database API-token
+authentication. Phase 6 is implemented in the current checkout: Studio
+Download and Copy request PNGs from the authenticated image route and the
+  browser capture and the legacy API-key contract have been removed. The
+  FrameKit package suite passes 76 test files and 788 tests, creator tests pass 2
+  files and 31 tests, Studio tests pass 3 files and 7 tests, and the E2E suite
+  passes 3 tests. Workspace build, typecheck, and lint pass. Phases 7-8 remain
+  pending. Server Image Rendering Step 8 final revalidation and closure remain
+  blocked until this plan is complete.
 
 ## Target architecture
 
@@ -113,7 +115,6 @@ Included:
 - owner-scoped API-token creation, listing, and revocation;
 - administrator token-metadata inspection and revocation;
 - session or API-token authentication for the canonical image route;
-- one-time migration of `FRAMEKIT_API_KEY` into the first administrator;
 - server-backed Studio download and clipboard export;
 - persistent Docker storage;
 - generated-consumer, package, browser, and Docker verification.
@@ -251,19 +252,11 @@ same-origin `Origin` header. Client-side visibility is never an authorization
 boundary.
 
 The access actions delegate to `createStudioAccessHandler()`. Image dispatch is
-owned by the unified API handler and remains API-key-only until Phase 6.
+owned by the unified API handler and uses the same session/API-token boundary.
 
 ## Image authentication contract
 
-The existing public signature remains supported:
-
-```ts
-createImageHandler(templates)
-```
-
-It continues to require `FRAMEKIT_API_KEY` and preserves existing consumers.
-
-The canonical Studio/generated route changes to:
+The canonical Studio/generated route is:
 
 ```text
 POST /api/framekit/images/render
@@ -279,24 +272,21 @@ evaluated; an invalid Bearer token must not fall back to an ambient session.
 Without an Authorization header, the handler evaluates the session cookie and
 requires same-origin for the cookie-authenticated POST.
 
-Both public factories delegate to one internal image pipeline. Authentication
+The public dispatcher delegates to one Studio image pipeline. Authentication
 continues to happen before body parsing, template lookup, remote fetching, or
 browser capacity reservation.
 
-## First-boot and legacy migration
+## First boot
 
-When the migrated schema contains no users:
+When the database contains no users:
 
 1. Require `FRAMEKIT_ADMIN_PASSWORD`.
 2. Use `FRAMEKIT_ADMIN_USERNAME` or `admin`.
 3. Create the active administrator.
-4. If `FRAMEKIT_API_KEY` exists, insert its SHA-256 hash as an API token named
-   `Legacy FRAMEKIT_API_KEY` with visible prefix `legacy`.
-5. Commit administrator and legacy token together.
 
 After that transaction, environment values never synchronize account data
-again. The canonical handler uses the imported database token. The classic
-`createImageHandler()` continues reading `FRAMEKIT_API_KEY` independently.
+again. API tokens are created explicitly through the authenticated access API
+or Studio settings.
 
 ## Canonical application shape
 
@@ -331,11 +321,10 @@ FRAMEKIT_ALLOWED_IMAGE_HOSTS=
 FRAMEKIT_MAX_CONCURRENT_RENDERS=2
 FRAMEKIT_RENDER_TIMEOUT_MS=30000
 
-# Classic handler and one-time migration compatibility
-FRAMEKIT_API_KEY=
 ```
 
-Docker sets `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`; `/data` must be a
+The current Dockerfile leaves `FRAMEKIT_DATABASE_PATH` unset. Phase 7 proposes
+setting `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`; `/data` must be a
 writable persistent volume owned by the runtime user.
 
 ## Ordered phases
@@ -343,7 +332,7 @@ writable persistent volume owned by the runtime user.
 | Phase | Plan | Result | Depends on |
 |---:|---|---|---|
 | 1 | [SQLite and migrations](./01-sqlite-and-migrations.md) | Persistent package-owned schema and connection lifecycle | Server Steps 1-7 |
-| 2 | [Users, passwords, and bootstrap](./02-users-passwords-and-bootstrap.md) | Credentials, first admin, and one-time legacy import | Phase 1 |
+| 2 | [Users, passwords, and bootstrap](./02-users-passwords-and-bootstrap.md) | Credentials and first admin | Phase 1 |
 | 3 | [Sessions, HTTP, and route protection](./03-sessions-http-and-route-protection.md) | Login/logout, protected Studio pages, and protected dev upload | Phase 2 |
 | 4 | [API tokens, users, and authorization](./04-api-tokens-users-and-authorization.md) | Owner/admin operations and token authentication | Phase 3 |
 | 5 | [Studio access UI](./05-studio-access-ui.md) | Login, account, token, and user interfaces (implemented and verified 2026-09-15) | Phase 4 |
@@ -381,13 +370,10 @@ Maintainability 6
   endpoint.
 - `/api/framekit/images/render` accepts a valid session or API token through the
   canonical handler.
-- The classic API-key handler remains compatible.
 - Studio Download PNG and Copy PNG use `/api/framekit/images/render`.
 - `modern-screenshot` has no remaining runtime, build, test, lockfile, or
   documentation reference.
 - The private Chromium route still uses only its independent internal token.
-- Existing `FRAMEKIT_API_KEY` deployments can import the secret once without
-  exposing it in token metadata.
 - SQLite persists users, sessions, and tokens across container replacement.
 - Render jobs still clear on process restart.
 - The creator produces a functional six-file application with authentication.

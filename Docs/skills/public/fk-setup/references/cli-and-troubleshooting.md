@@ -1,5 +1,9 @@
 # CLI And Troubleshooting
 
+For the authoritative command behavior, see the [FrameKit CLI
+reference](../../../../en/reference/cli.md). For the server image route and
+its public API contract, see the [public API reference](../../../../en/reference/public-api.md).
+
 ## Commands
 
 `framekit generate`, `check`, `dev`, `build`, and `start` respectively generate
@@ -13,6 +17,32 @@ defaults to `3000` and must be 1-65535.
 The watcher observes every file and directory under `src/templates`. Additions,
 edits, and deletions there trigger regeneration; only one generation runs at a
 time. It also regenerates when paths under `src/brand` change.
+
+## Tooling environment
+
+These variables affect command-line, browser, or test tooling; they are not
+template or server configuration:
+
+- `NO_COLOR=1` disables `create-framekit`'s terminal styling.
+- `npm_config_user_agent` is normally supplied by npm or pnpm. The creator uses
+  it to detect the package manager, so do not set it manually. If detection is
+  unavailable, interactive creation asks you to choose; `-y` and `-n` default to
+  pnpm.
+- `PATH` must allow the selected package manager and any command it runs to be
+  resolved. On Windows, `create-framekit` uses `ComSpec` (or `cmd.exe` when it
+  is absent) to launch those commands. These are operating-system plumbing, not
+  FrameKit project settings.
+- `framekit browser install` honors `PLAYWRIGHT_BROWSERS_PATH` for browser
+  discovery when a non-default browser registry is needed.
+  `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is for controlled dependency or
+  container installs where the browser is installed explicitly afterward; it is
+  not needed for normal project setup.
+- `NODE_EXTRA_CA_CERTS` is smoke-only plumbing for an isolated HTTPS fixture
+  using a private test CA. It is not a normal project setting or FrameKit image
+  API configuration.
+- `CI` and `NEXT_TELEMETRY_DISABLED` are repository test/CI plumbing. A normal
+  consumer does not need to set them. `FRAMEKIT_TEST_FAIL` is only used by the
+  creator's test doubles and must never be set in a consumer project.
 
 ## Discovery
 

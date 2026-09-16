@@ -160,17 +160,64 @@ pnpm framekit start
 
 ## Environment variables
 
-See the [CLI reference](../reference/cli.md#framekit-dev) for the authoritative distinction: `framekit dev` processes `FRAMEKIT_HOST`, `HOST`, and `PORT`, while [`framekit start`](../reference/cli.md#framekit-start) passes the inherited environment to Next's standalone server, which handles its own production variables.
+The following seven application variables configure the access database/bootstrap
+and image-rendering runtime. The [public API reference](../reference/public-api.md#unified-framekit-api-handler)
+describes the image request/response and handler contract; the behavior below
+follows the current runtime.
+
+Image render settings are read from `process.env` for each image-handler request;
+constructing a handler does not read them. The access layer reads the database
+path lazily, and bootstrap reads only `FRAMEKIT_ADMIN_USERNAME` and
+`FRAMEKIT_ADMIN_PASSWORD` when it initializes an empty database.
+
+The first valid `POST /api/framekit/login` request against an empty database runs
+bootstrap before credential authentication. Missing or invalid bootstrap values
+return `503` and leave no user stored. Once a user exists, the bootstrap
+environment values are ignored and account data is not synchronized from the
+environment.
+
+| Variable | Consumed by | Behavior |
+| --- | --- | --- |
+| `FRAMEKIT_DATABASE_PATH` | SQLite access layer (`getDatabase`) | Read lazily when access data is first needed. Relative paths resolve from the application working directory. Default: `.framekit-data/framekit.sqlite`. In production, set it to a persistent volume or storage path; the database contains users, sessions, and API-token data. `:memory:` is process-local and is not persisted across restarts. |
+| `FRAMEKIT_ADMIN_PASSWORD` | First empty-database bootstrap (`bootstrapUsers`) | Required when first-user bootstrap runs. It must be 12-256 UTF-8 bytes. It is not read after any user exists. |
+| `FRAMEKIT_ADMIN_USERNAME` | First empty-database bootstrap (`bootstrapUsers`) | Read only for the first user. Defaults to `admin`; otherwise it must be 3-64 ASCII letters, numbers, `.`, `_`, or `-`. It is not read after any user exists. |
+| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig` → `renderTemplateImage` | Required for server rendering. It must be an HTTP loopback origin (`localhost`, `127.0.0.1`, or `[::1]`), with an optional numeric port and no credentials, query, fragment, or path other than `/`. The HTTP scheme is case-insensitive. |
+| `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig` → `prepareRenderInputs` | Optional; defaults to an empty set. It accepts comma-separated exact DNS hostnames, trimming, lowercasing, and deduplicating entries; empty entries are ignored. Each hostname is at most 253 characters; IP literals, wildcards, trailing dots, ports, paths, queries, and fragments are invalid. An empty or comma-only value is valid. Remote image URLs must use HTTPS and an exact allowed host; safe `/assets/...` and `/framekit/templates/...` paths plus data URLs remain supported. |
+| `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → render capacity guard | Optional; defaults to `2`. It must be a base-10 digit string in the inclusive range `1..32`; invalid values fail configuration. Requests over the process-local concurrent-render limit fail with a capacity error. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → request deadline and browser operations | Optional; defaults to `30000` ms. It must be a base-10 digit string in the inclusive range `1..120000`; invalid values fail configuration. It bounds the image request deadline and browser operations. |
+
+`FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not read by the current runtime;
+it is not an origin fallback or configuration variable.
+The canonical image route is the only supported image API path and uses session
+or database API-token authentication.
+
+For a reverse proxy, the access handler and cookie-authenticated image requests
+derive the canonical origin from a validated `x-forwarded-proto` and
+`x-forwarded-host` pair. If either forwarding header is present, both must be
+present as one valid value. Configure the proxy
+to overwrite or strip client-supplied forwarding headers; use one valid
+`x-forwarded-proto: https` value and one valid `x-forwarded-host` authority for
+the public HTTPS origin. Direct requests use the request URL, with a validated
+`Host` authority used for the default wildcard bind hosts. An HTTP forwarding
+pair is accepted only for the internal-origin or validated wildcard-bind cases;
+public reverse proxies must use HTTPS. `FRAMEKIT_PUBLIC_ORIGIN` is not used.
+
+See the [CLI reference](../reference/cli.md#framekit-dev) for the separate
+process behavior: `framekit dev` processes `FRAMEKIT_HOST`, `HOST`, and `PORT`,
+while [`framekit start`](../reference/cli.md#framekit-start) passes the inherited
+environment to Next's standalone server.
 
 ## Rendering boundaries
 
-Studio frame exports (preview, download, and browser PNG generation) happen in
-the browser. The generated consumer also provides the Node.js-only
-`POST /api/framekit/images/render` server image API through the unified
-`createFrameKitApiHandler` adapter; it continues to delegate image work to
-`createImageHandler` and requires `FRAMEKIT_API_KEY` until Phase 6. Install the
-Chromium headless shell explicitly with `framekit browser install` before
-serving requests. The previous `/api/v1/images` route returns `404`. The private
+Studio previews remain local, while Download PNG and Copy PNG use the
+Node.js-only `POST /api/framekit/images/render` server image API through the
+unified `createFrameKitApiHandler` adapter. The route delegates to the Studio
+image handler and accepts an active `framekit_session` cookie or
+`Authorization: Bearer <API_TOKEN>`; cookie-authenticated requests must be
+same-origin. Download PNG and Copy PNG request their PNG bytes from this
+canonical route. Install the Chromium headless shell explicitly with
+`framekit browser install` before serving requests. The previous
+`/api/v1/images` route returns `404`. The private
 render-job/page handoff remains an internal detail of that API and the generated
 render page.
 

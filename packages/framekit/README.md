@@ -4,13 +4,13 @@ FrameKit provides the typed template contract, data resolution, validation,
 Markdown rendering, and reusable editor components for React and Next.js. The
 reusable Studio includes authenticated `/login`, `/editor`, `/brand`, and
 `/settings` access with a safe `StudioUser` handoff and account, token, and
-administrator workflows. Studio Download/Copy remains browser-based PNG export
-until Phase 6 server-backed export. The server-only
-`@mauriciodmo/framekit/server` facade exposes configuration and authentication
-helpers, the `createStudioAccessHandler` session and token/user management
-handler, the `createImageHandler` PNG API, image preparation and rendering,
-temporary render jobs, and the private `createRenderPage` handoff used by
-production rendering.
+administrator workflows. Studio Download/Copy use the authenticated server
+image API. The server-only
+`@mauriciodmo/framekit/server` facade exposes `createFrameKitApiHandler`, the
+`createStudioAccessHandler` session and token/user management handler, the
+`createStudioImageHandler` session/token PNG API, image preparation and
+rendering, temporary render jobs, and the private `createRenderPage` handoff
+used by production rendering.
 
 ## Compatibility
 
@@ -166,7 +166,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
 import { createRenderClient } from '@mauriciodmo/framekit/client'
 import { createDevServer } from '@mauriciodmo/framekit/dev'
-import { authenticateBearer, createFrameKitApiHandler, createImageHandler, createStudioAccessHandler, ImageRenderError, parseImageApiConfig, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
+import { createFrameKitApiHandler, createStudioAccessHandler, createStudioImageHandler, ImageRenderError, prepareRenderInputs, renderTemplateImage } from '@mauriciodmo/framekit/server'
 import '@mauriciodmo/framekit/styles.css'
 ```
 
@@ -183,10 +183,10 @@ import { templates } from '@framekit/generated/templates'
 export const RenderClient = createRenderClient(templates)
 ```
 
-The server-only `./server` facade exposes configuration and authentication
-helpers, `createFrameKitApiHandler`, `createStudioAccessHandler`, `createImageHandler`,
-`prepareRenderInputs`, `renderTemplateImage`, temporary render jobs, and the
-private `createRenderPage` handoff. It also exports the type-only
+The server-only `./server` facade exposes the unified `createFrameKitApiHandler`,
+`createStudioAccessHandler`, `createStudioImageHandler`, `prepareRenderInputs`,
+`renderTemplateImage`, temporary render jobs, and the private `createRenderPage`
+handoff. It also exports the type-only
 `ApiTokenMetadata` and `CreatedApiToken` contracts. Keep the `./dev` and
 `./server` entry points out of browser/client imports.
 
@@ -214,10 +214,7 @@ returned token secrets. A created token's full secret is returned once, in the
 `201` response; later metadata responses contain only safe metadata, and storage
 contains only that metadata and the token hash. API-token Bearer lookup accepts a
 bounded, non-empty credential, hashes it, requires an unrevoked token with an
-active owner, and updates `lastUsedAt`. The generated-token `fk_` prefix is not
-required, so imported legacy credentials can be used. A legacy non-empty
-`FRAMEKIT_API_KEY` is imported only during first-user bootstrap and is not
-synchronized afterward.
+active owner, and updates `lastUsedAt`.
 
 Session-protected account, token, and user-management operations return `401`
 for missing or invalid sessions; invalid login credentials also return `401`.
@@ -227,18 +224,16 @@ inaccessible targets return `404`; unsupported methods return `405`; duplicate
 usernames and last-active-administrator conflicts return `409`. Unsafe requests
 require a same-origin `Origin` header.
 
-`POST /api/framekit/images/render` continues to use `FRAMEKIT_API_KEY`, and
-Download PNG and Copy PNG continue to use the current browser exporter. The
-previous `/api/v1/images` route is removed and returns `404`. The authenticated
-Studio access UI is implemented; authenticated image API migration and
-server-backed Download/Copy remain pending for Phase 6.
+`POST /api/framekit/images/render` accepts an active Studio session or a valid
+API token. Download PNG and Copy PNG use that authenticated server renderer.
+The previous `/api/v1/images` route is removed and returns `404`.
 
 ### Server image API
 
 The generated consumer template exposes a Node.js-only
 `POST /api/framekit/images/render` route backed by
 `createFrameKitApiHandler(templates)`, which delegates image work to
-`createImageHandler(templates)`. Send JSON with the generated
+`createStudioImageHandler(templates)`. Send JSON with the generated
 template slug, an optional variant, and optional field data:
 
 ```json
@@ -249,12 +244,19 @@ template slug, an optional variant, and optional field data:
 }
 ```
 
-Authenticate with `Authorization: Bearer <FRAMEKIT_API_KEY>`. A successful
-request returns `200` with `image/png`; failures return stable JSON errors.
-Configure `FRAMEKIT_API_KEY` and `FRAMEKIT_INTERNAL_ORIGIN` at runtime. The
-optional `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`,
-and `FRAMEKIT_RENDER_TIMEOUT_MS` settings control remote images and render
-limits. Install the headless shell before serving this route.
+Authenticate with an active `framekit_session` cookie or
+`Authorization: Bearer <API_TOKEN>`. Cookie-authenticated requests must be
+same-origin. A successful request returns `200` with `image/png`; failures return
+stable JSON errors. See the [Public API Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
+for the seven runtime environment variables, authentication, validation,
+bootstrap, and persistence details. On the first login request against an empty
+database, set `FRAMEKIT_ADMIN_PASSWORD` to a strong password of 12–256 UTF-8
+bytes; `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. These
+settings create the initial administrator only. Use a persistent
+`FRAMEKIT_DATABASE_PATH` (default `.framekit-data/framekit.sqlite`) so users,
+password hashes, sessions, and API-token hashes and metadata survive restarts;
+`:memory:` is process-local and is not suitable for deployments. Install the
+headless shell before serving this route.
 
 The generated template also includes the canonical `Dockerfile`,
 `.dockerignore`, and `.env.example`. The repository smoke checks inspect these

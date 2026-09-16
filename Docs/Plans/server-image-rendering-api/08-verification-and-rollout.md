@@ -22,7 +22,7 @@ distribution; update documentation; and define a safe compatibility rollout.
   job store.
 - Real Chromium API smoke in final production container.
 - Isolated tarball/generated-consumer smoke.
-- Seven-file maintained starter inventory and clean generated-binding recovery.
+- Six-file maintained starter inventory and clean generated-binding recovery.
 - SQLite-backed Studio access, sessions, API tokens, and persistent-volume proof.
 - Package-owned HTTP pipeline and FrameKit-owned browser installation checks.
 - Remote-image SSRF/token-leak/browser-network verification.
@@ -31,11 +31,12 @@ distribution; update documentation; and define a safe compatibility rollout.
 - Changelog + compatibility and migration note.
 - Rollout/rollback checklist and known limitations.
 
-Evidence already recorded against the original API-key and browser-export
-baseline remains historical proof for Steps 1-7. The active verification
-inventory below uses SQLite access data, sessions, API tokens, the seven-file
-starter, server-backed Studio export, and persistent Docker storage. Render jobs
-remain memory-only.
+Historical smoke evidence recorded against the original API-key and
+browser-export baseline is limited to Steps 1-7; it is not current verification
+and does not describe current authentication. The active verification inventory
+below uses SQLite access data, sessions, API tokens, the six-file starter,
+server-backed Studio export, and persistent Docker storage. Render jobs remain
+memory-only.
 
 ## Verification strategy
 
@@ -65,7 +66,6 @@ under `tests/e2e/`.
 - loopback-only internal origin;
 - exact allowed-image-host parsing;
 - bounded numeric settings;
-- constant-time classic `FRAMEKIT_API_KEY` Bearer contract;
 - canonical session/API-token authentication, invalid-Bearer precedence, and
   same-origin cookie enforcement;
 - stable error-code/status mapping;
@@ -118,7 +118,7 @@ under `tests/e2e/`.
 - registry loader/definition dimension/variant mismatch checks;
 - no duplicate resolve/validate pipeline in private client;
 - deterministic loading/ready/error markers;
-- classic and canonical auth-before-body/registry/fetch/browser ordering;
+- canonical auth-before-body/registry/fetch/browser ordering;
 - bounded body/exact JSON shape;
 - remote-image preparation before renderer;
 - canonical resolve/validate once;
@@ -135,11 +135,12 @@ under `tests/e2e/`.
 
 ### Canonical starter/access/configuration/browser tooling
 
-- final starter has exactly seven maintained `src/app` files: the unified Studio
-  page, login page, access route, image route, private render page, layout, and
-  global CSS;
+- final starter has exactly six maintained `src/app` files: the unified Studio
+  page, login page, catch-all FrameKit API route for access and image endpoints,
+  private render page, layout, and global CSS;
 - old home/editor/brand pages and sibling render-client binding are absent;
-- login/access/image/Studio/private-render files remain thin package bindings;
+- login/Studio/private-render files and the catch-all API binding remain thin
+  package bindings;
 - both generated client bindings are excluded from the creator template and
   recreated from a clean generated directory without rewriting user files;
 - neutral registries remain server-consumable and private render imports exclude
@@ -177,26 +178,53 @@ the packaged local image fixture. Remote-image policy remains in focused tests;
 the Docker smoke does not maintain certificates, host mappings, or an HTTPS
 fixture.
 
+The current runtime configuration is:
+
+- `FRAMEKIT_DATABASE_PATH`, defaulting to `.framekit-data/framekit.sqlite` and
+  resolved relative to the working directory, for SQLite access data; in the
+  generated runner the default is `/app/.framekit-data/framekit.sqlite`, and the
+  Dockerfile neither sets the variable nor declares a volume;
+- on the first `POST /api/framekit/login` against an empty database,
+  `bootstrapUsers()` reads only `FRAMEKIT_ADMIN_USERNAME`, defaulting to `admin`
+  and limited to 3-64 ASCII letters, numbers, `.`, `_`, or `-`, and
+  `FRAMEKIT_ADMIN_PASSWORD`, required at 12-256 UTF-8 bytes. This happens after
+  login-body validation, not at process or container startup;
+- `FRAMEKIT_INTERNAL_ORIGIN`, required as an HTTP loopback origin with no parser
+  default; `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, optional and empty/unset to disable
+  remote image hosts, with exact DNS hostnames only; `FRAMEKIT_MAX_CONCURRENT_RENDERS`,
+  default `2` and limited to `1`-`32`; and `FRAMEKIT_RENDER_TIMEOUT_MS`, default
+  `30000` ms and limited to `1`-`120000` ms.
+
+The generated Docker image sets `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
+`PORT=3000`, `FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
+`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`
+is used only by Docker dependency-install stages. `FRAMEKIT_PUBLIC_ORIGIN` is
+unsupported and is not consumed.
+
 ### Startup checks
 
 1. Container process is `tini` -> non-root Node standalone server.
 2. HTTP readiness succeeds.
-3. `/data` is writable by the runtime user and contains SQLite, WAL, and SHM
-   files only after runtime initialization.
+3. The configured database path is writable by the runtime user and is mounted
+   for persistence when required. The generated image does not create or declare
+   `/data`; with the default path, database files resolve under `/app/.framekit-data`
+   and appear on first database access, not at container startup.
 4. Public/generated static template assets return `200`.
 5. Chromium executable exists under configured browser path.
-6. No browser starts before first valid render request.
+6. No browser starts at process/container startup; Chromium launches lazily for
+   the first authenticated render after payload resolution and is reused.
 7. No FrameKit temp render-job directory/file exists.
 
 ### API checks
 
-1. Empty-volume boot creates the configured administrator.
+1. The first login request against an empty database creates the administrator
+   from the configured username and password.
 2. Missing session/API token -> `401`.
 3. Same-origin login and session-authenticated render -> non-empty PNG.
 4. Generated API-token render -> non-empty PNG.
 5. Response headers, signature, and declared dimensions match.
-6. Container replacement with the same volume preserves users, sessions, and
-   API tokens while clearing temporary render jobs.
+6. Container replacement with the same mounted database volume preserves users,
+   sessions, and API tokens while clearing temporary render jobs.
 
 Detailed malformed input, remote-image policy, browser network/token scoping,
 capacity, timeout, abort, and cleanup behavior remains in the focused Vitest
@@ -245,7 +273,7 @@ behind the same API before release rather than adding per-bundle Maps.
 4. Generate a project from creator tarball.
 5. Install local FrameKit tarball as appropriate.
 6. Install dependencies with generated lock/package-manager contract.
-7. Check the seven-file source inventory, then run generation/check/build from
+7. Check the six-file source inventory, then run generation/check/build from
    absent generated output, verifying both client bindings are recreated.
 8. Inspect installed package/tarballs for workspace paths, secrets, and browser
    binaries.
@@ -253,6 +281,10 @@ behind the same API before release rather than adding per-bundle Maps.
 The registry-backed Docker smoke is separate because it requires an exact
 published FrameKit version. It builds the canonical image and verifies one local
 asset render without repeating the tarball checks.
+
+The current `scripts/smoke-tarballs.mjs` start smoke uses
+`FRAMEKIT_DATABASE_PATH=:memory:` and checks startup/routes/Map handoff; it does
+not install Chromium or exercise the image-render capture path.
 
 Exercise both creator install-and-generate and skip-install workflows. In the
 latter, install dependencies before a normal FrameKit generate/check/dev/build
@@ -263,11 +295,15 @@ the installer does not pick it up.
 
 ## Small smoke harness
 
-A small Node script may build the canonical image, wait for readiness, bootstrap
-and log in, reject a request without authentication, verify session and API-token
-PNG responses, replace the container while retaining its temporary volume, and
-clean up all resources. HTTPS reverse-proxy behavior remains in the browser E2E
-rather than adding certificate management to this smoke.
+The current `scripts/smoke-docker.mjs` builds the image for an exact published
+FrameKit version, runs one ephemeral container, passes the admin password, and
+logs in; that first login request performs bootstrap. It then rejects an
+unauthenticated render, creates an API token, and verifies a token-authenticated
+PNG. It does not set `FRAMEKIT_DATABASE_PATH`, mount/reuse a volume, or replace
+the container, so it does not prove persistence. A separate Step 8 harness may
+build on it to test a writable mounted database and container replacement.
+HTTPS reverse-proxy behavior remains in the browser E2E rather than adding
+certificate management to this smoke.
 
 The application itself must not write rendered PNGs/jobs to disk as part of the
 runtime path.
@@ -309,7 +345,7 @@ needs a future redesign.
 Release-blocking items:
 
 - auth occurs before body/template/fetch work;
-- no API key, API token, or session credential enters job/browser/page/log;
+- no API token or session credential enters job/browser/page/log;
 - job token never enters URL/client props/log;
 - job token only reaches exact private main document;
 - public/private job failures do not create an ID/token oracle;
@@ -335,9 +371,9 @@ Any failed trust-boundary item blocks completion even if happy-path PNG works.
 Document:
 
 - public API request/response;
-- canonical Studio session/API-token authentication and the compatible classic
-  `FRAMEKIT_API_KEY` handler;
-- first-boot administrator configuration, recurring environment behavior, HTTPS,
+- canonical Studio session/API-token authentication through
+  `createFrameKitApiHandler` and `createStudioImageHandler`;
+- first-login administrator configuration, recurring environment behavior, HTTPS,
   reverse-proxy login throttling, and persistent SQLite volume ownership;
 - exact allowed-image-host configuration;
 - data URL/root-relative/remote URL examples;
@@ -359,12 +395,12 @@ Update:
 
 - generated template README;
 - placeholder `.env.example`;
-- supported package imports and implemented signatures for `createImageHandler`,
+- supported package imports and implemented signatures for
   `createStudioImageHandler`, `createStudioAccessHandler`, `createRenderClient`,
   `createRenderPage`, `createStudioPage`, `createLoginPage`, and `withFrameKit`;
   the final export map includes `./next`, with no server/browser/auth/shared
   subpaths;
-- the seven-file app source tree, consumer-owned routes/styles, and generated
+- the six-file app source tree, consumer-owned routes/styles, and generated
   registry/client bindings; never instruct users to edit generated bindings;
 - package/repository AGENTS instructions and skill sources under `Docs/skills/`
   when their public-import or consumer-file maps change; regenerate synchronized
@@ -385,22 +421,22 @@ Update:
 
 ### Existing-consumer migration
 
-The seven-file authenticated layout is the default for newly scaffolded
-projects. Existing classic API consumers may retain
-`createImageHandler(templates)` and `FRAMEKIT_API_KEY`, but adopting
-database-backed Studio access is not entirely additive.
+The six-file authenticated layout is the default for newly scaffolded
+projects. The historical `createImageHandler`, `parseImageApiConfig`,
+`authenticateBearer`, and `FRAMEKIT_API_KEY` image-handler contract is removed
+from the current package. Existing consumers must use the canonical
+session/API-token route; adopting database-backed Studio access is not entirely
+additive.
 
 Document this order:
 
 1. Upgrade FrameKit and regenerate registries plus client bindings.
-2. Configure first-boot administrator credentials and a persistent
+2. Configure first-login administrator credentials and a persistent
    `FRAMEKIT_DATABASE_PATH`; preserve the SQLite files during later upgrades.
 3. Add the login and access route adapters.
 4. Update the unified section adapter to use the authenticated
    `createStudioPage()` contract and generated `StudioClient` user prop.
-5. Bind the canonical image route with `createStudioImageHandler(templates)`;
-   retain a separate classic route only when an external API-key consumer needs
-   it.
+5. Bind the canonical image route with `createStudioImageHandler(templates)`.
 6. Adopt `withFrameKit` where appropriate, preserve custom Next settings, install
    FrameKit's browser, and verify login, existing URLs, PNG output, persistence,
    and project styles before removing obsolete files or dependencies.
@@ -419,7 +455,7 @@ Operational logs may include only:
 - browser launch/disconnect lifecycle;
 - remote image fetch coarse host/result only if logging policy permits hostname.
 
-Never include API keys, API/session tokens, credential hashes, field data,
+Never include API/session tokens, credential hashes, field data,
 base64, full URL/query, response bodies, or raw Playwright exceptions in public
 logs.
 
@@ -427,7 +463,7 @@ logs.
 
 1. Retain the completed Steps 1-7 rendering evidence.
 2. Complete Studio Access, API Tokens, and Server-backed Export Phases 1-8.
-3. Build and pack both public packages and generate an isolated seven-file
+3. Build and pack both public packages and generate an isolated six-file
    consumer.
 4. Run focused, repository, browser, tarball, reverse-proxy, and two-container
    persistence gates against the final architecture.
@@ -436,18 +472,16 @@ logs.
 
 ## Rollback
 
-Rolling back to the previous package may restore the classic image handler and
-browser-based Studio behavior with `FRAMEKIT_API_KEY`, but database-backed Studio
-access is not additive. Keep the SQLite volume intact during rollback so a later
-retry preserves users and tokens. Never downgrade or delete access data
+A rollback to a previous package version may require restoring that version's
+matching runtime configuration. Keep the SQLite volume intact during rollback so
+a later retry preserves users and tokens. Never downgrade or delete access data
 implicitly; removal is an explicit operator action.
 
 Template definitions and generated assets still require no data migration.
 
 ## Final acceptance checklist
 
-- [ ] Classic API-key and canonical session/API-token auth contracts work and
-  fail closed.
+- [ ] Canonical session/API-token authentication works and fails closed.
 - [ ] Exact request parsing/body limits pass.
 - [ ] Local/data/remote image preparation works.
 - [ ] Node remote fetch redirect/size/MIME/signature policy passes.
@@ -461,7 +495,7 @@ Template definitions and generated assets still require no data migration.
 - [ ] Raw PNG headers/signature/dimensions pass.
 - [ ] Studio Download PNG and Copy PNG use the canonical server image route.
 - [ ] Packed packages work outside workspace.
-- [ ] Starter has seven maintained app files and clean generation restores client
+- [ ] Starter has six maintained app files and clean generation restores client
   bindings.
 - [ ] SQLite access data survives container replacement; render jobs do not.
 - [ ] HTTPS reverse-proxy same-origin login, mutation, and image rendering pass.

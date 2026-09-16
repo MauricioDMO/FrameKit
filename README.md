@@ -77,7 +77,7 @@ Studio renders this React node in the preview and exports a PNG named after the 
   Chromium headless-shell installation with `framekit browser install`.
 - Client-side PNG export at the template's declared width and height.
 - The server-only `@mauriciodmo/framekit/server` facade with the public
-  `createFrameKitApiHandler` API adapter and `createImageHandler` PNG API,
+  `createFrameKitApiHandler` API adapter and authenticated PNG API,
   image-input preparation, PNG rendering, temporary render jobs, and the private
   render-page handoff.
 

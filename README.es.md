@@ -77,9 +77,9 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
   explícita del headless shell de Chromium con `framekit browser install`.
 - Exportación de PNG en el navegador con el ancho y alto declarados por la plantilla.
 - La fachada de servidor `@mauriciodmo/framekit/server`, con las APIs públicas
-  `createFrameKitApiHandler` y `createImageHandler` para la API PNG, preparación
-  de inputs de imagen, renderizado PNG, trabajos temporales de render y el handoff
-  privado de la página.
+  `createFrameKitApiHandler` y `createStudioImageHandler` para el acceso y la API
+  PNG autenticada, preparación de inputs de imagen, renderizado PNG, trabajos
+  temporales de render y el handoff privado de la página.
 
 ## Limitaciones conocidas
 

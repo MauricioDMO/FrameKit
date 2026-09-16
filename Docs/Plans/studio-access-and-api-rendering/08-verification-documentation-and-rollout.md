@@ -32,7 +32,8 @@ Database and credentials:
 - schema, migration, strict types, foreign keys, WAL, and busy timeout;
 - lazy initialization and process-global connection reuse;
 - password hash/verify/malformed/dummy-work behavior;
-- first-boot admin and one-time legacy-key import;
+- first-boot administrator username/password behavior and recurring-startup
+  behavior;
 - username uniqueness and last-active-administrator transactions.
 
 Sessions and HTTP:
@@ -49,13 +50,11 @@ Users and tokens:
 
 - owner isolation and administrator authorization;
 - one-time generated secret and hash-only persistence;
-- legacy key authentication without prefix disclosure;
 - revoke, inactive owner, reactivation, and last-used behavior;
 - session invalidation and cascade deletion semantics.
 
 Image API and Editor:
 
-- classic API-key handler compatibility;
 - session and API-token Studio-handler success;
 - invalid Bearer precedence over ambient session;
 - authentication before body/template/fetch/browser work;
@@ -69,13 +68,29 @@ Image API and Editor:
 
 Generated consumer and Docker:
 
-- seven maintained app files;
+- six maintained app files;
 - generated-only client bindings;
 - clean generate/check/build/start;
 - non-root Chromium rendering;
 - database volume ownership and persistence across two containers;
 - render jobs remain process-local and disappear after restart;
 - tarballs contain no secrets, databases, workspace references, or browsers.
+
+Runtime environment:
+
+- verify the seven application variables: first-boot
+  `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD`, persistent
+  `FRAMEKIT_DATABASE_PATH`, rendering `FRAMEKIT_INTERNAL_ORIGIN`,
+  `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
+  `FRAMEKIT_RENDER_TIMEOUT_MS`;
+- verify the administrator values are read only for an empty database,
+  `FRAMEKIT_DATABASE_PATH` points to the persistent volume, and the rendering
+  defaults and bounds are applied as documented;
+- verify the runtime-only administrator password is not committed, passed during
+  image build, or stored in image layers;
+- verify the canonical image route uses only a same-origin session or database
+  API token, while access mutations retain their session boundary;
+- verify `FRAMEKIT_PUBLIC_ORIGIN` is not read or supported.
 
 ## Browser E2E
 
@@ -122,8 +137,10 @@ Run this against Next.js rather than only unit-testing constructed `Request`
 objects. Verify that the supported proxy headers let the access handler derive
 the browser's canonical HTTPS origin even when `new URL(request.url).origin`
 contains the internal hostname and port; direct starts using Next's wildcard
-bind host must also accept the validated `Host` authority. Introduce an explicit
-public-origin setting only if this integration proves it necessary.
+bind host must also accept the validated `Host` authority. Do not introduce
+`FRAMEKIT_PUBLIC_ORIGIN`: the current contract does not support it or use it as a
+fallback. The handler must use the validated request and supported forwarding
+headers instead.
 
 Use an isolated temporary database per E2E run and clean it through the test
 harness. Do not depend on a developer's local `.framekit-data` directory.
@@ -159,7 +176,7 @@ Document:
 - user roles and last-administrator protection;
 - session and API-token storage/expiry/revocation;
 - one-time API-token display;
-- classic versus canonical image-handler authentication;
+- session/API-token image-handler authentication;
 - server-backed Studio download/copy and local preview;
 - removal of `modern-screenshot`;
 - persistent `/data` volume and backup responsibility;
@@ -191,7 +208,9 @@ erasing completed history:
 - mark Step 8 final closure as blocked by this plan;
 - state that SQLite persists access data, not render jobs;
 - keep the five-file starter target marked historical and six files active;
-- keep shared-API-key-only canonical authentication marked historical;
+- keep any pre-session shared-secret authentication marked historical;
+- mark any old API-key-only smoke or authentication text as historical; current
+  smoke must log in and create/use a database API token;
 - keep browser-based Studio export marked historical;
 - rerun every affected Step 8 assertion before closing that plan.
 
@@ -209,20 +228,27 @@ Revalidate Maintainability Phase 6 against:
 
 This rollout is not entirely additive. Existing consumers that use
 `createStudioPage()` adopt database-backed Studio access and must configure the
-first administrator and persistent database path. Document this before release.
+first administrator and persistent database path. `FRAMEKIT_ADMIN_PASSWORD` is
+required for the first empty-database bootstrap; `FRAMEKIT_ADMIN_USERNAME` is
+optional and defaults to `admin`. Later environment changes do not rename the
+administrator or change its password. Document this before release.
 
-Compatibility retained:
+Current boundaries:
 
-- `createImageHandler(templates)` and `FRAMEKIT_API_KEY` continue to work;
+- the canonical `createFrameKitApiHandler` dispatches the image path to
+  `createStudioImageHandler`, which accepts a same-origin session or database
+  API token;
+- API tokens are generated explicitly through the authenticated access API and
+  stored only as hashes in SQLite;
 - existing template definitions, registries, variants, fields, and assets do not
   migrate;
 - the private render route and temporary Map protocol do not migrate;
 - direct `FrameKitStudio` component use remains possible, but a Client Component
   alone is not an authentication boundary.
 
-Rollback to the previous package version may restore classic Studio behavior
-using `FRAMEKIT_API_KEY`. Never delete the SQLite volume during rollback; retain
-it for a subsequent retry or explicit operator-managed removal.
+There is no compatibility adapter for the removed pre-session image contract.
+Keep the SQLite volume when rolling back so access data is not accidentally
+deleted; use a package version with a matching schema and access contract.
 
 ## Commands
 
@@ -265,20 +291,22 @@ a separate post-publication handoff requiring an exact published version.
 - [ ] Environment bootstrap never overwrites existing account data.
 - [ ] Passwords, sessions, and API tokens are hash-only at rest.
 - [ ] Last-active-administrator mutations fail transactionally.
-- [ ] Studio, access routes, and development asset writes require an active
-  session.
+- [ ] Protected Studio routes, cookie-authenticated access mutations, and
+  development asset writes require an active session.
 - [ ] API-token owner and administrator boundaries pass.
 - [ ] Cookie mutations reject cross-origin requests.
 - [ ] Same-origin cookie requests pass through the supported HTTPS-to-HTTP
   reverse-proxy topology without extra origin configuration.
 - [ ] Public deployment requirements state HTTPS and external login throttling.
-- [ ] Canonical image API accepts session or API token.
-- [ ] Classic image API handler remains compatible with `FRAMEKIT_API_KEY`.
+- [ ] All seven application variables have documented first-boot, persistent,
+  and rendering verification.
+- [ ] Canonical image API accepts a session or API token.
+- [ ] `FRAMEKIT_PUBLIC_ORIGIN` is documented as unsupported.
 - [ ] Studio Download PNG and Copy PNG use the server API.
 - [ ] Local preview behavior remains unchanged.
 - [ ] `modern-screenshot` is absent from source, tests, build, lockfile, and docs.
 - [ ] Private render accepts only its internal token.
-- [ ] Seven-file creator output works from packed packages.
+- [ ] Six-file creator output works from packed packages.
 - [ ] SQLite persists through container replacement using one volume.
 - [ ] Render jobs remain memory-only and clear on restart.
 - [ ] Public assets and client-bundle confidentiality limitations are documented.

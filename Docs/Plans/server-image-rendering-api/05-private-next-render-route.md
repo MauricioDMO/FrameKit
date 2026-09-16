@@ -72,7 +72,7 @@ settings and metadata:
 
 It does **not**:
 
-- compare `FRAMEKIT_API_KEY`;
+- compare public session or API-token credentials;
 - parse public JSON;
 - fetch remote images;
 - create/delete jobs;

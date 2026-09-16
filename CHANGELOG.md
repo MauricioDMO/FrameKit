@@ -63,8 +63,8 @@
   HTTP, token management, Studio UI, and server-backed Studio export remain
   subsequent phases. See the [SQLite and migrations phase plan](Docs/Plans/studio-access-and-api-rendering/01-sqlite-and-migrations.md).
 - Completed Phase 2 users and passwords with asynchronous fixed-profile
-  `scrypt:v1` credentials, lazy first-administrator bootstrap, one-time SHA-256
-  import of the legacy `FRAMEKIT_API_KEY`, safe user DTOs and mutations, session
+  `scrypt:v1` credentials, lazy first-administrator bootstrap without legacy
+  render-key import, safe user DTOs and mutations, session
   cleanup on password changes and deactivation, and the last-active-administrator
   invariant. Session/HTTP access, Studio UI, API-token endpoints, and
   server-backed export remain subsequent phases. See the [users, passwords, and
@@ -88,7 +88,8 @@
 - Implemented and verified Studio Access Phase 5.5 with the public
   `createFrameKitApiHandler(templates)` dispatcher, one catch-all
   `/api/framekit/[...action]` adapter in Studio and generated consumers,
-  canonical API-key image rendering at `POST /api/framekit/images/render`, and
+  canonical session/API-token image rendering at
+  `POST /api/framekit/images/render`, and
   removal of the unshipped `/api/v1/images` route. The image pipeline and
   existing access-handler security boundaries remain unchanged. See the
   [FrameKit API namespace phase plan](Docs/Plans/studio-access-and-api-rendering/05.5-framekit-api-namespace.md).
