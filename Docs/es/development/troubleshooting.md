@@ -285,9 +285,12 @@ con un token de API de la base de datos.
 - tipos de field o propiedades y restricciones específicas del field inválidos
 - opciones o valores predeterminados de choice inválidos, valores predeterminados, límites o steps numéricos inválidos, o límites de longitud de texto inválidos
 - una variante predeterminada o una etiqueta de variante que no está declarada en `content`
-- un field llamado `language` (esta clave está reservada)
 - valores de contenido con el tipo incorrecto o restricciones numéricas inválidas
 - un `render` ausente o que no sea una función
+
+Los nombres de fields son claves de field válidas y arbitrarias; `language` no tiene
+un significado especial en el contrato de plantillas. Dentro de una entrada de
+`content`, una clave de contenido solo es válida cuando está declarada en `fields`.
 
 Los errores de definición identifican el `template.tsx` y la regla afectada. Los errores de datos resueltos identifican la plantilla, la variante y el field que falló.
 

@@ -11,11 +11,11 @@ also accept:
 - `required` — whether an empty value is invalid. It defaults to `true`; use `required: false` for optional content.
 - `defaultValue` — the initial field value when neither the selected variant nor a Studio edit provides one. Boolean fields use a boolean default and fall back to `false`; number fields require a finite numeric default.
 
-Each `content` entry is a field-value-only object: its keys are declared field
-names and values match their field type. String fields remain strings; number
-fields use finite numbers; boolean fields use real `true`/`false` values. Do not
-add an entry-level `language` property; it is rejected as an unknown content key. The
-field name `language` is reserved and cannot be declared in `fields`.
+Each `content` entry is a field-value-only object. Field names are arbitrary valid
+field keys; `language` has no special meaning in the template contract. Within a
+content entry, a content key is valid only when declared in `fields`, and its value
+must match that field's type. String fields remain strings; number fields use
+finite numbers; boolean fields use real `true`/`false` values.
 
 ## Field Kinds
 

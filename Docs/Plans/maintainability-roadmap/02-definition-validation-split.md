@@ -30,8 +30,8 @@ surface or one-line compatibility modules:
 
 - metadata owns `meta` shape, keys, and values;
 - dimensions owns `width` and `height` checks;
-- fields owns the `fields` container guard, the reserved `language` key,
-  descriptor shape, and per-kind constraints;
+- fields owns the `fields` container guard, descriptor shape, and per-kind
+  constraints;
 - variants owns the `variants` container guard, declaration, and label checks;
 - composition owns the `content` container guard, emptiness, cross-references,
   content values, and numeric content constraints;
@@ -57,8 +57,7 @@ boundaries and nested order are:
 2. metadata container, unknown keys, title, description, marketing description,
    then tags and tag values;
 3. width, then height;
-4. fields container, reserved `language`, then descriptors in
-   `Object.entries(def.fields)` order;
+4. fields container, then descriptors in `Object.entries(def.fields)` order;
 5. variants container, unknown keys, default, then labels and label values;
 6. content container and emptiness, default/label membership, then content
    entries in `Object.keys(content)` order;
@@ -87,7 +86,7 @@ extracted helpers do not participate in it.
 | `definition/index.ts`: root guard and `DEFINITION_KEYS` | `definition/index.ts`: root guard and `DEFINITION_KEYS` | Keep root shape and top-level key ownership in the composer because it defines the complete definition contract, including the permitted `render` key. |
 | `definition/index.ts`: `meta` guard, `META_KEYS`, metadata checks | `definition/metadata.ts`: `META_KEYS`, `validateMetadata` | Move the `meta` container guard and all current metadata checks without changing their order or messages. The helper should return a failure message (or no failure), not a new public result type. |
 | `definition/index.ts`: width/height checks | `definition/dimensions.ts`: `validateDimensions` | Move width first and height second, including positive, finite, integer checks and exact messages. |
-| `definition/index.ts`: `fields` guard, reserved-key check, `FIELD_KINDS`, field loop and per-kind branches | `validation/fields/index.ts`: `validateFields` and private descriptor helpers | Move the `fields` container guard, `fields.language` diagnostic, and complete descriptor validation, including choice options, boolean restrictions, number limits/steps, text lengths, image scope, and cross-kind property rejection. Preserve field insertion order. |
+| `definition/index.ts`: `fields` guard, `FIELD_KINDS`, field loop and per-kind branches | `validation/fields/index.ts`: `validateFields` and private descriptor helpers | Move the `fields` container guard and complete descriptor validation, including choice options, boolean restrictions, number limits/steps, text lengths, image scope, and cross-kind property rejection. Preserve field insertion order. |
 | `definition/index.ts`: `variants` guard, `VARIANT_KEYS`, variant declaration and labels | `definition/variants.ts`: `VARIANT_KEYS`, `validateVariants` | Move the `variants` container guard and all declaration-level checks: allowed keys, default string, labels shape, and label strings. Content membership checks stay in composition because they require `content`. |
 | `definition/index.ts`: content shape, field-key set, default/label membership, value types, `validateNumberValue` mapping | `definition/composition.ts`: `validateComposition` | Own the `content` container guard and emptiness check plus the relationships among `content`, `fields`, and already-validated variants. Preserve content insertion order and the current numeric error-message mapping. |
 | `definition/index.ts`: `validateTemplateBase` | `definition/index.ts`: `validateTemplateBase` | Retain the public facade. It performs top-level checks, invokes helpers in the current sequence, short-circuits on the first message, and returns the original value narrowed to `TemplateBase`. |
@@ -96,7 +95,7 @@ extracted helpers do not participate in it.
 | `core/validation/index.ts`: existing exports | `core/validation/index.ts`: same exports | Keep the exact export list and paths: definition validators, `isValidColor`, and `validateTemplateData` as values, plus `TemplateDataValidationError` as a type. For validation, the package root re-exports only `validateTemplateBase`, `validateTemplateData`, `validateTemplateDefinition`, and `TemplateDataValidationError`; do not expose helper modules or change either barrel. |
 | `core/define-template.ts`: `defineTemplateBase`, `defineTemplate`, `assertValid` | Same file and symbols | No semantic change. The import may remain `./validation`; success returns and thrown error text must be unchanged. |
 | `src/index.ts`: root validation/type/field exports | Same file and exports | No export change. In particular, preserve root imports of `validateTemplateBase`, `validateTemplateDefinition`, and `validateTemplateData`. |
-| `src/types.ts`: `TemplateBase`, `TemplateDefinition`, `TemplateInput`, field/meta/variant types | Same file and types | No type-model change. Runtime splitting must not weaken or strengthen generic inference, `NoLanguageFields`, content narrowing, or render props. |
+| `src/types.ts`: `TemplateBase`, `TemplateDefinition`, `TemplateInput`, field/meta/variant types | Same file and types | No type-model change. Runtime splitting must not weaken or strengthen generic field inference, content narrowing, or render props. |
 | Current definition-validation cases | `core/validation/__tests__/definition/definition.test.ts`, `metadata.test.ts`, `dimensions.test.ts`, `composition.test.ts`, and `core/validation/__tests__/fields/index.test.ts` | Keep cases grouped by behavior under the current focused `__tests__/` suites, with every case assigned to one suite. |
 | `tests/types/*.ts`: valid/rejection fixtures | Same fixture files | Retain all fixtures and their `@ts-expect-error` assertions. They are compile-time contracts, not candidates for runtime-test consolidation. |
 | `apps/studio/src/__tests__/framekit/generation.integration.test.ts` | Same file | Retain generated-loader and public-root validation coverage unchanged; it proves the split does not break the supported consumer path. |
@@ -149,8 +148,8 @@ Add only the small characterization cases that the current monolith lacks:
   returns the same definition object;
 - `validateTemplateDefinition` reports the base error before a missing or
   invalid `render` function when both are wrong;
-- the `fields` container rejects a non-object value and the reserved
-  `fields.language` key with their current exact messages;
+- the `fields` container rejects a non-object value with its current exact
+  message;
 - choice and boolean descriptors reject `step`, and an image descriptor rejects
   `min` or `max`, preserving the currently uncharacterized kind-specific paths;
 - `variants.default` rejects an empty or non-string value before composition;
@@ -197,8 +196,8 @@ and the facade order only.
     responsibility; `definition/index.ts` remains responsible for converting a message
    into `{ success: false, error }`.
 4. **Extract fields as one coherent validator.** Move the `fields` container
-   guard, reserved-key check, `FIELD_KINDS`, field loop, and all per-kind checks
-   together. Keep choice option duplicate detection, number default/range/step
+   guard, `FIELD_KINDS`, field loop, and all per-kind checks together. Keep choice
+   option duplicate detection, number default/range/step
    checks, text length checks, image scope checks, and the current ordering of
    generic versus kind-specific property checks. Import `isValidNumberStep` from
    `data.ts` rather than reimplementing numeric arithmetic.
@@ -253,8 +252,8 @@ and the facade order only.
 - Number defaults and content values continue to use the existing
   `isValidNumberStep`/`validateNumberValue` implementation, including its
   large-magnitude decimal behavior.
-- `NoLanguageFields`, `NoUnknownMetaKeys`, `NoUnknownContentKeys`, generic
-  field inference, `TemplateRenderProps`, and all public types remain as-is.
+- `NoUnknownMetaKeys`, `NoUnknownContentKeys`, generic field inference,
+  `TemplateRenderProps`, and all public types remain as-is.
 - `packages/framekit/src/index.ts` and supported package subpaths expose no
   new internal validation module.
 - Studio loaded-template validation keeps its current internal
@@ -289,8 +288,8 @@ focused suite must additionally verify:
 
 - each ownership's first failure and the facade's first-failure order, by
   calling the public validator(s) rather than exporting private helpers;
-- the previously uncharacterized fields container/reserved-key, descriptor-kind,
-  variants default, and composition container/entry branches listed above;
+- the previously uncharacterized fields container, descriptor-kind, variants
+  default, and composition container/entry branches listed above;
 - exact metadata, dimension, descriptor, variant, and composition messages;
 - a base definition with no render function versus a full definition with one;
 - root imports of both validators;

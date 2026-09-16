@@ -283,8 +283,8 @@ Variant keys are arbitrary strings. They are not restricted to language tags —
 
 Use `variants.labels` for human-readable option labels. It is optional, and every
 label key must match a content variant key. A missing label falls back to the
-variant key. Content entries do not contain metadata such as `language`; every
-content key must be an editable field.
+variant key. Content entries contain field values only. Within a content entry, a
+content key is valid only when it is declared in `fields`.
 
 ```tsx
 variants: {
@@ -359,9 +359,11 @@ uses existing build output and does not generate. For one-off regeneration, run
 template; it discovers both templates and brand components, then writes
 `src/generated/framekit/templates.ts` and `src/generated/framekit/brands.ts`.
 
-## Reserved Keys
+## Field Keys
 
-The key `language` is reserved inside `fields` and cannot be used as a field name. FrameKit rejects it at both build time and runtime. Content entries contain field values only; a `language` property is rejected as an unknown field key.
+Field names are arbitrary valid field keys, and `language` has no special meaning
+in the template contract. It may be declared in `fields` and used in content like
+any other field key.
 
 ---
 

@@ -304,12 +304,13 @@ FrameKit proporciona dos funciones de validación que verifican diferentes aspec
 - `width` y `height` deben ser enteros finitos positivos
 - `meta` debe ser un objeto plano que solo contenga `title`, `description`, `marketingDescription` y `tags`; `title` debe ser no vacío y `tags` debe ser un array de strings
 - `variants` debe ser un objeto plano que solo contenga `default` y `labels` opcional; `variants.default` debe nombrar una entrada de contenido y cada key de label debe nombrar una entrada de contenido
-- `fields.language` está reservado y no puede ser usado
+- Los nombres de fields son claves de field válidas y arbitrarias; `language` no tiene un significado especial en el contrato de plantillas
 - `content` debe tener al menos una entrada
-- Cada entrada de contenido solo puede contener keys de fields declaradas y cada
-  valor debe coincidir con su tipo de field (`string` para fields string,
-  `number` finito para fields number y `boolean` para fields boolean); los
-  valores number también deben cumplir sus límites `min`, `max` y `step`
+- Dentro de una entrada de `content`, una clave de contenido solo es válida cuando
+  está declarada en `fields`, y su valor debe coincidir con el tipo de field
+  (`string` para fields string, `number` finito para fields number y `boolean`
+  para fields boolean); los valores number también deben cumplir sus límites
+  `min`, `max` y `step`
 - Las propiedades de nivel superior no soportadas, como `version`, son rechazadas
 - `render` debe ser una función
 - Las opciones de campo deben tener tipos y restricciones válidos (por ejemplo,

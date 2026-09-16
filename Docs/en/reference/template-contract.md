@@ -293,12 +293,12 @@ FrameKit provides two validation functions that check different aspects of a tem
 - `width` and `height` must be positive finite integers
 - `meta` must be a plain object with only `title`, `description`, `marketingDescription`, and `tags`; `title` must be non-empty and `tags` must be an array of strings
 - `variants` must be a plain object containing only `default` and optional `labels`; `variants.default` must name a content entry, and every label key must name a content entry
-- `fields.language` is reserved and cannot be used
+- Field names are arbitrary valid field keys; `language` has no special meaning in the template contract
 - `content` must have at least one entry
-- Every content entry may contain only declared field keys, and values must
-  match their field kind (`string` for string fields, finite `number` for number
-  fields, and `boolean` for boolean fields); number values must also satisfy
-  their declared `min`, `max`, and `step`
+- A field key in a content entry is valid only when declared in `fields`, and its
+  value must match its field kind (`string` for string fields, finite `number`
+  for number fields, and `boolean` for boolean fields); number values must also
+  satisfy their declared `min`, `max`, and `step`
 - Unsupported top-level properties such as `version` are rejected
 - `render` must be a function
 - Field options must have valid types and constraints (e.g., `min`/`max` only

@@ -284,9 +284,12 @@ database API token.
 - invalid field kinds or field-specific properties and constraints
 - invalid choice options or defaults, number defaults/bounds/steps, or text length limits
 - a default variant or variant label that is not declared in `content`
-- a field named `language` (this key is reserved)
 - content values with the wrong type or invalid number constraints
 - a missing or non-function `render`
+
+Field names are arbitrary valid field keys; `language` has no special meaning in
+the template contract. Within a content entry, a content key is valid only when it
+is declared in `fields`.
 
 Definition errors identify the affected `template.tsx` and rule. Resolved-data errors identify the template, variant, and field that failed.
 

@@ -6,7 +6,7 @@ For every template and content variant, `framekit check` generates the registry,
 
 - Width and height must be positive finite integers.
 - `content` needs at least one entry; each entry must be a plain object containing only declared field values of the correct kind. String fields use strings, number fields use finite numbers, and boolean fields use real booleans. `variants.default` must name one of the content entries.
-- Do not add `language` to a content entry: `content.<variant>.language` is rejected as an unknown field key. The field name `language` is reserved in `fields`.
+- Field names are arbitrary valid field keys; `language` has no special meaning in the template contract. Within a content entry, a content key is valid only when declared in `fields`.
 - `render` must be a function.
 - Required string values cannot be blank after trimming.
 - Number field definitions require a finite numeric `defaultValue` and do not

@@ -291,9 +291,9 @@ Las claves de variante son cadenas arbitrarias. No están restringidas a etiquet
 
 Usa `variants.labels` para las labels legibles de las opciones. Es opcional y
 cada key de label debe coincidir con una key de variante de contenido. Si falta
-una label, Studio usa la key de la variante. Las entradas de `content` no
-contienen metadata como `language`; cada key de contenido debe ser un field
-editable.
+una label, Studio usa la key de la variante. Las entradas de `content` solo
+contienen valores de fields. Dentro de una entrada de `content`, una clave de
+contenido solo es válida cuando está declarada en `fields`.
 
 ```tsx
 variants: {
@@ -373,9 +373,11 @@ requiere al menos una plantilla; descubre tanto las plantillas como los
 componentes de marca y luego escribe `src/generated/framekit/templates.ts` y
 `src/generated/framekit/brands.ts`.
 
-## Claves reservadas
+## Claves de Fields
 
-La clave `language` está reservada dentro de `fields` y no puede usarse como nombre de field. FrameKit la rechaza tanto en tiempo de compilación como en tiempo de ejecución. Las entradas de `content` contienen solo valores de fields; una propiedad `language` se rechaza como key desconocida.
+Los nombres de fields son claves de field válidas y arbitrarias; `language` no tiene
+un significado especial en el contrato de plantillas. Puede declararse en `fields`
+y usarse en el contenido como cualquier otro nombre de field.
 
 ---
 
