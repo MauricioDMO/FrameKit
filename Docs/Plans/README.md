@@ -859,7 +859,7 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 * [ ] La ruta canónica de imagen acepta sesión o token API.
 * [ ] El starter final contiene seis archivos mantenidos bajo `src/app`.
 * [ ] Docker preserva SQLite entre containers y limpia jobs al reiniciar proceso.
-* [ ] Las siete variables de aplicación y la ausencia de soporte para
+* [ ] Las seis variables específicas de FrameKit, el `PORT` estándar y la ausencia de soporte para
   `FRAMEKIT_PUBLIC_ORIGIN` están verificadas y documentadas.
 
 ### Repository gates

@@ -161,8 +161,10 @@ pnpm framekit start
 
 ## Variables de entorno
 
-Las siguientes siete variables son leídas por el runtime de acceso y renderizado
-de imágenes. La [referencia de la API pública](../reference/public-api.md#handler-api-unificado-de-framekit)
+Las siguientes seis variables específicas de la aplicación FrameKit son leídas
+por el runtime de acceso y renderizado de imágenes; la configuración de proceso
+estándar `PORT` proporciona el puerto del servidor y el origen privado inferido.
+La [referencia de la API pública](../reference/public-api.md#handler-api-unificado-de-framekit)
 es normativa para el contrato de los handlers de imágenes.
 
 Las opciones de renderizado se leen desde `process.env` en cada solicitud del
@@ -177,12 +179,16 @@ bootstrap o no son válidos, la respuesta es `503` y no se guarda ningún usuari
 Cuando ya existe un usuario, los valores de entorno del bootstrap se ignoran y
 los datos de la cuenta no se sincronizan desde el entorno.
 
+El runtime de renderizado de imágenes infiere automáticamente su origen privado
+de loopback como `http://localhost:${PORT}` a partir de la configuración confiable
+del proceso. `PORT` tiene `3000` por defecto.
+
 | Variable | Consumida por | Comportamiento |
 | --- | --- | --- |
 | `FRAMEKIT_DATABASE_PATH` | Capa de acceso SQLite (`getDatabase`) | Se lee de forma lazy cuando se necesitan datos de acceso. Las rutas relativas se resuelven desde el directorio de trabajo de la aplicación. Por defecto: `.framekit-data/framekit.sqlite`. En producción, configúrala en un volumen o ruta de almacenamiento persistente; la base contiene usuarios, sesiones y tokens API. `:memory:` es local al proceso y no persiste entre reinicios. |
 | `FRAMEKIT_ADMIN_PASSWORD` | Bootstrap de una base vacía (`bootstrapUsers`) | Obligatoria cuando se ejecuta el bootstrap del primer usuario. Debe tener entre 12 y 256 bytes UTF-8. No se lee después de que exista cualquier usuario. |
 | `FRAMEKIT_ADMIN_USERNAME` | Bootstrap de una base vacía (`bootstrapUsers`) | Se lee solo para el primer usuario. Por defecto es `admin`; de lo contrario debe tener entre 3 y 64 caracteres ASCII entre letras, números, `.`, `_` o `-`. No se lee después de que exista cualquier usuario. |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig` → `renderTemplateImage` | Obligatoria para el renderizado en servidor. Debe ser un origen HTTP de loopback (`localhost`, `127.0.0.1` o `[::1]`), con un puerto numérico opcional y sin credenciales, query, fragmento ni ruta distinta de `/`. El esquema HTTP no distingue mayúsculas de minúsculas. |
+| `PORT` | Puerto de proceso estándar usado para el servidor y el origen privado de loopback | Opcional; por defecto `3000`; entero de `1` a `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig` → `prepareRenderInputs` | Opcional; por defecto es un conjunto vacío. Acepta nombres de host DNS exactos separados por comas, recorta, pasa a minúsculas y deduplica las entradas; las vacías se ignoran. Cada hostname puede tener como máximo 253 caracteres; los literales IP, comodines, puntos finales, puertos, rutas, queries y fragmentos son inválidos. Un valor vacío o compuesto solo por comas es válido. Las URLs remotas deben usar HTTPS y un host permitido exacto; las rutas seguras `/assets/...` y `/framekit/templates/...`, además de las data URLs, siguen disponibles. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → límite de capacidad de renderizado | Opcional; por defecto es `2`. Debe ser un string de dígitos decimales en el rango inclusivo `1..32`; los valores inválidos hacen fallar la configuración. Las solicitudes que superan el límite de renders simultáneos dentro del proceso fallan con un error de capacidad. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → plazo de la solicitud y operaciones del navegador | Opcional; por defecto es `30000` ms. Debe ser un string de dígitos decimales en el rango inclusivo `1..120000`; los valores inválidos hacen fallar la configuración. Limita el plazo de la solicitud de imágenes y las operaciones del navegador. |

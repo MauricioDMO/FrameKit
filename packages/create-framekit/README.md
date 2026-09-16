@@ -9,8 +9,6 @@ pnpm dlx @mauriciodmo/create-framekit my-project
 cd my-project
 # Required before the first login when the database is empty.
 export FRAMEKIT_ADMIN_PASSWORD='replace-with-a-strong-password'
-# Required for server-side rendering on the default local port.
-export FRAMEKIT_INTERNAL_ORIGIN='http://127.0.0.1:3000'
 pnpm dev
 ```
 
@@ -62,8 +60,8 @@ browser runtime.
 `FRAMEKIT_DATABASE_PATH` is optional and defaults to
 `.framekit-data/framekit.sqlite`, relative to the project working directory.
 Persist the directory containing this database when deploying. The image route
-requires `FRAMEKIT_INTERNAL_ORIGIN`, an HTTP loopback origin; the included
-Dockerfile sets the default `http://127.0.0.1:3000`. Optional render settings are
+automatically infers its private loopback origin as `http://localhost:${PORT}`
+from trusted process configuration; `PORT` defaults to `3000`. Optional render settings are
 `FRAMEKIT_ALLOWED_IMAGE_HOSTS` (empty disables remote images),
 `FRAMEKIT_MAX_CONCURRENT_RENDERS` (default `2`), and
 `FRAMEKIT_RENDER_TIMEOUT_MS` (default `30000` ms). Supply credentials and these

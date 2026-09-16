@@ -248,7 +248,8 @@ Authenticate with an active `framekit_session` cookie or
 `Authorization: Bearer <API_TOKEN>`. Cookie-authenticated requests must be
 same-origin. A successful request returns `200` with `image/png`; failures return
 stable JSON errors. See the [Public API Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
-for the seven runtime environment variables, authentication, validation,
+for the six FrameKit-specific runtime variables plus the standard `PORT` process
+setting, authentication, validation,
 bootstrap, and persistence details. On the first login request against an empty
 database, set `FRAMEKIT_ADMIN_PASSWORD` to a strong password of 12–256 UTF-8
 bytes; `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. These

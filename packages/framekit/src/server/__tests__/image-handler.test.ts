@@ -53,7 +53,7 @@ function createEntry (overrides: Partial<TemplateRegistryEntry> = {}): TemplateR
 }
 
 function setEnvironment (overrides: Record<string, string> = {}): void {
-  vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', overrides.FRAMEKIT_INTERNAL_ORIGIN ?? 'http://127.0.0.1:3000')
+  vi.stubEnv('PORT', overrides.PORT ?? '3000')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', overrides.FRAMEKIT_ALLOWED_IMAGE_HOSTS ?? 'images.example.com')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', overrides.FRAMEKIT_MAX_CONCURRENT_RENDERS ?? '2')
   vi.stubEnv('FRAMEKIT_RENDER_TIMEOUT_MS', overrides.FRAMEKIT_RENDER_TIMEOUT_MS ?? '30000')
@@ -147,10 +147,10 @@ describe('createStudioImageHandler', () => {
     expect(mocks.render).not.toHaveBeenCalled()
   })
 
-  it('parses environment values per request', async () => {
+  it('parses PORT per request and rejects invalid values', async () => {
     const entry = createEntry()
     const handler = createStudioImageHandler([entry])
-    vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', '')
+    vi.stubEnv('PORT', '65536')
 
     const unconfigured = await handler(requestFor({ template: entry.slug }))
     expect(unconfigured.status).toBe(503)
@@ -159,9 +159,15 @@ describe('createStudioImageHandler', () => {
       message: 'Image rendering API is not configured'
     })
 
-    setEnvironment()
+    setEnvironment({ PORT: '4321' })
     const configured = await handler(requestFor({ template: entry.slug }))
     expect(configured.status).toBe(200)
+    expect(mocks.render.mock.calls[0][0].config.internalOrigin.href).toBe('http://localhost:4321/')
+
+    setEnvironment()
+    const defaultPort = await handler(requestFor({ template: entry.slug }))
+    expect(defaultPort.status).toBe(200)
+    expect(mocks.render.mock.calls[1][0].config.internalOrigin.href).toBe('http://localhost:3000/')
   })
 
   it.each([

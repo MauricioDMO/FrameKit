@@ -27,6 +27,20 @@ function isAllowedRequest (url: string, internalOrigin: URL): boolean {
   }
 }
 
+function isDevHmrWebSocket (url: string, internalOrigin: URL): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'ws:' &&
+      parsed.hostname === internalOrigin.hostname &&
+      parsed.port === internalOrigin.port &&
+      parsed.username === '' &&
+      parsed.password === '' &&
+      parsed.pathname === '/_next/hmr'
+  } catch {
+    return false
+  }
+}
+
 function isPng (bytes: Buffer): boolean {
   return bytes.length >= pngSignature.length && pngSignature.every((byte, index) => bytes[index] === byte)
 }
@@ -90,7 +104,14 @@ export async function renderTemplateImage (options: {
       if (controller.signal.aborted) value.close().catch(() => undefined)
     }).catch(() => undefined)
     context = await wait(contextPromise)
-    await wait(context.routeWebSocket('**/*', websocket => websocket.close()))
+    await wait(context.routeWebSocket('**/*', websocket => {
+      if (isDevHmrWebSocket(websocket.url(), options.config.internalOrigin)) {
+        websocket.connectToServer()
+        return
+      }
+
+      websocket.close()
+    }))
     const pagePromise = context.newPage()
     pagePromise.then(value => {
       if (controller.signal.aborted) value.close().catch(() => undefined)

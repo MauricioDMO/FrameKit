@@ -23,7 +23,6 @@ export default defineConfig({
       FRAMEKIT_ADMIN_USERNAME: 'admin',
       FRAMEKIT_ADMIN_PASSWORD: 'framekit-e2e-password',
       FRAMEKIT_DATABASE_PATH: ':memory:',
-      FRAMEKIT_INTERNAL_ORIGIN: 'http://localhost:3000',
       PORT: '3000',
       NEXT_TELEMETRY_DISABLED: '1',
     },

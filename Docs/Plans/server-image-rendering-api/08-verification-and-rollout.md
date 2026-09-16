@@ -189,15 +189,16 @@ The current runtime configuration is:
   and limited to 3-64 ASCII letters, numbers, `.`, `_`, or `-`, and
   `FRAMEKIT_ADMIN_PASSWORD`, required at 12-256 UTF-8 bytes. This happens after
   login-body validation, not at process or container startup;
-- `FRAMEKIT_INTERNAL_ORIGIN`, required as an HTTP loopback origin with no parser
-  default; `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, optional and empty/unset to disable
+- trusted process `PORT`, defaulting to `3000`, which infers the private loopback
+  origin `http://localhost:${PORT}`; `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, optional and empty/unset to disable
   remote image hosts, with exact DNS hostnames only; `FRAMEKIT_MAX_CONCURRENT_RENDERS`,
   default `2` and limited to `1`-`32`; and `FRAMEKIT_RENDER_TIMEOUT_MS`, default
   `30000` ms and limited to `1`-`120000` ms.
 
 The generated Docker image sets `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
-`PORT=3000`, `FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
-`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`
+`PORT=3000`, and `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`; the renderer infers
+`http://localhost:${PORT}` from trusted process configuration.
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`
 is used only by Docker dependency-install stages. `FRAMEKIT_PUBLIC_ORIGIN` is
 unsupported and is not consumed.
 

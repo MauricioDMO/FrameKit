@@ -65,16 +65,17 @@ Los colores se activan en la salida de terminal y pueden desactivarse con `NO_CO
 
 ## Variables de entorno de la aplicación
 
-El archivo `.env.example` de la plantilla generada enumera exactamente las siete
-variables de runtime de FrameKit. Es una referencia: proporciona valores reales
-mediante el entorno del proceso o un gestor de secretos y no la uses como almacén
-de credenciales.
+El archivo `.env.example` de la plantilla generada enumera las seis variables
+específicas de la aplicación FrameKit más la configuración de proceso estándar
+`PORT`. Es una referencia: proporciona valores reales mediante el entorno del
+proceso o un gestor de secretos y no la uses como almacén de credenciales.
 
 ```dotenv
 FRAMEKIT_ADMIN_USERNAME=admin
 FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password
 FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite
-FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
+# Standard process port for the server and private loopback origin; defaults to 3000.
+PORT=3000
 FRAMEKIT_ALLOWED_IMAGE_HOSTS=
 FRAMEKIT_MAX_CONCURRENT_RENDERS=2
 FRAMEKIT_RENDER_TIMEOUT_MS=30000
@@ -85,10 +86,14 @@ FRAMEKIT_RENDER_TIMEOUT_MS=30000
 | `FRAMEKIT_ADMIN_USERNAME` | `bootstrapUsers()` durante `POST /api/framekit/login`, solo si la base SQLite seleccionada todavía no tiene usuarios; crea el nombre del primer administrador. | Opcional; por defecto `admin`; 3–64 caracteres ASCII, únicamente letras, números, `.`, `_` o `-`. |
 | `FRAMEKIT_ADMIN_PASSWORD` | `bootstrapUsers()` durante ese mismo bootstrap; se hashea antes de guardar el primer administrador. | Obligatoria solo para el primer usuario; sin default; 12–256 bytes UTF-8. |
 | `FRAMEKIT_DATABASE_PATH` | `getDatabase()` cuando la capa de acceso necesita SQLite para usuarios, sesiones, migraciones o tokens API. | Por defecto `.framekit-data/framekit.sqlite`, relativo a `process.cwd()`; `:memory:` es local al proceso y no persiste. |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig()` al comenzar cada `POST /api/framekit/images/render`; construye la página privada y limita las solicitudes internas del navegador. | Obligatoria para la ruta de imágenes; no tiene default en el parser. Debe ser un origen HTTP loopback (`localhost`, `127.0.0.1` o `[::1]`), con puerto numérico opcional, ruta raíz y sin credenciales, query ni fragmento. |
+| `PORT` | Puerto de proceso estándar usado por Next.js y el renderizado privado de loopback. | Opcional; por defecto `3000`; entero de `1` a `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig()` en cada solicitud de imágenes y `prepareRenderInputs()` antes de reservar capacidad del navegador; permite descargas remotas concretas. | Opcional; unset, vacío o solo comas produce un conjunto vacío y desactiva imágenes remotas. Acepta hostnames DNS exactos separados por comas; recorta, normaliza a minúsculas y deduplica. Rechaza IPs, comodines, puertos, rutas, queries y fragmentos; cada hostname puede tener como máximo 253 caracteres. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig()` en cada solicitud de imágenes; limita los renders simultáneos dentro del proceso. | Opcional; por defecto `2`; string de dígitos decimales en el rango inclusivo `1..32`. No acepta signos, espacios, decimales, exponentes, cero ni valores mayores. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig()` en cada solicitud de imágenes; establece el plazo end-to-end y los timeouts del navegador. | Opcional; por defecto `30000` ms; string de dígitos decimales en el rango inclusivo `1..120000` ms. No acepta signos, espacios, decimales, exponentes, cero ni valores mayores. |
+
+El renderizador de imágenes infiere automáticamente su origen privado de loopback
+como `http://localhost:${PORT}` a partir de la configuración confiable del
+proceso. `PORT` tiene `3000` por defecto.
 
 La configuración de imágenes se lee por solicitud, no al importar la ruta o la
 factory. El login llama a `bootstrapUsers()` antes de autenticar, pero, una vez que
@@ -104,21 +109,24 @@ de API almacenado en SQLite y enviado como `Authorization: Bearer <API_TOKEN>`.
 
 ### Variables de herramientas y entornos
 
-No mezcles las siete variables de aplicación anteriores con variables que
-pertenecen al servidor de desarrollo, Docker, CI o Playwright:
+No mezcles las seis variables específicas de la aplicación FrameKit con la
+configuración de proceso estándar `PORT` ni con variables que pertenecen al
+servidor de desarrollo, Docker, CI o Playwright:
 
 #### Desarrollo (`framekit dev`)
 
 `framekit dev` resuelve el host como `FRAMEKIT_HOST` → `HOST` → `localhost` y
 lee `PORT` con default `3000`; `PORT` debe ser un entero entre `1` y `65535`.
-Estas variables solo configuran el servidor de desarrollo, no la API de imágenes.
+El renderizador de imágenes usa el valor confiable de `PORT` para inferir su
+origen privado de loopback como `http://localhost:${PORT}`.
 
 #### Docker
 
 El `Dockerfile` canónico fija en la imagen final `NODE_ENV=production`,
-`HOSTNAME=0.0.0.0`, `PORT=3000`,
-`FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000` y
-`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. No fija las otras variables de
+`HOSTNAME=0.0.0.0`, `PORT=3000` y
+`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. La ruta de renderizado deriva el
+origen privado de loopback como `http://localhost:${PORT}` a partir de esa
+configuración confiable del proceso. No fija las otras variables de
 aplicación: proporciónalas al ejecutar el contenedor. Durante las dos
 instalaciones de dependencias solo usa `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`;
 después instala el navegador explícitamente con
@@ -128,8 +136,8 @@ después instala el navegador explícitamente con
 
 El workflow de CI fija `NEXT_TELEMETRY_DISABLED=1`. `CI` no es una variable de
 la aplicación: Playwright la consulta y `scripts/smoke-docker.mjs` la propaga como
-`CI=1` a sus procesos hijos. El flag `CI` no sustituye ninguna de las siete
-variables de runtime.
+`CI=1` a sus procesos hijos. El flag `CI` no sustituye ninguna de las seis
+variables específicas de la aplicación FrameKit.
 
 #### Playwright
 
@@ -138,7 +146,6 @@ cambiar al reporter `line`. Su `webServer` inyecta el entorno de prueba con
 `FRAMEKIT_HOST=localhost`, `HOSTNAME=localhost`, `PORT=3000`, las credenciales de
 prueba (`FRAMEKIT_ADMIN_USERNAME=admin` y
 `FRAMEKIT_ADMIN_PASSWORD=framekit-e2e-password`), `FRAMEKIT_DATABASE_PATH=:memory:`,
-`FRAMEKIT_INTERNAL_ORIGIN=http://localhost:3000` y
 `NEXT_TELEMETRY_DISABLED=1`. El job E2E instala Chromium con
 `pnpm exec playwright install --with-deps chromium`; eso es independiente de la
 instalación explícita del navegador en Docker.
@@ -185,7 +192,9 @@ exclusiva del runtime Node.js, mediante el adapter unificado
 Envía una cookie de sesión activa de Studio o `Authorization: Bearer <API_TOKEN>`;
 las solicitudes autenticadas por cookie deben ser del mismo origen. Cuando tiene
 éxito devuelve `200` con `image/png`; los fallos devuelven errores JSON estables.
-Define `FRAMEKIT_INTERNAL_ORIGIN` en tiempo de ejecución. Las variables
+El renderizador de imágenes infiere automáticamente su origen privado de loopback
+como `http://localhost:${PORT}` a partir de la configuración confiable del
+proceso; `PORT` tiene `3000` por defecto. Las variables
 opcionales `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
 `FRAMEKIT_MAX_CONCURRENT_RENDERS` y `FRAMEKIT_RENDER_TIMEOUT_MS` configuran el
 acceso a imágenes remotas y los límites de renderizado. La API requiere el

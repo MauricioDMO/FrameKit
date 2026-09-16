@@ -145,19 +145,21 @@ route adapter.
 
 | Variable | Consumption | Default/valid range |
 |---|---|---|
-| `FRAMEKIT_INTERNAL_ORIGIN` | Private render origin and browser allowlist | Required HTTP loopback origin only; no parser default |
+| `PORT` | Trusted process setting used to infer the private render origin and browser allowlist | Defaults to `3000`; integer from `1` through `65535`; inferred origin is `http://localhost:${PORT}` |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Node-side remote-image hostname allowlist | Optional; empty/unset disables remote hosts; exact DNS hostnames only |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Process-local render capacity | Optional; `2` by default; `1`-`32` |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | Request/render deadline | Optional; `30000` ms by default; `1`-`120000` ms |
 
-The current access layer additionally uses `FRAMEKIT_DATABASE_PATH` (default
+The image renderer automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. `PORT` defaults
+to `3000`. The current access layer additionally uses `FRAMEKIT_DATABASE_PATH` (default
 `.framekit-data/framekit.sqlite`) for SQLite user/session/API-token storage.
 On an empty database, `bootstrapUsers` reads only
 `FRAMEKIT_ADMIN_USERNAME` (default `admin`) and
-`FRAMEKIT_ADMIN_PASSWORD` (required, 12-256 UTF-8 bytes). These are the seven
-supported FrameKit application variables: `FRAMEKIT_INTERNAL_ORIGIN`,
-`FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`,
-`FRAMEKIT_RENDER_TIMEOUT_MS`, `FRAMEKIT_DATABASE_PATH`,
+`FRAMEKIT_ADMIN_PASSWORD` (required, 12-256 UTF-8 bytes). These are the six
+supported FrameKit application variables: `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
+`FRAMEKIT_MAX_CONCURRENT_RENDERS`, `FRAMEKIT_RENDER_TIMEOUT_MS`,
+`FRAMEKIT_DATABASE_PATH`,
 `FRAMEKIT_ADMIN_USERNAME`, and `FRAMEKIT_ADMIN_PASSWORD`. There is no
 image-handler API-key variable.
 
@@ -165,8 +167,9 @@ In the generated Dockerfile, `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
 `PORT=3000`, and `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` are image defaults
 consumed by Next's standalone server, session-cookie handling, and Playwright/
 the browser installer respectively. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is
-used only in Docker dependency-install stages. `HOSTNAME`, `PORT`, and
-`PLAYWRIGHT_BROWSERS_PATH` have no additional FrameKit parser range/default.
+used only in Docker dependency-install stages. `HOSTNAME` and
+`PLAYWRIGHT_BROWSERS_PATH` have no additional FrameKit parser range/default;
+`PORT` uses the parser default and range shown above.
 `FRAMEKIT_PUBLIC_ORIGIN` is unsupported: it is not consumed by the current
 image/access code and is not a fallback for same-origin checks.
 

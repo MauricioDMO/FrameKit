@@ -20,7 +20,7 @@ describe('server options', () => {
     expect(getServerOptions({ PORT: value })).toEqual({ hostname: 'localhost', port })
   })
 
-  it.each(['-1', '0', '65536', '3.5', 'invalid'])('rejects invalid PORT %s', (port) => {
+  it.each(['-1', '0', '65536', '3.5', '1e2', '+1', ' 3000 ', 'invalid'])('rejects invalid PORT %s', (port) => {
     expect(() => getServerOptions({ PORT: port })).toThrow(`Invalid PORT: ${port}`)
   })
 })

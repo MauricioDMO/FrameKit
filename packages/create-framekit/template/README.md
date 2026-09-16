@@ -43,16 +43,19 @@ For complex layouts, see the extracted definition pattern with
 
 ## Runtime configuration
 
-`.env.example` lists the seven current FrameKit runtime variables. Provide real
-values through the process environment or your deployment secret manager; it is
-a reference file, not a source for secrets.
+`.env.example` lists six FrameKit-specific application variables plus the
+standard `PORT` process setting. Provide real values through the process
+environment or your deployment secret manager; it is a reference file, not a
+source for secrets. The image route automatically
+infers its private loopback origin as `http://localhost:${PORT}` from trusted
+process configuration; `PORT` defaults to `3000`.
 
 | Variable | Consumed by / used for | Required or default |
 | --- | --- | --- |
 | `FRAMEKIT_ADMIN_USERNAME` | `/api/framekit/login` → `bootstrapUsers()`; username for the first administrator | Optional on first login to an empty database; defaults to `admin` |
 | `FRAMEKIT_ADMIN_PASSWORD` | `/api/framekit/login` → `bootstrapUsers()`; password for the first administrator | Required only on first login to an empty database; no default; 12-256 UTF-8 bytes |
 | `FRAMEKIT_DATABASE_PATH` | `getDatabase()`; persistent SQLite storage for users, password hashes, sessions, and API-token data | Optional; defaults to `.framekit-data/framekit.sqlite` relative to the working directory; persist its directory |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig()` for `POST /api/framekit/images/render`; private server-render origin | Required by the image route; HTTP loopback origin, normally `http://127.0.0.1:3000` |
+| `PORT` | Standard process port for the server and private loopback origin | Optional; defaults to `3000`; integer from `1` to `65535` |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig()` → `prepareRenderInputs()`; exact remote-image host allowlist | Optional; empty disables remote images |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig()` → render pipeline; process-local render capacity | Optional; defaults to `2`, range `1..32` |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig()` → request/render deadline and browser timeouts | Optional; defaults to `30000`, range `1..120000` ms |
@@ -80,7 +83,6 @@ runtime image:
 | `NODE_ENV` | `production` | Production Next.js runtime |
 | `HOSTNAME` | `0.0.0.0` | Listen on all container interfaces |
 | `PORT` | `3000` | HTTP port exposed by the container |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` | Private render origin inside the container |
 | `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | SQLite access-data path |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Installed Chromium browser location |
 

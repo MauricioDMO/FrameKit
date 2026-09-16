@@ -160,10 +160,12 @@ pnpm framekit start
 
 ## Environment variables
 
-The following seven application variables configure the access database/bootstrap
-and image-rendering runtime. The [public API reference](../reference/public-api.md#unified-framekit-api-handler)
-describes the image request/response and handler contract; the behavior below
-follows the current runtime.
+The following six FrameKit-specific application variables configure the access
+database/bootstrap and image-rendering runtime; the standard `PORT` process
+setting supplies the server port and inferred private origin. The [public API
+reference](../reference/public-api.md#unified-framekit-api-handler) describes
+the image request/response and handler contract; the behavior below follows the
+current runtime.
 
 Image render settings are read from `process.env` for each image-handler request;
 constructing a handler does not read them. The access layer reads the database
@@ -176,12 +178,16 @@ return `503` and leave no user stored. Once a user exists, the bootstrap
 environment values are ignored and account data is not synchronized from the
 environment.
 
+The image-rendering runtime automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. `PORT` defaults
+to `3000`.
+
 | Variable | Consumed by | Behavior |
 | --- | --- | --- |
 | `FRAMEKIT_DATABASE_PATH` | SQLite access layer (`getDatabase`) | Read lazily when access data is first needed. Relative paths resolve from the application working directory. Default: `.framekit-data/framekit.sqlite`. In production, set it to a persistent volume or storage path; the database contains users, sessions, and API-token data. `:memory:` is process-local and is not persisted across restarts. |
 | `FRAMEKIT_ADMIN_PASSWORD` | First empty-database bootstrap (`bootstrapUsers`) | Required when first-user bootstrap runs. It must be 12-256 UTF-8 bytes. It is not read after any user exists. |
 | `FRAMEKIT_ADMIN_USERNAME` | First empty-database bootstrap (`bootstrapUsers`) | Read only for the first user. Defaults to `admin`; otherwise it must be 3-64 ASCII letters, numbers, `.`, `_`, or `-`. It is not read after any user exists. |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `parseImageRenderConfig` → `renderTemplateImage` | Required for server rendering. It must be an HTTP loopback origin (`localhost`, `127.0.0.1`, or `[::1]`), with an optional numeric port and no credentials, query, fragment, or path other than `/`. The HTTP scheme is case-insensitive. |
+| `PORT` | Standard process port used for the server and private loopback origin | Optional; defaults to `3000`; integer from `1` through `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | `parseImageRenderConfig` → `prepareRenderInputs` | Optional; defaults to an empty set. It accepts comma-separated exact DNS hostnames, trimming, lowercasing, and deduplicating entries; empty entries are ignored. Each hostname is at most 253 characters; IP literals, wildcards, trailing dots, ports, paths, queries, and fragments are invalid. An empty or comma-only value is valid. Remote image URLs must use HTTPS and an exact allowed host; safe `/assets/...` and `/framekit/templates/...` paths plus data URLs remain supported. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → render capacity guard | Optional; defaults to `2`. It must be a base-10 digit string in the inclusive range `1..32`; invalid values fail configuration. Requests over the process-local concurrent-render limit fail with a capacity error. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → request deadline and browser operations | Optional; defaults to `30000` ms. It must be a base-10 digit string in the inclusive range `1..120000`; invalid values fail configuration. It bounds the image request deadline and browser operations. |

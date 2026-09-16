@@ -70,16 +70,17 @@ Colors are enabled for terminal output and can be disabled with `NO_COLOR=1`.
 
 ## Application environment variables
 
-The generated template's `.env.example` lists exactly the seven FrameKit
-application runtime variables. It is a reference; provide real values through
-the process environment or a secret manager, not by storing credentials in the
-file.
+The generated template's `.env.example` lists six FrameKit-specific application
+runtime variables plus the standard `PORT` process setting. It is a reference;
+provide real values through the process environment or a secret manager, not by
+storing credentials in the file.
 
 ```dotenv
 FRAMEKIT_ADMIN_USERNAME=admin
 FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password
 FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite
-FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
+# Standard process port for the server and private loopback origin; defaults to 3000.
+PORT=3000
 FRAMEKIT_ALLOWED_IMAGE_HOSTS=
 FRAMEKIT_MAX_CONCURRENT_RENDERS=2
 FRAMEKIT_RENDER_TIMEOUT_MS=30000
@@ -90,10 +91,14 @@ FRAMEKIT_RENDER_TIMEOUT_MS=30000
 | `FRAMEKIT_ADMIN_USERNAME` | Used when the first administrator is bootstrapped in an empty SQLite database. | Optional; defaults to `admin`; 3–64 ASCII letters, numbers, `.`, `_`, or `-`. |
 | `FRAMEKIT_ADMIN_PASSWORD` | Used only to bootstrap the first administrator in an empty SQLite database. | Required only for that bootstrap; no default; 12–256 UTF-8 bytes. |
 | `FRAMEKIT_DATABASE_PATH` | SQLite path for users, sessions, migrations, and API tokens. | Defaults to `.framekit-data/framekit.sqlite`, relative to `process.cwd()`; `:memory:` is process-local and not persistent. |
-| `FRAMEKIT_INTERNAL_ORIGIN` | Private origin used by server-side image rendering. | Required for rendering; must be an HTTP loopback origin: `localhost`, `127.0.0.1`, or `[::1]`. |
+| `PORT` | Standard process port used by Next.js and private loopback rendering. | Optional; defaults to `3000`; integer from `1` to `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Optional allowlist for remote image hostnames. | Optional; empty or unset disables remote hosts; accepts exact DNS hostnames separated by commas. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Process-local limit for simultaneous renders. | Optional; defaults to `2`; integer from `1` to `32`. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | End-to-end image-render deadline and browser timeout. | Optional; defaults to `30000` ms; integer from `1` to `120000` ms. |
+
+The image renderer automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. `PORT` defaults
+to `3000`.
 
 The image-render configuration is read per request. Once any user exists, the
 login flow ignores the bootstrap variables; changing them does not rename or
@@ -107,22 +112,25 @@ or a database-backed API token sent as `Authorization: Bearer <API_TOKEN>`.
 
 ### Tool and environment variables
 
-Keep the seven application variables above separate from variables belonging to
-the development server, Docker, CI, or Playwright.
+Keep the six FrameKit-specific application variables distinct from the standard
+`PORT` process setting and from variables belonging to the development server,
+Docker, CI, or Playwright.
 
 #### Development (`framekit dev`)
 
 `framekit dev` resolves the host as `FRAMEKIT_HOST` → `HOST` → `localhost` and
 reads `PORT`, which defaults to `3000`; `PORT` must be an integer from `1` to
-`65535`. These variables configure the development server, not the image API.
+`65535`. The image renderer uses the trusted `PORT` value to infer its private
+loopback origin as `http://localhost:${PORT}`.
 
 #### Docker
 
 The canonical generated `Dockerfile` sets `NODE_ENV=production`,
-`HOSTNAME=0.0.0.0`, `PORT=3000`,
-`FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
+`HOSTNAME=0.0.0.0`, `PORT=3000`, and
 `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` in the final image, along with the
-database default `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`. The final image
+database default `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite`. The render
+route derives its private loopback origin as `http://localhost:${PORT}` from
+that trusted process configuration. The final image
 creates and chowns `/data`; operators must mount `/data` as persistent storage.
 Provide credentials and deployment-specific application settings when starting
 the container. Docker dependency stages use
@@ -133,8 +141,8 @@ explicitly with `framekit browser install --with-deps`.
 
 The CI workflow sets `NEXT_TELEMETRY_DISABLED=1`. `CI` is not an application
 variable: Playwright reads it for test behavior, and the Docker smoke script
-passes it to child processes. `CI` does not replace any of the seven runtime
-variables.
+passes it to child processes. `CI` does not replace any of the six FrameKit-specific
+application variables.
 
 #### Playwright
 
@@ -144,7 +152,6 @@ switch to the `line` reporter. Its `webServer` injects
 `FRAMEKIT_ADMIN_USERNAME=admin`,
 `FRAMEKIT_ADMIN_PASSWORD=framekit-e2e-password`,
 `FRAMEKIT_DATABASE_PATH=:memory:`,
-`FRAMEKIT_INTERNAL_ORIGIN=http://localhost:3000`, and
 `NEXT_TELEMETRY_DISABLED=1`. The E2E CI job installs Chromium with
 `pnpm exec playwright install --with-deps chromium`; this is separate from the
 explicit browser installation used by Docker.
@@ -188,8 +195,9 @@ slug and optional `variant` and `data`:
 
 Send an active Studio session cookie or `Authorization: Bearer <API_TOKEN>`;
 cookie-authenticated requests must be same-origin. Success returns `200` with
-`image/png`; failures return stable JSON errors. Set
-`FRAMEKIT_INTERNAL_ORIGIN` at runtime. The optional
+`image/png`; failures return stable JSON errors. The image renderer automatically
+infers its private loopback origin as `http://localhost:${PORT}` from trusted
+process configuration; `PORT` defaults to `3000`. The optional
 `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
 `FRAMEKIT_RENDER_TIMEOUT_MS` variables configure remote-image access and render
 limits. The API requires the explicitly installed headless shell.

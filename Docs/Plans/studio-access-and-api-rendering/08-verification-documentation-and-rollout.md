@@ -78,11 +78,11 @@ Generated consumer and Docker:
 
 Runtime environment:
 
-- verify the seven application variables: first-boot
+- verify the six FrameKit-specific application variables: first-boot
   `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD`, persistent
-  `FRAMEKIT_DATABASE_PATH`, rendering `FRAMEKIT_INTERNAL_ORIGIN`,
-  `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and
-  `FRAMEKIT_RENDER_TIMEOUT_MS`;
+  `FRAMEKIT_DATABASE_PATH`, rendering `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
+  `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and `FRAMEKIT_RENDER_TIMEOUT_MS`, plus the
+  trusted process `PORT` setting used to infer `http://localhost:${PORT}`;
 - verify the administrator values are read only for an empty database,
   `FRAMEKIT_DATABASE_PATH` points to the persistent volume, and the rendering
   defaults and bounds are applied as documented;
@@ -298,8 +298,8 @@ a separate post-publication handoff requiring an exact published version.
 - [ ] Same-origin cookie requests pass through the supported HTTPS-to-HTTP
   reverse-proxy topology without extra origin configuration.
 - [ ] Public deployment requirements state HTTPS and external login throttling.
-- [ ] All seven application variables have documented first-boot, persistent,
-  and rendering verification.
+- [ ] All six FrameKit-specific application variables and the standard `PORT` setting have
+  documented first-boot, persistent, and rendering verification.
 - [ ] Canonical image API accepts a session or API token.
 - [ ] `FRAMEKIT_PUBLIC_ORIGIN` is documented as unsupported.
 - [ ] Studio Download PNG and Copy PNG use the server API.

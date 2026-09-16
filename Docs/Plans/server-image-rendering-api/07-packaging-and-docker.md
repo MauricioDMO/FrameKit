@@ -217,7 +217,6 @@ Initial runtime environment:
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
-ENV FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ```
 
@@ -262,7 +261,6 @@ FROM base AS runner
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     PORT=3000 \
-    FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
@@ -335,9 +333,10 @@ public assets, package metadata, lockfile, or required Next configuration.
 ## Runtime secrets and configuration
 
 - The generated Dockerfile sets `NODE_ENV=production`, `HOSTNAME=0.0.0.0`,
-  `PORT=3000`, `FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000`, and
-  `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. These are image defaults; runtime
-  environment values can override them.
+  `PORT=3000`, and `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. These are image
+  defaults; runtime environment values can override them. The image renderer
+  infers its private loopback origin as `http://localhost:${PORT}` from trusted
+  process configuration.
 - `NODE_ENV` has no FrameKit parser default or validation. The current runtime
   checks whether it is exactly `production` when adding the session-cookie
   `Secure` attribute (`packages/framekit/src/server/access/http/session.ts`), and
@@ -346,16 +345,10 @@ public assets, package metadata, lockfile, or required Next configuration.
   standalone `server.js` consumes the Docker value for its bind address; FrameKit's
   development server instead consumes `FRAMEKIT_HOST`, then `HOST`, then
   `localhost` (`packages/framekit/src/tooling/dev/server-options.ts`).
-- `PORT` is consumed by the generated Next standalone server in production. For
-  `framekit dev`, it defaults to `3000` and must be an integer from `1` through
-  `65535`.
-- `FRAMEKIT_INTERNAL_ORIGIN` has no parser default. `parseImageRenderConfig`
-  requires an exact, trimmed `http://` loopback origin (`localhost`, `127.0.0.1`,
-  or `[::1]`), with an optional port and only the root path; credentials,
-  query/fragment, and other paths are invalid. The parsed value is consumed by
-  `createStudioImageHandler` and `renderTemplateImage` for the private render URL
-  and browser request allowlist. The Docker value is valid for the container's
-  local standalone server.
+- `PORT` is consumed by the generated Next standalone server in production and
+  by `parseImageRenderConfig` to infer `http://localhost:${PORT}` for private
+  rendering. For `framekit dev`, it defaults to `3000` and must be an integer
+  from `1` through `65535`.
 - `PLAYWRIGHT_BROWSERS_PATH` has no FrameKit parser default or validation. The
   FrameKit browser command inherits it when delegating to `playwright-core`, and
   Playwright uses it to locate/install the Chromium headless shell. The Docker
@@ -396,7 +389,7 @@ public assets, package metadata, lockfile, or required Next configuration.
   `parseImageApiConfig`, `authenticateBearer`, and `FRAMEKIT_API_KEY` API-key
   verification path are removed, not current runtime configuration.
 - `FRAMEKIT_PUBLIC_ORIGIN` is unsupported. It is not read and is not a fallback
-  for `FRAMEKIT_INTERNAL_ORIGIN` or request-origin handling.
+  for the inferred private loopback origin or request-origin handling.
 - never copy `.env` files into image layers.
 - document `docker run --env-file ...` only with placeholder/example values.
 

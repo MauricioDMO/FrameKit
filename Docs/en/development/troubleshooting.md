@@ -261,11 +261,11 @@ the configured database path.
 
 ## Image API reports configuration errors
 
-The generated `POST /api/framekit/images/render` route requires
-`FRAMEKIT_INTERNAL_ORIGIN`. It must be an HTTP loopback origin such as
-`http://127.0.0.1:3000` or `http://localhost:3000`, with no credentials, path,
-query, or fragment. A missing value reports `api_not_configured`; an invalid
-value reports the same configuration failure instead of rendering.
+The generated `POST /api/framekit/images/render` route automatically infers its
+private loopback origin as `http://localhost:${PORT}` from trusted process
+configuration. `PORT` defaults to `3000` and must be an integer from `1` to
+`65535`. Chromium uses this private loopback origin and is blocked from arbitrary
+external network access.
 
 Authenticate the generated route with a same-origin Studio session cookie or a
 database API token.

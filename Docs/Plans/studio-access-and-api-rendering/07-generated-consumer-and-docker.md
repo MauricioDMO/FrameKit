@@ -47,21 +47,23 @@ The starter `.env.example` documents:
 FRAMEKIT_ADMIN_USERNAME=admin
 FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password
 FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite
-FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
+# Trusted process port for the private loopback origin; defaults to 3000.
+PORT=3000
 # Comma-separated exact hostnames. Leave empty to disable remote images.
 FRAMEKIT_ALLOWED_IMAGE_HOSTS=
 FRAMEKIT_MAX_CONCURRENT_RENDERS=2
 FRAMEKIT_RENDER_TIMEOUT_MS=30000
 ```
 
-These are the seven application variables. `FRAMEKIT_ADMIN_USERNAME` defaults to
+These are the six FrameKit-specific application variables; `PORT` is trusted
+process configuration used to infer the private loopback origin.
+`FRAMEKIT_ADMIN_USERNAME` defaults to
 `admin`, and `FRAMEKIT_ADMIN_PASSWORD` is required only while bootstrapping an
 empty database. Neither value changes an existing account. `FRAMEKIT_DATABASE_PATH`
 defaults to `.framekit-data/framekit.sqlite` here and must point to persistent
-storage in production. The rendering variables configure the internal loopback
-origin, exact external-image hostname allowlist, process-local render capacity,
-and request/render timeout. `FRAMEKIT_INTERNAL_ORIGIN` is required and must be an
-HTTP loopback origin. An empty `FRAMEKIT_ALLOWED_IMAGE_HOSTS` disables external
+storage in production. The rendering settings use `PORT` to derive
+`http://localhost:${PORT}`, configure the exact external-image hostname allowlist,
+process-local render capacity, and request/render timeout. An empty `FRAMEKIT_ALLOWED_IMAGE_HOSTS` disables external
 remote-image hosts; the render limit accepts positive decimal integers from `1..32`
 and defaults to `2`, while the timeout accepts positive decimal integers from
 `1..120000` milliseconds and defaults to `30000`. Invalid values fail
@@ -163,7 +165,8 @@ configuration but does not become a second canonical scaffold.
 - generated consumer has exactly six maintained app files;
 - generated bindings are absent before generation and correctly recreated;
 - `StudioClient` generation includes the safe user prop;
-- first boot and recurring startup cover all seven application variables without
+- first boot and recurring startup cover all six FrameKit-specific application variables plus the
+  trusted `PORT` setting without
   overwriting existing access data;
 - the canonical image route succeeds with a session and with a generated API
   token;

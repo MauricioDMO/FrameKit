@@ -212,21 +212,14 @@ result to image preparation/render orchestration and authenticates either an
 active same-origin session or an unrevoked database API token. Credentials never
 enter the render payload, Map job, browser state, page request, or logs.
 
-### `FRAMEKIT_INTERNAL_ORIGIN`
+### Private loopback render origin
 
-- The current parser requires this value for every environment record; it is
-  therefore required in production for the initial implementation.
-- Parse with `new URL(...)`.
-- Permit only `http:` on loopback.
-- Accept `127.0.0.1`, `[::1]`, or `localhost`; examples should use
-  `127.0.0.1`.
-- Reject credentials, non-root paths, query strings, and fragments.
-- Preserve an explicit port.
-- Normalize a trailing slash before private render URLs are constructed.
-
-If development later derives a loopback origin in a thin application adapter, it
-must do so before calling this strict parser; the parser does not read `NODE_ENV`
-or provide a fallback.
+- The current parser derives the origin as `http://localhost:${PORT}` from the
+  trusted process configuration.
+- `PORT` defaults to `3000` and must be an integer from `1` through `65535`.
+- The derived HTTP loopback origin is used for the private render page and the
+  browser request allowlist.
+- The parser does not read `NODE_ENV`, `HOSTNAME`, or any public-origin setting.
 
 ### `FRAMEKIT_ALLOWED_IMAGE_HOSTS`
 
@@ -259,8 +252,10 @@ Parsing rules:
 
 ### Current access variables
 
-The four render variables above plus the following three access/bootstrap
-variables are the seven current application variables consumed by the checkout:
+The three render variables above plus the following three access/bootstrap
+variables are the six current FrameKit-specific application variables consumed
+by the checkout.
+`PORT` is a trusted process setting used to derive the private loopback origin:
 
 - `FRAMEKIT_DATABASE_PATH` is consumed by the SQLite access layer. It defaults
   to `.framekit-data/framekit.sqlite`, resolves relative to `process.cwd()`,
@@ -284,21 +279,22 @@ variables until an actual supported deployment requires them.
 ### Related runtime and build variables
 
 The following runtime/build variables may appear in a generated deployment but
-are not part of the seven FrameKit application variables above:
+are separate from the six FrameKit application variables above:
 
 - `NODE_ENV=production` is consumed by the standalone Next.js runtime; the access
   cookie helper also adds `Secure` only when it equals `production`.
 - `HOSTNAME=0.0.0.0` and `PORT=3000` configure the standalone server's container
-  bind address and port. They do not change the strict loopback internal origin.
+  bind address and port. `PORT` also supplies the inferred private loopback
+  origin `http://localhost:${PORT}`.
 - `PLAYWRIGHT_BROWSERS_PATH` is consumed by Playwright's installer and runtime
   executable lookup. Installer and renderer must use the same path.
 - `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is build-only and suppresses browser
   downloads during dependency installation; the runner installs the pinned shell
   explicitly through FrameKit's browser command.
 
-The parser does not consume `NODE_ENV`, `HOSTNAME`, or `PORT`, and current code
-does not consume `FRAMEKIT_PUBLIC_ORIGIN`, `HEADLESS`, `SLOW_MO`, arbitrary browser
-arguments, or browser selectors.
+The parser consumes `PORT` but does not consume `NODE_ENV` or `HOSTNAME`. Current
+code does not consume `FRAMEKIT_PUBLIC_ORIGIN`, `HEADLESS`, `SLOW_MO`, arbitrary
+browser arguments, or browser selectors.
 
 ## HTTP route and adapter (current implementation)
 

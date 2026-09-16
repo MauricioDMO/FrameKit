@@ -64,12 +64,18 @@ antes de autenticar. Si la base de datos configurada no tiene usuarios,
 `FRAMEKIT_ADMIN_USERNAME` es opcional (por defecto, `admin`); estas variables
 crean el primer administrador activo:
 
+La ruta de imágenes infiere automáticamente su origen privado de loopback como
+`http://localhost:${PORT}` a partir de la configuración confiable del proceso.
+`PORT` tiene `3000` por defecto. Las seis variables específicas de la aplicación
+FrameKit se enumeran a continuación junto con la configuración de proceso
+estándar `PORT`:
+
 | Variable | Propósito | Valor predeterminado o requisito |
 | --- | --- | --- |
 | `FRAMEKIT_ADMIN_USERNAME` | Nombre del primer administrador | Opcional durante el primer inicio de sesión en una base vacía; `admin` por defecto |
 | `FRAMEKIT_ADMIN_PASSWORD` | Contraseña del primer administrador | Obligatoria solo durante el primer inicio de sesión en una base vacía; sin valor predeterminado; 12-256 bytes UTF-8 |
 | `FRAMEKIT_DATABASE_PATH` | Usuarios, sesiones y tokens de API en SQLite | `.framekit-data/framekit.sqlite`, relativo al directorio de trabajo |
-| `FRAMEKIT_INTERNAL_ORIGIN` | Origen privado para el renderizado PNG del servidor | Obligatoria para la ruta de imágenes; origen HTTP de loopback |
+| `PORT` | Puerto del servidor y origen privado de loopback | Opcional; `3000`; entero de `1` a `65535` |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Hostnames HTTPS exactos permitidos para imágenes raster remotas | Opcional; vacío desactiva las imágenes remotas |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Límite de renders simultáneos del servidor | Opcional; `2` (máximo `32`) |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | Tiempo límite del render del servidor en milisegundos | Opcional; `30000` (máximo `120000`) |
@@ -91,7 +97,6 @@ la imagen de runtime:
 | `NODE_ENV` | `production` |
 | `HOSTNAME` | `0.0.0.0` |
 | `PORT` | `3000` |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` |
 
 Inyecta las credenciales del administrador y la lista de hosts de imágenes al

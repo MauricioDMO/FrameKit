@@ -169,7 +169,7 @@ async function expectProjectFiles (
   expect(envExample).not.toContain('FRAMEKIT_API_KEY')
   expect(envExample).toContain('FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password')
   expect(envExample).toContain('FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite')
-  expect(envExample).toContain('FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000')
+  expect(envExample).toContain('PORT=3000')
   expect(envExample).toContain('FRAMEKIT_ALLOWED_IMAGE_HOSTS=')
   expect(envExample).toContain('FRAMEKIT_MAX_CONCURRENT_RENDERS=2')
   expect(envExample).toContain('FRAMEKIT_RENDER_TIMEOUT_MS=30000')

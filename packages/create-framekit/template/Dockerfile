@@ -35,7 +35,6 @@ FROM base AS runner
 ENV NODE_ENV=production \
   HOSTNAME=0.0.0.0 \
   PORT=3000 \
-  FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000 \
   PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite
 

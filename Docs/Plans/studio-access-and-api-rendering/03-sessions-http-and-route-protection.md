@@ -139,8 +139,9 @@ or other non-HTTPS public-origin overrides fail closed. The proxy must overwrite
 or strip client-supplied forwarding headers. The forwarding headers, not an
 environment fallback, are the current reverse-proxy mechanism.
 `FRAMEKIT_PUBLIC_ORIGIN` is unsupported: it is not read and must not be used as
-a fallback. `FRAMEKIT_INTERNAL_ORIGIN` is a render-server setting, not the
-cookie request-origin setting.
+a fallback. The private render origin is inferred as `http://localhost:${PORT}`
+from trusted process configuration, with `PORT` defaulting to `3000`; it is
+separate from the cookie request-origin setting.
 
 Reject a missing, malformed, or cross-origin value before mutating data.
 
@@ -183,11 +184,10 @@ The canonical public image endpoint is exactly:
 POST /api/framekit/images/render
 ```
 
-Its render settings are read when that request is handled. In particular,
-`FRAMEKIT_INTERNAL_ORIGIN` is required, has no default, and must be an HTTP
-loopback origin (`localhost`, `127.0.0.1`, or `[::1]`, with an optional port and
-no credentials, path, query, or fragment). It is used to reach the private
-render page and is not used to determine the browser request origin.
+Its render settings are read when that request is handled. In particular, the
+trusted process setting `PORT` defaults to `3000` and determines the private
+render origin `http://localhost:${PORT}`. It is used to reach the private render
+page and is not used to determine the browser request origin.
 
 The private render page remains a different internal endpoint:
 `/framekit/render/[id]`. It requires the `x-framekit-render-token` header and is

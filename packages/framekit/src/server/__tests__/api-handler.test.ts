@@ -60,7 +60,7 @@ async function responseBody (response: Response): Promise<Record<string, unknown
 beforeEach(() => {
   resetDatabaseForTests()
   vi.stubEnv('FRAMEKIT_DATABASE_PATH', ':memory:')
-  vi.stubEnv('FRAMEKIT_INTERNAL_ORIGIN', 'http://127.0.0.1:3000')
+  vi.stubEnv('PORT', '3000')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', '')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', '2')
   vi.stubEnv('FRAMEKIT_RENDER_TIMEOUT_MS', '30000')

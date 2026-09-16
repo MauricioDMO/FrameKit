@@ -63,12 +63,17 @@ users, `FRAMEKIT_ADMIN_PASSWORD` bootstraps the first administrator and
 `FRAMEKIT_ADMIN_USERNAME` optionally sets the username (default: `admin`).
 After a user exists, these bootstrap variables are ignored:
 
+The image route automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. `PORT` defaults
+to `3000`. The six FrameKit-specific application variables are listed below
+alongside the standard `PORT` process setting:
+
 | Variable | Purpose | Default or requirement |
 | --- | --- | --- |
 | `FRAMEKIT_ADMIN_USERNAME` | First administrator username | Optional; `admin` |
 | `FRAMEKIT_ADMIN_PASSWORD` | First administrator password | Required only on first login with an empty database; no default; 12-256 UTF-8 bytes |
 | `FRAMEKIT_DATABASE_PATH` | SQLite users, sessions, and API tokens | `.framekit-data/framekit.sqlite`, relative to the working directory |
-| `FRAMEKIT_INTERNAL_ORIGIN` | Private origin for server-side PNG rendering | Required by the image route; HTTP loopback origin |
+| `PORT` | Server port and private loopback origin | Optional; `3000`; integer from `1` to `65535` |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Exact HTTPS hostnames permitted for remote raster images | Optional; empty disables remote images |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Concurrent server-render limit | Optional; `2` (maximum `32`) |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | Server-render timeout in milliseconds | Optional; `30000` (maximum `120000`) |
@@ -88,7 +93,6 @@ The included Dockerfile sets these non-secret defaults in the runtime image:
 | `NODE_ENV` | `production` |
 | `HOSTNAME` | `0.0.0.0` |
 | `PORT` | `3000` |
-| `FRAMEKIT_INTERNAL_ORIGIN` | `http://127.0.0.1:3000` |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` |
 
 Provide administrator credentials and any deployment-specific image-host

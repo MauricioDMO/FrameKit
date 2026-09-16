@@ -554,15 +554,20 @@ Only canonical field-validation errors may include `fields`.
 
 ## Configuration summary
 
-The render parser reads these values on each handler request. It does not read
-`NODE_ENV` or provide development fallbacks:
+The render parser reads these values on each handler request. It uses the trusted
+process `PORT` setting to infer the private loopback origin and does not read
+`NODE_ENV` or provide other development fallbacks:
 
 | Variable | Purpose and consumer | Default/valid values |
 |---|---|---|
-| `FRAMEKIT_INTERNAL_ORIGIN` | Strict render configuration used to build the private browser URL and permit the browser's internal requests. | Required `http://` loopback origin: `127.0.0.1`, `[::1]`, or `localhost`; root path only, with optional port. Docker uses `http://127.0.0.1:3000`. |
+| `PORT` | Trusted process setting used to infer the private browser URL and permit the browser's internal requests. | Defaults to `3000`; base-10 integer from `1` through `65535`. The inferred origin is `http://localhost:${PORT}`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Comma-separated exact hostnames consumed by Node.js remote-image fetching. Chromium does not use this as a network permission. | Empty or unset means an empty set and disables remote HTTPS overrides. Entries are normalized; schemes, ports, paths, wildcards, and IP literals are invalid. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Process-local render-slot limit consumed by the browser renderer. | Default `2`; base-10 integer `1`-`32`. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | Request/render deadline consumed by the image handler and browser renderer. | Default `30000`; base-10 integer `1`-`120000`. |
+
+The image renderer automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. Chromium uses this
+private loopback origin and is blocked from arbitrary external network access.
 
 The canonical `createFrameKitApiHandler(templates)` route uses the render parser
 and session/API-token authentication. Session credentials, API tokens, and private
@@ -574,8 +579,8 @@ render tokens must not be placed in images, jobs, browser state, URLs, or logs.
   cookie helper also adds `Secure` to session cookies only when the value is exactly
   `production`.
 - `HOSTNAME=0.0.0.0` and `PORT=3000` are consumed by the standalone Next.js server
-  for container binding. They do not replace the strict loopback
-  `FRAMEKIT_INTERNAL_ORIGIN` used for private rendering.
+  for container binding. `PORT` also supplies the inferred private loopback
+  origin `http://localhost:${PORT}` used for private rendering.
 - `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` is consumed by Playwright both when
   `framekit browser install` resolves the browser location and when the renderer
   launches Chromium. The installer and runtime must use the same path.

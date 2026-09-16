@@ -9,8 +9,7 @@ import {
 import { ImageRenderError, type ImageRenderErrorCode, type ImageRenderFailure } from '@/server/errors'
 
 const baseEnvironment: NodeJS.ProcessEnv = {
-  NODE_ENV: 'test',
-  FRAMEKIT_INTERNAL_ORIGIN: 'http://127.0.0.1:3000'
+  NODE_ENV: 'test'
 }
 
 const errorCodes = [
@@ -115,33 +114,20 @@ describe('server render contracts', () => {
 })
 
 describe('parseImageRenderConfig', () => {
-  it.each([
-    undefined,
-    '',
-    'https://127.0.0.1:3000',
-    'http://example.com:3000',
-    'http://user:password@localhost:3000',
-    'http://@localhost:3000',
-    'http://localhost:3000/path',
-    'http://localhost:3000/.',
-    'http://localhost:3000/%2e%2e',
-    'http://localhost:',
-    'http://localhost:3000?query=1',
-    'http://localhost:3000#fragment',
-    'http://2130706433:3000',
-    'not an origin'
-  ])('rejects an invalid internal origin: %s', (internalOrigin) => {
-    expectConfigurationFailure(environment({ FRAMEKIT_INTERNAL_ORIGIN: internalOrigin }))
+  it('infers a loopback origin on the default port', () => {
+    const config = parseImageRenderConfig(environment())
+
+    expect(config.internalOrigin.href).toBe('http://localhost:3000/')
   })
 
-  it.each([
-    ['http://127.0.0.1:4321', 'http://127.0.0.1:4321/'],
-    ['http://[::1]:4321', 'http://[::1]:4321/'],
-    ['http://localhost', 'http://localhost/']
-  ])('accepts and normalizes a loopback origin', (internalOrigin, expected) => {
-    const config = parseImageRenderConfig(environment({ FRAMEKIT_INTERNAL_ORIGIN: internalOrigin }))
+  it('infers a loopback origin from a custom port', () => {
+    const config = parseImageRenderConfig(environment({ PORT: '4321' }))
 
-    expect(config.internalOrigin.href).toBe(expected)
+    expect(config.internalOrigin.href).toBe('http://localhost:4321/')
+  })
+
+  it.each(['', '0', '-1', '+1', '1.5', '1e2', '65536', 'NaN', 'Infinity', ' 3000'])('rejects an invalid PORT: %s', (port) => {
+    expectConfigurationFailure(environment({ PORT: port }))
   })
 
   it.each([undefined, '', ' , , '])('returns an empty host set for empty input: %s', (allowedImageHosts) => {

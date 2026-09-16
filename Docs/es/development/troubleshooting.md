@@ -262,11 +262,11 @@ directorio que contiene la ruta configurada de la base de datos.
 
 ## La API de imágenes informa errores de configuración
 
-La ruta generada `POST /api/framekit/images/render` requiere
-`FRAMEKIT_INTERNAL_ORIGIN`. Debe ser un origen HTTP de loopback, como
-`http://127.0.0.1:3000` o `http://localhost:3000`, sin credenciales, ruta,
-query ni fragmento. Si falta, informa `api_not_configured`; un valor inválido
-produce el mismo fallo de configuración en lugar de renderizar.
+La ruta generada `POST /api/framekit/images/render` infiere automáticamente su
+origen privado de loopback como `http://localhost:${PORT}` a partir de la
+configuración confiable del proceso. `PORT` tiene `3000` por defecto y debe ser
+un entero entre `1` y `65535`. Chromium usa este origen privado de loopback y no
+puede acceder a una red externa arbitraria.
 
 Autentica la ruta generada con una cookie de sesión de Studio del mismo origen o
 con un token de API de la base de datos.

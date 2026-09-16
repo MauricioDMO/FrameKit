@@ -319,12 +319,18 @@ FRAMEKIT_ADMIN_PASSWORD=replace-me-with-a-strong-password
 FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite
 
 # Rendering
-FRAMEKIT_INTERNAL_ORIGIN=http://127.0.0.1:3000
+# PORT is trusted process configuration; it defaults to 3000 and supplies the private loopback origin.
+PORT=3000
 FRAMEKIT_ALLOWED_IMAGE_HOSTS=
 FRAMEKIT_MAX_CONCURRENT_RENDERS=2
 FRAMEKIT_RENDER_TIMEOUT_MS=30000
 
 ```
+
+The image renderer automatically infers its private loopback origin as
+`http://localhost:${PORT}` from trusted process configuration. Chromium uses
+this private loopback origin and is blocked from arbitrary external network
+access.
 
 The template Dockerfile sets `FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite` and
 creates `/data` as a writable directory owned by the runtime user. Deploy

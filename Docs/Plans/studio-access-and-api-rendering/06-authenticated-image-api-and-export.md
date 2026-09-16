@@ -40,10 +40,12 @@ does not require an external render credential. It accepts a database API token
 or Studio session. The old API-key-only factory/configuration contract is removed
 and is not a compatibility requirement.
 
-The seven current application variables and their defaults, validation,
-first-boot, persistence, and security semantics are defined in Phase 5.5. In
-particular, `FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not a fallback or a
-replacement configuration setting.
+The six current FrameKit-specific application variables and their defaults, validation,
+first-boot, persistence, and security semantics are defined in Phase 5.5. The
+trusted process `PORT` setting defaults to `3000` and supplies the inferred
+private loopback origin `http://localhost:${PORT}`. In particular,
+`FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not a fallback or a replacement
+configuration setting.
 
 ## Authentication order
 

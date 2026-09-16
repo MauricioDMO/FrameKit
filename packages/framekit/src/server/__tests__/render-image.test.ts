@@ -79,9 +79,24 @@ describe('renderTemplateImage', () => {
     const handler = context.route.mock.calls[0][1]
     expect(context.routeWebSocket).toHaveBeenCalledWith('**/*', expect.any(Function))
     const websocketHandler = context.routeWebSocket.mock.calls[0][1]
-    const websocket = { close: vi.fn(async () => undefined) }
-    await websocketHandler(websocket)
-    expect(websocket.close).toHaveBeenCalledOnce()
+    const hmrWebSocket = {
+      url: () => 'ws://127.0.0.1/_next/hmr?id=1',
+      connectToServer: vi.fn(),
+      close: vi.fn(async () => undefined)
+    }
+    await websocketHandler(hmrWebSocket)
+    expect(hmrWebSocket.connectToServer).toHaveBeenCalledOnce()
+    expect(hmrWebSocket.close).not.toHaveBeenCalled()
+
+    const externalWebSocket = {
+      url: () => 'ws://example.com/_next/hmr?id=1',
+      connectToServer: vi.fn(),
+      close: vi.fn(async () => undefined)
+    }
+    await websocketHandler(externalWebSocket)
+    expect(externalWebSocket.close).toHaveBeenCalledOnce()
+    expect(externalWebSocket.connectToServer).not.toHaveBeenCalled()
+
     const route = (request: Record<string, unknown>) => ({ request: () => request, continue: vi.fn(async () => undefined), abort: vi.fn(async () => undefined) })
     const privateRequest = { url: () => 'http://127.0.0.1/framekit/render/' + 'a'.repeat(64), method: () => 'GET', headers: () => ({ accept: 'text/html' }), isNavigationRequest: () => true, frame: () => frame }
     const privateRoute = route(privateRequest)

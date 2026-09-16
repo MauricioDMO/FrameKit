@@ -26,14 +26,14 @@ each image-handler invocation:
 
 | Variable | Consumption | Default/valid range |
 |---|---|---|
-| `FRAMEKIT_INTERNAL_ORIGIN` | Validated origin used by `renderTemplateImage` for the private page and exact internal browser requests | Required; `http://` loopback only (`localhost`, `127.0.0.1`, or `[::1]`), with an optional port and no path/query/fragment |
+| `PORT` | Trusted process setting used to infer the origin for the private page and exact internal browser requests | Defaults to `3000`; integer from `1` through `65535`; inferred origin is `http://localhost:${PORT}` |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Exact hostname set passed to Node-side image preparation | Optional; unset/empty means no remote hosts; comma-separated DNS hostnames only, no IP literals, wildcards, ports, or paths |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | Synchronous process-local capacity in `reserveRender` | Optional; defaults to `2`, accepts positive base-10 integers from `1` through `32` |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | End-to-end renderer deadline and Playwright timeouts | Optional; defaults to `30000`, accepts positive base-10 integers from `1` through `120000` |
 
-`FRAMEKIT_INTERNAL_ORIGIN` has no parser default. The generated Dockerfile sets
-it to `http://127.0.0.1:3000`; that image value is a deployment default, not a
-package-parser default. The database/bootstrap variables are not read by this
+The private render origin is inferred as `http://localhost:${PORT}` from trusted
+process configuration. `PORT` defaults to `3000`; the Dockerfile sets that port
+for the container. The database/bootstrap variables are not read by this
 browser manager: the current access layer uses `FRAMEKIT_DATABASE_PATH`
 (default `.framekit-data/framekit.sqlite`) for SQLite and reads
 `FRAMEKIT_ADMIN_USERNAME` (default `admin`) and the required
@@ -48,8 +48,9 @@ standalone Next.js server consumes `HOSTNAME` and `PORT`. The FrameKit
 uses it for browser installation and executable lookup. The Dockerfile sets
 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` inline only for its dependency-install
 stages; it is not a runtime renderer setting. The source does not define
-additional defaults or ranges for `HOSTNAME`, `PORT`, or
-`PLAYWRIGHT_BROWSERS_PATH`.
+additional FrameKit defaults or ranges for `HOSTNAME` or
+`PLAYWRIGHT_BROWSERS_PATH`; `PORT` uses the parser default and range described
+above.
 
 `framekit browser install` delegates to Playwright as
 `install chromium --only-shell`; the generated Docker runner adds
@@ -59,9 +60,9 @@ looks for it.
 
 `FRAMEKIT_API_KEY` belongs to the historical shared-API-key design and is not
 read by the current runtime. `FRAMEKIT_PUBLIC_ORIGIN` is also not a current
-runtime setting; it is not consumed as a fallback for
-`FRAMEKIT_INTERNAL_ORIGIN` or for request-origin handling. Neither variable is
-part of the current image-render configuration.
+runtime setting; it is not consumed as a fallback for the inferred private
+loopback origin or for request-origin handling. It is not part of the current
+image-render configuration.
 
 ## Current generated-consumer and build baseline
 
