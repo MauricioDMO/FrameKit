@@ -24,11 +24,14 @@ describe('validateTemplateDefinition fields', () => {
     expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
-  it('rejects reserved language field', () => {
-    expect(validateTemplateDefinition({
+  it('accepts a language text field with matching content', () => {
+    const definition = {
       ...validDefinition(),
-      fields: { language: { kind: 'text', label: 'Language' } }
-    })).toEqual({ success: false, error: 'fields.language is reserved' })
+      fields: { language: { kind: 'text', label: 'Language' } },
+      content: { en: { language: 'English' } }
+    }
+
+    expect(validateTemplateDefinition(definition)).toEqual({ success: true, definition })
   })
 
   it.each([

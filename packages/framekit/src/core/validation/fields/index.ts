@@ -12,10 +12,6 @@ export function validateFields (fields: unknown): string | undefined {
     return 'fields must be a plain object'
   }
 
-  if ('language' in fields) {
-    return 'fields.language is reserved'
-  }
-
   for (const [key, value] of Object.entries(fields)) {
     const error = validateFieldDescriptor(key, value)
     if (error !== undefined) return error

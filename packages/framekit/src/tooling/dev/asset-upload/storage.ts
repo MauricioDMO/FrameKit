@@ -40,7 +40,7 @@ function validateImageSignature (mimeType: string, bytes: Buffer): void {
 }
 
 export async function replaceAsset (projectRoot: string, input: ReplaceAssetInput): Promise<void> {
-  if (!identifierPattern.test(input.fieldKey) || input.fieldKey === 'language') {
+  if (!identifierPattern.test(input.fieldKey)) {
     throw new AssetUploadError(400, 'La key del field no es válida')
   }
   if (input.variant !== 'common' && !identifierPattern.test(input.variant)) {

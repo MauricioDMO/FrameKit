@@ -100,11 +100,11 @@ export function expectJsonResponse (
   })
 }
 
-export async function createProject (): Promise<ProjectFixture> {
+export async function createProject (assetFieldKey = fieldKey): Promise<ProjectFixture> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'framekit-upload-'))
   const template = path.join(root, 'src', 'templates', 'social', 'post')
   const assetsDirectory = path.join(template, 'assets', variant)
-  const oldAsset = path.join(assetsDirectory, `${fieldKey}.jpg`)
+  const oldAsset = path.join(assetsDirectory, `${assetFieldKey}.jpg`)
 
   try {
     await mkdir(assetsDirectory, { recursive: true })
@@ -114,7 +114,7 @@ export async function createProject (): Promise<ProjectFixture> {
       root,
       assetsDirectory,
       oldAsset,
-      newAsset: path.join(assetsDirectory, `${fieldKey}.png`),
+      newAsset: path.join(assetsDirectory, `${assetFieldKey}.png`),
       traversalDirectory: path.join(template, 'outside')
     }
   } catch (error) {

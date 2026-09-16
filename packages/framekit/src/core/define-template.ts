@@ -1,5 +1,4 @@
 import type {
-  NoLanguageFields,
   TemplateBase,
   TemplateContent,
   TemplateDefinition,
@@ -25,7 +24,7 @@ export function defineTemplateBase<
   const Meta extends TemplateMeta,
   const Variants extends TemplateVariants,
 > (
-  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & NoLanguageFields<Fields>
+  definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants>
 ): TemplateBase<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateBase(definition))
   return definition
@@ -41,7 +40,7 @@ export function defineTemplate<
 > (
   definition: TemplateInput<Fields, Content, Width, Height, Meta, Variants> & {
     render(props: TemplateRenderProps<TemplateBase<Fields, Content, Width, Height, Meta, Variants>>): ReactNode
-  } & NoLanguageFields<Fields>
+  }
 ): TemplateDefinition<Fields, Content, Width, Height, Meta, Variants> {
   assertValid(validateTemplateDefinition(definition))
   return definition

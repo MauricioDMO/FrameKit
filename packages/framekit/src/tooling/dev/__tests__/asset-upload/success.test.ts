@@ -25,8 +25,8 @@ function deferred (): { promise: Promise<void>; resolve: () => void } {
 }
 
 describe('handleAssetUpload success', () => {
-  it('replaces a variant asset and regenerates the manifest', async () => {
-    const project = await createProject()
+  it.each(['hero', 'language'])('replaces a %s variant asset and regenerates the manifest', async (fieldKey) => {
+    const project = await createProject(fieldKey)
     const regenerationStarted = deferred()
     const releaseRegeneration = deferred()
     const regenerate = vi.fn(async () => {
@@ -34,7 +34,7 @@ describe('handleAssetUpload success', () => {
       await releaseRegeneration.promise
     })
     const response = responseFor()
-    const upload = handleAssetUpload(requestFor(uploadBody()), response, { projectRoot: project.root, regenerate })
+    const upload = handleAssetUpload(requestFor(uploadBody({ fieldKey })), response, { projectRoot: project.root, regenerate })
 
     try {
       await expect(readFile(project.oldAsset)).resolves.toEqual(oldAssetBytes)

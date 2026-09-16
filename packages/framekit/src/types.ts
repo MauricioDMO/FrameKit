@@ -94,16 +94,13 @@ export interface TemplateVariants {
 }
 
 export type TemplateContentEntry<Fields extends TemplateFields> = Partial<{
-  [Key in Exclude<keyof Fields, 'language'> & string]: InferFieldValue<Fields[Key]>
+  [Key in keyof Fields]: InferFieldValue<Fields[Key]>
 }>
 
 export type TemplateContent<Fields extends TemplateFields> = Record<
   string,
   TemplateContentEntry<Fields>
 >
-
-export type NoLanguageFields<Fields extends TemplateFields> =
-  Extract<keyof Fields, 'language'> extends never ? unknown : 'fields.language is reserved'
 
 export type NoUnknownMetaKeys<Meta extends TemplateMeta> =
   Exclude<keyof Meta, keyof TemplateMeta> extends never

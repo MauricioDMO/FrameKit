@@ -1,16 +1,18 @@
 import { defineTemplate, field } from '@mauriciodmo/framekit'
 
-// @ts-expect-error defineTemplate rejects the reserved fields.language property
 defineTemplate({
-  meta: { title: 'Invalid template' },
+  meta: { title: 'Language template' },
   width: 1080,
   height: 1080,
   fields: {
     language: field.text({ label: 'Idioma' })
   },
   content: {
-    es: {}
+    es: { language: 'Español' }
   },
   variants: { default: 'es' },
-  render: () => null
+  render ({ data }) {
+    const language: string = data.language
+    return language
+  }
 })
