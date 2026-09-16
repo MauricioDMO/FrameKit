@@ -67,8 +67,8 @@ beforeEach(() => {
 })
 
 describe('createStudioPage', () => {
-  it('renders the client with only the safe session DTO for editor and brand sections', async () => {
-    for (const section of ['editor', 'brand']) {
+  it('renders the client with only the safe session DTO for every Studio section', async () => {
+    for (const section of ['editor', 'brand', 'settings']) {
       const element = await renderPage({ section, slug: ['social', 'post'] }) as ReactElement
 
       expect(element.type).toBe(StudioClient)
@@ -77,10 +77,10 @@ describe('createStudioPage', () => {
 
     expect(pageMocks.notFound).not.toHaveBeenCalled()
     expect(pageMocks.redirect).not.toHaveBeenCalled()
-    expect(pageMocks.getSession).toHaveBeenCalledTimes(2)
+    expect(pageMocks.getSession).toHaveBeenCalledTimes(3)
   })
 
-  it('calls notFound for every section other than editor and brand', async () => {
+  it('calls notFound for every section other than editor, brand, and settings', async () => {
     for (const section of ['', 'Editor', 'preview', 'editor/other']) {
       await expect(renderPage({ section })).rejects.toBe(pageMocks.notFoundError)
     }

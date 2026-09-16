@@ -175,12 +175,13 @@ props separadas de `slug` ni `assets`.
 
 ### `@mauriciodmo/framekit/studio`
 
-Proporciona el componente `FrameKitStudio`, que combina el editor y la navegación en una interfaz de estudio completa, junto con utilidades de localización.
+Proporciona el componente `FrameKitStudio`, que combina el editor y la navegación en una interfaz de estudio completa, junto con utilidades de localización y la superficie autenticada de Ajustes.
 
-Su componente principal recibe `{ templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[] }` o
-`{ templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[] }`;
+Su componente principal recibe `{ templates: readonly TemplateRegistryEntry[], brands?: readonly FrameKitStudioBrand[], user?: StudioUser }` o
+`{ templates?: readonly TemplateRegistryEntry[], brands: readonly FrameKitStudioBrand[], user?: StudioUser }`;
 se requiere al menos un catálogo y el catálogo omitido se reemplaza por un
-array vacío.
+array vacío. El uso directo de catálogos sigue siendo válido sin `user`; la
+página autenticada generada pasa el DTO seguro `StudioUser`.
 
 El array generado `templates` se puede pasar directamente a `FrameKitStudio`, sin
 un adaptador:
@@ -225,6 +226,8 @@ control inválido.
 | Tipo                     | Descripción                                                       |
 | ------------------------ | ----------------------------------------------------------------- |
 | `FrameKitStudioBrand`    | Entrada de catálogo de marca con `slug: string`, `title: string`, `segments: string[]`, `description: string` y `load: () => Promise<{ default: unknown }>` |
+| `FrameKitStudioSection`  | Unión de secciones autenticadas de Studio: `"editor" \| "brand" \| "settings"` |
+| `StudioUser`             | DTO seguro del usuario autenticado con `id`, `username` y `role: "admin" \| "user"`; no contiene contraseñas ni secretos de tokens |
 | `FrameKitLocale`         | Tipo de locale utilizado dentro del estudio                       |
 | `FrameKitStudioMessages` | Tipo de catálogo de mensajes para cadenas de interfaz del estudio |
 
@@ -232,6 +235,20 @@ control inválido.
 punto de entrada ni desde una ruta de exportación del paquete; no forma parte
 de la API pública. Los valores generados `brands`, `brandManifest` y
 `brandRegistry` del proyecto tampoco son exportaciones del paquete.
+
+La generación de código también escribe `src/generated/framekit/studio-client.tsx`.
+Este binding exclusivo del cliente importa `StudioUser`, los `templates` y
+`brands` generados, y renderiza `FrameKitStudio` con el `user` autenticado. Se
+regenera con `framekit generate` (y con los comandos que generan
+automáticamente); no se debe editar a mano. La sección `/settings` usa este DTO
+seguro para cambios de cuenta, cambios de contraseña, logout y creación,
+consulta y revocación de tokens propios. Los administradores también ven los
+controles para crear, actualizar y eliminar usuarios, restablecer contraseñas y
+consultar o revocar metadata de tokens. El secreto de un token nuevo se muestra
+una sola vez. Ocultar los controles administrativos a usuarios normales es solo
+presentación; la autorización del servidor sigue siendo la autoridad. El idioma
+de la interfaz y el tema siguen bajo Apariencia, de forma independiente de las
+keys de variante de las plantillas.
 
 ---
 
@@ -242,8 +259,17 @@ de la API pública. Los valores generados `brands`, `brandManifest` y
 | Exportación          | Descripción                                                                                                                                            |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `FrameKitStudioRoot` | Componente de servidor que inicia el estudio; debe usarse únicamente en componentes de servidor o layouts. No importar en código del lado del cliente. |
+| `createStudioPage`   | Crea una página autenticada de Next.js para `/editor`, `/brand` y `/settings`, pasando el usuario seguro de la sesión a un binding cliente |
+| `createLoginPage`    | Crea la página `/login` y redirige a `/editor` cuando la sesión ya está autenticada |
 
 Firma: `FrameKitStudioRoot({ children, htmlClassName? }: { children: React.ReactNode, htmlClassName?: string })`. Emite el shell completo `<html>`, `<head>` y `<body>`, por lo que un layout raíz que lo use no debe anidar otro shell de documento.
+
+`createStudioPage(StudioClient)` acepta un componente cliente con la forma
+`{ user: StudioUser }`. Valida la sección, redirige una sesión ausente o inválida
+a `/login` y admite `/editor`, `/brand` y `/settings` (con segmentos opcionales de
+slug). `createLoginPage()` muestra el formulario de login y redirige una sesión
+autenticada a `/editor`. Ambas factories se exportan desde
+`@mauriciodmo/framekit/studio/root`.
 
 ---
 
@@ -297,11 +323,13 @@ para el contrato de descubrimiento y su uso en `/brand`.
 ### `@mauriciodmo/framekit/server`
 
 El punto de entrada de servidor es una fachada exclusiva de Node.js/servidor
-para los contratos implementados del Acceso de Studio de la Fase 4 y del
-renderizado de imágenes: configuración y autenticación, el handler de acceso
-de Studio, el handler público de imágenes, preparación de inputs de imagen,
-trabajos temporales, renderizado PNG en navegador y el handoff privado de la
-página de renderizado. No se debe importar en bundles del navegador.
+para el handler implementado de Acceso de Studio de la Fase 4 y los contratos
+existentes de renderizado de imágenes autenticados por API key: configuración y
+autenticación, el handler de acceso de Studio, el handler público de imágenes,
+preparación de inputs de imagen, trabajos temporales, renderizado PNG en
+navegador y el handoff privado de la página de renderizado. La migración de la
+API de imágenes autenticada y de Download/Copy server-side de la Fase 6 sigue
+pendiente. No se debe importar en bundles del navegador.
 
 **Exportaciones del entorno de ejecución**
 
@@ -364,8 +392,10 @@ migración.
 
 Este handler de la Fase 4 no reemplaza la ruta clásica de imágenes:
 `POST /api/v1/images` sigue exigiendo `Authorization: Bearer <FRAMEKIT_API_KEY>`.
-Download/Copy actuales siguen siendo del navegador, mientras que la UI de acceso
-de Studio y Download/Copy server-side siguen siendo fases posteriores.
+La UI de acceso de Studio de la Fase 5 está disponible mediante las factories de
+página autenticada anteriores. Download/Copy actuales siguen siendo del
+navegador; la API de imágenes autenticada y Download/Copy server-side de la Fase
+6 siguen pendientes.
 
 `parseImageApiConfig` exige `FRAMEKIT_API_KEY` no vacío y
 `FRAMEKIT_INTERNAL_ORIGIN`. El origen interno debe ser un origen HTTP de

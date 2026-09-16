@@ -4,6 +4,7 @@ import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from '@tab
 
 import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
 import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
+import type { FrameKitStudioSection } from '../types'
 import { FrameKitLogo } from './framekit-logo'
 import { SidebarFooter } from './sidebar-footer'
 import { SidebarNavigation } from './sidebar-navigation'
@@ -11,7 +12,7 @@ import { SidebarNavigation } from './sidebar-navigation'
 type SidebarMessages = FrameKitStudioMessages['sidebar']
 
 type StudioSidebarProps = {
-  isBrand: boolean
+  section: FrameKitStudioSection
   navigation: readonly TemplateNavigationNode[]
   messages: FrameKitStudioMessages
   locale: FrameKitLocale
@@ -71,7 +72,7 @@ function SidebarHeader ({ messages, onToggleSidebar }: { messages: SidebarMessag
 }
 
 export function StudioSidebar ({
-  isBrand,
+  section,
   navigation,
   messages,
   locale,
@@ -88,7 +89,7 @@ export function StudioSidebar ({
   return (
     <>
       <SidebarHeader messages={sidebarMessages} onToggleSidebar={onToggle} />
-      <SidebarNavigation isBrand={isBrand} navigation={navigation} messages={sidebarMessages} />
+      <SidebarNavigation section={section} navigation={navigation} messages={sidebarMessages} />
       <SidebarFooter messages={sidebarMessages} locale={locale} onLocaleChange={onLocaleChange} settingsOpen={settingsOpen} onToggleSettings={onToggleSettings} />
     </>
   )

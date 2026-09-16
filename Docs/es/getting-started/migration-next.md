@@ -17,12 +17,11 @@ migración histórica](./migration-v0.8.0.md).
   mediante la ruta `POST /api/v1/images` del consumidor generado; instala
   explícitamente su headless shell de Chromium con `framekit browser install`
   antes de servir solicitudes.
-- La Fase 4 de Studio Access & API Rendering (SQLite, migraciones, usuarios,
-  contraseñas, bootstrap, sesiones, acceso HTTP, protección de rutas y gestión
-  de tokens/usuarios) está implementada. Las fases posteriores de renderizado
-  server-side siguen sin estar disponibles. El Paso 8 de Server Image Rendering
-  continúa bloqueado hasta completar ese plan; la exportación server-side de
-  Studio todavía no está disponible.
+- Las Fases 4-5 de Studio Access & API Rendering están implementadas. La Fase 5
+  añade la UI autenticada de acceso de Studio; la API de imágenes autenticada y
+  Download/Copy server-side de la Fase 6 siguen pendientes. Las Fases 7-8 también
+  siguen pendientes y el Paso 8 de Server Image Rendering continúa bloqueado
+  hasta completar el plan.
 
 Esta guía rolling es el entregable documental del [issue #14 de
 GitHub](https://github.com/MauricioDMO/FrameKit/issues/14).
@@ -54,17 +53,16 @@ tablas vacías; la Fase 2 las usa para el bootstrap lazy, en tiempo de solicitud
 del primer administrador y para las credenciales locales. La Fase 3 añade el
 login y las sesiones HTTP, las rutas protegidas de Studio y los uploads
 autenticados de assets en desarrollo. La Fase 4 añade rutas autenticadas de
-gestión de tokens y usuarios. La UI de acceso de Studio y Download/Copy
-server-side pertenecen a fases posteriores. `FRAMEKIT_ADMIN_USERNAME` y
+gestión de tokens y usuarios. La UI de acceso de Studio está implementada en la
+Fase 5; Download/Copy server-side pertenece a la Fase 6. `FRAMEKIT_ADMIN_USERNAME` y
 `FRAMEKIT_ADMIN_PASSWORD` solo se aplican durante el primer bootstrap;
 `FRAMEKIT_API_KEY` solo se importa en ese momento, mientras el handler clásico
 de imágenes continúa leyéndola de forma independiente.
 
-Con la Fase 4 implementada, la ruta `POST /api/v1/images` continúa
+Con la Fase 5 implementada, la ruta `POST /api/v1/images` continúa
 autenticándose con `FRAMEKIT_API_KEY`, y Download PNG y Copy PNG siguen usando el
-exportador actual del navegador. La UI de acceso de Studio y Download/Copy
-server-side siguen siendo fases posteriores. Esta base tampoco migra datos de plantillas,
-assets ni estado persistido del editor.
+exportador actual del navegador hasta la Fase 6. Esta base tampoco migra datos
+de plantillas, assets ni estado persistido del editor.
 
 La API de imágenes en servidor sigue limitada a un proceso Node.js de larga
 duración por contenedor. Los render jobs son locales al proceso, desaparecen al
@@ -102,9 +100,10 @@ HTTP ni UI.
 
 ## Acceso A Studio, Sesiones, Protección Y Gestión De Rutas
 
-La Fase 4 de Studio Access & API Rendering está implementada. Las fases 1-4 ya
-están disponibles; la UI de acceso de Studio y Download/Copy server-side siguen
-siendo fases posteriores.
+Las Fases 1-5 de Studio Access & API Rendering están disponibles. La Fase 5
+proporciona la UI de acceso de Studio; la API de imágenes autenticada y
+Download/Copy server-side siguen pendientes en la Fase 6, y las Fases 7-8
+también siguen pendientes.
 
 El handler de acceso expone estas rutas:
 
@@ -176,9 +175,12 @@ de usuarios también incluyen los campos seguros `active`, `createdAt` y
 
 El login y cada solicitud insegura autenticada por cookie requieren un header
 `Origin` cuyo valor coincida exactamente con el origen canónico de la solicitud.
-En solicitudes directas es `new URL(request.url).origin`. Como el adaptador de
-Next 16 puede construir `request.url` usando el hostname y puerto internos
-configurados, la ruta soportada detrás de un reverse proxy HTTPS usa un único
+En solicitudes directas es `new URL(request.url).origin`; cuando Next usa su
+host wildcard predeterminado (`0.0.0.0` o `[::]`), el handler usa en su lugar la
+autoridad `Host` validada con el protocolo de la URL para que funcionen las
+solicitudes del navegador a localhost. Como el adaptador de Next 16 puede
+construir `request.url` usando el hostname y puerto internos configurados, la
+ruta soportada detrás de un reverse proxy HTTPS usa un único
 valor válido `x-forwarded-proto: https` y una única autoridad válida
 `x-forwarded-host` como origen público canónico. Los overrides incompletos,
 ambiguos, malformados o no HTTPS se rechazan antes de leer el body o mutar
@@ -197,9 +199,10 @@ para que el handler use el origen público canónico aunque Next.js conserve el
 origen interno en `request.url`; no hace falta configurar
 `FRAMEKIT_PUBLIC_ORIGIN`.
 
-Las secciones `editor` y `brand` de Studio validan una sesión activa y redirigen
-a `/login` cuando falta o es inválida. La página de login redirige a `/editor`
-si la sesión ya está autenticada y, en caso contrario, muestra el formulario.
+Las secciones `editor`, `brand` y `settings` de Studio validan una sesión activa
+y redirigen a `/login` cuando falta o es inválida. La página de login redirige a
+`/editor` si la sesión ya está autenticada y, en caso contrario, muestra el
+formulario. `/settings` no carga recursos de plantillas ni de marca.
 El upload autenticado de `/framekit/assets` en el servidor de desarrollo exige
 una sesión válida y el `Origin` del mismo origen antes de procesar o escribir un
 asset.
@@ -209,15 +212,80 @@ Su ID interno de render job y `x-framekit-render-token` continúan siendo la ún
 frontera de autenticación de esa ruta privada.
 
 La Fase 4 no introduce migración de plantillas, assets, estado del editor ni
-versión de release. El comportamiento existente de la API de imágenes y del
-exportador del navegador no cambia; la UI de acceso de Studio y Download/Copy
-server-side siguen siendo fases posteriores.
+versión de release. La Fase 5 añade la UI de acceso sin cambiar el
+comportamiento existente de la API de imágenes ni del exportador del navegador;
+Download/Copy server-side sigue pendiente en la Fase 6.
+
+## UI autenticada de acceso de Studio (Fase 5)
+
+El Studio reutilizable ahora expone tres secciones principales autenticadas:
+`/editor`, `/brand` y `/settings`. `/login` muestra el formulario de usuario y
+contraseña cuando no existe una sesión activa; un login correcto redirige a
+`/editor` y una visita ya autenticada también. La página de sección valida la
+sesión antes de renderizar Studio y redirige las sesiones ausentes o inválidas a
+`/login`. `/settings` no carga recursos de plantillas ni de marca.
+
+El área Ajustes ofrece flujos de cuenta, tokens y administración. Cada usuario puede
+ver su nombre y rol, cambiar su nombre, cambiar su contraseña usando la actual y
+cerrar sesión; cambiar la contraseña y cerrar sesión expiran la sesión y navegan
+a `/login`. Cada usuario puede crear tokens con nombre, listar los metadatos de
+sus propios tokens y revocarlos. El secreto de un token nuevo se muestra y se
+puede copiar una sola vez; las listas posteriores solo muestran nombre, prefijo
+visible, fechas y estado revocado, nunca un secreto antiguo.
+
+Los administradores pueden listar y crear usuarios, cambiar nombre/rol/estado
+activo, restablecer contraseñas, eliminar usuarios, consultar metadatos de
+tokens de un usuario y revocar tokens. La UI oculta el área Usuarios a los usuarios
+normales solo como presentación; el handler de la Fase 4 sigue siendo el límite
+de autorización. Las rutas exactas de acceso son:
+
+```text
+POST   /api/framekit/login
+POST   /api/framekit/logout
+GET    /api/framekit/account
+PATCH  /api/framekit/account
+POST   /api/framekit/account/password
+GET    /api/framekit/tokens
+POST   /api/framekit/tokens
+DELETE /api/framekit/tokens/:id
+GET    /api/framekit/users
+POST   /api/framekit/users
+PATCH  /api/framekit/users/:id
+DELETE /api/framekit/users/:id
+POST   /api/framekit/users/:id/password
+GET    /api/framekit/users/:id/tokens
+```
+
+La página del servidor entrega al cliente únicamente el DTO seguro `StudioUser`
+(`id`, `username` y `role`). El `StudioClient` generado importa ese tipo desde
+`@mauriciodmo/framekit/studio` y enlaza los catálogos generados con
+`FrameKitStudio`; regénéralo con `framekit generate` en lugar de editar a mano
+los archivos bajo `src/generated/framekit/`. El uso directo de `FrameKitStudio`
+con catálogos sigue siendo válido, pero un Client Component por sí solo no es un
+límite de autenticación.
+
+El control Apariencia sigue siendo responsable del locale de interfaz y del
+tema claro/oscuro. El idioma de interfaz es independiente de las variantes de
+plantilla: cambiarlo no cambia la variante seleccionada. Download PNG y Copy PNG
+continúan usando el navegador hasta la Fase 6. La ruta privada
+`/framekit/render/[id]` sigue protegida por su token interno independiente y no
+se autoriza mediante una sesión o token API de Studio.
+
+Para desplegar, usa HTTPS público y limita el login de usuario/contraseña en el
+reverse proxy o load balancer. Ejecuta un único proceso Node.js de larga duración
+por contenedor, guarda `FRAMEKIT_DATABASE_PATH` en almacenamiento persistente y
+recuerda que los render jobs son locales al proceso y se pierden al reiniciar.
+En el primer arranque de una base vacía, configura `FRAMEKIT_ADMIN_PASSWORD` y,
+opcionalmente, `FRAMEKIT_ADMIN_USERNAME` (por defecto `admin`). Un
+`FRAMEKIT_API_KEY` no vacío se importa una sola vez para el primer administrador
+como token heredado; su secreto no se expone en metadata y los valores de entorno
+no vuelven a sincronizar usuarios existentes.
 
 ## Integración De Renderizado En Servidor
 
 Los proyectos generados incluyen la ruta aditiva de PNG en servidor. El
 `next.config.ts` generado usa `withFrameKit()`, la ruta unificada de secciones
-conserva las URLs existentes `/editor` y `/brand`, y las rutas explícitas de la
+conserva las URLs existentes `/editor`, `/brand` y `/settings`, y las rutas explícitas de la
 API y del render privado siguen siendo propiedad de la aplicación. `framekit
 generate` recrea los bindings `studio-client.tsx` y `render-client.tsx` bajo
 `src/generated/framekit/`; no edites esos archivos manualmente ni agregues un

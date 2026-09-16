@@ -2,9 +2,9 @@
 
 ## Status
 
-Implemented and verified on 2026-09-15. Phases 5-8 remain pending; the Studio
-access UI and authenticated image API/session export are not implemented in this
-phase.
+Implemented and verified on 2026-09-15. The Phase 5 Studio access UI is
+implemented separately; authenticated image API/session export remain pending in
+Phases 6-8 and are not implemented in this phase.
 
 ## Goal
 

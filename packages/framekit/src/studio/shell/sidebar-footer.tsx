@@ -24,13 +24,13 @@ export function SidebarFooter ({ messages, locale, onLocaleChange, settingsOpen,
         <button
           type="button"
           onClick={onToggleSettings}
-          aria-label={messages.settingsLabel}
+          aria-label={messages.appearanceLabel}
           aria-controls="sidebar-settings"
           aria-expanded={settingsOpen}
           className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-sm font-bold text-fk-mint-200 transition hover:bg-white/15 focus:ring-2 focus:ring-fk-mint-200 focus:outline-none"
         >
           <IconSettings size={17} />
-          {messages.settingsLabel}
+          {messages.appearanceLabel}
         </button>
       </div>
     </div>

@@ -207,6 +207,23 @@ describe('createStudioAccessHandler', () => {
     expect(Object.keys(patchBody)).toEqual(['id', 'username', 'role'])
   }, 30_000)
 
+  it('accepts the browser host when Next uses its default wildcard internal host', async () => {
+    const user = insertUser('localhost-user', 'LocalhostUser')
+    const request = jsonRequest(
+      '/api/framekit/login',
+      'POST',
+      { username: user.username, password },
+      { host: 'localhost:3000', 'x-forwarded-proto': 'http', 'x-forwarded-host': 'localhost:3000' },
+      'http://localhost:3000',
+      'http://0.0.0.0:3000'
+    )
+
+    const response = await handler(request)
+
+    expect(response.status).toBe(200)
+    expect(await responseBody(response)).toEqual(user)
+  }, 30_000)
+
   const forwardedOriginCases: Array<{ name: string; headers: Record<string, string> }> = [
     { name: 'a non-HTTPS forwarded protocol', headers: { 'x-forwarded-proto': 'http', 'x-forwarded-host': 'framekit.example.com' } },
     { name: 'an incomplete forwarded origin', headers: { 'x-forwarded-proto': 'https' } },

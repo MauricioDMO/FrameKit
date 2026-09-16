@@ -4,7 +4,24 @@ Studio es el espacio de trabajo visual de FrameKit. Permite navegar por un catá
 
 ## Navegación
 
-Studio tiene dos rutas principales: `/editor` para editar plantillas y `/brand` para catalogar componentes de marca. La barra lateral permite cambiar entre ellas; cada ruta tiene su propio árbol de navegación.
+Studio tiene tres rutas principales: `/editor` para editar plantillas, `/brand` para catalogar componentes de marca y `/settings` autenticada para las operaciones de cuenta, tokens y administración. La barra lateral permite cambiar entre ellas; las rutas de editor y marca tienen su propio árbol de navegación.
+
+## Acceso y ajustes
+
+`/login` acepta el nombre de usuario y la contraseña de la sesión. Una solicitud
+autenticada a `/editor`, `/brand` o `/settings` renderiza Studio; una sesión
+ausente o inválida redirige a `/login`, mientras que una visita autenticada al
+login redirige a `/editor`. El servidor entrega al cliente generado únicamente
+el DTO seguro `StudioUser`, con `id`, `username` y `role`.
+
+El área Ajustes permite cambiar el nombre de usuario o la contraseña y cerrar sesión.
+Cambiar la contraseña y cerrar sesión expiran la sesión y navegan a `/login`.
+Los usuarios pueden crear tokens API con nombre, listar y revocar sus propios
+tokens, y ver una vez el secreto recién creado con una acción de copia; los
+secretos antiguos nunca vuelven a mostrarse. Los administradores pueden crear y
+gestionar usuarios, restablecer contraseñas, consultar metadata de tokens y
+revocarlos. Los usuarios normales no ven el área Usuarios, pero esto solo es
+presentación; el servidor sigue siendo la autoridad.
 
 Las plantillas se organizan en una barra lateral compacta a partir de los `segments` de cada entrada del registro. Cada segmento no final de la ruta se convierte en un nivel de carpeta y el segmento final en el elemento de plantilla, de modo que un slug como `social/instagram/post` crea una carpeta `Social` que contiene una subcarpeta `Instagram` con una plantilla `Post` en su interior. Los prefijos de ruta compartidos producen jerarquías de carpetas compartidas automáticamente.
 
@@ -71,14 +88,14 @@ Cuando se hace zoom más allá de los bordes del contenedor, se puede desplazar 
 
 Dos botones se encuentran en la esquina inferior derecha de la vista previa: **Tamaño real** restaura la escala al 100%, y **Ajustar** readapta la plantilla al contenedor. El autoajuste ante cambios de tamaño de la ventana solo ocurre mientras la vista previa está en modo ajustar; las posiciones de zoom manual se conservan al cambiar el tamaño.
 
-## Exportación PNG
+## Exportación PNG (del navegador hasta la Fase 6)
 
 Los botones Exportar y Copiar PNG validan los datos resueltos y confirmados actuales antes de hacer cualquier otra cosa. Si algún campo no pasa la validación, se muestran errores localizados, el primer campo inválido recibe el foco y la acción se detiene. Una vez superada la validación, Exportar espera a que las fuentes terminen de cargar mediante `document.fonts.ready`, y luego captura la plantilla exactamente en su `ancho×alto` declarado a escala 1 usando `modern-screenshot`; Copiar PNG coloca el PNG capturado en el portapapeles cuando es compatible.
 
 Exportar descarga un archivo PNG en el navegador. El nombre del archivo usa el slug de la plantilla con `/` reemplazado por `-` (por ejemplo, `social/instagram/post` se convierte en `social-instagram-post.png`). Copiar PNG coloca la imagen capturada en el portapapeles en lugar de descargarla.
 
-La exportación de Studio se ejecuta íntegramente en el navegador. El renderizado
-de PNG en servidor se ofrece por separado mediante el handoff privado de
+La exportación de Studio se ejecuta íntegramente en el navegador hasta la Fase 6
+de exportación server-side. El renderizado de PNG en servidor se ofrece por separado mediante el handoff privado de
 trabajo/página; la exportación actual de Studio no tiene opciones de formato ni
 controles de escala o DPI.
 

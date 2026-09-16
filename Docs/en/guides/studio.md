@@ -4,7 +4,23 @@ Studio is the visual workspace for FrameKit. It lets you navigate a template cat
 
 ## Navigation
 
-Studio has two top-level routes: `/editor` for editing templates and `/brand` for cataloging brand components. The sidebar switches between them; each route has its own navigation tree.
+Studio has three top-level routes: `/editor` for editing templates, `/brand` for cataloging brand components, and authenticated `/settings` for account, token, and administrator workflows. The sidebar switches between them; editor and brand each have their own navigation tree.
+
+## Access and settings
+
+`/login` accepts the session username and password. An authenticated `/editor`,
+`/brand`, or `/settings` request renders Studio; a missing or invalid session
+redirects to `/login`, while an authenticated login visit redirects to `/editor`.
+The server hands the generated client only the safe `StudioUser` DTO containing
+`id`, `username`, and `role`.
+
+Settings lets a user change their username or password and log out. Password
+change and logout expire the session and navigate to `/login`. Users can create
+named API tokens, list and revoke their own tokens, and see a newly created
+secret once with a copy action; old secrets are never shown again. Administrators
+can create and manage users, reset passwords, inspect token metadata, and revoke
+tokens. Normal users do not see the Users area, but this is presentation only;
+the server remains authoritative.
 
 Templates are organized in a compact sidebar derived from each registry entry's `segments`. Each non-final path segment becomes a folder level and the final segment becomes the template item, so a slug like `social/instagram/post` creates a `Social` folder containing an `Instagram` subfolder with a `Post` template inside. Shared path prefixes produce shared folder hierarchies automatically.
 
@@ -71,15 +87,15 @@ When zoomed in past the container edges, you can pan by dragging the preview are
 
 Two buttons sit in the lower-right corner of the preview: **Actual size** resets to 100% scale, and **Fit to view** refits the template to the container. Auto-refit on window resize only occurs while the preview is in fit-to-view mode; manual zoom positions are preserved on resize.
 
-## PNG export
+## PNG export (browser-based through Phase 6)
 
 The Export and Copy PNG buttons validate the current resolved, committed data before doing anything else. If any field fails validation, localized field errors are shown, the first invalid field receives focus, and the action stops. After validation passes, export waits for fonts to finish loading via `document.fonts.ready`, then captures the template at exactly its declared `width×height` at scale 1 using `modern-screenshot`; Copy PNG places the captured PNG on the clipboard when supported.
 
 Export then downloads a PNG file in the browser. The filename uses the template slug with `/` replaced by `-` (e.g., `social/instagram/post` becomes `social-instagram-post.png`). Copy PNG places the captured image on the clipboard instead of downloading it.
 
-Studio export runs entirely in the browser. Separate server-side PNG rendering
-uses the private render-job/page handoff; the current Studio export has no
-format options and no scale or DPI controls.
+Studio export runs entirely in the browser until Phase 6 server-backed export.
+Separate server-side PNG rendering uses the private render-job/page handoff; the
+current Studio export has no format options and no scale or DPI controls.
 
 ## Theme
 

@@ -65,9 +65,11 @@ All JSON responses use `Cache-Control: no-store` and never include hashes.
 
 Require an `Origin` header matching the canonical request origin for login and
 every cookie-authenticated unsafe request. For direct requests, that origin is
-`new URL(request.url).origin`. Because the Next 16 adapter can build
-`request.url` from its configured internal hostname and port, the supported
-HTTPS reverse-proxy path uses one valid `x-forwarded-proto: https` value and one
+`new URL(request.url).origin`; when Next uses its default wildcard bind host
+(`0.0.0.0` or `[::]`), use the validated `Host` authority with the request URL's
+protocol. Because the Next 16 adapter can build `request.url` from its configured
+internal hostname and port, the supported HTTPS reverse-proxy path uses one
+valid `x-forwarded-proto: https` value and one
 valid `x-forwarded-host` authority as the canonical public origin. Incomplete,
 ambiguous, malformed, or non-HTTPS forwarding overrides fail closed. The proxy
 must overwrite or strip client-supplied forwarding headers; FrameKit has no

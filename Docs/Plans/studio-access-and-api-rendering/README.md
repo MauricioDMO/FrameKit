@@ -1,6 +1,6 @@
 # Studio Access, API Tokens, and Server-backed Export
 
-- **Status:** Phase 4 implemented and verified on 2026-09-15; Phases 5-8 pending.
+- **Status:** Phases 4-5 implemented and verified on 2026-09-15; Phases 6-8 pending.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
@@ -26,9 +26,18 @@ has already been recorded against the API-key and browser-export baseline. That
 evidence remains useful, but final Step 8 closure must wait until this plan is
 complete and the resulting architecture is reverified.
 
-Phase 4 is implemented and verified on 2026-09-15. Phases 5-8 remain pending;
-the Studio access UI and authenticated image API/session export are not yet
-implemented. Server Image Rendering Step 8 final revalidation and closure remain
+Phase 4 is implemented and verified on 2026-09-15. Phase 5 is implemented and
+verified on 2026-09-15: the reusable Studio provides authenticated login,
+Settings account and token workflows, administrator user management, the
+three-section route model, safe `StudioUser` handoff, and English/Spanish
+accessibility coverage. The focused Studio checks passed 11 test files and 73
+tests; the full FrameKit package suite passed 75 test files and 810 tests, and
+package typecheck and lint passed. Production HTTP smoke covered the protected
+redirect and default localhost login; no browser-level visual or responsive
+smoke was run. Phases 6-8
+remain pending: authenticated image API and server-backed Download/Copy,
+generated-consumer/Docker persistence, and final rollout verification are not
+complete. Server Image Rendering Step 8 final revalidation and closure remain
 blocked until this plan is complete.
 
 ## Target architecture
@@ -326,7 +335,7 @@ writable persistent volume owned by the runtime user.
 | 2 | [Users, passwords, and bootstrap](./02-users-passwords-and-bootstrap.md) | Credentials, first admin, and one-time legacy import | Phase 1 |
 | 3 | [Sessions, HTTP, and route protection](./03-sessions-http-and-route-protection.md) | Login/logout, protected Studio pages, and protected dev upload | Phase 2 |
 | 4 | [API tokens, users, and authorization](./04-api-tokens-users-and-authorization.md) | Owner/admin operations and token authentication | Phase 3 |
-| 5 | [Studio access UI](./05-studio-access-ui.md) | Login, account, token, and user interfaces | Phase 4 |
+| 5 | [Studio access UI](./05-studio-access-ui.md) | Login, account, token, and user interfaces (implemented and verified 2026-09-15) | Phase 4 |
 | 6 | [Authenticated image API and export](./06-authenticated-image-api-and-export.md) | Shared image auth pipeline and server-backed Download/Copy | Phases 3-5 |
 | 7 | [Generated consumer and Docker](./07-generated-consumer-and-docker.md) | Seven-file starter and persistent production volume | Phases 1-6 |
 | 8 | [Verification, documentation, and rollout](./08-verification-documentation-and-rollout.md) | Cross-workspace proof and final plan integration | Phases 1-7 |

@@ -13,13 +13,13 @@ vi.mock('next/link', () => ({
 
 afterEach(cleanup)
 
-function StatefulSidebar () {
+function StatefulSidebar ({ section = 'editor' }: { section?: 'editor' | 'brand' | 'settings' }) {
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
     <StudioSidebar
-      isBrand={false}
+      section={section}
       navigation={[]}
       messages={frameKitMessages.es}
       locale="es"
@@ -49,18 +49,36 @@ describe('StudioSidebar', () => {
   it('closes settings while collapsing and restores the expanded sidebar', () => {
     render(<StatefulSidebar />)
 
-    const settings = screen.getByRole('button', { name: 'Ajustes' })
+    const settings = screen.getByRole('button', { name: 'Apariencia' })
     fireEvent.click(settings)
     expect(settings.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Colapsar navegación' }))
     expect(screen.queryByRole('navigation')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Ajustes' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Apariencia' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Expandir navegación' }).getAttribute('title')).toBe('Expandir navegación')
 
     fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
     expect(screen.getByRole('navigation').getAttribute('aria-label')).toBe('Plantillas')
-    expect(screen.getByRole('button', { name: 'Ajustes' }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByRole('button', { name: 'Apariencia' }).getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it.each([
+    ['editor', 'Plantillas', 'Marca', 'Ajustes'],
+    ['brand', 'Plantillas', 'Marca', 'Ajustes'],
+    ['settings', 'Plantillas', 'Marca', 'Ajustes']
+  ] as const)('marks only the %s destination active', (section, editorLabel, brandLabel, settingsLabel) => {
+    render(<StatefulSidebar section={section} />)
+
+    const editor = screen.getByRole('link', { name: editorLabel })
+    const brand = screen.getByRole('link', { name: brandLabel })
+    const settings = screen.getByRole('link', { name: settingsLabel })
+    const active = section === 'editor' ? editor : section === 'brand' ? brand : settings
+
+    expect(active.getAttribute('aria-current')).toBe('page')
+    for (const link of [editor, brand, settings]) {
+      if (link !== active) expect(link.getAttribute('aria-current')).toBeNull()
+    }
   })
 })

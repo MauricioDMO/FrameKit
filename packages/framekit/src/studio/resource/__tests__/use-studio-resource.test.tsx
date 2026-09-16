@@ -67,7 +67,7 @@ function deferred<T> (): { promise: Promise<T>, resolve: (value: T | PromiseLike
 
 describe('useStudioResource', () => {
   it('returns not-found without invoking a loader for an unknown template', async () => {
-    render(<ResourceProbe slug="missing" isBrand={false} templates={[]} brands={[]} />)
+    render(<ResourceProbe slug="missing" section="editor" templates={[]} brands={[]} />)
 
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('not-found'))
   })
@@ -75,7 +75,7 @@ describe('useStudioResource', () => {
   it('loads and validates a template definition against registry dimensions', async () => {
     const { entry } = createTemplateEntry()
 
-    render(<ResourceProbe slug={entry.slug} isBrand={false} templates={[entry]} brands={[]} />)
+    render(<ResourceProbe slug={entry.slug} section="editor" templates={[entry]} brands={[]} />)
 
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('ready:template'))
     expect(entry.load).toHaveBeenCalledOnce()
@@ -84,20 +84,20 @@ describe('useStudioResource', () => {
   it('rejects a template with mismatched dimensions', async () => {
     const { entry } = createTemplateEntry({ width: 200 })
 
-    render(<ResourceProbe slug={entry.slug} isBrand={false} templates={[entry]} brands={[]} />)
+    render(<ResourceProbe slug={entry.slug} section="editor" templates={[entry]} brands={[]} />)
 
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('invalid'))
   })
 
   it('loads brand previews and reports loader errors by kind', async () => {
     const brand = createBrandEntry()
-    render(<ResourceProbe slug={brand.slug} isBrand templates={[]} brands={[brand]} />)
+    render(<ResourceProbe slug={brand.slug} section="brand" templates={[]} brands={[brand]} />)
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('ready:brand'))
 
     cleanup()
     const failedBrand = createBrandEntry()
     failedBrand.load.mockRejectedValue(new Error('private failure'))
-    render(<ResourceProbe slug={failedBrand.slug} isBrand templates={[]} brands={[failedBrand]} />)
+    render(<ResourceProbe slug={failedBrand.slug} section="brand" templates={[]} brands={[failedBrand]} />)
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('error:brand'))
   })
 
@@ -105,7 +105,7 @@ describe('useStudioResource', () => {
     const { entry } = createTemplateEntry()
     entry.load.mockRejectedValue(new Error('private failure'))
 
-    render(<ResourceProbe slug={entry.slug} isBrand={false} templates={[entry]} brands={[]} />)
+    render(<ResourceProbe slug={entry.slug} section="editor" templates={[entry]} brands={[]} />)
 
     await waitFor(() => expect(screen.getByTestId('resource-state').textContent).toBe('error:template'))
   })
@@ -119,7 +119,7 @@ describe('useStudioResource', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     try {
-      const view = render(<ResourceProbe slug={brand.slug} isBrand templates={[]} brands={[brand]} />)
+      const view = render(<ResourceProbe slug={brand.slug} section="brand" templates={[]} brands={[brand]} />)
       view.unmount()
       brandLoad.resolve(brandModule)
       await brandLoad.promise

@@ -78,8 +78,12 @@
   metadata/revocation, one-time generated `fk_` secrets stored only as SHA-256
   hashes, active-owner credential lookup with `last_used_at`, safe DTOs,
   transactional last-active-administrator protection, exact access routes, and
-  DELETE route adapters. Studio UI and authenticated image API/session export
-  remain pending phases 5-8. See the [API tokens, users, and authorization phase
+  DELETE route adapters. Authenticated image API/session export remain pending
+  phases 6-8. See the [API tokens, users, and authorization phase
   plan](Docs/Plans/studio-access-and-api-rendering/04-api-tokens-users-and-authorization.md).
+- Implemented and verified Studio Access Phase 5 with reusable authenticated
+  login, account, token, and administrator user UI, safe `StudioUser` handoff,
+  `/settings` section routing, accessible confirmation flows, and English/Spanish
+  message coverage. See the [Studio access UI phase plan](Docs/Plans/studio-access-and-api-rendering/05-studio-access-ui.md).
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).

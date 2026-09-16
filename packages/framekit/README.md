@@ -1,8 +1,11 @@
 # @mauriciodmo/framekit
 
 FrameKit provides the typed template contract, data resolution, validation,
-Markdown rendering, and reusable editor components for React and Next.js.
-Studio export is browser-based and supports PNG only. The server-only
+Markdown rendering, and reusable editor components for React and Next.js. The
+reusable Studio includes authenticated `/login`, `/editor`, `/brand`, and
+`/settings` access with a safe `StudioUser` handoff and account, token, and
+administrator workflows. Studio Download/Copy remains browser-based PNG export
+until Phase 6 server-backed export. The server-only
 `@mauriciodmo/framekit/server` facade exposes configuration and authentication
 helpers, the `createStudioAccessHandler` session and token/user management
 handler, the `createImageHandler` PNG API, image preparation and rendering,
@@ -225,8 +228,9 @@ usernames and last-active-administrator conflicts return `409`. Unsafe requests
 require a same-origin `Origin` header.
 
 `POST /api/v1/images` continues to use `FRAMEKIT_API_KEY`, and Download PNG and
-Copy PNG continue to use the current browser exporter. Server-backed
-Download/Copy and the Studio access UI remain later phases.
+Copy PNG continue to use the current browser exporter. The authenticated Studio
+access UI is implemented; authenticated image API migration and server-backed
+Download/Copy remain pending for Phase 6.
 
 ### Server image API
 

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { validateTemplateDefinition } from '../../core/validation'
 import type { TemplateDefinition, TemplateRegistryEntry } from '../../types'
-import type { FrameKitStudioBrand } from '../types'
+import type { FrameKitStudioBrand, FrameKitStudioSection } from '../types'
 
 export type StudioResourceState =
   | { status: 'loading' }
@@ -19,27 +19,27 @@ type LoadSnapshot = { routeKey: string, state: StudioResourceState }
 
 export type StudioResourceInput = {
   slug: string | undefined
-  isBrand: boolean
+  section: FrameKitStudioSection
   templates: readonly TemplateRegistryEntry[]
   brands: readonly FrameKitStudioBrand[]
 }
 
-export function useStudioResource ({ slug, isBrand, templates, brands }: StudioResourceInput): StudioResourceState {
-  const routeKey = `${isBrand ? 'brand' : 'template'}:${slug ?? ''}`
+export function useStudioResource ({ slug, section, templates, brands }: StudioResourceInput): StudioResourceState {
+  const routeKey = `${section}:${slug ?? ''}`
   const [loadSnapshot, setLoadSnapshot] = useState<LoadSnapshot>({ routeKey, state: { status: 'loading' } })
   const loadState = loadSnapshot.routeKey === routeKey ? loadSnapshot.state : { status: 'loading' as const }
 
   useEffect(() => {
-    if (!slug) return
-
-    const routeKey = `${isBrand ? 'brand' : 'template'}:${slug}`
+    const routeKey = `${section}:${slug ?? ''}`
     let cancelled = false
     function updateLoadState (state: StudioResourceState) {
       if (!cancelled) setLoadSnapshot({ routeKey, state })
     }
 
+    if (section === 'settings' || !slug) return
+
     updateLoadState({ status: 'loading' })
-    if (isBrand) {
+    if (section === 'brand') {
       const entry = brands.find((candidate) => candidate.slug === slug)
       if (!entry) return updateLoadState({ status: 'not-found' })
 
@@ -66,7 +66,7 @@ export function useStudioResource ({ slug, isBrand, templates, brands }: StudioR
     }
 
     return () => { cancelled = true }
-  }, [slug, isBrand, templates, brands])
+  }, [slug, section, templates, brands])
 
   return loadState
 }

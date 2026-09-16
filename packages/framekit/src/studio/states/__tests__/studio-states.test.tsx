@@ -17,21 +17,21 @@ describe('Studio states', () => {
   })
 
   it('renders the correct empty copy for templates and brands', () => {
-    const { rerender } = render(<EmptyState isBrand={false} messages={frameKitMessages.en} />)
+    const { rerender } = render(<EmptyState section="editor" messages={frameKitMessages.en} />)
     expect(screen.getByRole('heading', { name: 'Select a template' })).toBeTruthy()
     expect(screen.getByText('Canvas ready')).toBeTruthy()
 
-    rerender(<EmptyState isBrand messages={frameKitMessages.en} />)
+    rerender(<EmptyState section="brand" messages={frameKitMessages.en} />)
     expect(screen.getByRole('heading', { name: 'Select a component' })).toBeTruthy()
     expect(screen.getByText('Brand component')).toBeTruthy()
   })
 
   it('renders mode-specific not-found links', () => {
-    const { rerender } = render(<NotFoundState isBrand={false} messages={frameKitMessages.en} />)
+    const { rerender } = render(<NotFoundState section="editor" messages={frameKitMessages.en} />)
     expect(screen.getByRole('link', { name: 'Back to editor' }).getAttribute('href')).toBe('/editor')
     expect(screen.getByRole('heading', { name: 'Template not found' })).toBeTruthy()
 
-    rerender(<NotFoundState isBrand messages={frameKitMessages.en} />)
+    rerender(<NotFoundState section="brand" messages={frameKitMessages.en} />)
     expect(screen.getByRole('link', { name: 'Back to editor' }).getAttribute('href')).toBe('/brand')
     expect(screen.getByRole('heading', { name: 'Component not found' })).toBeTruthy()
   })

@@ -702,17 +702,24 @@ Paso 8 final. Sus fases son obligatoriamente secuenciales:
 * [x] Fase 2: Users, Passwords, and Bootstrap.
 * [x] Fase 3: Sessions, HTTP, and Route Protection.
 * [x] Fase 4: API Tokens, Users, and Authorization (implementada y verificada el 2026-09-15).
-* [ ] Fase 5: Studio Access UI.
+* [x] Fase 5: Studio Access UI (implementada y verificada el 2026-09-15).
 * [ ] Fase 6: Authenticated Image API and Export.
 * [ ] Fase 7: Generated Consumer and Docker.
 * [ ] Fase 8: Verification, Documentation, and Rollout.
 * [ ] Reabrir el gate final de Server Image Rendering Step 8 sobre el nuevo
   baseline.
 
-La fase 4 esta implementada y verificada. Las fases 5 a 8 siguen pendientes;
-la UI de acceso de Studio y la API de imagen autenticada/export de sesion de la
-fase 6 no estan implementadas. El gate final del Step 8 permanece bloqueado
-hasta completar este bloque.
+Las fases 4 y 5 están implementadas y verificadas el 2026-09-15. La fase 5
+incluye la UI de login y Ajustes, el modelo de tres secciones, el handoff
+seguro de `StudioUser`, los flujos de tokens y usuarios administradores, y
+cobertura de accesibilidad e i18n. Pasan los checks enfocados de Studio (11
+archivos, 73 tests), la suite completa del paquete FrameKit (75 archivos, 810
+tests), el typecheck y el lint. El smoke HTTP de producción cubrió la redirección
+protegida y el login local predeterminado; no se ejecutó smoke visual o responsive
+en navegador. Las fases 6 a
+8 siguen pendientes; la API de imagen autenticada y la exportación server-side
+de la fase 6 aún no están implementadas. El gate final del Step 8 permanece
+bloqueado hasta completar este bloque.
 
 ## 5. Maintainability: fase 6
 
@@ -883,3 +890,4 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 | 2026-09-13 | Insertar Studio Access & API Rendering entre Server Steps 1-7 y la reverificación/cierre final de Step 8                           |
 | 2026-09-13 | Persistir usuarios, sesiones y API tokens en SQLite sin cambiar el store temporal `globalThis + Map` de los render jobs             |
 | 2026-09-15 | Completar y verificar la fase 4 de Studio Access; mantener las fases 5-8 pendientes y el Step 8 bloqueado                         |
+| 2026-09-15 | Completar y verificar la fase 5 de Studio Access UI; mantener las fases 6-8 pendientes y el Step 8 bloqueado                     |

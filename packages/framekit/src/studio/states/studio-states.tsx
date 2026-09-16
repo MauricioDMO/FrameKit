@@ -5,6 +5,9 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import type { FrameKitStudioMessages } from '../i18n/messages'
+import type { FrameKitStudioSection } from '../types'
+
+type CatalogSection = Exclude<FrameKitStudioSection, 'settings'>
 
 export function LoadingState ({ label }: { label: string }) {
   return (
@@ -30,7 +33,8 @@ export function LoadingState ({ label }: { label: string }) {
   )
 }
 
-export function EmptyState ({ isBrand, messages }: { isBrand: boolean, messages: FrameKitStudioMessages }) {
+export function EmptyState ({ section, messages }: { section: CatalogSection, messages: FrameKitStudioMessages }) {
+  const isBrand = section === 'brand'
   const title = isBrand ? messages.brand.emptyTitle : messages.emptyState.title
   const description = isBrand ? messages.brand.emptyDescription : messages.emptyState.description
 
@@ -54,7 +58,8 @@ export function EmptyState ({ isBrand, messages }: { isBrand: boolean, messages:
   )
 }
 
-export function NotFoundState ({ isBrand, messages }: { isBrand: boolean, messages: FrameKitStudioMessages }) {
+export function NotFoundState ({ section, messages }: { section: CatalogSection, messages: FrameKitStudioMessages }) {
+  const isBrand = section === 'brand'
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-8 lg:min-h-screen">
       <div className="max-w-md text-center">

@@ -6,6 +6,8 @@ export interface StudioUser {
   role: 'admin' | 'user'
 }
 
+export type FrameKitStudioSection = 'editor' | 'brand' | 'settings'
+
 export interface FrameKitStudioBrand {
   slug: string
   title: string
