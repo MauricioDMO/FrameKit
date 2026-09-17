@@ -42,7 +42,7 @@ export function ImageField ({ field, value, error, imageLabels, onImageUpload }:
             )}
       </div>
       {onImageUpload && imageLabels && (
-         <label className="inline-flex cursor-pointer select-none items-center rounded-lg border border-fk-ivory-400 bg-fk-ivory-100 px-3 py-2 text-xs font-bold text-fk-sage-400 transition hover:bg-fk-ivory-200 has-focus-visible:ring-3 has-focus-visible:ring-fk-mint-300/20 has-focus-visible:outline-none has-disabled:cursor-not-allowed has-disabled:opacity-50 dark:border-white/15 dark:bg-fk-forest-200 dark:text-fk-sage-100 dark:hover:bg-fk-forest-100">
+         <label className="relative inline-flex cursor-pointer select-none items-center rounded-lg border border-fk-ivory-400 bg-fk-ivory-100 px-3 py-2 text-xs font-bold text-fk-sage-400 transition hover:bg-fk-ivory-200 has-focus-visible:ring-3 has-focus-visible:ring-fk-mint-300/20 has-focus-visible:outline-none has-disabled:cursor-not-allowed has-disabled:opacity-50 dark:border-white/15 dark:bg-fk-forest-200 dark:text-fk-sage-100 dark:hover:bg-fk-forest-100">
           {uploading ? imageLabels.uploading : imageLabels.select}
           <input id={field.key} name={field.key} type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} aria-label={field.label} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={describedBy} onChange={handleChange} className="sr-only" />
         </label>

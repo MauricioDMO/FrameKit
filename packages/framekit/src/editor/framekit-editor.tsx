@@ -14,6 +14,7 @@ import { TemplateMetadataDialog } from './components/template-metadata-dialog'
 import { TemplatePreview } from './components/template-preview'
 import { copyTemplate, ExportValidationError, exportTemplate } from './export/export-template'
 import { useEditorState } from './state/use-editor-state'
+import { toast } from './toast'
 import type { EditorMessages } from './types'
 import { translateValidationError } from './validation'
 
@@ -89,7 +90,7 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
     }
   }
 
-  async function runExport (action: () => Promise<void>) {
+  async function runExport (action: () => Promise<void>, successMessage: string) {
     if (exporting) return
 
     function focusField (key: string) {
@@ -111,39 +112,78 @@ export function FrameKitEditor<Definition extends TemplateBase> ({ template, def
       return
     }
 
+    const toastOptions = { closeLabel: messages.closeLabel, position: 'top-center' as const }
+
     try {
       setExporting(true)
       await action()
+      toast.success(successMessage, toastOptions)
     } catch (error) {
       if (error instanceof ExportValidationError) {
         showValidationErrors(error.fields)
         return
       }
       console.error(messages.exportError, error)
-      window.alert(messages.exportAlert)
+      toast.error(messages.exportAlert, toastOptions)
     } finally {
       setExporting(false)
     }
   }
 
   function exportPng () {
-    return runExport(() => exportTemplate(slug, selectedVariant, userEdits))
+    return runExport(() => exportTemplate(slug, selectedVariant, userEdits), messages.exportSuccess)
   }
 
   function copyPng () {
-    return runExport(() => copyTemplate(slug, selectedVariant, userEdits))
+    return runExport(() => copyTemplate(slug, selectedVariant, userEdits), messages.copySuccess)
   }
 
   return (
     <div className="flex min-h-screen flex-col text-fk-forest-400 dark:text-fk-sage-100 xl:h-full xl:min-h-0">
-      <EditorHeader title={template.meta.title} messages={messages} hasMetadata={hasMetadata} exporting={exporting} onOpenMetadata={() => setMetadataOpen(true)} onReset={clearVariant} onExport={exportPng} onCopy={copyPng} />
+      <EditorHeader
+        title={template.meta.title}
+        messages={messages}
+        hasMetadata={hasMetadata}
+        exporting={exporting}
+        onOpenMetadata={() => setMetadataOpen(true)}
+        onExport={exportPng}
+        onCopy={copyPng}
+      />
       <div className={`grid min-h-0 flex-1 gap-4 p-4 ${sidebarCollapsed ? 'xl:grid-cols-[400px_1fr]' : 'xl:grid-cols-[300px_1fr]'} xl:overflow-hidden`}>
-        <EditorControls key={resetVersion} definition={definition} messages={messages} selectedVariant={selectedVariant} data={resolvedData} errors={errors} onVariantChange={changeVariant} onFieldChange={changeField} onFieldValidationError={changeFieldValidation} onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage} />
-        <TemplatePreview width={definition.width} height={definition.height} label={messages.preview} actualSizeLabel={messages.actualSize} fitToViewLabel={messages.fitToView}>
-          <TemplateCanvas<Definition> definition={definition} data={resolvedData} assets={assets} variant={selectedVariant as TemplateRenderProps<Definition>['variant']} />
+        <EditorControls
+          key={resetVersion}
+          definition={definition}
+          messages={messages}
+          selectedVariant={selectedVariant}
+          data={resolvedData}
+          errors={errors}
+          onVariantChange={changeVariant}
+          onReset={clearVariant}
+          onFieldChange={changeField}
+          onFieldValidationError={changeFieldValidation}
+          onImageUpload={process.env.NODE_ENV === 'production' ? undefined : uploadImage}
+        />
+        <TemplatePreview
+          width={definition.width}
+          height={definition.height}
+          label={messages.preview}
+          actualSizeLabel={messages.actualSize}
+          fitToViewLabel={messages.fitToView}
+        >
+          <TemplateCanvas<Definition>
+            definition={definition}
+            data={resolvedData}
+            assets={assets}
+            variant={selectedVariant as TemplateRenderProps<Definition>['variant']}
+          />
         </TemplatePreview>
       </div>
-      <TemplateMetadataDialog open={metadataOpen} meta={template.meta} messages={messages} onClose={closeMetadata} />
+      <TemplateMetadataDialog
+        open={metadataOpen}
+        meta={template.meta}
+        messages={messages}
+        onClose={closeMetadata}
+      />
     </div>
   )
 }

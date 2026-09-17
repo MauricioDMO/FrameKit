@@ -35,7 +35,10 @@ describe('FrameKitEditor export', () => {
       data: expect.objectContaining({ accentColor: '' })
     })))
     fireEvent.click(screen.getByRole('button', { name: messages.downloadPng }))
-    await waitFor(() => expect(exportTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', { accentColor: '' }))
+    await waitFor(() => {
+      expect(exportTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', { accentColor: '' })
+      expect(screen.getByText(messages.exportSuccess, { exact: true })).toBeTruthy()
+    })
   })
 
   it('copies a valid template PNG', async () => {
@@ -46,6 +49,7 @@ describe('FrameKitEditor export', () => {
 
     await waitFor(() => {
       expect(copyTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', expect.objectContaining({ title: 'Ready', accentColor: '#123456' }))
+      expect(screen.getByText(messages.copySuccess, { exact: true })).toBeTruthy()
     })
   })
 
@@ -62,6 +66,7 @@ describe('FrameKitEditor export', () => {
 
     expect(button.disabled).toBe(true)
     expect(button.textContent).toContain(messages.generating)
+    expect(screen.queryByRole('button', { name: messages.copyPng })).toBeNull()
     expect(exportTemplateMock).toHaveBeenCalledWith('social/campaign', 'en', {})
 
     fireEvent.click(button)
@@ -89,7 +94,7 @@ describe('FrameKitEditor export', () => {
   it.each([
     ['download', messages.downloadPng, 'export'],
     ['copy', messages.copyPng, 'copy']
-  ] as const)('shows the localized alert when %s fails', async (_action, buttonName, actionName) => {
+  ] as const)('shows the localized error toast when %s fails', async (_action, buttonName, actionName) => {
     const failure = new Error('private export failure')
     if (actionName === 'export') {
       exportTemplateMock.mockRejectedValueOnce(failure)
@@ -103,7 +108,8 @@ describe('FrameKitEditor export', () => {
       renderEditor()
       fireEvent.click(screen.getByRole('button', { name: buttonName }))
 
-      await waitFor(() => expect(alert).toHaveBeenCalledWith(messages.exportAlert))
+      await waitFor(() => expect(screen.getByText(messages.exportAlert, { exact: true })).toBeTruthy())
+      expect(alert).not.toHaveBeenCalled()
       expect(consoleError).toHaveBeenCalledWith(messages.exportError, failure)
     } finally {
       alert.mockRestore()

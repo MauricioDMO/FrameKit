@@ -20,6 +20,8 @@ export interface EditorMessages {
   colorPickerLabel: string
   exportError: string
   exportAlert: string
+  exportSuccess: string
+  copySuccess: string
   dataError: string
   errorRequired: string
   errorInvalidNumber: string

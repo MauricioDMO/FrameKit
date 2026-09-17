@@ -44,7 +44,7 @@ export function ColorField ({ field, value, onChange, error, colorPickerLabel }:
   }
 
   return (
-    <div className="flex max-w-full items-center gap-2">
+    <div className="relative flex max-w-full items-center gap-2">
           <input id={pickerId} name={field.key} type="color" required={field.required} aria-required={field.required} aria-invalid={error !== undefined} aria-describedby={error ? `${field.key}-error` : undefined} value={pickerState.pickerValue} onChange={(event) => {
             const nextValue = event.target.value
             setPickerState({ externalValue: externalPickerValue, pickerValue: nextValue })

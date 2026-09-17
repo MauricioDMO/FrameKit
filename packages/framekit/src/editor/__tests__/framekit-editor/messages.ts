@@ -19,6 +19,8 @@ export const messages: EditorMessages = {
   colorPickerLabel: 'Seleccionar color',
   exportError: 'Error de exportacion',
   exportAlert: 'No se pudo exportar',
+  exportSuccess: 'Imagen descargada',
+  copySuccess: 'Imagen copiada',
   dataError: 'Error de datos de plantilla',
   errorRequired: 'Campo obligatorio',
   errorInvalidNumber: 'Numero invalido',
