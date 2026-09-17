@@ -16,7 +16,7 @@ beforeEach(() => {
 
 describe('FrameKitStudioSettings', () => {
   it('renders nothing while closed', () => {
-    render(<FrameKitStudioSettings open={false} locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
+    render(<FrameKitStudioSettings open={false} section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
 
     expect(screen.queryByRole('combobox')).toBeNull()
     expect(screen.queryByRole('button')).toBeNull()
@@ -24,7 +24,7 @@ describe('FrameKitStudioSettings', () => {
 
   it('forwards the selected locale', () => {
     const onLocaleChange = vi.fn()
-    render(<FrameKitStudioSettings open locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={onLocaleChange} />)
+    render(<FrameKitStudioSettings open section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={onLocaleChange} />)
 
     fireEvent.change(screen.getByRole('combobox', { name: 'Idioma de la interfaz' }), { target: { value: 'en' } })
 
@@ -32,7 +32,7 @@ describe('FrameKitStudioSettings', () => {
   })
 
   it('toggles the document theme and persists it in a cookie', () => {
-    render(<FrameKitStudioSettings open locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
+    render(<FrameKitStudioSettings open section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
 
     const theme = screen.getByRole('button', { name: 'Cambiar tema' })
     fireEvent.click(theme)

@@ -9,7 +9,7 @@ export async function FrameKitStudioRoot ({ children, htmlClassName = '' }: { ch
   const cookieStore = await cookies()
   const locale = getFrameKitLocale(cookieStore.get('locale')?.value ?? (await headers()).get('accept-language'))
   const theme = cookieStore.get('theme')?.value
-  const documentClassName = [htmlClassName, theme === 'dark' ? 'dark' : '', 'min-h-full scheme-light dark:scheme-dark overflow-hidden'].filter(Boolean).join(' ')
+  const documentClassName = [htmlClassName, theme === 'dark' ? 'dark' : '', 'min-h-full scheme-light dark:scheme-dark'].filter(Boolean).join(' ')
   return (
     <html lang={locale} className={documentClassName} suppressHydrationWarning>
       <head>

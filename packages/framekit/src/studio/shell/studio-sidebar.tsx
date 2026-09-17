@@ -90,7 +90,7 @@ export function StudioSidebar ({
     <>
       <SidebarHeader messages={sidebarMessages} onToggleSidebar={onToggle} />
       <SidebarNavigation section={section} navigation={navigation} messages={sidebarMessages} />
-      <SidebarFooter messages={sidebarMessages} locale={locale} onLocaleChange={onLocaleChange} settingsOpen={settingsOpen} onToggleSettings={onToggleSettings} />
+      <SidebarFooter section={section} messages={sidebarMessages} locale={locale} onLocaleChange={onLocaleChange} settingsOpen={settingsOpen} onToggleSettings={onToggleSettings} />
     </>
   )
 }

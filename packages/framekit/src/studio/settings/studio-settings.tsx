@@ -28,7 +28,7 @@ export function FrameKitStudioSettings ({ user, locale, messages }: { user?: Stu
   }
 
   return (
-    <div className="min-h-screen bg-fk-ivory-200 p-4 text-fk-forest-400 dark:bg-fk-forest-400 dark:text-fk-sage-100 sm:p-6 lg:p-8 xl:overflow-y-auto">
+    <div className="min-h-screen bg-fk-ivory-200 p-4 text-fk-forest-400 dark:bg-fk-forest-400 dark:text-fk-sage-100 sm:p-6 lg:p-8 xl:h-full xl:min-h-0 xl:overflow-y-auto">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

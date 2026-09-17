@@ -49,19 +49,19 @@ describe('StudioSidebar', () => {
   it('closes settings while collapsing and restores the expanded sidebar', () => {
     render(<StatefulSidebar />)
 
-    const settings = screen.getByRole('button', { name: 'Apariencia' })
+    const settings = screen.getByRole('button', { name: 'Opciones' })
     fireEvent.click(settings)
     expect(settings.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Colapsar navegación' }))
     expect(screen.queryByRole('navigation')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Apariencia' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Opciones' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Expandir navegación' }).getAttribute('title')).toBe('Expandir navegación')
 
     fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
     expect(screen.getByRole('navigation').getAttribute('aria-label')).toBe('Plantillas')
-    expect(screen.getByRole('button', { name: 'Apariencia' }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByRole('button', { name: 'Opciones' }).getAttribute('aria-expanded')).toBe('false')
   })
 
   it.each([
@@ -70,6 +70,7 @@ describe('StudioSidebar', () => {
     ['settings', 'Plantillas', 'Marca', 'Ajustes']
   ] as const)('marks only the %s destination active', (section, editorLabel, brandLabel, settingsLabel) => {
     render(<StatefulSidebar section={section} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Opciones' }))
 
     const editor = screen.getByRole('link', { name: editorLabel })
     const brand = screen.getByRole('link', { name: brandLabel })

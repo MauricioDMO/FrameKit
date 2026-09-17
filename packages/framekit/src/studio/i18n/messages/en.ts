@@ -23,7 +23,7 @@ const enMessages = {
     collapseLabel: 'Collapse navigation',
     expandLabel: 'Expand navigation',
     settingsLabel: 'Settings',
-    appearanceLabel: 'Appearance',
+    appearanceLabel: 'Options',
     themeToggleLabel: 'Change theme',
     developedBy: 'Developed by',
     languageNames: {
@@ -50,6 +50,8 @@ const enMessages = {
     colorPickerLabel: 'Select color',
     exportError: 'Could not export the template:',
     exportAlert: 'The image could not be generated.',
+    exportSuccess: 'The image was downloaded.',
+    copySuccess: 'The image was copied.',
     loadingLabel: 'Loading...',
     loadError: 'Error loading template',
     invalidDefinition: 'Invalid template',

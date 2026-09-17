@@ -23,7 +23,7 @@ const esMessages = {
     collapseLabel: 'Colapsar navegación',
     expandLabel: 'Expandir navegación',
     settingsLabel: 'Ajustes',
-    appearanceLabel: 'Apariencia',
+    appearanceLabel: 'Opciones',
     themeToggleLabel: 'Cambiar tema',
     developedBy: 'Desarrollado por',
     languageNames: {
@@ -50,6 +50,8 @@ const esMessages = {
     colorPickerLabel: 'Seleccionar color',
     exportError: 'No se pudo exportar la plantilla:',
     exportAlert: 'No fue posible generar la imagen.',
+    exportSuccess: 'La imagen se descargó correctamente.',
+    copySuccess: 'La imagen se copió correctamente.',
     loadingLabel: 'Cargando...',
     loadError: 'Error al cargar la plantilla',
     invalidDefinition: 'La plantilla no es válida',

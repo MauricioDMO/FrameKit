@@ -1,6 +1,6 @@
 'use client'
 
-import { IconSettings, IconStack2, IconTag } from '@tabler/icons-react'
+import { IconStack2, IconTag } from '@tabler/icons-react'
 import Link from 'next/link'
 
 import { FrameKitNavigationTree } from '@/editor/navigation/framekit-navigation'
@@ -16,7 +16,7 @@ function NavigationTabs ({ section, messages }: { section: FrameKitStudioSection
   const inactiveClasses = 'text-fk-sage-200 hover:bg-white/10 hover:text-white'
 
   return (
-    <div className="grid grid-cols-3 gap-1 border-b border-white/10 p-3">
+    <div className="grid grid-cols-2 gap-1 border-b border-white/10 p-3">
       <Link
         href="/editor"
         aria-current={section === 'editor' ? 'page' : undefined}
@@ -32,14 +32,6 @@ function NavigationTabs ({ section, messages }: { section: FrameKitStudioSection
       >
         <IconTag size={16} aria-hidden="true" />
         {messages.brandsLabel}
-      </Link>
-      <Link
-        href="/settings"
-        aria-current={section === 'settings' ? 'page' : undefined}
-        className={`${baseClasses} ${section === 'settings' ? activeClasses : inactiveClasses}`}
-      >
-        <IconSettings size={16} aria-hidden="true" />
-        {messages.settingsLabel}
       </Link>
     </div>
   )
