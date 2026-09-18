@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-15.
+* **Última revisión:** 2026-09-17.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -37,6 +37,9 @@ casos de prueba, comandos y exit gates detallados.
 * [Studio Access, API Tokens, and Server-backed Export](./studio-access-and-api-rendering/README.md):
   ocho fases para acceso a Studio mediante SQLite, usuarios, sesiones, API
   tokens, export server-side y persistencia Docker.
+* [Documentation Site](./documentation-site/README.md): once fases para migrar
+  la documentación pública a Starlight, separarla por audiencia, mantener
+  paridad EN/ES y retirar las copias legacy después de verificar producción.
 
 ## Orden global aprobado
 
@@ -49,7 +52,8 @@ casos de prueba, comandos y exit gates detallados.
 |     4 | Studio Access & API Rendering fases 1 a 8             | SQLite, auth, usuarios, tokens, export server-side y volumen verificados       |
 |     5 | Server Image Rendering paso 8: reverificación y cierre | Evidencia final publicada contra la arquitectura transversal definitiva       |
 |     6 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
-|     7 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
+|     7 | Documentation Site                                    | Starlight publicado, paridad EN/ES y documentación legacy retirada            |
+|     8 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
 El estado operativo del servidor es explícito: los límites 0.5 y 0.6 y los
 pasos 1 a 7 están implementados y verificados. La mayor parte de la evidencia
@@ -96,6 +100,9 @@ Server Image Rendering
     ↓
 Maintainability
 6
+    ↓
+Documentation Site
+0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
     ↓
 Backlog
 #18 / #19
@@ -567,7 +574,8 @@ Plan:
 * [x] Verificar firma PNG.
 * [x] Propagar timeout y abort.
 * [x] Cerrar contexto, liberar capacidad y eliminar job en `finally`.
-* [x] Implementar idle close y shutdown idempotente.
+* [x] Mantener el browser durante la vida del proceso, sin timers de idle, y
+  limpiar context, capacidad y job al finalizar cada render.
 * [x] Pasar el exit gate del paso 4.
 
 ### 3.6 Paso 5: Private Next.js Render Route
@@ -801,11 +809,12 @@ Plan actual que debe revalidarse:
 
 ## 6. Backlog no bloqueante
 
-Estas issues no forman parte del completion gate de los cuatro planes principales.
+Estas issues no forman parte del completion gate de los planes principales.
 
 Pueden repriorizarse una vez estabilizada la arquitectura final, pero no deben
-intercalarse en Future, Maintainability ni Server salvo que se conviertan
-explícitamente en trabajo bloqueante mediante una nueva decisión registrada.
+intercalarse en Future, Maintainability, Server, Studio Access ni Documentation
+Site salvo que se conviertan explícitamente en trabajo bloqueante mediante una
+nueva decisión registrada.
 
 ### 6.1 Issue #18: Template Quick Switcher
 
@@ -858,7 +867,8 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 * [ ] Download PNG y Copy PNG usan exclusivamente el renderer server-side.
 * [ ] La ruta canónica de imagen acepta sesión o token API.
 * [ ] El starter final contiene seis archivos mantenidos bajo `src/app`.
-* [ ] Docker preserva SQLite entre containers y limpia jobs al reiniciar proceso.
+* [ ] Docker preserva SQLite entre containers cuando `/data` está montado como
+  volumen y limpia jobs al reiniciar proceso.
 * [ ] Las seis variables específicas de FrameKit, el `PORT` estándar y la ausencia de soporte para
   `FRAMEKIT_PUBLIC_ORIGIN` están verificadas y documentadas.
 
@@ -880,6 +890,14 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
   coinciden con el comportamiento verificado localmente.
 * [x] La versión de release continúa siendo una decisión separada.
 
+### Documentation Site
+
+* [ ] Las fases 0 a 10 de `documentation-site/` aprobaron sus exit gates.
+* [ ] El sitio publicado separa usuarios y contribuidores bajo `/en/` y `/es/`.
+* [ ] Los enlaces públicos del repositorio usan la URL canónica.
+* [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
+* [ ] `Docs/Plans/` y `Docs/skills/` permanecen fuera del sitio publicado.
+
 ## Registro de decisiones
 
 | Fecha      | Decisión                                                                                                                           |
@@ -899,3 +917,4 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 | 2026-09-15 | Completar y verificar la fase 4 de Studio Access; mantener las fases 5-8 pendientes y el Step 8 bloqueado                         |
 | 2026-09-15 | Completar y verificar la fase 5 de Studio Access UI; mantener las fases 6-8 pendientes y el Step 8 bloqueado                     |
 | 2026-09-16 | Completar y verificar la fase 6; eliminar el contrato legado `FRAMEKIT_API_KEY`; mantener las fases 7-8 y el Step 8 bloqueados       |
+| 2026-09-17 | Ejecutar Documentation Site después de estabilizar la arquitectura final; publicar `/en/` y `/es/` y retirar `Docs/en` y `Docs/es` solo tras verificar producción |
