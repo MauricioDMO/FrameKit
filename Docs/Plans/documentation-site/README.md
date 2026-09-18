@@ -17,6 +17,9 @@ solo coordinan el trabajo.
 
 - La primera división del sitio es por audiencia: `users/` y `contributors/`.
 - Inglés se publica con prefijo `/en/` y español con prefijo `/es/`.
+- Los enlaces internos del contenido publicado usan el prefijo de idioma
+  correspondiente (`/en/...` o `/es/...`) y no dependen de enlaces relativos ni
+  de la barra final de la URL.
 - Ambos idiomas tienen la misma jerarquía y responsabilidad temática.
 - `Docs/en/` y `Docs/es/` se retiran cuando el sitio Starlight esté publicado y
   todos los enlaces del repositorio apunten al sitio nuevo.
@@ -130,6 +133,8 @@ del producto.
 ## Reglas de ejecución
 
 - Una página debe tener una audiencia principal y una responsabilidad principal.
+- En contenido localizado, usa rutas root-relative con el prefijo de idioma
+  correspondiente; no uses rutas desnudas como `/users` ni enlaces relativos.
 - No copies texto histórico sin verificarlo contra la implementación actual.
 - No documentes imports directos desde `packages/framekit/src/**`.
 - No edites outputs generados para completar una fase.
@@ -143,6 +148,8 @@ del producto.
 
 - [ ] Las fases 0-10 están completadas.
 - [ ] `/en/` y `/es/` tienen paridad de rutas y temas.
+- [ ] Los enlaces internos de `/en/` y `/es/` conservan su prefijo incluso al
+  abrir las URLs sin slash final.
 - [ ] No queda contenido placeholder de Starlight.
 - [ ] El contenido publicado refleja únicamente contratos actuales verificados.
 - [ ] Todos los exports y comandos publicados están representados.

@@ -7,6 +7,12 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  workerd: true
+
+supportedArchitectures:
+  cpu:
+    - current
+    - wasm32
 
 minimumReleaseAgeExclude:
   - '@next/env@16.3.5'
@@ -21,3 +27,11 @@ minimumReleaseAgeExclude:
   - '@next/swc-win32-x64-msvc@16.3.5'
   - eslint-config-next@16.3.5
   - next@16.3.5
+  - '@cloudflare/workerd-darwin-64@1.20260918.1'
+  - '@cloudflare/workerd-darwin-arm64@1.20260918.1'
+  - '@cloudflare/workerd-linux-64@1.20260918.1'
+  - '@cloudflare/workerd-linux-arm64@1.20260918.1'
+  - '@cloudflare/workerd-windows-64@1.20260918.1'
+  - miniflare@5.20260918.0-alpha
+  - workerd@1.20260918.1
+  - wrangler@4.135.0

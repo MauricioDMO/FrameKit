@@ -1,0 +1,201 @@
+:root,
+::backdrop {
+  --fk-forest-950: #071a15;
+  --fk-forest-900: #10271f;
+  --fk-forest-800: #173d31;
+  --fk-forest-700: #2a3931;
+  --fk-mint-300: #b9f8d2;
+  --fk-mint-200: #c8f7d9;
+  --fk-sage-400: #91ae9f;
+  --fk-sage-500: #537568;
+  --fk-ivory-100: #f5f7ee;
+  --fk-ivory-50: #faf9f5;
+  --fk-ink-900: #17221d;
+
+  --sl-font: var(--sl-font-system);
+  --sl-font-mono: var(--sl-font-system-mono);
+
+  --sl-color-white: var(--fk-ivory-100);
+  --sl-color-gray-1: var(--fk-ivory-100);
+  --sl-color-gray-2: var(--fk-ivory-100);
+  --sl-color-gray-3: var(--fk-sage-400);
+  --sl-color-gray-4: var(--fk-sage-500);
+  --sl-color-gray-5: var(--fk-forest-700);
+  --sl-color-gray-6: var(--fk-forest-900);
+  --sl-color-black: var(--fk-forest-950);
+
+  --sl-color-blue-low: var(--fk-forest-800);
+  --sl-color-blue: var(--fk-mint-300);
+  --sl-color-blue-high: var(--fk-mint-200);
+  --sl-color-green-low: var(--fk-forest-800);
+  --sl-color-green: var(--fk-mint-300);
+  --sl-color-green-high: var(--fk-mint-200);
+
+  --sl-color-accent-low: var(--fk-forest-800);
+  --sl-color-accent: var(--fk-mint-300);
+  --sl-color-accent-high: var(--fk-mint-200);
+  --sl-color-text: var(--fk-ivory-100);
+  --sl-color-text-accent: var(--fk-mint-200);
+  --sl-color-text-invert: var(--fk-forest-950);
+  --sl-color-bg: var(--fk-forest-950);
+  --sl-color-bg-nav: var(--fk-forest-900);
+  --sl-color-bg-sidebar: var(--fk-forest-900);
+  --sl-color-bg-inline-code: var(--fk-forest-800);
+  --sl-color-bg-accent: var(--fk-mint-200);
+  --sl-color-hairline-light: color-mix(in srgb, var(--fk-ivory-100) 14%, transparent);
+  --sl-color-hairline: color-mix(in srgb, var(--fk-ivory-100) 9%, transparent);
+  --sl-color-hairline-shade: var(--fk-forest-950);
+  --sl-color-backdrop-overlay: color-mix(in srgb, var(--fk-forest-950) 80%, transparent);
+
+  --sl-sidebar-width: 19rem;
+  --sl-content-width: 48rem;
+  --sl-content-pad-x: 1.25rem;
+  --sl-content-gap-y: 1.5rem;
+  --sl-line-height-headings: 1.12;
+}
+
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+  --sl-color-white: var(--fk-ink-900);
+  --sl-color-gray-1: var(--fk-ink-900);
+  --sl-color-gray-2: var(--fk-forest-800);
+  --sl-color-gray-3: var(--fk-forest-700);
+  --sl-color-gray-4: var(--fk-sage-500);
+  --sl-color-gray-5: color-mix(in srgb, var(--fk-sage-400) 34%, var(--fk-ivory-50));
+  --sl-color-gray-6: var(--fk-ivory-100);
+  --sl-color-gray-7: var(--fk-ivory-50);
+  --sl-color-black: var(--fk-ivory-50);
+
+  --sl-color-blue-low: var(--fk-mint-200);
+  --sl-color-blue: var(--fk-forest-700);
+  --sl-color-blue-high: var(--fk-forest-800);
+  --sl-color-green-low: var(--fk-mint-200);
+  --sl-color-green: var(--fk-forest-700);
+  --sl-color-green-high: var(--fk-forest-800);
+
+  --sl-color-accent-low: var(--fk-mint-200);
+  --sl-color-accent: var(--fk-forest-700);
+  --sl-color-accent-high: var(--fk-forest-800);
+  --sl-color-text: var(--fk-ink-900);
+  --sl-color-text-accent: var(--fk-forest-800);
+  --sl-color-text-invert: var(--fk-forest-950);
+  --sl-color-bg: var(--fk-ivory-50);
+  --sl-color-bg-nav: var(--fk-ivory-50);
+  --sl-color-bg-sidebar: var(--fk-ivory-100);
+  --sl-color-bg-inline-code: color-mix(in srgb, var(--fk-mint-200) 30%, var(--fk-ivory-50));
+  --sl-color-bg-accent: var(--fk-mint-200);
+  --sl-color-hairline-light: color-mix(in srgb, var(--fk-forest-700) 18%, transparent);
+  --sl-color-hairline: color-mix(in srgb, var(--fk-forest-700) 12%, transparent);
+  --sl-color-hairline-shade: color-mix(in srgb, var(--fk-sage-500) 22%, var(--fk-ivory-50));
+  --sl-color-backdrop-overlay: color-mix(in srgb, var(--fk-forest-950) 32%, transparent);
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--fk-mint-300) 8%, transparent), transparent 28rem),
+    radial-gradient(circle at 100% 38%, color-mix(in srgb, var(--fk-forest-800) 28%, transparent), transparent 34rem);
+}
+
+:root[data-theme='light'] body {
+  background-image:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--fk-mint-300) 16%, transparent), transparent 28rem),
+    radial-gradient(circle at 100% 38%, color-mix(in srgb, var(--fk-forest-800) 9%, transparent), transparent 34rem);
+}
+
+.header {
+  background-color: color-mix(in srgb, var(--sl-color-bg-nav) 90%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.site-title {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.sidebar-pane {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--fk-forest-800) 24%, transparent), transparent 55%);
+}
+
+:root[data-theme='light'] .sidebar-pane {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--fk-mint-300) 18%, transparent), transparent 55%);
+}
+
+.sidebar-content a {
+  border-radius: 0.75rem;
+  padding-block: 0.45rem;
+}
+
+.sidebar-content .group-label .large,
+.right-sidebar-panel h2,
+starlight-toc h2 {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  background: var(--fk-mint-200);
+  box-shadow: inset 3px 0 var(--fk-mint-300);
+  color: var(--fk-forest-950);
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4,
+.hero h1,
+h1#_top {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.sl-markdown-content h2:not(:first-child) {
+  border-top: 1px solid var(--sl-color-hairline);
+  padding-top: 1.5rem;
+}
+
+.sl-markdown-content a:not(.sl-link-button) {
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+.sl-markdown-content :not(pre) > code {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.45rem;
+  padding: 0.12em 0.35em;
+}
+
+.expressive-code .frame {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 1rem;
+  box-shadow: var(--sl-shadow-sm);
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--sl-color-bg-accent);
+  color: var(--sl-color-text-invert);
+}
+
+@media (min-width: 50rem) {
+  .sidebar-content {
+    padding-block: 1.25rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

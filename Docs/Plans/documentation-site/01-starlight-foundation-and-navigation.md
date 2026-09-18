@@ -1,6 +1,6 @@
 # Fase 1 - Base Starlight y navegación
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fase 0.
 - **Resultado:** Aplicación documental integrada al monorepo, sin contenido de
   ejemplo y con navegación bilingüe estable.
@@ -38,7 +38,8 @@ pnpm-workspace.yaml
 - Definir sidebar estable sobre slugs compartidos entre idiomas.
 - Mantener integración Mermaid y comprobarla con un diagrama mínimo real.
 - Definir frontmatter mínimo: title, description y orden cuando sea necesario.
-- Establecer una convención de links relativos que funcione en ambos idiomas.
+- Establecer una convención de enlaces internos con prefijo explícito (`/en/...`
+  y `/es/...`) que no dependa de la barra final.
 - Definir placeholders estructurales solo cuando una fase posterior sea la dueña
   inmediata; no publicar páginas vacías.
 
@@ -73,14 +74,21 @@ Revisar además:
 
 - `/en/` y `/es/` generan rutas independientes.
 - El selector de idioma conserva el slug cuando existe traducción.
+- Las home conservan el prefijo de idioma en sus enlaces internos aunque se
+  acceda a `/en` o `/es` sin slash final.
 - El sidebar muestra las dos audiencias sin mezclar contenido.
 - La revisión confirma que páginas, metadata y enlaces corresponden a FrameKit y
   no conservan contenido del starter.
 
 ## Exit gate
 
-- [ ] `apps/docs` forma parte intencional del workspace.
-- [ ] Inglés y español usan prefijos explícitos.
-- [ ] Homepage, sidebar, social link y metadata son de FrameKit.
-- [ ] Mermaid renderiza durante build.
-- [ ] El build de docs pasa sin páginas placeholder.
+- [x] `apps/docs` forma parte intencional del workspace.
+- [x] Inglés y español usan prefijos explícitos.
+- [x] Homepage, sidebar, social link y metadata son de FrameKit.
+- [x] Mermaid renderiza durante build.
+- [x] El build de docs pasa sin páginas placeholder.
+
+Verificado el 2026-09-18 con `pnpm --filter docs build`. El build generó las seis
+rutas iniciales bajo `/en/` y `/es/`, transformó el bloque Mermaid, no generó
+homepage sin prefijo y las home generaron enlaces explícitos con el locale
+correspondiente, sin destinos relativos.
