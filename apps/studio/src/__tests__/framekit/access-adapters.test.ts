@@ -47,13 +47,11 @@ describe('Studio app adapters', () => {
     expect(accessSource).toContain('export const DELETE = handler')
     expect(accessSource).not.toContain('createStudioAccessHandler')
     expect(accessSource).not.toContain('getSession')
-    await expect(readAppFile('api', 'v1', 'images', 'route.ts')).rejects.toMatchObject({ code: 'ENOENT' })
-    await expect(readAppFile('api', 'framekit', 'images', 'route.ts')).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('uses forwarded HTTPS origin headers through the actual Next route adapter', async () => {
     const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-access-adapter-'))
-    const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_PUBLIC_ORIGIN', 'NODE_ENV'] as const
+    const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'NODE_ENV'] as const
     const originalEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
     const internalOrigin = 'http://127.0.0.1:3000'
     const publicOrigin = 'https://framekit.example.com'

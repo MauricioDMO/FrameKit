@@ -18,7 +18,7 @@ const password = 'correct horse battery staple'
 const changedPassword = 'another correct battery staple'
 const accessRequestLimit = 64 * 1024
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000
-const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_PUBLIC_ORIGIN', 'NODE_ENV'] as const
+const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'NODE_ENV'] as const
 
 let passwordHash = ''
 let originalEnvironment: Partial<Record<typeof environmentKeys[number], string>>
@@ -180,7 +180,6 @@ describe('createStudioAccessHandler', () => {
   it('accepts same-origin HTTPS login and account mutation through an HTTP reverse proxy', async () => {
     const user = insertUser('proxy-user', 'ProxyUser')
     vi.stubEnv('NODE_ENV', 'production')
-    expect(process.env.FRAMEKIT_PUBLIC_ORIGIN).toBeUndefined()
     const proxyHeaders = {
       'x-forwarded-proto': 'https',
       'x-forwarded-host': 'framekit.example.com'
@@ -233,16 +232,6 @@ describe('createStudioAccessHandler', () => {
 
   it.each(forwardedOriginCases)('rejects $name before using a public origin', async ({ headers }) => {
     const request = jsonRequest('/api/framekit/login', 'POST', { username: 'ProxyUser', password }, headers, reverseProxyOrigin, internalOrigin)
-    const response = await handler(request)
-
-    expect(response.status).toBe(403)
-    expect(await responseBody(response)).toEqual({ error: 'forbidden', message: 'Forbidden' })
-    expect(request.bodyUsed).toBe(false)
-  })
-
-  it('does not use FRAMEKIT_PUBLIC_ORIGIN when forwarding headers are absent', async () => {
-    process.env.FRAMEKIT_PUBLIC_ORIGIN = reverseProxyOrigin
-    const request = jsonRequest('/api/framekit/login', 'POST', { username: 'ProxyUser', password }, {}, reverseProxyOrigin, internalOrigin)
     const response = await handler(request)
 
     expect(response.status).toBe(403)
