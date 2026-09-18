@@ -80,9 +80,9 @@
     "directory": "packages/framekit"
   },
   "scripts": {
-    "lint": "eslint src scripts tests vitest.config.ts vitest.setup.ts tsdown.config.ts eslint.config.mjs",
+    "lint": "eslint src scripts type-tests vitest.config.ts vitest.setup.ts tsdown.config.ts eslint.config.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tests/types/tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p type-tests/tsconfig.json",
     "build:js": "tsdown",
     "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
     "check:dist": "tsx scripts/check-dist.ts",

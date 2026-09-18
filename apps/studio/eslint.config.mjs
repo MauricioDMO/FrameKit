@@ -2,7 +2,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
 import tailwindcss from 'eslint-plugin-tailwindcss'
-import standard from '../../scripts/eslint-standard.mjs'
+import standard from '../../tooling/eslint-standard.mjs'
 
 const nextConfig = nextVitals.map((config) => config.plugins?.import
   ? { ...config, plugins: { ...config.plugins, import: standard.plugins.import } }
