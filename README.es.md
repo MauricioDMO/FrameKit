@@ -86,9 +86,8 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 - Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
 - La exportación de Studio solo admite PNG en el navegador. El consumidor
   generado también proporciona la API PNG de servidor
-  `POST /api/framekit/images/render`; la ruta anterior `/api/v1/images` devuelve
-  `404`; no se admiten exportación a GIF/video, otros formatos, control de escala
-  ni DPI.
+  `POST /api/framekit/images/render`; no se admiten exportación a GIF/video,
+  otros formatos, control de escala ni DPI.
 - Studio guarda las ediciones en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
 - Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
 - La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.

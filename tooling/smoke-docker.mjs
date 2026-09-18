@@ -63,13 +63,6 @@ async function renderImage (origin, token) {
 }
 
 async function verifyApi (origin) {
-  const removedRoute = await fetch(`${origin}/api/v1/images`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ template: 'example' })
-  })
-  assert.equal(removedRoute.status, 404, 'the removed versioned image route must return 404')
-
   const unauthorized = await fetch(`${origin}/api/framekit/images/render`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

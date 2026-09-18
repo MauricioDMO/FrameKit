@@ -14,7 +14,6 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const corePackageRoot = path.join(repoRoot, 'packages', 'framekit')
 const creatorPackageRoot = path.join(repoRoot, 'packages', 'create-framekit')
 const templateRoot = path.join(creatorPackageRoot, 'template')
-const legacyNamespacePattern = /__framekit|%5F%5Fframekit/i
 const nodeBuiltinNames = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
 const smokeAdminUsername = 'admin'
 const smokeAdminPassword = 'framekit-smoke-password'
@@ -163,10 +162,6 @@ async function inspectArchive({ label, archive, temporaryRoot, expectedFiles, ex
   const listingResult = await run('tar', ['-tzf', archive], repoRoot, temporaryRoot)
   const entries = listingResult.stdout.split(/\r?\n/).filter(Boolean)
 
-  const legacyNamespaceEntry = entries.find((entry) => legacyNamespacePattern.test(entry))
-  assert(!legacyNamespaceEntry, `${label}: legacy namespace archive entry ${legacyNamespaceEntry}`)
-  console.log(`[PASS] ${label} archive contains no __framekit or %5F%5Fframekit paths`)
-
   for (const expectedFile of expectedFiles) {
     assert(entries.includes(expectedFile), `${label}: missing archive entry ${expectedFile}`)
   }
@@ -265,7 +260,6 @@ async function assertCorePackageBoundary(packageRoot, manifest, label) {
 async function assertPrivateRenderUrlContract(packageRoot, label) {
   const source = await readFile(path.join(packageRoot, 'dist', 'server', 'render-image.js'), 'utf8')
   assert(source.includes('/framekit/render/'), `${label}: private render URL does not use /framekit/render`)
-  assert(!source.includes('/__framekit/render/'), `${label}: private render URL still uses /__framekit/render`)
   console.log(`[PASS] ${label} private render URL contract uses /framekit/render`)
 }
 
@@ -298,7 +292,6 @@ async function assertProductionRenderRoute(consumerRoot) {
   const manifest = await readJson(path.join(consumerRoot, '.framekit', 'next', 'routes-manifest.json'))
   const route = manifest.dynamicRoutes?.find((entry) => entry.page === '/framekit/render/[id]')
   assert(route, 'production route table is missing /framekit/render/[id]')
-  assert(!legacyNamespacePattern.test(JSON.stringify(manifest)), 'production route table contains the legacy __framekit namespace')
   console.log('[PASS] production route table exposes /framekit/render/[id]')
 }
 
@@ -531,14 +524,6 @@ async function runStudioRouteSmoke(port) {
   const invalidSection = await fetch(`${origin}/preview/example`, { redirect: 'manual' })
   await invalidSection.text()
   assert.equal(invalidSection.status, 404, 'unknown section did not return not-found')
-
-  const removedImageRoute = await fetch(`${origin}/api/v1/images`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: '{}',
-  })
-  await removedImageRoute.text()
-  assert.equal(removedImageRoute.status, 404, 'removed versioned image route did not return not-found')
 
   const unsupportedImageMethod = await fetch(`${origin}/api/framekit/images/render`)
   await unsupportedImageMethod.text()
