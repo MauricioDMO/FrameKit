@@ -1,6 +1,6 @@
 # Fase 2 - Inicio para usuarios
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-1.
 - **Resultado:** Un usuario puede crear o integrar FrameKit y llegar a su primer
   template usando únicamente la documentación nueva en inglés.
@@ -14,6 +14,9 @@ Next.js existente sin duplicar pasos compartidos.
 Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
+
+Las superficies retiradas o no soportadas no se mencionan en páginas publicadas,
+ni siquiera como advertencias o instrucciones de migración.
 
 ## Fuentes de verdad
 
@@ -73,11 +76,29 @@ del flujo elegido y pueda explicarse sin duplicación en las dos rutas.
 - Confirmar que todos los imports usan exports soportados.
 - Confirmar que el ejemplo pasa `framekit generate` y `framekit check`.
 - Construir docs para detectar enlaces y snippets inválidos.
+- Buscar referencias a APIs, rutas, variables, imports, archivos, comandos, flags
+  o comportamientos que no existan en las fuentes actuales.
+
+Verificado el 2026-09-18:
+
+- `pnpm --filter docs build` generó las cinco páginas inglesas y la navegación de
+  `Getting started`.
+- `pnpm --filter @mauriciodmo/create-framekit build` pasó.
+- Una salida temporal de `create-framekit`, con el paquete local actual de
+  `@mauriciodmo/framekit`, pasó `pnpm framekit generate`, `pnpm check` y
+  `pnpm build` con el template inicial y el ejemplo de esta fase.
+
+El primer smoke contra `@mauriciodmo/framekit@0.8.1` descargado del registry no
+pasó porque ese artefacto no exporta `field`, aunque el source y el tarball local
+actual sí lo exportan. Es una discrepancia de distribución pendiente de release,
+no una dependencia de la documentación nueva; debe resolverse antes del rollout
+público.
 
 ## Exit gate
 
-- [ ] Proyecto nuevo y proyecto existente tienen rutas completas y no se mezclan.
-- [ ] La estructura descrita coincide con el template canónico.
-- [ ] El primer template usa el contrato vigente.
-- [ ] Ningún ejemplo depende de source imports o generated output manual.
-- [ ] Las cinco páginas enlazan correctamente desde `users/index.md`.
+- [x] Proyecto nuevo y proyecto existente tienen rutas completas y no se mezclan.
+- [x] La estructura descrita coincide con el template canónico.
+- [x] El primer template usa el contrato vigente.
+- [x] Ningún ejemplo depende de source imports o generated output manual.
+- [x] Las cinco páginas enlazan correctamente desde `users/index.md`.
+- [x] Las páginas no documentan superficies retiradas o no soportadas.

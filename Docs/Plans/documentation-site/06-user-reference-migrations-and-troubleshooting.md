@@ -15,6 +15,10 @@ Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
 
+Las superficies retiradas o no soportadas no se mencionan en páginas publicadas,
+ni siquiera como advertencias o instrucciones de migración. Las migraciones
+publicadas describen solo acciones sobre el contrato actual.
+
 ## Fuentes de verdad
 
 ```text
@@ -130,6 +134,8 @@ copian internals que el usuario no puede accionar.
 - Comparar el contenido nuevo con los contratos publicados en las fuentes
   actuales.
 - Probar comandos y soluciones contra un consumer generado limpio.
+- Auditar que ninguna referencia, migración o solución incluya superficies
+  retiradas o no soportadas.
 
 ## Exit gate
 
@@ -138,3 +144,4 @@ copian internals que el usuario no puede accionar.
 - [ ] Migraciones separan acciones vigentes de historia.
 - [ ] Troubleshooting no mezcla problemas de usuarios y contribuidores.
 - [ ] Las referencias cubren únicamente APIs, storage keys y comandos actuales.
+- [ ] Las migraciones no incluyen código, comandos ni rutas retiradas.

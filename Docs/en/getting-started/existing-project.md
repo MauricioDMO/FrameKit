@@ -192,10 +192,7 @@ to `3000`.
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → render capacity guard | Optional; defaults to `2`. It must be a base-10 digit string in the inclusive range `1..32`; invalid values fail configuration. Requests over the process-local concurrent-render limit fail with a capacity error. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → request deadline and browser operations | Optional; defaults to `30000` ms. It must be a base-10 digit string in the inclusive range `1..120000`; invalid values fail configuration. It bounds the image request deadline and browser operations. |
 
-`FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not read by the current runtime;
-it is not an origin fallback or configuration variable.
-The canonical image route is the only supported image API path and uses session
-or database API-token authentication.
+The canonical image route uses session or database API-token authentication.
 
 For a reverse proxy, the access handler and cookie-authenticated image requests
 derive the canonical origin from a validated `x-forwarded-proto` and
@@ -206,7 +203,7 @@ to overwrite or strip client-supplied forwarding headers; use one valid
 the public HTTPS origin. Direct requests use the request URL, with a validated
 `Host` authority used for the default wildcard bind hosts. An HTTP forwarding
 pair is accepted only for the internal-origin or validated wildcard-bind cases;
-public reverse proxies must use HTTPS. `FRAMEKIT_PUBLIC_ORIGIN` is not used.
+public reverse proxies must use HTTPS.
 
 See the [CLI reference](../reference/cli.md#framekit-dev) for the separate
 process behavior: `framekit dev` processes `FRAMEKIT_HOST`, `HOST`, and `PORT`,
@@ -222,10 +219,8 @@ image handler and accepts an active `framekit_session` cookie or
 `Authorization: Bearer <API_TOKEN>`; cookie-authenticated requests must be
 same-origin. Download PNG and Copy PNG request their PNG bytes from this
 canonical route. Install the Chromium headless shell explicitly with
-`framekit browser install` before serving requests. The previous
-`/api/v1/images` route returns `404`. The private
-render-job/page handoff remains an internal detail of that API and the generated
-render page.
+`framekit browser install` before serving requests. The private render-job/page
+handoff remains an internal detail of that API and the generated render page.
 
 ---
 

@@ -188,8 +188,8 @@ verifica:
 - un consumidor generado por creator, incluida la instalación limpia,
   `generate`, `check`, `build`, la forma de seis archivos de `src/app`, la ruta
   pública de login, las redirecciones de rutas protegidas, las rutas de Studio
-  autenticadas, la ruta canónica `/api/framekit/images/render` y la ruta eliminada
-  `/api/v1/images`, los archivos de despliegue, `start` standalone, readiness
+  autenticadas, la ruta canónica `/api/framekit/images/render`, los archivos de
+  despliegue, `start` standalone, readiness
   HTTP y apagado/limpieza correctos. Los bindings
   de cliente generados deben estar ausentes antes de generar y presentes después.
 

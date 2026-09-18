@@ -49,7 +49,7 @@ npm exec --yes @mauriciodmo/create-framekit -- update-skills ./my-framekit
 
 Si no se proporciona un directorio del proyecto, el valor predeterminado es `.` (el directorio de trabajo actual). En el checkout del repositorio, `pnpm sync:skills` toma `Docs/skills/public/` y reemplaza `packages/create-framekit/template/.agents/skills/`; también toma `Docs/skills/internal/` y reemplaza `.agents/skills/`. La copia interna no se distribuye al consumidor. Al ejecutarse desde un paquete instalado, `update-skills` lee la copia pública empaquetada en `template/.agents/skills/` y la copia a `<directorio-del-proyecto>/.agents/skills/`; no lee directamente `Docs/skills/`.
 
-El comando reemplaza cada directorio oficial que existe en la plantilla (`fk-brand`, `fk-design`, `fk-setup`, `fk-studio` y `fk-templates`) y conserva los demás, incluidos los personalizados. También elimina los directorios heredados conocidos: `framekit-project-setup`, `framekit-studio-usage`, `framekit-template-creation`, `fk-overview`, `taste-design`, `enhance-prompt` y `fk-enhance-prompt`. El comando no actualiza los archivos de la aplicación.
+El comando reemplaza cada directorio oficial que existe en la plantilla (`fk-brand`, `fk-design`, `fk-setup`, `fk-studio` y `fk-templates`) y conserva los demás, incluidos los personalizados. El comando no actualiza los archivos de la aplicación.
 
 Para desarrollar el repositorio localmente, sincroniza la copia pública, compila y ejecuta la CLI sin publicarla. El directorio destino debe existir:
 
@@ -102,10 +102,8 @@ ni cambia la contraseña de la cuenta existente. Conserva el directorio de la ba
 en almacenamiento persistente cuando necesites conservar usuarios, sesiones y
 tokens entre reinicios.
 
-`FRAMEKIT_PUBLIC_ORIGIN` no está soportada: el runtime no la lee ni la usa como
-fallback. `FRAMEKIT_API_KEY` tampoco es una variable actual de configuración; solo
-pertenece al contrato histórico. La API actual usa la cookie de sesión o un token
-de API almacenado en SQLite y enviado como `Authorization: Bearer <API_TOKEN>`.
+La API actual usa la cookie de sesión o un token de API almacenado en SQLite y
+enviado como `Authorization: Bearer <API_TOKEN>`.
 
 ### Variables de herramientas y entornos
 
@@ -207,9 +205,8 @@ administrador. Después, las solicitudes usan una cookie de sesión del mismo
 origen o un token de API de la base de datos. La ruta generada usa únicamente el
 modelo de autenticación respaldado por SQLite.
 
-La ruta anterior `/api/v1/images` no se mantiene y devuelve `404`. El smoke de
-tarballs comprueba la ruta generada y los archivos de despliegue; no afirma un
-build real de Docker ni una validación del contenedor/navegador.
+El smoke de tarballs comprueba la ruta generada y los archivos de despliegue; no
+afirma un build real de Docker ni una validación del contenedor/navegador.
 
 ---
 

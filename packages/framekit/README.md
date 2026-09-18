@@ -226,7 +226,6 @@ require a same-origin `Origin` header.
 
 `POST /api/framekit/images/render` accepts an active Studio session or a valid
 API token. Download PNG and Copy PNG use that authenticated server renderer.
-The previous `/api/v1/images` route is removed and returns `404`.
 
 ### Server image API
 

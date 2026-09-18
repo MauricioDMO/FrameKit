@@ -31,7 +31,9 @@ Without `-y` or `-n`, when no project directory is provided, it asks for one. It
 - Run `pnpm approve-builds` when using pnpm and installing dependencies? Default: yes.
 - Initialize a Git repository and create an initial commit? Default: yes.
 
-`-y` accepts all prompts and `-n` rejects them all. When either flag is used without a directory, the project is created in `./framekit`. In this mode, an undetected package manager defaults to `pnpm` without prompting. The `--y` and `--n` forms are not valid.
+`-y` accepts all prompts and `-n` rejects them all. When either flag is used
+without a directory, the project is created in `./framekit`. An undetected
+package manager defaults to `pnpm` in this mode.
 
 ### `create-framekit update-skills`
 
@@ -46,7 +48,7 @@ pnpm dlx @mauriciodmo/create-framekit update-skills
 npm exec --yes @mauriciodmo/create-framekit -- update-skills ./my-framekit
 ```
 
-If no project directory is provided, it defaults to `.` (the current working directory). The command copies the official skills shipped by the installed `create-framekit` package, replacing the official skill directories. It also removes the known legacy directories: `framekit-project-setup`, `framekit-studio-usage`, and `framekit-template-creation`. Other or custom skill directories are preserved. The command does not update application files.
+If no project directory is provided, it defaults to `.` (the current working directory). The command copies the official skills shipped by the installed `create-framekit` package, replacing the official skill directories. Other or custom skill directories are preserved. The command does not update application files.
 
 For local repository development, build and run the CLI without publishing it:
 
@@ -105,10 +107,8 @@ login flow ignores the bootstrap variables; changing them does not rename or
 change the password of an existing account. Use persistent storage for
 `FRAMEKIT_DATABASE_PATH` when users, sessions, and tokens must survive restarts.
 
-`FRAMEKIT_PUBLIC_ORIGIN` is unsupported and is not read or used as a fallback.
-`FRAMEKIT_API_KEY` and the former `/api/v1/images` contract are historical only;
-they are not part of the current runtime. The current API uses a session cookie
-or a database-backed API token sent as `Authorization: Bearer <API_TOKEN>`.
+The current API uses a session cookie or a database-backed API token sent as
+`Authorization: Bearer <API_TOKEN>`.
 
 ### Tool and environment variables
 
@@ -177,7 +177,7 @@ The generated consumer's canonical `Dockerfile` is pnpm-only and uses
 `framekit browser install --with-deps`; it does not invoke Playwright directly.
 Before `docker build`, the project must contain a suitable `pnpm-lock.yaml`.
 Consumers scaffolded for npm or Yarn, and scaffolds created without dependency
-installation such as `-n`, are not Docker-ready or validated by this path.
+installation, are not Docker-ready or validated by this path.
 
 ---
 
@@ -208,9 +208,8 @@ the required `FRAMEKIT_ADMIN_PASSWORD` bootstrap the administrator. Later
 requests use a same-origin session cookie or a database API token. The generated
 route uses only the SQLite-backed authentication model.
 
-The old `/api/v1/images` route is not maintained and returns `404`. The tarball
-smoke checks the generated route and deployment files; it does not claim a live
-Docker build or browser/container validation.
+The tarball smoke checks the generated route and deployment files; it does not
+claim a live Docker build or browser/container validation.
 
 ---
 

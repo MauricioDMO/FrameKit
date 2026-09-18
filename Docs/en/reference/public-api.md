@@ -344,8 +344,7 @@ The image action accepts an active `framekit_session` cookie or
 `Authorization: Bearer <API_TOKEN>`. Cookie-authenticated requests require a
 same-origin `Origin` header; Bearer requests use only the supplied token. Unknown
 paths return `404`; unsupported methods for the image action return `405` with
-`Allow: POST`. The old `/api/v1/images` route has no maintained adapter and
-returns `404`.
+`Allow: POST`.
 
 #### Studio Access handler
 
@@ -417,10 +416,6 @@ configuration uses `api_not_configured`, while invalid bootstrap configuration
 uses the access `service_unavailable` error. The underlying image parser raises
 `ImageRenderError`, but causes and credentials are not included in these
 responses.
-
-`FRAMEKIT_PUBLIC_ORIGIN` is not a supported setting or fallback. Same-origin
-checks derive the expected origin from the request URL and its accepted forwarding
-headers; the server does not read `FRAMEKIT_PUBLIC_ORIGIN`.
 
 **Type exports**
 

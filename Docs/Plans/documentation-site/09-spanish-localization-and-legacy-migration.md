@@ -16,6 +16,9 @@ Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
 
+La localización solo replica contratos soportados y verificables. Las superficies
+retiradas o no soportadas no se traducen ni se incluyen en páginas publicadas.
+
 ## Fuentes de verdad
 
 ```text
@@ -92,6 +95,8 @@ y no presentarse como instrucción actual.
 - Buscar links restantes hacia `Docs/en/` y `Docs/es/`.
 - Comparar ambos locales con el contrato vigente de las fuentes actuales.
 - Revisar navegación y selector de idioma en páginas profundas.
+- Auditar ambos locales para confirmar que no contienen superficies retiradas o
+  no soportadas.
 
 ## Exit gate
 
@@ -101,3 +106,4 @@ y no presentarse como instrucción actual.
 - [ ] Cada archivo de `Docs/en/` y `Docs/es/` tiene destino confirmado antes de
   su retirada en la fase 10.
 - [ ] `Docs/Plans/` y `Docs/skills/` permanecen en su lugar.
+- [ ] Ninguna traducción introduce superficies retiradas o no soportadas.

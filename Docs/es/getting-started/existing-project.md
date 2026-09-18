@@ -193,10 +193,8 @@ del proceso. `PORT` tiene `3000` por defecto.
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `parseImageRenderConfig` → límite de capacidad de renderizado | Opcional; por defecto es `2`. Debe ser un string de dígitos decimales en el rango inclusivo `1..32`; los valores inválidos hacen fallar la configuración. Las solicitudes que superan el límite de renders simultáneos dentro del proceso fallan con un error de capacidad. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `parseImageRenderConfig` → plazo de la solicitud y operaciones del navegador | Opcional; por defecto es `30000` ms. Debe ser un string de dígitos decimales en el rango inclusivo `1..120000`; los valores inválidos hacen fallar la configuración. Limita el plazo de la solicitud de imágenes y las operaciones del navegador. |
 
-`FRAMEKIT_PUBLIC_ORIGIN` no es compatible y el runtime actual no la lee; no es
-un fallback ni una variable de configuración de origen.
-La ruta canónica es la única ruta de API de imágenes admitida y usa una sesión o
-un token API de la base de datos para autenticarse.
+La ruta canónica usa una sesión o un token API de la base de datos para
+autenticarse.
 
 Detrás de un reverse proxy, el handler de acceso y las solicitudes de imágenes
 autenticadas por cookie obtienen el origen canónico a partir de un par validado
@@ -208,7 +206,7 @@ autoridad válida en `x-forwarded-host` para el origen HTTPS público. Las
 solicitudes directas usan la URL de la solicitud y, para los hosts wildcard
 predeterminados, la autoridad `Host` validada. Un par de forwarding HTTP solo se
 acepta para los casos de origen interno o wildcard validado; los reverse proxy
-públicos deben usar HTTPS. `FRAMEKIT_PUBLIC_ORIGIN` no se usa.
+los reverse proxy públicos deben usar HTTPS.
 
 Consulta la [referencia de la CLI](../reference/cli.md#framekit-dev) para el
 comportamiento separado de los procesos: `framekit dev` procesa
@@ -225,10 +223,9 @@ acepta una cookie `framekit_session` activa o
 `Authorization: Bearer <API_TOKEN>`; las solicitudes autenticadas por cookie
 deben ser del mismo origen. Download PNG y Copy PNG solicitan sus bytes PNG a
 esta ruta canónica. Instala explícitamente el headless shell de Chromium con
-`framekit browser install` antes de servir solicitudes. La ruta anterior
-`/api/v1/images` devuelve `404`. El handoff privado de trabajo/página sigue
-siendo un detalle interno de esa API
-y de la página de renderizado generada.
+`framekit browser install` antes de servir solicitudes. El handoff privado de
+trabajo/página sigue siendo un detalle interno de esa API y de la página de
+renderizado generada.
 
 ---
 

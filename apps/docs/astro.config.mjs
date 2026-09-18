@@ -26,6 +26,29 @@ export default defineConfig({
                     translations: { es: 'Usar FrameKit' },
                     items: [
                         { slug: 'users' },
+                        {
+                            label: 'Getting started',
+                            translations: { es: 'Primeros pasos' },
+                            items: [{ autogenerate: { directory: 'users/getting-started' } }],
+                        },
+                        {
+                            label: 'Concepts',
+                            items: [
+                                {
+                                    label: 'Templates',
+                                    items: [{ autogenerate: { directory: 'users/concepts/templates' } }],
+                                },
+                                { slug: 'users/concepts/brand-components', label: 'Brand components' },
+                            ],
+                        },
+                        {
+                            label: 'Guides',
+                            items: [{ autogenerate: { directory: 'users/guides' } }],
+                        },
+                        {
+                            label: 'Reference',
+                            items: [{ autogenerate: { directory: 'users/reference' } }],
+                        },
                     ],
                 },
                 {

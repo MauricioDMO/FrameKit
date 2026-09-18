@@ -1,7 +1,7 @@
 # FrameKit Documentation Site
 
 - **Estado:** Activo; fases pendientes.
-- **Última revisión:** 2026-09-17.
+- **Última revisión:** 2026-09-18.
 - **Alcance:** Convertir `apps/docs` en la documentación canónica bilingüe de
   FrameKit, separada por audiencia y alineada con el producto actual.
 - **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -28,6 +28,12 @@ solo coordinan el trabajo.
   prioridad sobre READMEs, documentación antigua y lenguaje histórico de Plans.
 - El contenido publicado se basa solo en contratos verificables actuales; la
   historia puede explicar el plan, pero no se convierte en referencia de uso.
+- Las superficies retiradas o no soportadas quedan fuera del contenido publicado:
+  no se documentan como uso, advertencia, compatibilidad, alternativa ni paso
+  de migración.
+- Cada API, ruta, variable, import, archivo, comando, flag y comportamiento
+  publicado debe existir en los manifests, parsers, implementación, tests o
+  template canónico actuales. Si no existe allí, se omite por completo.
 - Se añade una sección de deployment para cubrir Chromium, Docker, SQLite,
   persistencia, reverse proxies y límites de topología.
 - No se crea una página por cada función o comando si una referencia agrupada
@@ -136,9 +142,14 @@ del producto.
 - En contenido localizado, usa rutas root-relative con el prefijo de idioma
   correspondiente; no uses rutas desnudas como `/users` ni enlaces relativos.
 - No copies texto histórico sin verificarlo contra la implementación actual.
+- No menciones superficies retiradas o no soportadas para explicar que fueron
+  retiradas; simplemente exclúyelas de las páginas publicadas.
 - No documentes imports directos desde `packages/framekit/src/**`.
 - No edites outputs generados para completar una fase.
 - Mantén ejemplos de consumidor sobre exports publicados.
+- En migraciones publicadas, documenta únicamente la acción sobre el contrato
+  actual; no incluyas snippets, comandos ni instrucciones para ejecutar APIs,
+  rutas, variables, imports, archivos, flags o comportamientos retirados.
 - Cada fase actualiza este tracker cuando completa su exit gate.
 - No retires `Docs/en/` ni `Docs/es/` hasta que la fase 10 haya verificado el
   deployment de producción.
@@ -152,6 +163,8 @@ del producto.
   abrir las URLs sin slash final.
 - [ ] No queda contenido placeholder de Starlight.
 - [ ] El contenido publicado refleja únicamente contratos actuales verificados.
+- [ ] No hay referencias a superficies retiradas o no soportadas en guías,
+  referencias, ejemplos ni migraciones publicadas.
 - [ ] Todos los exports y comandos publicados están representados.
 - [ ] Los requisitos de seguridad y deployment están visibles antes de los
   ejemplos de exposición pública.

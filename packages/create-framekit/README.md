@@ -47,7 +47,7 @@ root or equivalent system-package privileges on Linux. The generated template
 includes a pnpm-only `Dockerfile` that uses
 `framekit browser install --with-deps`. A suitable `pnpm-lock.yaml` must exist
 in the generated project before `docker build`; npm or Yarn scaffolds and
-scaffolds created without dependency installation (including `-n`) are not
+ scaffolds created without dependency installation are not
 Docker-ready or validated by this path. Its Studio bootstrap credentials,
 database path, and deployment-specific render settings are supplied at runtime
 rather than baked into the image. Tarball checks inspect deployment artifacts;

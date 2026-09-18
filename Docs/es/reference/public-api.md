@@ -358,8 +358,7 @@ La acción de imágenes acepta una cookie `framekit_session` activa o
 `Authorization: Bearer <API_TOKEN>`. Las solicitudes autenticadas por cookie
 requieren un header `Origin` del mismo origen; las solicitudes Bearer solo
 evalúan el token enviado. Las rutas desconocidas devuelven `404`; los métodos no
-admitidos para la acción de imágenes devuelven `405` con `Allow: POST`. La ruta
-anterior `/api/v1/images` no tiene adapter mantenido y devuelve `404`.
+admitidos para la acción de imágenes devuelven `405` con `Allow: POST`.
 
 #### Handler de acceso de Studio
 
@@ -433,11 +432,6 @@ primer administrador activo. Cuando ya existe un usuario, el bootstrap ignora
 configuración de imágenes, se lanza `ImageRenderError` con el código
 `api_not_configured`; una configuración de bootstrap inválida devuelve el error
 de servicio no disponible de acceso.
-
-`FRAMEKIT_PUBLIC_ORIGIN` no es una configuración ni un fallback compatible. Las
-comprobaciones de mismo origen derivan el origen esperado de la URL de la
-solicitud y de sus headers de forwarding aceptados; el servidor no lee
-`FRAMEKIT_PUBLIC_ORIGIN`.
 
 **Exportaciones de tipos**
 

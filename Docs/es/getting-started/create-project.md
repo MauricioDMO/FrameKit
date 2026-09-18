@@ -16,7 +16,7 @@ Ejecuta:
 pnpm dlx @mauriciodmo/create-framekit mi-proyecto
 ```
 
-El creador es interactivo. Si no proporcionas el nombre del proyecto como argumento y no usas `-n` ni `-y`, te lo pide. Detecta qué gestor de paquetes estás usando (`pnpm` o `npm`) desde tu entorno; si no puede detectarlo, te pregunta cuál elegir. Luego pregunta:
+El creador es interactivo. Si no proporcionas el nombre del proyecto como argumento, te lo pide. Detecta qué gestor de paquetes estás usando (`pnpm` o `npm`) desde tu entorno; si no puede detectarlo, te pregunta cuál elegir. Luego pregunta:
 
 - Si instalar las dependencias (por defecto: sí).
 - Si estás usando **pnpm** y elegiste instalar dependencias: si deseas ejecutar `pnpm approve-builds` para aprobar scripts de compilación de forma interactiva (por defecto: sí).
@@ -37,7 +37,7 @@ La CLI muestra un encabezado y un mensaje de finalización con colores cuando se
 
 ### Opciones interactivas
 
-- El nombre del proyecto puede pasarse como el argumento opcional `[directorio-del-proyecto]`. Si se omite sin `-n` ni `-y`, la CLI lo solicita; con cualquiera de esas banderas, usa `framekit`.
+- El nombre del proyecto puede pasarse como el argumento opcional `[directorio-del-proyecto]`. Si se omite, la CLI lo solicita.
 - `-y` acepta todas las preguntas y `-n` las rechaza todas. Las formas `--y` y `--n` no son válidas.
 - El gestor de paquetes se detecta desde el entorno. Si no puede detectarse, elige interactivamente entre `pnpm` y `npm`.
 - La instalación de dependencias está activada por defecto.

@@ -15,6 +15,11 @@ El inventario y las decisiones deben usar únicamente manifests, implementación
 tests y el template canónico actuales; toda afirmación que no pueda verificarse
 se omite.
 
+La documentación publicada solo puede describir superficies soportadas en esas
+fuentes. APIs, rutas, variables, imports, archivos, comandos, flags y
+comportamientos retirados o no soportados se excluyen por completo; no se
+presentan como uso, advertencia, compatibilidad o paso de migración.
+
 ## Baseline actual
 
 - `apps/docs` contiene la base Starlight, pero todavía conserva título, enlaces
@@ -97,6 +102,8 @@ CHANGELOG.md
 - Comparar rutas con el catch-all canónico y el template generado.
 - Comparar variables con `.env.example`, Dockerfile y parsers de configuración.
 - Comparar cada afirmación de Studio con tests y componentes actuales.
+- Auditar las páginas objetivo para confirmar que no mencionan superficies
+  retiradas o no soportadas.
 
 ## Exit gate
 
@@ -105,3 +112,5 @@ CHANGELOG.md
 - [x] Todas las contradicciones conocidas tienen una decisión explícita.
 - [x] El sitemap de `README.md` coincide con el manifest.
 - [x] Se conoce la URL o plataforma necesaria para el rollout final.
+- [x] La política de exclusión de superficies no soportadas quedó fijada para
+  todas las fases.

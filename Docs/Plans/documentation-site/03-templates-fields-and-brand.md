@@ -1,6 +1,6 @@
 # Fase 3 - Templates, fields y brand
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-2.
 - **Resultado:** El modelo actual de autoría, resolución y discovery está
   documentado sin depender de una guía monolítica.
@@ -13,6 +13,9 @@ Mantener las reglas exactas en referencia y usar las guías para flujos completo
 Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
+
+Las superficies retiradas o no soportadas no se mencionan en páginas publicadas,
+ni siquiera como advertencias o instrucciones de migración.
 
 ## Fuentes de verdad
 
@@ -90,10 +93,20 @@ en/users/reference/brand-catalog.md
 - Confirmar que los ejemplos usan el contrato vigente de fields y sus
   restricciones actuales.
 
+Verificado el 2026-09-18:
+
+- Las 15 páginas inglesas objetivo existen bajo `apps/docs/src/content/docs/en/users/`.
+- `pnpm --filter docs build` pasó y generó 47 páginas.
+- Los snippets y las reglas de fields, variants, assets, registry, Markdown y
+  brand fueron revisados contra la implementación, validators y tests actuales.
+- Las páginas nuevas no usan imports directos desde `packages/framekit/src/**`.
+- La navegación de usuarios conserva `Getting started`, añade conceptos, guías
+  y referencia, y no duplica el índice de Templates dentro de su grupo.
+
 ## Exit gate
 
-- [ ] Los seis field kinds y sus restricciones están cubiertos.
-- [ ] Variants e idioma de interfaz no se confunden.
-- [ ] Registry, assets y brand discovery reflejan el código actual.
-- [ ] Las guías enlazan a referencia sin duplicar contratos completos.
-- [ ] La antigua guía monolítica tiene destino para todo contenido vigente.
+- [x] Los seis field kinds y sus restricciones están cubiertos.
+- [x] Variants e idioma de interfaz no se confunden.
+- [x] Registry, assets y brand discovery reflejan el código actual.
+- [x] Las guías enlazan a referencia sin duplicar contratos completos.
+- [x] La antigua guía monolítica tiene destino para todo contenido vigente.

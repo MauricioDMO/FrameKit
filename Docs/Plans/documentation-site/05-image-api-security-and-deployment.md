@@ -15,6 +15,9 @@ Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
 
+Las superficies retiradas o no soportadas no se mencionan en páginas publicadas,
+ni siquiera como advertencias o instrucciones de migración.
+
 ## Fuentes de verdad
 
 ```text

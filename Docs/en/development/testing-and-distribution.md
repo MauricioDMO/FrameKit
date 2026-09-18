@@ -180,7 +180,7 @@ The script keeps all temporary consumers outside the workspace and verifies:
 - a creator-generated consumer, including a clean install, `generate`, `check`,
   `build`, the six-file `src/app` shape, the public login route, protected
   route redirects, authenticated Studio routes, the canonical
-  `/api/framekit/images/render` route and removed `/api/v1/images` route,
+  `/api/framekit/images/render` route,
   deployment files, standalone `start`, HTTP readiness, and clean
   shutdown/cleanup. Generated client bindings must be absent before generation
   and present afterward.

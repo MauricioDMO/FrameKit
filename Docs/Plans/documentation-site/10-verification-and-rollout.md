@@ -16,6 +16,9 @@ Todo contenido y ejemplo debe basarse exclusivamente en manifests,
 implementación, tests y el template canónico actuales; se omite cualquier
 afirmación que no pueda verificarse allí.
 
+El rollout excluye por completo superficies retiradas o no soportadas. No deben
+aparecer en guías, referencias, ejemplos ni migraciones publicadas.
+
 ## Verificaciones estructurales
 
 - Páginas, labels, metadata y enlaces corresponden a FrameKit y no conservan
@@ -49,6 +52,8 @@ afirmación que no pueda verificarse allí.
 - Comparar las rutas generadas con el sitemap y los destinos actuales de EN/ES.
 - Revisar que el contenido publicado enseñe únicamente contratos presentes en
   esas fuentes.
+- Buscar referencias a APIs, rutas, variables, imports, archivos, comandos,
+  flags y comportamientos retirados o no soportados en el contenido publicado.
 
 ## Verificación de ejemplos
 
@@ -105,6 +110,7 @@ repetir el gate antes de volver a anunciarlo.
 - [ ] Quick Start, API de imagen y flujos de Studio fueron verificados.
 - [ ] EN/ES pasan paridad y revisión visual.
 - [ ] El contenido publicado enseña exclusivamente contratos actuales verificados.
+- [ ] No quedan referencias a superficies retiradas o no soportadas.
 - [ ] El deployment público responde en todas las rutas principales.
 - [ ] GitHub, npm y READMEs enlazan a la URL canónica.
 - [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
