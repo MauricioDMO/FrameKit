@@ -142,13 +142,13 @@ describe('FrameKitStudio integration', () => {
       </FrameKitLocaleProvider>
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Apariencia' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Opciones' }))
     expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Colapsar navegación' }))
     fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
 
-    expect(screen.getByRole('button', { name: 'Apariencia' }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getByRole('button', { name: 'Opciones' }).getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByRole('combobox', { name: 'Idioma de la interfaz' })).toBeNull()
   })
 
@@ -507,7 +507,7 @@ describe('FrameKitStudio integration', () => {
 
     const variant = await waitFor(() => screen.getByRole('combobox', { name: 'Variante' }))
     fireEvent.change(variant, { target: { value: 'fjord' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Apariencia' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Opciones' }))
     fireEvent.change(screen.getByRole('combobox', { name: 'Idioma de la interfaz' }), { target: { value: 'en' } })
 
     expect((screen.getByRole('combobox', { name: 'Variant' }) as HTMLSelectElement).value).toBe('fjord')
