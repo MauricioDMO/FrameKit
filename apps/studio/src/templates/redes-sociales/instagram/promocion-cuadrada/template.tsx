@@ -83,7 +83,7 @@ export default defineTemplate({
             <div className="flex items-center gap-4">
               {/* Shared project asset from public/assets. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/logos/framekit.svg" alt="" className="size-12 rounded-full" />
+              <img src="/assets/logos/framekit-small.svg" alt="" className="size-12 rounded-full" />
               <div>
                 <p className="text-[18px] font-black tracking-[0.14em] uppercase">
                   Silver Wolf

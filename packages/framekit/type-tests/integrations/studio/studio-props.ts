@@ -2,7 +2,7 @@ import { FrameKitStudio } from '@mauriciodmo/framekit/studio'
 import type { FrameKitStudioBrand, StudioUser } from '@mauriciodmo/framekit/studio'
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 
-import { template, templateAssets } from './valid-template'
+import { template, templateAssets } from '../../templates/valid-template'
 
 const templateEntry = {
   slug: 'social/valid-template',

@@ -1,4 +1,4 @@
 import nextTs from 'eslint-config-next/typescript'
-import standard from '../../scripts/eslint-standard.mjs'
+import standard from '../../tooling/eslint-standard.mjs'
 
 export default [standard, ...nextTs]

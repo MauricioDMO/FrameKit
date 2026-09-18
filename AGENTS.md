@@ -8,6 +8,7 @@
 - `apps/studio/` is the first-party private Next.js app. `packages/create-framekit/template/` is the canonical generated consumer project.
 - Put reusable consumer-facing code in `packages/framekit/src/`; keep Studio-only code in `apps/studio/src/` and scaffolding logic in `packages/create-framekit/src/`.
 - The supported `@mauriciodmo/framekit` imports are `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./server`, and `./styles.css`; do not import `packages/framekit/src/*` as a consumer.
+- Repository-maintenance scripts live under root `tooling/`; package-specific build tooling stays with its owning package.
 
 ## Commands
 
@@ -21,8 +22,10 @@
 
 ## Tests and Imports
 
-- New tests belong under the nearest `__tests__/` directory, not beside the implementation file. Mirror the production domain below it, for example `src/core/validation/__tests__/definition/` and `src/core/validation/__tests__/fields/`.
-- Keep shared test fixtures inside the relevant `__tests__/` tree. Do not place test-only helpers in production source directories.
+- Runtime tests belong under the nearest `__tests__/` directory, not beside the implementation file. Mirror the production domain below it, for example `src/core/validation/__tests__/definition/` and `src/core/validation/__tests__/fields/`.
+- FrameKit compile-time contract tests live only under `packages/framekit/type-tests/`. Group them by context such as `fields/`, `templates/`, `public-api/`, and `integrations/`; do not create a generic package-level `tests/` directory.
+- Browser system tests live under the repository-level `e2e/` directory and are run by Playwright.
+- Keep shared runtime-test fixtures inside the relevant `__tests__/` tree. Do not place test-only helpers in production source directories.
 - Vitest discovers nested `*.test.ts` and `*.test.tsx` files recursively. Do not add per-directory test configuration unless the environment genuinely differs.
 - In package tests, use the configured `@/*` alias for package-local source imports instead of long `../../` chains. `@/*` maps to `src/*` in `packages/framekit/`, `packages/create-framekit/`, `apps/studio/`, and the generated template.
 - Keep TypeScript and the test runner aligned when adding an alias: configure both `compilerOptions.paths` and the runner's resolver. A TypeScript-only alias is not enough at runtime.

@@ -1,7 +1,7 @@
 import { resolveTemplateData } from '@mauriciodmo/framekit'
 import { SuccessToast, TemplateCanvas, toast } from '@mauriciodmo/framekit/editor'
 
-import { template, templateAssets } from './valid-template'
+import { template, templateAssets } from '../templates/valid-template'
 
 const data = resolveTemplateData(template, 'moon', {}, templateAssets)
 

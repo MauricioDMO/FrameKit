@@ -13,9 +13,10 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "build": "pnpm -r --if-present build",
     "test:e2e": "playwright test",
-    "smoke:docker": "node scripts/smoke-docker.mjs",
-    "sync:skills": "node scripts/sync-skills.mjs",
-    "check:runtime": "node scripts/check-runtime-contract.mjs",
+    "smoke:tarballs": "node tooling/smoke-tarballs.mjs",
+    "smoke:docker": "node tooling/smoke-docker.mjs",
+    "sync:skills": "node tooling/sync-skills.mjs",
+    "check:runtime": "node tooling/check-runtime-contract.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

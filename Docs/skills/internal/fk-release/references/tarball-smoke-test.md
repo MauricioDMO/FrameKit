@@ -3,11 +3,16 @@
 Run the canonical, version-independent script from the repository root:
 
 ```sh
-node scripts/smoke-tarballs.mjs
+pnpm smoke:tarballs
 ```
 
-Pass `--keep-temp` only when a failed run needs its temporary directory for
-diagnosis. The script creates consumers outside the FrameKit checkout.
+The command delegates to `tooling/smoke-tarballs.mjs`. Pass `--keep-temp` only when a failed run needs its temporary directory for diagnosis:
+
+```sh
+pnpm smoke:tarballs -- --keep-temp
+```
+
+The script creates consumers outside the FrameKit checkout.
 
 The sequence must:
 

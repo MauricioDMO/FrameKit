@@ -1,5 +1,5 @@
 import eslintConfigNext from 'eslint-config-next'
-import standard from '../../scripts/eslint-standard.mjs'
+import standard from '../../tooling/eslint-standard.mjs'
 
 const nextConfig = eslintConfigNext.map((config) => config.plugins?.import
   ? { ...config, plugins: { ...config.plugins, import: standard.plugins.import } }

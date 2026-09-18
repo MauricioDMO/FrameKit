@@ -2,7 +2,7 @@ import { createRenderClient } from '@mauriciodmo/framekit/client'
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
 import type { ResolvedRenderPayload } from '@mauriciodmo/framekit/server'
 
-import { template, templateAssets } from './valid-template'
+import { template, templateAssets } from '../templates/valid-template'
 
 const templateEntry = {
   slug: 'social/valid-template',
