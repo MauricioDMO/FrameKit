@@ -11,6 +11,10 @@ Construir la ruta de aprendizaje mínima desde los requisitos hasta un Studio
 funcional. La ruta debe distinguir creación de proyecto e integración en un
 Next.js existente sin duplicar pasos compartidos.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text

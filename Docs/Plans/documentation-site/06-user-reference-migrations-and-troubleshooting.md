@@ -11,6 +11,10 @@ Completar la documentación para consulta rápida sin convertir la referencia en
 una copia de los tipos TypeScript. Consolidar comandos relacionados y separar
 troubleshooting por dominio.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
@@ -117,14 +121,14 @@ copian internals que el usuario no puede accionar.
 
 - Generar documentación API automáticamente.
 - Crear una página por cada función exportada.
-- Mantener workaround para contratos eliminados sin consumidores publicados que
-  lo requieran.
+- Mantener compatibilidad fuera del contrato público actual.
 
 ## Verificación
 
 - Cruzar package exports con el índice de referencia.
 - Cruzar `--help`/usage real con páginas CLI.
-- Buscar contratos eliminados en contenido nuevo.
+- Comparar el contenido nuevo con los contratos publicados en las fuentes
+  actuales.
 - Probar comandos y soluciones contra un consumer generado limpio.
 
 ## Exit gate
@@ -133,4 +137,4 @@ copian internals que el usuario no puede accionar.
 - [ ] Todos los comandos actuales están cubiertos una sola vez.
 - [ ] Migraciones separan acciones vigentes de historia.
 - [ ] Troubleshooting no mezcla problemas de usuarios y contribuidores.
-- [ ] No quedan referencias actuales a APIs, storage keys o comandos retirados.
+- [ ] Las referencias cubren únicamente APIs, storage keys y comandos actuales.

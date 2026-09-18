@@ -1,6 +1,6 @@
 # Fase 0 - Estado actual y decisiones
 
-- **Estado:** Pendiente.
+- **Estado:** Completado.
 - **Depende de:** Nada.
 - **Resultado:** Inventario aprobado y contratos documentales congelados antes
   de mover contenido.
@@ -11,6 +11,10 @@ Crear una fotografía verificable del producto y de toda la documentación que s
 va a migrar. Esta fase evita diseñar la nueva jerarquía a partir de páginas
 antiguas que ya contradicen el comportamiento actual.
 
+El inventario y las decisiones deben usar únicamente manifests, implementación,
+tests y el template canónico actuales; toda afirmación que no pueda verificarse
+se omite.
+
 ## Baseline actual
 
 - `apps/docs` contiene la base Starlight, pero todavía conserva título, enlaces
@@ -19,12 +23,12 @@ antiguas que ya contradicen el comportamiento actual.
   existe bajo la estructura objetivo.
 - `Docs/en/` y `Docs/es/` contienen la documentación pública vigente en formato
   Markdown y tienen cobertura temática aproximadamente equivalente.
-- Los README duplican parte de esa información y algunos describen exportación
-  PNG en browser, aunque Studio ya utiliza el renderer autenticado del servidor.
+- Studio utiliza el renderer autenticado del servidor para la exportación PNG;
+  el inventario debe reflejar ese flujo vigente.
 - `migration-next.md` funciona como diario acumulativo y no como guía de
   migración estable.
-- La documentación de repositorio todavía contiene afirmaciones anteriores a la
-  incorporación de `apps/docs` y a la arquitectura server/access definitiva.
+- La documentación de repositorio debe alinearse con `apps/docs` y la
+  arquitectura server/access actual.
 - Al crear este plan, `apps/docs/` aparece como contenido nuevo sin seguimiento
   en Git y debe incorporarse intencionalmente durante la fase 1.
 
@@ -64,10 +68,8 @@ CHANGELOG.md
   la autoridad; las instrucciones deben alinearse.
 - La exportación actual es server-side y autenticada, no una captura puramente
   local del browser.
-- La ruta vigente es `POST /api/framekit/images/render`; `/api/v1/images` es
-  historia y no debe enseñarse como alternativa.
-- La autenticación usa sesiones o tokens `fk_`; no existe compatibilidad con
-  `FRAMEKIT_API_KEY`.
+- La exportación vigente usa `POST /api/framekit/images/render`.
+- La autenticación vigente usa sesiones o tokens `fk_`.
 - El nombre `language` no tiene semántica reservada dentro de fields o content.
 - El repository map debe incluir `apps/docs` como cuarto workspace.
 
@@ -76,7 +78,7 @@ CHANGELOG.md
 - Un manifest de páginas objetivo con audiencia, tipo, slug y fuente actual.
 - Una tabla de disposición por página legacy: migrar, dividir, combinar, archivar
   en Git o eliminar.
-- Una lista de afirmaciones obsoletas que no deben copiarse.
+- Una matriz de afirmaciones documentales verificables y sus fuentes actuales.
 - Una matriz de superficies públicas contra páginas objetivo.
 - La URL y plataforma final del sitio, necesarias para enlaces canónicos y
   actualización de README.
@@ -98,8 +100,8 @@ CHANGELOG.md
 
 ## Exit gate
 
-- [ ] El manifest cubre todos los exports, comandos y rutas públicas actuales.
-- [ ] Cada página tiene audiencia y responsabilidad principal.
-- [ ] Todas las contradicciones conocidas tienen una decisión explícita.
-- [ ] El sitemap de `README.md` coincide con el manifest.
-- [ ] Se conoce la URL o plataforma necesaria para el rollout final.
+- [x] El manifest cubre todos los exports, comandos y rutas públicas actuales.
+- [x] Cada página tiene audiencia y responsabilidad principal.
+- [x] Todas las contradicciones conocidas tienen una decisión explícita.
+- [x] El sitemap de `README.md` coincide con el manifest.
+- [x] Se conoce la URL o plataforma necesaria para el rollout final.

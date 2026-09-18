@@ -11,6 +11,10 @@ Sustituir la única guía de Studio por documentación orientada a tareas. Separ
 edición, cuenta/tokens y administración, manteniendo una página conceptual para
 el modelo de rutas y estado.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
@@ -44,7 +48,7 @@ en/users/troubleshooting/access.md
 - Carga, empty, invalid, not-found y error states.
 - Controles nativos para los seis field kinds.
 - Drafts numéricos, validación, primer control inválido y reset.
-- Persistencia local `framekit:<slug>:v2` sin compatibilidad con `v1`.
+- Persistencia local `framekit:<slug>:v2`.
 - Preview, zoom, navegación de templates y brand catalog.
 - Upload de imágenes durante desarrollo mediante la ruta protegida
   `POST /framekit/assets` y estados de error accesibles. Esta ruta pertenece al
@@ -69,7 +73,6 @@ en/users/troubleshooting/access.md
 - Éxito y error utilizan toast feedback accesible.
 - Las acciones se adaptan a viewport estrecho.
 - Copy espera que el documento recupere foco antes de escribir al clipboard.
-- No existe fallback a `modern-screenshot` ni exportación browser-side clásica.
 
 ## Fuera de alcance
 
@@ -82,7 +85,7 @@ en/users/troubleshooting/access.md
 - Recorrer los flujos contra Studio actual en desktop y viewport móvil.
 - Comparar permisos con routes y domain functions, no solo con componentes.
 - Confirmar mensajes y acciones en inglés antes de la traducción de fase 9.
-- Confirmar que screenshots o instrucciones no muestran la navegación anterior.
+- Confirmar que screenshots e instrucciones reflejan la navegación vigente.
 
 ## Exit gate
 

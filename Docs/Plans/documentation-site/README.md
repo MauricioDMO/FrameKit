@@ -23,8 +23,8 @@ solo coordinan el trabajo.
 - No se mantienen dos copias permanentes de la documentación pública.
 - El estado actual del código, tests, manifests y template canónico tiene
   prioridad sobre READMEs, documentación antigua y lenguaje histórico de Plans.
-- Los planes pueden explicar cómo se llegó a una arquitectura, pero no son
-  referencia de uso del producto.
+- El contenido publicado se basa solo en contratos verificables actuales; la
+  historia puede explicar el plan, pero no se convierte en referencia de uso.
 - Se añade una sección de deployment para cubrir Chromium, Docker, SQLite,
   persistencia, reverse proxies y límites de topología.
 - No se crea una página por cada función o comando si una referencia agrupada
@@ -79,7 +79,7 @@ apps/docs/src/content/docs/
 
 | Orden | Fase | Resultado |
 |---:|---|---|
-| 0 | [Estado actual y decisiones](./00-current-state-and-decisions.md) | Inventario y contratos congelados |
+| 0 | [Estado actual y decisiones](./00-current-state-and-decisions.md) | Inventario y contratos congelados; [detalle del inventario](./00-content-inventory.md) |
 | 1 | [Base Starlight y navegación](./01-starlight-foundation-and-navigation.md) | Sitio bilingüe estructuralmente listo |
 | 2 | [Inicio para usuarios](./02-user-getting-started.md) | Ruta funcional desde instalación hasta primer template |
 | 3 | [Templates, fields y brand](./03-templates-fields-and-brand.md) | Modelo de autoría actual documentado |
@@ -94,6 +94,14 @@ apps/docs/src/content/docs/
 Las fases son secuenciales para evitar traducir o enlazar una arquitectura que
 todavía cambia. El contenido inglés se estabiliza en las fases 2-8 y se replica
 al español en la fase 9 antes de publicar.
+
+El trabajo realizado en la fase 0 está documentado en
+[00-content-inventory.md](./00-content-inventory.md). Ese archivo sirve como
+inventario operativo: registra las fuentes verificadas, el alcance actual de la
+documentación pública, la disposición de los documentos legacy, el manifest de
+páginas objetivo y la matriz de exports, comandos y superficies que las fases
+siguientes deben cubrir. No publica contenido ni sustituye a la documentación
+del producto.
 
 ## Baseline que debe preservarse
 
@@ -111,8 +119,8 @@ al español en la fase 9 antes de publicar.
 - Studio ofrece cuenta, contraseña, API tokens y administración de usuarios.
 - Download PNG y Copy PNG usan `POST /api/framekit/images/render`.
 - La API de imagen acepta sesión same-origin o Bearer token de base de datos.
-- `/api/v1/images`, `FRAMEKIT_API_KEY` y `modern-screenshot` ya no forman parte
-  del contrato actual.
+- El contenido publicado enumera únicamente rutas, variables, exports y
+  comportamientos verificados en las fuentes actuales.
 - El template Docker prepara `/data`, pero SQLite solo persiste si el deployment
   monta ese directorio como volumen; los render jobs siguen siendo memoria de
   proceso.
@@ -136,7 +144,7 @@ al español en la fase 9 antes de publicar.
 - [ ] Las fases 0-10 están completadas.
 - [ ] `/en/` y `/es/` tienen paridad de rutas y temas.
 - [ ] No queda contenido placeholder de Starlight.
-- [ ] No quedan referencias actuales a contratos eliminados.
+- [ ] El contenido publicado refleja únicamente contratos actuales verificados.
 - [ ] Todos los exports y comandos publicados están representados.
 - [ ] Los requisitos de seguridad y deployment están visibles antes de los
   ejemplos de exposición pública.

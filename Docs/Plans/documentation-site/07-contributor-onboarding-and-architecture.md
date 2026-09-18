@@ -11,6 +11,10 @@ Crear una entrada separada de la documentación de consumidores. El contributor
 guide debe explicar el monorepo actual y sus límites, no repetir cómo usar
 FrameKit desde un proyecto generado.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text

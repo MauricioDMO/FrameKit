@@ -12,9 +12,14 @@ producto actual antes de anunciar el sitio. Esta fase no es el lugar para
 introducir una nueva arquitectura documental; cualquier gap vuelve a la fase que
 lo posee.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Verificaciones estructurales
 
-- No quedan páginas, labels, metadata o enlaces del starter de Starlight.
+- Páginas, labels, metadata y enlaces corresponden a FrameKit y no conservan
+  contenido del starter.
 - `/en/` y `/es/` tienen el mismo conjunto de rutas.
 - Homepage y sidebar separan usuarios y contribuidores.
 - No existe contenido de contribución dentro de `users/` ni referencia de
@@ -34,27 +39,16 @@ lo posee.
 - Contributor docs reflejan cuatro workspaces y generated outputs actuales.
 - Release docs separan smoke local, publicación y promoción.
 
-## Búsquedas de regresión documental
+## Verificaciones del contrato vigente
 
-No deben quedar como comportamiento actual:
-
-```text
-My Docs
-Welcome to Starlight
-withastro/starlight
-/api/v1/images
-FRAMEKIT_API_KEY
-FRAMEKIT_PUBLIC_ORIGIN
-modern-screenshot
-templateManifest
-templateRegistry
-fields.text
-kind: 'textarea'
-browser-side export
-```
-
-Las coincidencias históricas dentro de `Docs/Plans/` se revisan en contexto y no
-se eliminan automáticamente.
+- Comparar exports y comandos con los manifests publicados y sus parsers
+  actuales.
+- Comparar implementación y tests para confirmar rutas, variables y
+  comportamientos documentados.
+- Comparar ejemplos con el template canónico y sus archivos de configuración.
+- Comparar las rutas generadas con el sitemap y los destinos actuales de EN/ES.
+- Revisar que el contenido publicado enseñe únicamente contratos presentes en
+  esas fuentes.
 
 ## Verificación de ejemplos
 
@@ -110,7 +104,7 @@ repetir el gate antes de volver a anunciarlo.
 - [ ] Build de docs y gates del repositorio pasan.
 - [ ] Quick Start, API de imagen y flujos de Studio fueron verificados.
 - [ ] EN/ES pasan paridad y revisión visual.
-- [ ] No quedan contratos eliminados enseñados como vigentes.
+- [ ] El contenido publicado enseña exclusivamente contratos actuales verificados.
 - [ ] El deployment público responde en todas las rutas principales.
 - [ ] GitHub, npm y READMEs enlazan a la URL canónica.
 - [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.

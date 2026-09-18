@@ -11,6 +11,10 @@ Documentar como una sola historia el API HTTP, el pipeline de rendering y el
 runtime de producción. Las instrucciones deben presentar primero los límites de
 seguridad y después los ejemplos de exposición pública.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
@@ -118,10 +122,10 @@ FRAMEKIT_HOST
 HOST
 ```
 
-Documentar defaults, límites y momento de lectura. `FRAMEKIT_HOST` y `HOST`
-pertenecen al dev server; `PORT` también define el origen loopback privado del
-renderer. Dejar explícito que `FRAMEKIT_PUBLIC_ORIGIN` y `FRAMEKIT_API_KEY` no
-están soportados.
+Documentar únicamente las variables presentes en `.env.example`, los parsers de
+configuración y el Dockerfile, junto con sus defaults, límites y momento de
+lectura. `FRAMEKIT_HOST` y `HOST` pertenecen al dev server; `PORT` también
+define el origen loopback privado del renderer.
 
 La guía Docker debe distinguir además las variables operativas fijadas por la
 imagen (`NODE_ENV`, `HOSTNAME` y `PLAYWRIGHT_BROWSERS_PATH`) de la configuración
@@ -162,7 +166,7 @@ pública propia de FrameKit.
 ## Exit gate
 
 - [ ] Todas las rutas públicas vigentes tienen auth, request y response claros.
-- [ ] Las rutas eliminadas no aparecen como alternativas actuales.
+- [ ] La referencia enumera únicamente rutas públicas vigentes.
 - [ ] La guía de seguridad precede a la exposición pública.
 - [ ] Persistencia SQLite y jobs en memoria no se confunden.
 - [ ] Docker, Chromium y restricciones de topología están documentados.

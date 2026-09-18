@@ -10,6 +10,10 @@
 Dividir la guía actual de template authoring por conceptos y tareas estables.
 Mantener las reglas exactas en referencia y usar las guías para flujos completos.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
@@ -83,8 +87,8 @@ en/users/reference/brand-catalog.md
 - Validar snippets mediante los contratos TypeScript actuales.
 - Comparar errores y constraints con validators, no solo con tipos.
 - Confirmar discovery y slugs contra sus tests.
-- Confirmar que ningún ejemplo enseña `fields` plural como factory ni textarea
-  como kind independiente.
+- Confirmar que los ejemplos usan el contrato vigente de fields y sus
+  restricciones actuales.
 
 ## Exit gate
 

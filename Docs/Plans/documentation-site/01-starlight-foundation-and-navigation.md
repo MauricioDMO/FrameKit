@@ -11,6 +11,10 @@ Preparar la infraestructura editorial antes de migrar contenido. Esta fase fija
 URLs, navegación, metadatos y convenciones para que las fases siguientes solo
 tengan que crear páginas.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
@@ -70,7 +74,8 @@ Revisar además:
 - `/en/` y `/es/` generan rutas independientes.
 - El selector de idioma conserva el slug cuando existe traducción.
 - El sidebar muestra las dos audiencias sin mezclar contenido.
-- No quedan “My Docs”, “Welcome to Starlight” ni enlaces a `withastro/starlight`.
+- La revisión confirma que páginas, metadata y enlaces corresponden a FrameKit y
+  no conservan contenido del starter.
 
 ## Exit gate
 

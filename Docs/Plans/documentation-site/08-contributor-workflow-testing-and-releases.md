@@ -11,6 +11,10 @@ Dividir el contenido operativo existente según responsabilidad. Los comandos
 deben describir qué prueban y cuándo ejecutarlos, no conservar snapshots de runs
 antiguos como si fueran requisitos permanentes.
 
+Todo contenido y ejemplo debe basarse exclusivamente en manifests,
+implementación, tests y el template canónico actuales; se omite cualquier
+afirmación que no pueda verificarse allí.
+
 ## Fuentes de verdad
 
 ```text
