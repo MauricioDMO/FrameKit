@@ -70,7 +70,24 @@ export default defineConfig({
                 {
                     label: 'Contributing to FrameKit',
                     translations: { es: 'Contribuir a FrameKit' },
-                    items: [{ slug: 'contributors' }],
+                    items: [
+                        { slug: 'contributors' },
+                        {
+                            label: 'Getting started',
+                            translations: { es: 'Primeros pasos' },
+                            items: [{ autogenerate: { directory: 'contributors/getting-started' } }],
+                        },
+                        {
+                            label: 'Architecture',
+                            translations: { es: 'Arquitectura' },
+                            items: [{ autogenerate: { directory: 'contributors/architecture' } }],
+                        },
+                        {
+                            label: 'Development',
+                            translations: { es: 'Desarrollo' },
+                            items: [{ autogenerate: { directory: 'contributors/development' } }],
+                        },
+                    ],
                 },
             ],
             defaultLocale: 'en',
