@@ -39,11 +39,22 @@ export default defineConfig({
                                     items: [{ autogenerate: { directory: 'users/concepts/templates' } }],
                                 },
                                 { slug: 'users/concepts/brand-components', label: 'Brand components' },
+                                { slug: 'users/concepts/studio', label: 'Studio' },
                             ],
                         },
                         {
                             label: 'Guides',
                             items: [{ autogenerate: { directory: 'users/guides' } }],
+                        },
+                        {
+                            label: 'Deployment',
+                            translations: { es: 'Despliegue' },
+                            items: [{ autogenerate: { directory: 'users/deployment' } }],
+                        },
+                        {
+                            label: 'Troubleshooting',
+                            translations: { es: 'Solución de problemas' },
+                            items: [{ autogenerate: { directory: 'users/troubleshooting' } }],
                         },
                         {
                             label: 'Reference',

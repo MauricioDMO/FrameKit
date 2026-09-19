@@ -24,6 +24,23 @@ This section is for people who use FrameKit to create and ship template-based im
 - [Template reference](/en/users/reference/template) - check the complete template and validation contract.
 - [Brand catalog reference](/en/users/reference/brand-catalog) - check discovery, generated modules, and loaders.
 
+## Work in Studio and manage access
+
+- [FrameKit Studio](/en/users/concepts/studio) - understand Studio routes, editor state, persistence, and export behavior.
+- [Use Studio](/en/users/guides/use-studio) - start Studio, edit templates, inspect brands, upload development images, and export PNGs.
+- [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) - sign in, update account details, manage sessions, and manage personal API tokens.
+- [Manage users](/en/users/guides/manage-users) - administer users, roles, activity, passwords, and token access.
+- [Render images with the API](/en/users/guides/render-images-with-the-api) - call the authenticated server-side PNG renderer from an integration.
+- [Studio troubleshooting](/en/users/troubleshooting/studio) - diagnose template and brand loading, editor state, uploads, exports, and viewport issues.
+- [Access troubleshooting](/en/users/troubleshooting/access) - diagnose login, sessions, permissions, account credentials, and token access.
+
+## Integrate and deploy
+
+- [HTTP API](/en/users/reference/http-api) - browse access, image rendering, and stable error contracts.
+- [Deploy FrameKit](/en/users/deployment) - prepare Chromium, SQLite, secrets, and the supported Node topology.
+- [Image rendering troubleshooting](/en/users/troubleshooting/rendering) - diagnose request, image, browser, capacity, and timeout failures.
+- [Deployment troubleshooting](/en/users/troubleshooting/deployment) - diagnose runtime, proxy, persistence, and container failures.
+
 ## What belongs here
 
 The user documentation will explain the concepts and workflows needed to:
