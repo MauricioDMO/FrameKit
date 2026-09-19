@@ -49,6 +49,11 @@ and preview source rather than the generated brand module.
 
 ## Export flow
 
+The API creates an in-memory render job with a short TTL and passes Chromium a
+private URL plus a short-lived internal render token. The render page calls
+`loadRenderRequest()` to validate the token and read the payload; that lookup is
+non-destructive, so the job remains available while rendering runs.
+
 ```mermaid
 sequenceDiagram
   actor User
@@ -63,12 +68,17 @@ sequenceDiagram
   API->>Access: Authenticate same-origin session or Bearer token
   Access-->>API: Authorized request
   API->>Chromium: Create render job and open private URL
-  Chromium->>RenderPage: GET with one-use render token
+  Chromium->>RenderPage: GET with short-lived internal render token
   RenderPage-->>Chromium: Rendered template canvas
   Chromium-->>API: Screenshot as PNG
+  API->>API: Delete render job after render attempt cleanup
   API-->>Editor: image/png response
   Editor-->>User: Download file or copy image
 ```
+
+`renderTemplateImage()` deletes the job in its cleanup path after the render
+attempt ends; expired jobs are also pruned. The token is short-lived, but it is
+not consumed by `loadRenderRequest()`.
 
 The server-backed path is described in [Render images with the API](/en/users/guides/render-images-with-the-api).
 The [Studio guide](/en/users/guides/use-studio) covers the user workflow; this

@@ -22,27 +22,16 @@ The canonical template is part of `packages/create-framekit/`, but the runtime
 it uses is the public `@mauriciodmo/framekit` package. The first-party Studio
 uses the same public package through the workspace dependency.
 
-## `@mauriciodmo/framekit`
+## `@mauriciodmo/framekit` boundary
 
-The manifest publishes an ESM package with the `framekit` binary. Its supported
-entrypoints are:
+The manifest publishes the reusable runtime as an ESM package with the
+`framekit` binary. The [user-facing package API reference](/en/users/reference/package-api)
+lists its supported entrypoints and responsibilities; this page focuses on
+ownership and import boundaries.
 
-| Import | Responsibility |
-| --- | --- |
-| `@mauriciodmo/framekit` | Template definitions, fields, shared types, data resolution, validation, and `Markdown`. |
-| `@mauriciodmo/framekit/client` | The client-side render factory used by a generated private render client. |
-| `@mauriciodmo/framekit/editor` | `FrameKitEditor`, `TemplateCanvas`, navigation, and toast APIs. |
-| `@mauriciodmo/framekit/next` | The Next.js configuration wrapper used by a generated project. |
-| `@mauriciodmo/framekit/studio` | Client Studio composition, messages, locale helpers, and Studio types. |
-| `@mauriciodmo/framekit/studio/root` | Server-side Studio and login page factories and the Studio root. |
-| `@mauriciodmo/framekit/dev` | Discovery, codegen, template summaries, the development server, and watcher APIs. |
-| `@mauriciodmo/framekit/server` | HTTP handlers, access, image preparation and rendering, render jobs, and private render page helpers. |
-| `@mauriciodmo/framekit/styles.css` | The public stylesheet. |
-
-The package has React and Next.js peer dependencies. Node-only APIs belong to
-server and tooling entrypoints; client entrypoints do not import the server
-facade. The generated Studio client uses the Studio entrypoint, while the
-generated render client uses the client entrypoint.
+Node-only APIs belong to server and tooling entrypoints; client entrypoints do
+not import the server facade. The generated Studio client uses the Studio
+entrypoint, while the generated render client uses the client entrypoint.
 
 ## `@mauriciodmo/create-framekit`
 
