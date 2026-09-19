@@ -12,7 +12,7 @@ Use this path when starting from a clean FrameKit checkout. It covers repository
 1. Check [prerequisites](/en/contributors/getting-started/prerequisites), including the exact Node.js and pnpm versions required by the root contract.
 2. Follow [local development](/en/contributors/getting-started/local-development) to install dependencies, start Studio, and choose focused workspace commands.
 3. Read the [architecture guide](/en/contributors/architecture) before changing code so the workspace and generated-output boundaries are clear.
-4. Continue with [development](/en/contributors/development), [testing](/en/contributors/testing), [distribution](/en/contributors/distribution), [releases](/en/contributors/releases), or [documentation](/en/contributors/documentation) according to the change.
+4. Continue with [development](/en/contributors/development) for implementation rules. Use [local development](/en/contributors/getting-started/local-development) for focused workspace commands, or [package architecture](/en/contributors/architecture/packages) when a change affects a public package.
 
 ## Keep audiences separate
 

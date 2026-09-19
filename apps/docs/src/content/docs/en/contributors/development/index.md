@@ -18,10 +18,10 @@ not in a second contributor API reference.
 | Repository shape and runtime layers | [Architecture](/en/contributors/architecture) | Locate ownership, source boundaries, generated output, and runtime flows. |
 | Import direction and public entrypoints | [Import boundaries](/en/contributors/development/import-boundaries) | Keep consumers on published exports and keep Foundation, client, Server, and Tooling responsibilities separate. |
 | First local run and focused commands | [Local development](/en/contributors/getting-started/local-development) | Install from the root, preserve package build order, and choose workspace commands. |
-| Tests and CI | [Testing](/en/contributors/testing) | Select runtime, type-level, integration, E2E, smoke, and CI checks for the change. |
-| Packages and consumers | [Distribution](/en/contributors/distribution) | Verify package contents, exports, tarballs, and isolated generated consumers. |
-| Versioned publication | [Releases](/en/contributors/releases) | Coordinate package versioning, release gates, publication, and promotion. |
-| Site content | [Documentation](/en/contributors/documentation) | Change the documentation site while keeping audience, structure, and language boundaries clear. |
+| Focused verification | [Local development](/en/contributors/getting-started/local-development) | Start with the owning workspace's focused commands and root checks. |
+| Package distribution | [Package architecture](/en/contributors/architecture/packages) | Confirm public packages, private workspaces, and manifest exports before packaging. |
+| Release scope | [Contributing to FrameKit](/en/contributors/) | Keep versioned work within public package ownership and verify consumer-facing behavior. |
+| Documentation site | [Local development](/en/contributors/getting-started/local-development) | Run docs workspace commands from the root and keep contributor and user audiences separate. |
 
 ## From source to release
 
@@ -33,16 +33,18 @@ not in a second contributor API reference.
 3. Run the focused command for the owning workspace from the repository root.
    The [local development guide](/en/contributors/getting-started/local-development)
    documents the package-first build order and available scripts.
-4. Run the checks appropriate to the change. The [testing guide](/en/contributors/testing)
-   explains what each level verifies and what it does not cover.
+4. Run the checks appropriate to the change. Start with the focused commands in
+   [local development](/en/contributors/getting-started/local-development) and
+   add broader root checks when the change crosses workspaces.
 5. If the change affects a public package, export, or generated consumer, follow
-   the [distribution guide](/en/contributors/distribution) after the focused
-   checks. Keep consumer examples linked to the [user package API reference](/en/users/reference/package-api).
-6. Use the [release guide](/en/contributors/releases) only when a package
-   version is being prepared. Release gates and publication are separate from
-   ordinary versionless development.
-7. For documentation changes, follow the [documentation guide](/en/contributors/documentation)
-   and keep consumer instructions in the [user documentation](/en/users/).
+   [package architecture](/en/contributors/architecture/packages) to confirm
+   ownership and manifest exports before packaging. Keep consumer examples
+   linked to the [user package API reference](/en/users/reference/package-api).
+6. Treat a versioned release as a public-package change: confirm its ownership
+   and exports in [package architecture](/en/contributors/architecture/packages)
+   before applying the repository's release process.
+7. For documentation changes, use [local development](/en/contributors/getting-started/local-development)
+   for docs workspace commands and keep consumer instructions in the [user documentation](/en/users/).
 
 ## Keep responsibilities separate
 
@@ -50,11 +52,14 @@ The contributor path has three related but distinct views:
 
 - [Architecture](/en/contributors/architecture) explains where behavior and
   output live.
-- [Development](/en/contributors/development/import-boundaries) explains which
+- [Import boundaries](/en/contributors/development/import-boundaries) explains which
   imports and layer directions are allowed.
-- [Testing](/en/contributors/testing), [distribution](/en/contributors/distribution),
-  [releases](/en/contributors/releases), and [documentation](/en/contributors/documentation)
-  explain how to verify, publish, and maintain the result.
+- [Local development](/en/contributors/getting-started/local-development) covers
+  focused commands, docs builds, and the first verification step.
+- [Package architecture](/en/contributors/architecture/packages) identifies
+  public packages and exports before distribution or release work.
+- [User documentation](/en/users/) covers consumer contracts; contributor pages
+  keep repository ownership and workflow separate.
 
 Use the [user package API reference](/en/users/reference/package-api) and the
 [generated files reference](/en/users/reference/generated-files) for consumer

@@ -12,8 +12,8 @@ This section is for contributors changing FrameKit itself. It is separate from t
 1. Start with [getting started](/en/contributors/getting-started) for prerequisites and the first local development run.
 2. Read the [architecture guide](/en/contributors/architecture) for repository, package, generated-code, Studio, server, and tooling boundaries.
 3. Use the [development guide](/en/contributors/development) for contributor-facing implementation rules.
-4. Continue with [testing](/en/contributors/testing), [distribution](/en/contributors/distribution), and [releases](/en/contributors/releases) when a change needs verification or packaging.
-5. Use the [documentation guide](/en/contributors/documentation) when changing this site or its content.
+4. Continue with [development](/en/contributors/development) for implementation rules and [local development](/en/contributors/getting-started/local-development) for focused workspace commands and checks.
+5. For public-package or release work, confirm ownership and exports in [package architecture](/en/contributors/architecture/packages). For documentation changes, use [local development](/en/contributors/getting-started/local-development) for docs workspace commands and keep consumer-facing material in the [user documentation](/en/users/).
 
 ## Choose the audience
 

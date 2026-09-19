@@ -93,5 +93,5 @@ Before merging a cross-cutting change, check that:
 - consumer-facing details link to the [user package API reference](/en/users/reference/package-api).
 
 The [architecture guide](/en/contributors/architecture) provides the broader
-workspace and runtime map. Use it with the [testing guide](/en/contributors/testing)
+workspace and runtime map. Use it with [local development](/en/contributors/getting-started/local-development)
 when a boundary change needs focused or integration verification.

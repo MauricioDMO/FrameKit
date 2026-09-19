@@ -1,6 +1,6 @@
 # Fase 7 - Onboarding y arquitectura para contribuidores
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-6.
 - **Resultado:** Una persona que clona el repositorio entiende ownership,
   arquitectura y desarrollo local antes de modificar código.
@@ -116,8 +116,16 @@ Documentar flujos con Mermaid cuando aporten una relación real:
 
 ## Exit gate
 
-- [ ] El mapa contiene los cuatro workspaces actuales.
-- [ ] Ownership y generated outputs están definidos.
-- [ ] Las capas incluyen Server y access SQLite.
-- [ ] Los imports soportados coinciden con package exports.
-- [ ] Un checkout limpio puede llegar a desarrollo local con estas páginas.
+- [x] El mapa contiene los cuatro workspaces actuales.
+- [x] Ownership y generated outputs están definidos.
+- [x] Las capas incluyen Server y access SQLite.
+- [x] Los imports soportados coinciden con package exports.
+- [x] Un checkout limpio puede llegar a desarrollo local con estas páginas.
+
+Verificado el 2026-09-19 con:
+
+- `pnpm --filter docs build`: pasado. Las 13 páginas inglesas de contribuidores
+  se generaron correctamente, los cinco diagramas Mermaid se transformaron
+  durante el build y la navegación separa onboarding, arquitectura y desarrollo.
+- `pnpm lint`: pasado para los workspaces que definen un script `lint`.
+  `apps/docs/package.json` no define un script de lint específico para docs.
