@@ -1,18 +1,22 @@
 ---
 title: Contributing to FrameKit
-description: Orient yourself in the FrameKit repository before changing the runtime, Studio, CLI, code generation, or documentation.
+description: Find the clean-checkout path for changing FrameKit's runtime, Studio, CLI, generated project, or documentation.
 ---
 
 # Contributing to FrameKit
 
-This section is for people improving FrameKit itself. It provides the orientation needed before changing the reusable runtime, the Studio, the project scaffolding CLI, code generation, or the documentation site.
+This section is for contributors changing FrameKit itself. It is separate from the [user documentation](/en/users/), which explains how to use FrameKit in an application.
 
-## Start with the repository shape
+## Follow the contributor path
 
-FrameKit keeps consumer-facing runtime and editor code in `packages/framekit`, scaffolding logic and the generated project in `packages/create-framekit`, the first-party Studio in `apps/studio`, and this documentation site in `apps/docs`.
+1. Start with [getting started](/en/contributors/getting-started) for prerequisites and the first local development run.
+2. Read the [architecture guide](/en/contributors/architecture) for repository, package, generated-code, Studio, server, and tooling boundaries.
+3. Use the [development guide](/en/contributors/development) for contributor-facing implementation rules.
+4. Continue with [testing](/en/contributors/testing), [distribution](/en/contributors/distribution), and [releases](/en/contributors/releases) when a change needs verification or packaging.
+5. Use the [documentation guide](/en/contributors/documentation) when changing this site or its content.
 
-## Choose the change path
+## Choose the audience
 
-Use the area that owns the behavior you need to change, then verify the result with that area’s checks. Changes that affect generated consumers or public package behavior should also be checked from the consumer perspective, not only inside the repository.
+Use this section when the change is in the FrameKit repository: the reusable package, first-party Studio, project creator, generated consumer, or documentation site. Use the user section when the goal is to build with FrameKit rather than modify the repository.
 
-The later contributor guides will document the detailed development, testing, and release workflows for each area.
+Choose the workspace that owns the behavior, then verify it with that workspace's checks. Changes affecting generated consumers or public package behavior also need consumer-facing verification.
