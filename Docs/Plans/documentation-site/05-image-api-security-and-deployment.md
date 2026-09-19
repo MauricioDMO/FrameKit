@@ -1,6 +1,6 @@
 # Fase 5 - API de imágenes, seguridad y deployment
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-4.
 - **Resultado:** Integradores y operadores pueden exponer FrameKit sin depender
   de Plans históricos para entender autenticación, Chromium o persistencia.
@@ -168,8 +168,15 @@ pública propia de FrameKit.
 
 ## Exit gate
 
-- [ ] Todas las rutas públicas vigentes tienen auth, request y response claros.
-- [ ] La referencia enumera únicamente rutas públicas vigentes.
-- [ ] La guía de seguridad precede a la exposición pública.
-- [ ] Persistencia SQLite y jobs en memoria no se confunden.
-- [ ] Docker, Chromium y restricciones de topología están documentados.
+- [x] Todas las rutas públicas vigentes tienen auth, request y response claros.
+- [x] La referencia enumera únicamente rutas públicas vigentes.
+- [x] La guía de seguridad precede a la exposición pública.
+- [x] Persistencia SQLite y jobs en memoria no se confunden.
+- [x] Docker, Chromium y restricciones de topología están documentados.
+
+Verificado el 2026-09-18 con `pnpm --filter docs build` y `git diff --check`. El
+build generó las rutas inglesas de API, deployment, guía y troubleshooting, junto
+con sus rutas localizadas de fallback, y terminó con 81 páginas. La revisión
+delegada contrastó endpoints, auth, códigos, límites de imágenes, variables,
+Chromium, Docker, SQLite, jobs efímeros y límites de topología contra el código
+actual, sus tests y el smoke de Docker.

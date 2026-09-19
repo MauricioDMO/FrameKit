@@ -1,6 +1,6 @@
 # Fase 4 - Studio, acceso y Editor
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-3.
 - **Resultado:** Los flujos visibles de Studio, edición y administración están
   documentados según la UI actual.
@@ -92,8 +92,8 @@ en/users/troubleshooting/access.md
 
 ## Exit gate
 
-- [ ] Los tres grupos de rutas y settings actuales están documentados.
-- [ ] Flujos user/admin y restricciones coinciden con autorización server-side.
-- [ ] Download/Copy se describen exclusivamente como server-backed.
-- [ ] Persistencia, variants e idioma de interfaz están claramente separados.
-- [ ] Troubleshooting cubre sesión, permisos, upload y clipboard.
+- [x] Los tres grupos de rutas y settings actuales están documentados.
+- [x] Flujos user/admin y restricciones coinciden con autorización server-side.
+- [x] Download/Copy se describen exclusivamente como server-backed.
+- [x] Persistencia, variants e idioma de interfaz están claramente separados.
+- [x] Troubleshooting cubre sesión, permisos, upload y clipboard.
