@@ -1,6 +1,6 @@
 # Fase 6 - Referencia, migraciones y troubleshooting
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-5.
 - **Resultado:** Toda la superficie pública tiene una referencia localizable y
   los problemas frecuentes tienen diagnóstico vigente.
@@ -137,11 +137,23 @@ copian internals que el usuario no puede accionar.
 - Auditar que ninguna referencia, migración o solución incluya superficies
   retiradas o no soportadas.
 
+Verificado el 2026-09-18:
+
+- `pnpm --filter docs build` pasó y generó 127 páginas bajo `/en/` y sus rutas
+  localizadas de fallback.
+- `git diff --check` pasó.
+- La revisión final confirmó los entrypoints, comandos, migraciones,
+  troubleshooting y enlaces publicados; el enlace histórico usa la ruta
+  generada `/en/users/migrations/v08`.
+- Persisten únicamente warnings no bloqueantes del starter/configuración actual:
+  entrada de contenido `404` ausente, chunk superior a 500 kB y sitemap sin
+  `site` en `astro.config.mjs`.
+
 ## Exit gate
 
-- [ ] Todos los entrypoints publicados están cubiertos.
-- [ ] Todos los comandos actuales están cubiertos una sola vez.
-- [ ] Migraciones separan acciones vigentes de historia.
-- [ ] Troubleshooting no mezcla problemas de usuarios y contribuidores.
-- [ ] Las referencias cubren únicamente APIs, storage keys y comandos actuales.
-- [ ] Las migraciones no incluyen código, comandos ni rutas retiradas.
+- [x] Todos los entrypoints publicados están cubiertos.
+- [x] Todos los comandos actuales están cubiertos una sola vez.
+- [x] Migraciones separan acciones vigentes de historia.
+- [x] Troubleshooting no mezcla problemas de usuarios y contribuidores.
+- [x] Las referencias cubren únicamente APIs, storage keys y comandos actuales.
+- [x] Las migraciones no incluyen código, comandos ni rutas retiradas.

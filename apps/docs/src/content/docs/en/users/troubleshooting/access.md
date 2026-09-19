@@ -2,56 +2,57 @@
 title: Troubleshoot Studio access
 description: Diagnose Studio login, session, role, account, password, username, and token access problems.
 sidebar:
-  order: 1
+  order: 6
 ---
 
-Use [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for personal account and token workflows, and [Manage users](/en/users/guides/manage-users) for administrator workflows. This page maps access symptoms to those supported rules.
+Use [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for personal account and token workflows, and [Manage users](/en/users/guides/manage-users) for administrator workflows.
 
-## Login and redirects
+## Login redirects back to the login page
 
-The supported sign-in entry point is `/login`. A successful login creates the `framekit_session` session and redirects to `/editor`. The protected Studio sections are `/editor`, `/brand`, and `/settings`.
+**Symptom:** Opening `/editor`, `/brand`, or `/settings` redirects to `/login`, or the login form reports invalid credentials.
 
-- Without a valid session, opening a protected section redirects to `/login`.
-- With a valid session, opening `/login` redirects to `/editor`.
-- An unknown Studio section is a not-found route, not an access state.
+**Probable cause:** The session cookie is missing, expired, invalid, or belongs to an inactive user; the submitted username or password may also be incorrect.
 
-If the form reports invalid credentials, check both values exactly and try again. Unknown, malformed, incorrect, and inactive credentials intentionally produce the same unauthenticated result; the login response does not reveal which case occurred.
+**Check:** Sign in again with the current credentials and confirm that the server can read the configured database. Unknown, malformed, incorrect, and inactive credentials intentionally produce the same unauthenticated result.
 
-For an empty account database, the first login requires `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. These bootstrap values apply when the database is initialized. Changing them later does not replace existing users. See [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for the complete first-login flow.
+**Fix:** Return to `/login` and sign in again. If the account is inactive or the password was reset, ask an administrator to restore access or use the current password.
 
-## Expired or invalidated sessions
+## First login fails on a new database
 
-Sessions last 30 days. The server checks the session cookie, its expiry, and whether its user is still active. A stale, malformed, logged-out, expired, deleted, or inactive user's cookie is not enough to access Studio.
+**Symptom:** The first login returns a service-unavailable error on an empty database.
 
-Your session is also invalidated when:
+**Probable cause:** `FRAMEKIT_ADMIN_PASSWORD` is missing or invalid, or `FRAMEKIT_ADMIN_USERNAME` does not satisfy the account rules.
 
-- you log out;
-- you change your own password;
-- an administrator resets your password;
-- an administrator deactivates or deletes your account.
+**Check:** Confirm the runtime values before retrying. The password must be 12–256 UTF-8 bytes; the optional username defaults to `admin` and must be 3–64 ASCII letters, numbers, `.`, `_`, or `-`.
 
-If a page was already open when one of these changes happened, a later settings action can fail because the server no longer accepts the session. Return to `/login` and sign in again with the current credentials. Password changes invalidate sessions but do not revoke API tokens; token status is a separate concern covered by the account guide.
+**Fix:** Set valid values in the runtime environment and retry the first login. These values create the first administrator only; changing them later does not replace an existing user. See [Configuration](/en/users/reference/configuration).
 
-## Username and password failures
+## A session stops working after an account change
 
-Usernames must satisfy the current account rules and be unique. Passwords must satisfy the byte-length rule, and a self-service password change also requires the current password. Password input is not silently normalized, so leading, trailing, or differently normalized characters are different values.
+**Symptom:** A previously open Studio page rejects a later action or sends the user to login.
 
-When changing an existing username, an invalid or duplicate value leaves the account unchanged. When changing a password, a failed current-password check leaves existing sessions intact; a successful change ends all sessions for that account. See [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for the accepted values and resulting session behavior.
+**Probable cause:** Sessions are invalidated by logout, a password change, an administrator password reset, or account deactivation or deletion. Sessions also expire after 30 days.
 
-## User and administrator permissions
+**Check:** Return to `/login` and authenticate again with the current credentials.
 
-Both `user` and `admin` accounts can sign in, update their own account, change their own password, and manage their own API tokens. Only an `admin` can list and manage users, change another user's role or active state, reset another user's password, delete a user, or inspect and revoke another user's token metadata.
+**Fix:** Sign in again. If the account is inactive or deleted, an administrator must restore or recreate the account.
 
-The Users section is hidden for a `user`, but that is only a UI convenience. The server checks the current session, role, account activity, and token ownership for every operation. A hidden control is not the authorization boundary, and sending a direct request cannot grant a non-administrator access.
+## A user cannot access an administrator action
 
-If an administrator cannot remove, deactivate, or demote an account, check whether it is the last active administrator. The server preserves at least one active administrator. See [Manage users](/en/users/guides/manage-users) for role and account-state rules.
+**Symptom:** User management actions return forbidden or are not visible.
 
-## Token access
+**Probable cause:** Only an active administrator can list and manage users, change another user's role or active state, reset another user's password, delete a user, or inspect and revoke another user's token metadata.
 
-The full API token secret is shown only when the token is created. Later lists show metadata and a short prefix, not a recoverable secret. If an integration stops authenticating, use the original full secret and check that the token is not revoked and that its owner is active.
+**Check:** Confirm the signed-in account's role and active state.
 
-Deactivating an owner temporarily stops that owner's unrevoked tokens; reactivating the owner makes them usable again. Revoking a token is permanent, while changing a password does not revoke tokens. Users can revoke only their own tokens; administrators can also inspect and revoke another user's token metadata. See [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) and [Manage users](/en/users/guides/manage-users) for the supported token workflows.
+**Fix:** Sign in with an active administrator account for administrator actions. Users can still manage their own account, password, and tokens. Do not treat a hidden control as an authorization boundary.
 
-## UI visibility versus authorization
+## An API token no longer authenticates
 
-Treat the visible Studio controls as guidance, not proof of permission. The UI hides administrator-only controls for ordinary users, but server-side checks still apply when a control is visible. A forbidden result therefore requires checking the signed-in user's role, active state, session, and ownership of the target resource rather than trying to expose a hidden control.
+**Symptom:** A server-side request using `Authorization: Bearer <token>` returns unauthorized.
+
+**Probable cause:** The token was revoked, its owner is inactive, or the request uses a truncated secret. The full token is shown only when it is created.
+
+**Check:** Use the original full secret, confirm the token is not revoked, and confirm that its owner is active.
+
+**Fix:** Revoke the unusable token and create a new one in Studio settings. Store the full secret in the calling service's secret manager, not in a browser bundle, URL, template, or log. See [Render images with the API](/en/users/guides/render-images-with-the-api).

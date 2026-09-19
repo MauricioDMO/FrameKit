@@ -1,67 +1,89 @@
 ---
 title: Troubleshoot deployment
-description: Diagnose startup, Chromium, environment, persistence, proxy, and topology problems in a FrameKit deployment.
+description: Diagnose startup, Chromium, environment, persistence, proxy, and render-state problems in a FrameKit deployment.
 sidebar:
-  order: 4
+  order: 8
 ---
 
-Use [Deploy FrameKit](/en/users/deployment) for the supported topology and [Docker and persistence](/en/users/deployment/docker-and-persistence) for the canonical image.
+Use [Deploy FrameKit](/en/users/deployment) for the supported topology, [Runtime and configuration](/en/users/deployment/runtime) for environment values, and [Docker and persistence](/en/users/deployment/docker-and-persistence) for the canonical image.
 
-## The process does not start
+## The production process does not start
 
-Check the runtime and port first:
+**Symptom:** `pnpm framekit start` exits without serving the application.
 
-- Node.js is `>=22.13.0`.
-- `PORT` is an integer from `1` to `65535`.
-- Development host selection uses `FRAMEKIT_HOST`, then `HOST`, then `localhost`.
-- Production starts only after `pnpm framekit build` has completed successfully.
+**Probable cause:** The production build has not completed, the runtime or port is invalid, or the built output is unavailable.
 
-Run the build and start commands separately so a generation or standalone-output failure is visible:
+**Check:** Confirm Node.js is `>=22.13.0`, `PORT` is an integer from `1` to `65535`, and run the build separately.
+
+**Fix:** Build and start from the project root:
 
 ```bash
 pnpm framekit build
 pnpm framekit start
 ```
 
-`start` does not regenerate templates. If source templates changed, run `pnpm framekit check` or `pnpm framekit generate` before rebuilding.
+`start` uses the existing production build and does not regenerate templates.
 
-## Chromium is unavailable
+## Chromium is unavailable in production
 
-Install the browser used by the renderer:
+**Symptom:** The application starts, but server-side PNG rendering fails because Chromium cannot launch.
+
+**Probable cause:** Chromium or its Linux system dependencies are missing from the runtime image.
+
+**Check:** Run the browser installation command in the same environment used by the production process.
+
+**Fix:** Install the browser before building or use the canonical Dockerfile. On Linux, install system dependencies with:
 
 ```bash
-pnpm framekit browser install
+pnpm framekit browser install --with-deps
 ```
 
-On Linux, add `--with-deps`. The canonical Dockerfile performs `framekit browser install --with-deps` in the runner image and sets `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. Rebuild the image after changing the browser installation step.
+## First login fails after deployment
 
-## First login fails on a new deployment
+**Symptom:** The first login on an empty database returns a service-unavailable error.
 
-On an empty database, the login request runs bootstrap before credential authentication and needs `FRAMEKIT_ADMIN_PASSWORD` for that bootstrap. `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. The password must be 12-256 UTF-8 bytes and the username must satisfy the current account rules.
+**Probable cause:** `FRAMEKIT_ADMIN_PASSWORD` is missing or invalid, or the optional username is invalid.
 
-Set these as runtime environment values before the first login. They bootstrap the first user only; changing them later does not replace existing users. With an empty database, missing or invalid bootstrap configuration returns `503 service_unavailable`. With existing users, incorrect login credentials return `401 unauthorized`. A generic SQLite initialization failure returns `500 internal_error`.
+**Check:** Confirm the runtime environment has a password of 12–256 UTF-8 bytes and, when set, a username of 3–64 ASCII letters, numbers, `.`, `_`, or `-`.
 
-## Account state disappears after a restart
+**Fix:** Set valid runtime values before the first login. The bootstrap values create the first administrator only and do not replace existing users. See [Studio access troubleshooting](/en/users/troubleshooting/access).
 
-Check `FRAMEKIT_DATABASE_PATH` and its storage:
+## Users or tokens disappear after a restart
 
-- The default path is `.framekit-data/framekit.sqlite` relative to the process working directory.
-- The canonical Docker image sets the path to `/data/framekit.sqlite`.
-- A container must mount `/data` as a durable volume for SQLite state to survive replacement.
-- The database directory must be writable by the `node` user in the final image.
+**Symptom:** Accounts, sessions, or API-token metadata are missing after a container replacement or process restart.
 
-Sessions and API-token metadata are SQLite state. Render jobs are process memory and are expected to disappear after a restart even when the database volume is preserved.
+**Probable cause:** The SQLite directory is not durable, the configured path changed, or the database directory is not writable.
 
-## Cookie requests fail behind a proxy
+**Check:** Confirm `FRAMEKIT_DATABASE_PATH`; by default it is `.framekit-data/framekit.sqlite` relative to the process working directory. In the canonical Docker image it is `/data/framekit.sqlite`.
 
-For cookie-authenticated mutations, send the public `Origin` and configure the proxy to forward the public HTTPS scheme and host consistently. A request with an origin that does not match the server's derived origin returns `403`. Use a Bearer token from a trusted server-side caller for image rendering when a browser session is not appropriate.
+**Fix:** Mount the directory containing the database as durable storage and ensure the runtime user can write it. Do not use `:memory:` when state must survive a restart.
 
-Do not disable same-origin checks or copy a session cookie into a URL. See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies).
+## Cookie-authenticated requests fail behind a proxy
 
-## Remote images fail only in production
+**Symptom:** A browser mutation returns `403` even though the user is signed in.
 
-The image renderer fetches remote images from the server process. Set `FRAMEKIT_ALLOWED_IMAGE_HOSTS` to the exact hostnames required by the templates. HTTPS, raster MIME/signature checks, the 8 MB prepared-image limit, and the redirect limit still apply in every environment.
+**Probable cause:** The request `Origin` does not match the public origin derived by the server from the forwarded protocol and host.
 
-## Multiple containers do not share render state
+**Check:** Confirm that the proxy forwards the public HTTPS scheme and host consistently and that the browser sends the public `Origin`.
 
-The supported deployment is one long-lived Node process per container. Render capacity, the Chromium singleton, and the 120-second render-job map are process-local. A load balancer or replica set cannot assume that a job created in one process can be loaded by another. Use the supported single-process topology instead of treating the in-memory job map as a queue.
+**Fix:** Correct the proxy forwarding configuration. Do not disable same-origin checks or put a session cookie in a URL. For server-side image calls, use a Bearer token when a browser session is not appropriate. See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies).
+
+## Remote images fail only after deployment
+
+**Symptom:** A remote image renders locally but fails in production.
+
+**Probable cause:** The production process does not have the exact hostname in `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, or the remote response fails the HTTPS, raster, size, or redirect checks.
+
+**Check:** Compare the runtime allowlist with the image URL's hostname and inspect the remote response from the server environment.
+
+**Fix:** Set the exact required hostnames in the production environment, then retry with an HTTPS PNG, JPEG, WebP, or GIF within the supported size limit. See [Troubleshoot image rendering](/en/users/troubleshooting/rendering).
+
+## Render requests do not work across processes
+
+**Symptom:** A deployment can serve Studio, but a render request fails when the request path crosses process or container boundaries.
+
+**Probable cause:** Render capacity, browser state, and temporary render state are local to the process handling the request.
+
+**Check:** Confirm that the deployment uses the supported one long-lived Node.js process per container and that the image API and private render route reach that same process.
+
+**Fix:** Keep the API request and its private render handoff on the same long-lived process. Put HTTPS and request throttling in front of that process as described in [Deploy FrameKit](/en/users/deployment).

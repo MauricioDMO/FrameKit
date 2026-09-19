@@ -52,6 +52,11 @@ export default defineConfig({
                             items: [{ autogenerate: { directory: 'users/deployment' } }],
                         },
                         {
+                            label: 'Migrations',
+                            translations: { es: 'Migraciones' },
+                            items: [{ autogenerate: { directory: 'users/migrations' } }],
+                        },
+                        {
                             label: 'Troubleshooting',
                             translations: { es: 'Solución de problemas' },
                             items: [{ autogenerate: { directory: 'users/troubleshooting' } }],

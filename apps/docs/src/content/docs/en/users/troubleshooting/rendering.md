@@ -2,78 +2,110 @@
 title: Troubleshoot image rendering
 description: Diagnose authentication, request, image input, Chromium, capacity, and timeout failures from the image API.
 sidebar:
-  order: 3
+  order: 7
 ---
 
-Start with the HTTP status and the stable `error` code. The [image API error reference](/en/users/reference/http-api/errors) is the source for the complete matrix.
+Start with the HTTP status and stable `error` code. The [image API error reference](/en/users/reference/http-api/errors) contains the complete error contract.
 
 ## `401 unauthorized`
 
-After the handler validates image-render configuration, authentication is checked before the JSON body, template lookup, remote fetch, or browser reservation. Check these items first:
+**Symptom:** The image endpoint returns `401 unauthorized`.
 
-- The `Authorization` header is exactly `Bearer <full-token>` with no token truncation.
-- The token has not been revoked and its owner is active.
-- A cookie-authenticated request includes a valid `framekit_session` and a same-origin `Origin`.
-- An invalid or malformed `Authorization` header is removed if you intend to use the session cookie; it never falls back to the cookie.
+**Probable cause:** The Bearer token is invalid, revoked, or owned by an inactive user, or a cookie-authenticated request has no valid same-origin session.
 
-Create a fresh token if the original full secret was not stored. Token lists show metadata, not a recoverable secret.
+**Check:** Confirm that the header is exactly `Authorization: Bearer <full-token>`, or confirm that the request includes a valid session cookie and same-origin `Origin`. A malformed Authorization header does not fall back to the cookie.
 
-## `400 invalid_request`
+**Fix:** Use the original full token or create a new token, and retry with the correct authentication method.
 
-Use `Content-Type: application/json` and keep the body within 12,000,000 bytes. The top-level object may contain only `template`, `variant`, and `data`. `template` must be a non-empty string, `variant` must be a non-empty string when present, and `data` must be a plain object. Check for accidental arrays, extra keys, unsupported content encoding, and prototype-pollution keys.
+## `400 invalid_request` or `413 request_too_large`
+
+**Symptom:** The endpoint rejects the request before rendering.
+
+**Probable cause:** The request is not JSON, uses unsupported content encoding, has an invalid top-level shape, names an unknown variant, or exceeds 12,000,000 bytes.
+
+**Check:** Send `Content-Type: application/json` with a body containing only `template`, optional `variant`, and optional `data`. `variant`, when present, must be declared by the template; `data` must be a plain object and the request body must stay within the size limit.
+
+**Fix:** Use a declared variant or omit it to use the template default. Remove unsupported top-level keys and accidental arrays, use identity or no content encoding, and reduce the request body before retrying.
 
 ## `404 template_not_found`
 
-The slug is not in the generated template registry. From the project root:
+**Symptom:** The endpoint cannot find the requested template slug.
+
+**Probable cause:** The slug is not in the generated template registry.
+
+**Check:** Compare the request value with the generated entries and the source directory under `src/templates/`.
+
+**Fix:** Use the exact generated slug, or fix the source and run:
 
 ```bash
 pnpm framekit check
 pnpm framekit generate
 ```
 
-Compare the request slug with the generated manifest and the directory under `src/templates/`. Fix source files and regenerate; do not edit generated output.
+Do not edit generated output.
 
 ## `415 unsupported_image`
 
-Image fields accept root-relative `/assets/` or `/framekit/templates/` paths, raster data URLs, and permitted HTTPS URLs. The accepted raster formats are PNG, JPEG, WebP, and GIF. SVG, malformed data URLs, mismatched MIME signatures, traversal, backslashes, fragments, and unsafe URL authorities are rejected.
+**Symptom:** A request containing an image value is rejected as unsupported.
 
-For uploaded development assets, keep the file at or below 8 MB and use one of the supported raster formats. The same prepared-image limit applies to a remote or data-URL image.
+**Probable cause:** The value is not a safe root-relative path, valid raster data URL, or permitted HTTPS raster image; the MIME type or file signature may also be invalid.
+
+**Check:** Verify the image field value and use a supported PNG, JPEG, WebP, or GIF. For an HTTPS URL, check the host allowlist and response headers.
+
+**Fix:** Use a project asset, valid raster data URL, or an allowed HTTPS raster image.
+
+## `413 request_too_large` for an image input
+
+**Symptom:** The endpoint rejects an image input with `413 request_too_large`.
+
+**Probable cause:** The prepared image is larger than the 8 MB image limit. This applies to raster data URLs and fetched remote images.
+
+**Check:** Measure the decoded data-URL image or the remote response body, rather than only its encoded URL length.
+
+**Fix:** Provide a smaller PNG, JPEG, WebP, or GIF, or use a smaller project asset, then retry the request.
 
 ## `422 invalid_template_data`
 
-The request reached the template but the resolved data does not satisfy its definition. Check the selected variant, declared field keys, required values, numeric limits, text lengths, choices, booleans, colors, and image field scope. When the response includes `fields`, correct the named fields and submit again.
+**Symptom:** The template is found, but the request returns invalid template data.
+
+**Probable cause:** The field keys, required values, field types, limits, choices, colors, or image scope do not match the definition.
+
+**Check:** Compare `variant` and `data` with the [template reference](/en/users/reference/template). If the response includes `fields`, use those field names to locate the invalid values.
+
+**Fix:** Send only declared field keys with valid values and a valid variant, or omit `data` to use the template content for the selected variant.
 
 ## `422 image_host_not_allowed` or `502 image_fetch_failed`
 
-For remote images:
+**Symptom:** A remote image works in a browser but rendering rejects it.
 
-1. Add the exact lowercase hostname to `FRAMEKIT_ALLOWED_IMAGE_HOSTS`.
-2. Use HTTPS without credentials or an explicit non-default port; `https://host:443` is normalized and accepted as HTTPS without a port.
-3. Confirm the remote response is a supported raster MIME type with a matching file signature.
-4. Check that every redirect remains HTTPS and stays on an allowed hostname.
-5. Confirm the remote server returns a successful response before the timeout.
+**Probable cause:** The server-side fetch does not allow the hostname, the response is not a successful supported raster response, or a redirect leaves the allowed HTTPS host.
 
-FrameKit fetches remote images from the Node process, not from the user's browser. An image URL that works in a browser may still be rejected by the server-side allowlist or raster checks.
+**Check:** Add the exact lowercase hostname to `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, then verify HTTPS, the raster MIME type and signature, response status, and redirects.
 
-## `503 api_not_configured` or `render_capacity_exhausted`
+**Fix:** Correct the allowlist or remote image response. Use a project asset when the image does not need to be remote. See [Configuration](/en/users/reference/configuration).
 
-Check the render environment:
+## `503 api_not_configured` or `503 render_capacity_exhausted`
 
-- `PORT` must be `1-65535`.
-- `FRAMEKIT_MAX_CONCURRENT_RENDERS` must be `1-32`.
-- `FRAMEKIT_RENDER_TIMEOUT_MS` must be `1-120000`.
-- `FRAMEKIT_ALLOWED_IMAGE_HOSTS` must contain only valid hostnames, not IP literals.
+**Symptom:** The endpoint reports invalid render configuration or temporary capacity exhaustion.
 
-Capacity exhaustion is process-local. Reduce caller concurrency or use bounded retry after the `Retry-After: 1` response. Do not interpret a configuration error as a capacity event.
+**Probable cause:** `PORT`, `FRAMEKIT_MAX_CONCURRENT_RENDERS`, `FRAMEKIT_RENDER_TIMEOUT_MS`, or the image-host allowlist is invalid, or all configured render slots are busy.
+
+**Check:** Use these ranges: `PORT` 1–65535, maximum concurrent renders 1–32, timeout 1–120000 ms, and valid hostnames only. Distinguish a configuration error from a capacity response.
+
+**Fix:** Correct invalid environment values. For capacity exhaustion, reduce caller concurrency or retry with the response's bounded retry guidance.
 
 ## `504 render_timeout` or `500 render_failed`
 
-Confirm Chromium is installed:
+**Symptom:** Rendering times out or fails after the request is accepted.
+
+**Probable cause:** Chromium is unavailable, the template or an image cannot load, or the render exceeds the configured timeout.
+
+**Check:** Install Chromium, run `pnpm framekit check`, and retry with a known valid template and image inputs:
 
 ```bash
 pnpm framekit browser install
 ```
 
-Use `--with-deps` on Linux when required. Run `pnpm framekit check` to catch invalid definitions, then retry with a known valid template. The render timeout aborts or cancels request processing, image preparation, template loading, browser work, and screenshot work. Page and context cleanup is attempted in `finally`; that cleanup wait has no separate documented limit. Increase `FRAMEKIT_RENDER_TIMEOUT_MS` only within the supported range and only after correcting slow or invalid inputs.
+On Linux, add `--with-deps` when required.
 
-The renderer returns PNG only. It waits for the render state, fonts, and images before capturing, so a failure can come from the template component, a missing image, a browser dependency, or an internal navigation error.
+**Fix:** Repair the definition or image input, install the browser, and increase `FRAMEKIT_RENDER_TIMEOUT_MS` only within 1–120000 ms after correcting the underlying slow or invalid input.

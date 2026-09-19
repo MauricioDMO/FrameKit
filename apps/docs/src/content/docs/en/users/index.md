@@ -41,6 +41,16 @@ This section is for people who use FrameKit to create and ship template-based im
 - [Image rendering troubleshooting](/en/users/troubleshooting/rendering) - diagnose request, image, browser, capacity, and timeout failures.
 - [Deployment troubleshooting](/en/users/troubleshooting/deployment) - diagnose runtime, proxy, persistence, and container failures.
 
+## Reference, migrations, and troubleshooting
+
+- [Configuration reference](/en/users/reference/configuration) - check environment variables, aliases, and generated-project defaults.
+- [Generated files reference](/en/users/reference/generated-files) - identify generated output and its source files.
+- [Migrations](/en/users/migrations) - review current-contract migration actions.
+- [Troubleshooting](/en/users/troubleshooting) - choose a diagnostic by symptom.
+- [Installation troubleshooting](/en/users/troubleshooting/installation) - resolve creator, dependency, generation, and startup issues.
+- [Templates and assets troubleshooting](/en/users/troubleshooting/templates-and-assets) - resolve discovery and image-file issues.
+- [Generated registry troubleshooting](/en/users/troubleshooting/generated-registry) - resolve missing or stale generated output.
+
 ## What belongs here
 
 The user documentation will explain the concepts and workflows needed to:

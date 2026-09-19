@@ -1,0 +1,31 @@
+---
+title: Studio root package API
+description: Add the server-side document shell and authenticated Studio page factories.
+sidebar:
+  order: 7
+---
+
+**Import:** `@mauriciodmo/framekit/studio/root`  
+**Environment:** server-only.
+
+This entrypoint exports `FrameKitStudioRoot`, `createStudioPage`, and `createLoginPage`. The root component reads request cookies and headers, emits the complete document shell, and provides Studio locale context. The page factories enforce the Studio session boundary for the generated routes.
+
+## Minimal example
+
+Use `FrameKitStudioRoot` as the document shell in a server layout:
+
+```tsx
+import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
+
+export default function RootLayout ({ children }: { children: React.ReactNode }) {
+  return <FrameKitStudioRoot>{children}</FrameKitStudioRoot>
+}
+```
+
+Use `createStudioPage(StudioClient)` for `/editor`, `/brand`, and `/settings`, and `createLoginPage()` for `/login`. The client component passed to `createStudioPage` receives the safe `StudioUser` value.
+
+## Bundle and runtime constraints
+
+This entrypoint is server-only. `FrameKitStudioRoot` uses Next.js request APIs, emits `<html>`, `<head>`, and `<body>`, and must not be imported into client code or nested inside another document shell. The route modules should use the Node.js runtime and dynamic rendering.
+
+See [the existing-project route setup](/en/users/getting-started/existing-project), [Use Studio](/en/users/guides/use-studio), and the [Studio API](/en/users/reference/package-api/studio).
