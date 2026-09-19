@@ -37,13 +37,15 @@ copies directly.
 ## Post-publication Registry Gate
 
 After publication and before promotion, run the post-publication npm registry
-smoke in `Docs/en/development/testing-and-distribution.md`. Supply exact,
-release-time `CORE_SPEC` and `CREATOR_SPEC` values plus `EXPECTED_DIST_TAG`; do
-not encode a version or tag here. The check must run outside the repository and
+smoke in
+`apps/docs/src/content/docs/en/contributors/releases/publishing.md`. Supply
+exact, release-time `CORE_SPEC` and `CREATOR_SPEC` values plus
+`EXPECTED_FRAMEKIT_DIST_TAG` and `EXPECTED_CREATE_FRAMEKIT_DIST_TAG`; do not
+encode a version or tag here. The check must run outside the repository and
 install from npm, verify the package export targets and both binaries, record
 the creator template's FrameKit version/range, scaffold with `-n`, install the
 exact core package, run `generate`, `check`, `build`, and `start`, poll
-`/editor` over HTTP, and clean up.
+`/login` over HTTP, and clean up.
 
 Also run `pnpm smoke:docker -- <exact-published-framekit-version>` from the
 repository root. It must build and start the canonical generated image as
@@ -58,9 +60,12 @@ publish or mutate a dist-tag during validation.
 
 ## Release Handoff
 
-Follow `Docs/en/development/release.md` for versioning, commits, tags, publish
-commands, and prerelease tags. Never run `publish` or `git push`; never add or
-request `--otp`. The user performs the final commands interactively.
+Follow
+`apps/docs/src/content/docs/en/contributors/releases/versioning-and-changelog.md`
+for versioning and
+`apps/docs/src/content/docs/en/contributors/releases/publishing.md` for publish
+commands and promotion. Never run `publish` or `git push`; never add or request
+`--otp`. The user performs the final commands interactively.
 
 ## Focused Validation
 

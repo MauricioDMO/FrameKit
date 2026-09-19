@@ -87,6 +87,26 @@ export default defineConfig({
                             translations: { es: 'Desarrollo' },
                             items: [{ autogenerate: { directory: 'contributors/development' } }],
                         },
+                        {
+                            label: 'Testing',
+                            translations: { es: 'Pruebas' },
+                            items: [{ autogenerate: { directory: 'contributors/testing' } }],
+                        },
+                        {
+                            label: 'Distribution',
+                            translations: { es: 'Distribución' },
+                            items: [{ autogenerate: { directory: 'contributors/distribution' } }],
+                        },
+                        {
+                            label: 'Releases',
+                            translations: { es: 'Lanzamientos' },
+                            items: [{ autogenerate: { directory: 'contributors/releases' } }],
+                        },
+                        {
+                            label: 'Documentation',
+                            translations: { es: 'Documentación' },
+                            items: [{ autogenerate: { directory: 'contributors/documentation' } }],
+                        },
                     ],
                 },
             ],

@@ -1,6 +1,6 @@
 # Fase 8 - Workflow, testing y releases
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-7.
 - **Resultado:** Desarrollo, verificación, distribución, release y mantenimiento
   documental tienen procedimientos reproducibles.
@@ -24,9 +24,9 @@ ni siquiera como advertencias o instrucciones de migración.
 package.json
 .github/workflows/ci.yml
 .husky/**
-scripts/check-runtime-contract.mjs
-scripts/smoke-tarballs.mjs
-scripts/smoke-docker.mjs
+tooling/check-runtime-contract.mjs
+tooling/smoke-tarballs.mjs
+tooling/smoke-docker.mjs
 playwright.config.ts
 packages/*/vitest.config.ts
 Docs/en/development/testing-and-distribution.md
@@ -115,8 +115,15 @@ en/contributors/documentation/translations-and-mermaid.md
 
 ## Exit gate
 
-- [ ] Cada nivel de test tiene propósito y comando.
-- [ ] Distribución distingue pre-publicación y post-publicación.
-- [ ] Release no selecciona versión anticipadamente.
-- [ ] Convenciones coinciden con AGENTS y configuración actual.
-- [ ] La guía documental permite mantener el sitio sin una segunda arquitectura.
+- [x] Cada nivel de test tiene propósito y comando.
+- [x] Distribución distingue pre-publicación y post-publicación.
+- [x] Release no selecciona versión anticipadamente.
+- [x] Convenciones coinciden con AGENTS y configuración actual.
+- [x] La guía documental permite mantener el sitio sin una segunda arquitectura.
+
+## Evidencia de verificación
+
+- **Fecha:** 2026-09-19.
+- `pnpm --filter docs build` — PASS; Astro generó 189 páginas.
+- `apps/docs/dist/client/en/contributors/index.html` — PASS; la navegación generada incluye `Testing`, `Distribution`, `Releases` y `Documentation`, con sus 13 rutas de grupo.
+- `apps/docs/dist/client/es/contributors/index.html` — PASS; la navegación generada incluye `Pruebas`, `Distribución`, `Lanzamientos` y `Documentación`, con sus rutas correspondientes.
