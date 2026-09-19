@@ -1,6 +1,6 @@
 # Fase 9 - Localización y migración legacy
 
-- **Estado:** Pendiente.
+- **Estado:** Completada.
 - **Depende de:** Fases 0-8.
 - **Resultado:** `/en/` y `/es/` tienen paridad temática, todos los destinos
   legacy están mapeados y su retirada queda preparada para el rollout.
@@ -100,10 +100,28 @@ y no presentarse como instrucción actual.
 
 ## Exit gate
 
-- [ ] Cada ruta inglesa tiene equivalente española.
-- [ ] Las páginas españolas reflejan el contenido técnico inglés vigente.
-- [ ] Todos los cambios de enlaces públicos están listos para el rollout.
-- [ ] Cada archivo de `Docs/en/` y `Docs/es/` tiene destino confirmado antes de
+- [x] Cada ruta inglesa tiene equivalente española.
+- [x] Las páginas españolas reflejan el contenido técnico inglés vigente.
+- [x] Todos los cambios de enlaces públicos están listos para el rollout.
+- [x] Cada archivo de `Docs/en/` y `Docs/es/` tiene destino confirmado antes de
   su retirada en la fase 10.
-- [ ] `Docs/Plans/` y `Docs/skills/` permanecen en su lugar.
-- [ ] Ninguna traducción introduce superficies retiradas o no soportadas.
+- [x] `Docs/Plans/` y `Docs/skills/` permanecen en su lugar.
+- [x] Ninguna traducción introduce superficies retiradas o no soportadas.
+
+## Evidencia de verificación
+
+- **Fecha:** 2026-09-19.
+- Cada ruta publicada bajo `apps/docs/src/content/docs/en/` tiene una página
+  equivalente bajo `apps/docs/src/content/docs/es/`, incluidos los entrypoints
+  de paquete y la referencia CSS.
+- Se revisó cada documento español con un subagente independiente contra su
+  fuente inglesa y las implementaciones actuales; las correcciones encontradas
+  se aplicaron antes del cierre.
+- `pnpm --filter docs build` — PASS; Astro generó 189 páginas y transformó los
+  diagramas Mermaid.
+- `pnpm check:runtime` — PASS.
+- No quedan enlaces publicados a `Docs/en/` o `Docs/es/` fuera de las páginas
+  de colaboradores que explican explícitamente el contexto de migración.
+- `Docs/en/` y `Docs/es/` no se eliminaron y los enlaces externos no se cambiaron;
+  ambas acciones permanecen reservadas para la verificación de producción de la
+  fase 10.

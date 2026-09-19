@@ -1,18 +1,22 @@
 ---
 title: Contribuir a FrameKit
-description: Oriéntate en el repositorio de FrameKit antes de modificar el runtime, Studio, la CLI, la generación de código o la documentación.
+description: Encuentra el recorrido desde un checkout limpio para modificar el runtime, Studio, la CLI, el proyecto generado o la documentación.
 ---
 
 # Contribuir a FrameKit
 
-Esta sección está dirigida a quienes mejoran FrameKit. Ofrece la orientación necesaria antes de modificar el runtime reutilizable, Studio, la CLI de creación de proyectos, la generación de código o el sitio de documentación.
+Esta sección es para quienes contribuyen modificando el propio FrameKit. Es independiente de la [documentación para usuarios](/es/users/), que explica cómo usar FrameKit en una aplicación.
 
-## Empieza por la estructura del repositorio
+## Sigue el recorrido para contribuidores
 
-FrameKit mantiene el runtime y el editor destinados a consumidores en `packages/framekit`, la lógica de scaffolding y el proyecto generado en `packages/create-framekit`, el Studio de primera parte en `apps/studio` y este sitio de documentación en `apps/docs`.
+1. Comienza con [primeros pasos](/es/contributors/getting-started) para consultar los requisitos previos y realizar la primera ejecución local de desarrollo.
+2. Lee la [guía de arquitectura](/es/contributors/architecture) para conocer los límites del repositorio, los paquetes, el código generado, Studio, el servidor y las herramientas.
+3. Usa la [guía de desarrollo](/es/contributors/development) para consultar las reglas de implementación dirigidas a contribuidores.
+4. Continúa con [desarrollo](/es/contributors/development) para conocer las reglas de implementación y con [desarrollo local](/es/contributors/getting-started/local-development) para consultar los comandos y comprobaciones específicos del workspace.
+5. Para trabajar en paquetes públicos o lanzamientos, confirma la propiedad y las exportaciones en la [arquitectura de paquetes](/es/contributors/architecture/packages). Para cambios en la documentación, usa [desarrollo local](/es/contributors/getting-started/local-development) para consultar los comandos del workspace de documentación y mantén el material dirigido a consumidores en la [documentación para usuarios](/es/users/).
 
-## Elige el recorrido del cambio
+## Elige la audiencia
 
-Trabaja en el área responsable del comportamiento que necesitas modificar y verifica el resultado con sus comprobaciones. Los cambios que afectan a consumidores generados o al comportamiento de los paquetes públicos también deben comprobarse desde la perspectiva del consumidor, no solo dentro del repositorio.
+Usa esta sección cuando el cambio se realice en el repositorio de FrameKit: el paquete reutilizable, Studio de primera parte, el creador de proyectos, el consumidor generado o el sitio de documentación. Usa la sección de usuarios cuando el objetivo sea crear con FrameKit en lugar de modificar el repositorio.
 
-Las guías posteriores documentarán los flujos detallados de desarrollo, pruebas y publicación de cada área.
+Elige el workspace responsable del comportamiento y verifica el resultado con las comprobaciones de ese workspace. Los cambios que afecten a consumidores generados o al comportamiento de los paquetes públicos también requieren una verificación orientada al consumidor.

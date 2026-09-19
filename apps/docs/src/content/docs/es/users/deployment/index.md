@@ -1,0 +1,31 @@
+---
+title: Desplegar FrameKit
+description: Prepara Chromium, SQLite, los secretos y un proceso de Node.js de larga duración antes de exponer FrameKit públicamente.
+sidebar:
+  order: 1
+---
+
+El despliegue inicial compatible de FrameKit consiste en un proceso Node.js de larga duración por contenedor, con HTTPS y limitación de solicitudes proporcionados por un proxy inverso o balanceador de carga externo. El proceso aloja Studio, la API de acceso y el renderizado síncrono de PNG del lado del servidor.
+
+Empieza por las restricciones operativas y, después, elige las instrucciones del entorno de ejecución y del contenedor:
+
+- [Entorno de ejecución y configuración](/es/users/deployment/runtime): Node, Chromium, variables de entorno, capacidad de renderizado y estado local del proceso.
+- [Docker y persistencia](/es/users/deployment/docker-and-persistence): la imagen independiente canónica, `/data` y el comportamiento al reiniciar.
+- [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies): credenciales, cookies del mismo origen, tokens Bearer, restricciones de imágenes y exposición pública.
+
+## Secuencia de despliegue
+
+1. Establece una `FRAMEKIT_ADMIN_PASSWORD` segura para crear el primer usuario y mantén los secretos fuera de la imagen y del repositorio de código fuente.
+2. Proporciona una ubicación escribible y duradera para SQLite si los usuarios, las sesiones y los tokens de API deben sobrevivir a los reinicios.
+3. Instala el navegador Chromium de Playwright y las dependencias de Linux, o usa el Dockerfile canónico que lo hace durante la compilación de la imagen.
+4. Ejecuta una compilación de producción correcta con `pnpm framekit build`.
+5. Inicia la aplicación compilada con `pnpm framekit start`.
+6. Coloca HTTPS y la limitación de solicitudes de inicio de sesión delante del proceso antes de exponerlo públicamente.
+
+`framekit start` es de solo lectura con respecto al registro generado. Espera que la compilación se haya realizado correctamente y no regenera las plantillas por ti.
+
+## Límites del estado
+
+SQLite almacena los usuarios, las sesiones y los metadatos de los tokens de API. Los trabajos de renderizado son diferentes: viven en un mapa `globalThis` local al proceso, caducan después de 120 segundos y desaparecen cuando se reinicia el proceso. Por tanto, un volumen de SQLite duradero no hace duradero un trabajo de renderizado en curso.
+
+El renderizador reutiliza un navegador Chromium durante toda la vida del proceso, pero proporciona a cada renderizado un contexto y una página aislados. El número de renderizados simultáneos está limitado por proceso. El tiempo de espera cancela o aborta el trabajo de renderizado; se intenta limpiar la página y el contexto en `finally`, y esa espera de limpieza no tiene un límite independiente documentado. La topología compatible no es una función serverless ni un conjunto de réplicas que espere compartir los trabajos de renderizado y el estado del navegador locales al proceso.
