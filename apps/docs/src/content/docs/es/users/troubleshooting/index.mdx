@@ -1,0 +1,33 @@
+---
+title: Solución de problemas
+description: Encuentra diagnósticos prácticos para instalar, generar, usar y desplegar proyectos de FrameKit.
+sidebar:
+  order: 1
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Empieza por el área que corresponda a la parte de tu proyecto que falla.
+
+<CardGrid>
+  <LinkCard title="Instalación" href="/es/users/troubleshooting/installation" description="Creación del proyecto, instalación de dependencias e inicio del desarrollo." />
+  <LinkCard title="Plantillas y recursos" href="/es/users/troubleshooting/templates-and-assets" description="Descubrimiento del código fuente, definiciones de plantilla y archivos de imagen." />
+  <LinkCard title="Registro generado" href="/es/users/troubleshooting/generated-registry" description="Módulos generados, recursos copiados y salida obsoleta." />
+  <LinkCard title="Studio" href="/es/users/troubleshooting/studio" description="Editor, catálogo de marca, cargas, vista previa y exportación a PNG." />
+  <LinkCard title="Acceso" href="/es/users/troubleshooting/access" description="Inicio de sesión, sesiones, usuarios, contraseñas y tokens de API." />
+  <LinkCard title="Renderizado" href="/es/users/troubleshooting/rendering" description="Renderizado del lado del servidor, Chromium, trabajos y salida." />
+  <LinkCard title="Despliegue" href="/es/users/troubleshooting/deployment" description="Runtime, persistencia, proxies inversos e inicio en producción." />
+</CardGrid>
+
+## Primeras comprobaciones
+
+Desde la raíz del proyecto, ejecuta el comando que corresponda al síntoma:
+
+```bash
+pnpm framekit check
+pnpm framekit generate
+```
+
+`check` valida las definiciones de plantillas y el contenido resuelto. `generate` actualiza los módulos generados y los recursos de plantilla copiados. Corrige el código fuente mantenido bajo `src/templates/` o `src/brand/` y vuelve a ejecutar el comando; no edites la salida generada.
+
+Para instrucciones de configuración, consulta [Crear un proyecto](/es/users/getting-started/create-project), [Estructura del proyecto](/es/users/getting-started/project-structure) y [Usar Studio](/es/users/guides/use-studio).

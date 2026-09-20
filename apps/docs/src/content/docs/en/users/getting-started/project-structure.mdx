@@ -1,0 +1,89 @@
+---
+title: Project structure
+description: Identify the maintained source, generated output, and runtime data in a FrameKit project.
+sidebar:
+  order: 4
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+`create-framekit` produces a Next.js App Router project. The important distinction is whether a path is maintained source, generated output, or persistent runtime data.
+
+## Canonical layout
+
+<FileTree>
+
+- my-project/
+  - src/
+    - app/
+      - `[section]/[[...slug]]/page.tsx`
+      - `api/framekit/[...action]/route.ts`
+      - `framekit/render/[id]/page.tsx`
+      - globals.css
+      - layout.tsx
+      - `login/page.tsx`
+    - profile.ts
+    - **templates/**
+      - example/
+        - assets/
+        - **template.tsx**
+    - generated/
+      - framekit/
+        - brands.ts
+        - render-client.tsx
+        - studio-client.tsx
+        - templates.ts
+  - public/
+    - framekit/
+  - `.framekit/`
+  - `.framekit-data/`
+  - `.env.example`
+  - Dockerfile
+  - next.config.ts
+  - package.json
+  - pnpm-workspace.yaml
+  - tsconfig.json
+
+</FileTree>
+
+The creator removes `pnpm-workspace.yaml` when npm is selected.
+
+## Files you maintain
+
+- `src/templates/` contains discoverable templates.
+- `src/brand/` is optional and contains reusable brand components.
+- `src/profile.ts` is optional public project information that templates may use.
+- `src/app/` connects the application shell, Studio, login, API, render route, and global styles.
+- `next.config.ts` wraps Next.js with `withFrameKit()`.
+- `.env.example` documents runtime variables without storing secrets.
+
+The generated template defines these aliases:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@framekit/generated/*": ["./src/generated/framekit/*"]
+    }
+  }
+}
+```
+
+Use published package entrypoints such as `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server`, and `@mauriciodmo/framekit/studio/root`. Do not import `packages/framekit/src/**` from consumer code.
+
+## Generated output
+
+FrameKit can recreate these paths:
+
+- `src/generated/framekit/` — template registry and generated clients.
+- `public/framekit/` — copied template assets.
+- `.framekit/` — validation and Next.js build output.
+
+Delete and regenerate those paths when necessary instead of editing them.
+
+:::caution
+`.framekit-data/` is different: it contains the default SQLite database. Treat it as persistent runtime data and do not delete it as part of generated-output cleanup.
+:::
+
+For the detailed file contract, use [Generated files reference](/en/users/reference/generated-files). Continue with [Create your first template](/en/users/getting-started/first-template) when you are ready to edit `src/templates/`.

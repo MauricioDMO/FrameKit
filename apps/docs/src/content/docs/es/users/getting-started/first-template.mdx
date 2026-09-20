@@ -1,0 +1,116 @@
+---
+title: Crea tu primera plantilla
+description: Añade una plantilla mínima de FrameKit, valídala y ábrela en Studio.
+sidebar:
+  order: 5
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Una plantilla es una definición React descubierta bajo `src/templates/`. Este recorrido conserva solo las piezas mínimas necesarias para verla en Studio.
+
+<Steps>
+
+1. **Crea el archivo de la plantilla.**
+
+   ```tsx title="src/templates/first-template/template.tsx"
+   import { defineTemplate, field } from '@mauriciodmo/framekit'
+
+   export default defineTemplate({
+     meta: {
+       title: 'First template',
+       description: 'A minimal template for learning the FrameKit workflow.',
+     },
+     width: 1200,
+     height: 630,
+     fields: {
+       title: field.text({
+         label: 'Title',
+         required: true,
+         minLength: 1,
+         maxLength: 80,
+       }),
+     },
+     content: {
+       default: {
+         title: 'Hello from FrameKit',
+       },
+     },
+     variants: {
+       default: 'default',
+       labels: {
+         default: 'Default',
+       },
+     },
+     render({ data, width, height }) {
+       return (
+         <article
+           className="flex items-center justify-center bg-[#10271f] p-16 text-center text-6xl text-white"
+           style={{ width, height }}
+         >
+           {data.title}
+         </article>
+       )
+     },
+   })
+   ```
+
+2. **Valida la plantilla.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm framekit check
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm exec -- framekit check
+   ```
+
+     </TabItem>
+   </Tabs>
+
+3. **Inicia la aplicación.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm dev
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm run dev
+   ```
+
+     </TabItem>
+   </Tabs>
+
+4. **Abre Studio.**
+
+   Visita `http://localhost:3000/login`, inicia sesión y elige la plantilla desde `/editor`.
+
+</Steps>
+
+## Qué controla la definición
+
+- `fields` declara los datos editables y sus reglas de validación.
+- `content` contiene los valores de cada variante.
+- `variants.default` selecciona la clave de contenido inicial.
+- `render({ data, assets, variant, width, height })` devuelve la salida React.
+- `width` y `height` definen las dimensiones de exportación.
+
+El nombre del directorio pasa a formar parte del slug de la plantilla. Las claves de variante como `default`, `en` o `es` pertenecen a la plantilla; FrameKit no las reserva como metadatos de idioma.
+
+:::caution
+No registres la plantilla editando `src/generated/framekit/templates.ts`. El descubrimiento y la generación de código controlan ese archivo.
+:::
+
+Continúa con [la estructura del proyecto](/es/users/getting-started/project-structure) y usa después las guías de plantillas y assets cuando necesites el contrato completo de autoría.

@@ -1,0 +1,127 @@
+---
+title: Create a brand component
+description: Add, document, preview, generate, and consume a reusable FrameKit brand component.
+sidebar:
+  order: 2
+---
+
+import { FileTree, Steps } from '@astrojs/starlight/components';
+
+Use a brand component when the same project-source visual or communication pattern belongs in more than one template. Keep one-use artwork in its template. Brand components are discovered from `component.tsx`; templates are discovered from `template.tsx` and own the output definition.
+
+<Steps>
+
+1. **Create the component directory.**
+
+   Create a leaf below `src/brand/` using the structure expected by discovery.
+
+   <FileTree>
+
+   - src/
+     - brand/
+       - communication/
+         - hero/
+           - **README.md**
+           - **component.tsx**
+           - **preview.tsx**
+
+   </FileTree>
+
+   See [Brand components](/en/users/concepts/brand-components) for exact discovery and naming rules.
+
+2. **Write the reusable component.**
+
+   Accept semantic inputs and keep template-owned concerns outside the component.
+
+   ```tsx title="src/brand/communication/hero/component.tsx"
+   import { Markdown } from '@mauriciodmo/framekit'
+
+   export interface BrandHeroProps {
+     eyebrow: string
+     title: string
+     description: string
+     accentColor?: string
+   }
+
+   export function BrandHero ({ eyebrow, title, description, accentColor = '#c8f7d9' }: BrandHeroProps) {
+     return (
+       <section>
+         <Markdown value={eyebrow} style={{ color: accentColor }} />
+         <Markdown value={title} lists />
+         <Markdown value={description} lists />
+       </section>
+     )
+   }
+   ```
+
+   Do not add template-owned dimensions, platform labels, export controls, or calls to action only to make the first consumer convenient. The consuming template supplies its canvas, fields, content, variants, assets, and surrounding layout.
+
+3. **Document the leaf.**
+
+   Add the required README and put a standalone summary near the top so the generated catalog has a useful description.
+
+   ```md title="src/brand/communication/hero/README.md"
+   # Hero
+
+   Reusable editorial block for a brand message with an eyebrow, title, and description.
+
+   ## Inputs
+
+   - `eyebrow`: short label.
+   - `title`: headline; Markdown is supported.
+   - `description`: supporting copy; Markdown lists are supported.
+   - `accentColor`: optional accent color.
+   ```
+
+4. **Add a representative preview.**
+
+   ```tsx title="src/brand/communication/hero/preview.tsx"
+   import { BrandHero } from './component'
+
+   export default function Preview () {
+     return (
+       <div>
+         <BrandHero
+           eyebrow="NEW / FRAMEKIT"
+           title="Design images with **React**"
+           description="Reusable visual content for consistent templates."
+         />
+       </div>
+     )
+   }
+   ```
+
+   The preview default-exports a React component and reuses the source component with static representative props.
+
+5. **Generate the catalog.**
+
+   ```bash
+   pnpm framekit generate
+   ```
+
+   The command writes `src/generated/framekit/brands.ts` as generated output. Do not edit it directly; fix the source component, preview, or README and regenerate.
+
+6. **Consume the component from a template.**
+
+   ```tsx title="src/templates/example/template.tsx"
+   import { BrandHero } from '@/brand/communication/hero/component'
+
+   render ({ data }) {
+     return (
+       <main>
+         <BrandHero
+           eyebrow={data.eyebrow}
+           title={data.title}
+           description={data.description}
+           accentColor={data.accentColor}
+         />
+       </main>
+     )
+   }
+   ```
+
+   The template remains responsible for declaring those fields and for its dimensions, content, variants, assets, and outer composition.
+
+</Steps>
+
+For the exact directory, README, generated-module, and loader rules, see [Brand components](/en/users/concepts/brand-components) and [Brand catalog reference](/en/users/reference/brand-catalog). For the complete template definition, see [Create a template](/en/users/guides/create-template). The `Markdown` behavior used by the example is in the [Markdown reference](/en/users/reference/markdown).

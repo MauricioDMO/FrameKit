@@ -1,0 +1,97 @@
+---
+title: Crear una plantilla
+description: Crea, valida y regenera una definición completa de plantilla de FrameKit.
+sidebar:
+  order: 1
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Una plantilla es propietaria de una definición de salida: dimensiones, campos editables, contenido, variantes, recursos y función de renderizado. Mantén la primera implementación en un solo `template.tsx`; divídela únicamente cuando el archivo resulte difícil de mantener.
+
+<Steps>
+
+1. **Crea el archivo de la plantilla.**
+
+   Añade un directorio en minúsculas y kebab-case bajo `src/templates/` y exporta por defecto el resultado de `defineTemplate()`.
+
+   ```tsx title="src/templates/social-card/template.tsx"
+   import { defineTemplate, field } from '@mauriciodmo/framekit'
+
+   export default defineTemplate({
+     meta: {
+       title: 'Social card',
+       description: 'A square card for social posts',
+       marketingDescription: 'Present the message and motivate an action',
+       tags: ['social', 'promotion']
+     },
+     width: 1080,
+     height: 1080,
+     fields: {
+       title: field.text({
+         label: 'Title',
+         required: true,
+         minLength: 1,
+         maxLength: 80
+       }),
+       accentColor: field.color({
+         label: 'Accent color',
+         defaultValue: '#173d31'
+       })
+     },
+     content: {
+       default: {
+         title: 'Your next story starts here'
+       }
+     },
+     variants: {
+       default: 'default',
+       labels: {
+         default: 'Default'
+       }
+     },
+     render ({ data, width, height }) {
+       return (
+         <article
+           style={{
+             width,
+             height,
+             display: 'flex',
+             alignItems: 'center',
+             justifyContent: 'center',
+             padding: 72,
+             background: '#10271f',
+             color: data.accentColor,
+             fontSize: 72
+           }}
+         >
+           {data.title}
+         </article>
+       )
+     }
+   })
+   ```
+
+2. **Valida la definición.**
+
+   ```bash
+   pnpm framekit check
+   ```
+
+   La comprobación regenera el registro, valida la definición, resuelve cada variante de contenido sin modificaciones y valida los datos resultantes. Detecta metadatos, dimensiones, opciones de campos, valores de contenido y restricciones numéricas no válidos antes de usar la plantilla.
+
+3. **Regenera mientras desarrollas.**
+
+   ```bash
+   pnpm framekit generate
+   ```
+
+   `pnpm framekit dev` genera antes de iniciar y observa los cambios bajo `src/`. `pnpm framekit build` también genera mediante su paso de comprobación. `pnpm framekit start` es de solo lectura con respecto a la generación y espera una compilación de producción existente.
+
+</Steps>
+
+:::tip
+Edita el código fuente mantenido bajo `src/templates/` y regenera en lugar de modificar directamente los archivos generados.
+:::
+
+La [definición de plantilla](/es/users/concepts/templates/definition), los [campos](/es/users/concepts/templates/fields) y la [referencia de plantillas](/es/users/reference/template) documentan los contratos completos. Cuando una definición crezca, consulta [Dividir una definición de plantilla](/es/users/guides/split-template-definition).

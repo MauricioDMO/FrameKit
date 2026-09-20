@@ -1,0 +1,116 @@
+---
+title: Create your first template
+description: Add a minimal FrameKit template, validate it, and open it in Studio.
+sidebar:
+  order: 5
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+A template is a React definition discovered under `src/templates/`. This walkthrough keeps only the minimum pieces needed to see one in Studio.
+
+<Steps>
+
+1. **Create the template file.**
+
+   ```tsx title="src/templates/first-template/template.tsx"
+   import { defineTemplate, field } from '@mauriciodmo/framekit'
+
+   export default defineTemplate({
+     meta: {
+       title: 'First template',
+       description: 'A minimal template for learning the FrameKit workflow.',
+     },
+     width: 1200,
+     height: 630,
+     fields: {
+       title: field.text({
+         label: 'Title',
+         required: true,
+         minLength: 1,
+         maxLength: 80,
+       }),
+     },
+     content: {
+       default: {
+         title: 'Hello from FrameKit',
+       },
+     },
+     variants: {
+       default: 'default',
+       labels: {
+         default: 'Default',
+       },
+     },
+     render({ data, width, height }) {
+       return (
+         <article
+           className="flex items-center justify-center bg-[#10271f] p-16 text-center text-6xl text-white"
+           style={{ width, height }}
+         >
+           {data.title}
+         </article>
+       )
+     },
+   })
+   ```
+
+2. **Validate the template.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm framekit check
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm exec -- framekit check
+   ```
+
+     </TabItem>
+   </Tabs>
+
+3. **Start the application.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm dev
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm run dev
+   ```
+
+     </TabItem>
+   </Tabs>
+
+4. **Open Studio.**
+
+   Visit `http://localhost:3000/login`, sign in, and choose the template from `/editor`.
+
+</Steps>
+
+## What the definition controls
+
+- `fields` declares editable data and validation rules.
+- `content` contains the values for each variant.
+- `variants.default` selects the initial content key.
+- `render({ data, assets, variant, width, height })` returns the React output.
+- `width` and `height` define the export dimensions.
+
+The directory name becomes part of the template slug. Variant keys such as `default`, `en`, or `es` belong to the template; FrameKit does not reserve them as language metadata.
+
+:::caution
+Do not register the template by editing `src/generated/framekit/templates.ts`. Discovery and code generation own that file.
+:::
+
+Continue with [Project structure](/en/users/getting-started/project-structure), then use the template and asset guides when you need the full authoring contract.

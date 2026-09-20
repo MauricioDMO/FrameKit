@@ -1,34 +1,53 @@
 ---
 title: Escritura y estructura
-description: Añade páginas de documentación de FrameKit centradas en un tema a partir de las fuentes actuales y mantén alineadas sus rutas y entradas de la barra lateral.
+description: Mantén la documentación de FrameKit centrada, orientada a tareas y coherente entre inglés y español.
 ---
 
 # Escritura y estructura
 
-Esta página está dirigida a quienes añaden o revisan documentación publicada. Su
-responsabilidad principal es mantener la estructura de las páginas, la evidencia
-de las fuentes, los enlaces y la navegación de forma mantenible.
+Esta página está dirigida a quienes añaden o revisan documentación publicada. Mantén cada página centrada en una sola responsabilidad y prefiere el recurso más simple de Starlight que haga el contenido más fácil de recorrer.
 
-## Comienza por la audiencia
+## Empieza por la audiencia y el tipo de página
 
-Decide a quién sirve la página antes de elegir su formato:
-
-- `users/` explica cómo construir y operar una aplicación de FrameKit;
+- `users/` explica cómo construir y operar una aplicación de FrameKit.
 - `contributors/` explica cómo cambiar y verificar el repositorio de FrameKit.
 
-Asigna a la página una única responsabilidad principal. Una página de referencia,
-de flujo de trabajo o de conceptos, con un enfoque claro, es más fácil de verificar y
-enlazar que un segundo índice que repite varios procedimientos. Enlaza con la
-página propietaria cuando la información ya tenga una página.
+Elige un tipo principal de página:
+
+- **Tutorial o guía:** lleva al lector hasta un resultado con solo los detalles necesarios para completar la tarea.
+- **Concepto:** explica cómo funciona una parte de FrameKit y por qué existe.
+- **Referencia:** conserva los contratos completos de comandos, configuración, API y archivos.
+- **Solución de problemas:** diagnostica un síntoma y apunta al flujo o referencia responsable.
+
+No conviertas las páginas índice en copias de la barra lateral. Úsalas para mostrar un conjunto pequeño de puntos de entrada de alto valor.
+
+## Prefiere los componentes incluidos en Starlight
+
+Markdown simple sigue siendo la opción predeterminada. Usa MDX cuando un componente incluido haga un flujo claramente más fácil de leer:
+
+- `Steps` para procedimientos con un orden significativo.
+- `Tabs` para alternativas equivalentes como pnpm y npm. Usa el mismo `syncKey="package-manager"` para conservar la elección del lector.
+- `FileTree` para estructuras de repositorio y proyecto en lugar de árboles ASCII.
+- `LinkCard` y `CardGrid` para páginas de entrada cortas y orientadas a tareas.
+- Los asides de Starlight (`:::note`, `:::tip`, `:::caution`) para información que debe separarse del flujo principal.
+- Metadatos `title="src/file.ts"` de Expressive Code cuando un bloque representa un archivo real.
+
+No añadas un componente personalizado cuando un componente incluido de Starlight ya represente la misma estructura.
+
+## Mantén las guías cortas
+
+Una guía debe contener la ruta compatible más corta hasta el resultado. Mueve flags exhaustivos, contratos de variables de entorno, detalles de archivos generados y comportamiento completo de comandos a **Referencia**, y enlaza la página responsable.
+
+Así se evita mantener el mismo contrato técnico en varios lugares y se conservan legibles las páginas de primeros pasos.
 
 ## Usa primero las fuentes actuales
 
 Verifica las afirmaciones publicadas contra el repositorio actual en este orden:
 
-1. los manifiestos de los paquetes y sus exportaciones o binarios públicos;
-2. la implementación y las pruebas del workspace responsable;
-3. la plantilla canónica del consumidor generado; y
-4. la integración actual de primera parte cuando demuestre el comportamiento.
+1. manifiestos de paquetes y exportaciones o binarios públicos;
+2. implementación y pruebas del workspace responsable;
+3. plantilla canónica del consumidor generado; y
+4. integración actual de primera parte cuando demuestre el comportamiento.
 
 Las páginas heredadas fuera del árbol publicado pueden revelar temas de migración,
 pero no tienen autoridad sobre el código actual. `Docs/Plans/` registra la
@@ -36,98 +55,43 @@ coordinación del trabajo, no el comportamiento del producto. No copies comandos
 históricos ni describas superficies no compatibles solo porque una página antigua
 las mencione.
 
-## Añade una página
+## Añade o revisa una página
 
-Crea la página Markdown mantenida dentro del directorio de la audiencia, por
-ejemplo:
+Usa `.md` para Markdown simple y `.mdx` cuando importes componentes de Starlight:
 
 ```text
-apps/docs/src/content/docs/en/contributors/<area>/<slug>.md
+apps/docs/src/content/docs/es/<audiencia>/<area>/<slug>.md
+apps/docs/src/content/docs/es/<audiencia>/<area>/<slug>.mdx
 ```
 
-Usa el frontmatter de Starlight con un título y una descripción concisos, y
-mantén un encabezado de página coincidente y secciones centradas:
+Usa frontmatter conciso y evita repetir el título de la página como un encabezado `#` manual salvo que el layout lo necesite de forma específica.
 
-```md
----
-title: Título de una página centrada
-description: Indica la audiencia y la responsabilidad principal de la página.
----
+Conserva las rutas del repositorio, nombres de paquetes, comandos, rutas e importaciones exactamente como aparecen en las fuentes actuales. Los enlaces ingleses usan `/en/`; los españoles usan `/es/`.
 
-# Título de una página centrada
-```
+No edites salida generada como `apps/docs/dist/` o `apps/docs/.astro/`.
 
-Usa las rutas del repositorio, los nombres de paquetes, los comandos, las rutas y
-las importaciones exactamente como aparecen en las fuentes actuales. Enlaza entre
-páginas publicadas en español con rutas `/es/` relativas a la raíz, por ejemplo:
+## Barra lateral y localización
 
-```md
-Consulta el [flujo de trabajo para contribuidores](/es/contributors/development/workflow)
-antes de ejecutar las comprobaciones del repositorio.
-```
+Un archivo de contenido tiene una ruta, pero puede no ser visible en la barra lateral. Actualiza `apps/docs/astro.config.mjs` cuando cambie la navegación. Prefiere grupos de directorios autogenerados cuando la jerarquía de contenido ya expresa la estructura y colapsa por defecto los grupos de referencia que no necesitan permanecer abiertos.
 
-No enlaces a la salida generada como si fuera código fuente mantenido. En
-particular, cambia el Markdown bajo `apps/docs/src/content/docs/`, no bajo
-`apps/docs/dist/` ni `apps/docs/.astro/`.
-
-## Añade la ruta a la barra lateral
-
-Un archivo Markdown tiene una ruta, pero no necesariamente es visible en la barra
-lateral de Starlight. Cuando una página esté lista para navegarse, actualiza el
-`sidebar` que se pasa a Starlight en `apps/docs/astro.config.mjs`. Usa un slug
-explícito para una sola página o una entrada de directorio `autogenerate` para un
-grupo:
-
-```js
-{
-  label: 'Documentation',
-  items: [{ autogenerate: { directory: 'contributors/documentation' } }]
-}
-```
-
-Mantén la etiqueta y la agrupación de la barra lateral alineadas con la audiencia
-de la página. No edites la navegación generada ni la salida de compilación. Un
-cambio de navegación es un cambio en la configuración fuente y debe comprobarse
-con la compilación de documentación.
+Las rutas publicadas en inglés y español deben conservar la paridad. Cuando cambie un locale, actualiza su página equivalente en el mismo cambio salvo que exista un plan explícito de localización que indique lo contrario.
 
 ## Mantén las skills desde su fuente
 
-Las skills son independientes de la documentación publicada. Edita una skill solo
-en `Docs/skills/` y después sincroniza las copias mantenidas:
+Edita las skills únicamente bajo `Docs/skills/` y luego sincronízalas:
 
 ```bash
 pnpm sync:skills
 ```
 
-La sincronización copia las skills internas a `.agents/skills/` y las skills
-públicas a `packages/create-framekit/template/.agents/skills/`. Nunca edites
-directamente ninguna de las copias sincronizadas; cambia la fuente y ejecuta la
-sincronización en su lugar.
+Nunca edites directamente `.agents/skills/` ni `packages/create-framekit/template/.agents/skills/`.
 
-## Conserva la paridad de rutas
+## Verifica los cambios de documentación
 
-El inglés se estabiliza antes de la localización. Por cada ruta en inglés añadida
-bajo `en/`, la fase 9 debe añadir una página equivalente en español bajo `es/`
-con el mismo slug, responsabilidad y ejemplos técnicos. Durante la fase 8, añade
-solo la página en inglés: no crees páginas en español ni afirmes que los locales ya
-tienen paridad de rutas o contenido.
-
-Cuando una página esté localizada, los enlaces en inglés deben conservar `/en/` y
-los enlaces en español deben usar `/es/`; nunca uses una ruta desnuda como
-`/users` ni un enlace relativo que pueda cruzar locales. Compara ambos árboles de
-rutas después de la localización y ejecuta la compilación de documentación antes
-de considerar completa la pareja.
-
-## Verifica la página
-
-Ejecuta la compilación de documentación desde la raíz del repositorio:
+Ejecuta:
 
 ```bash
 pnpm --filter docs build
 ```
 
-Después, comprueba la ruta renderizada, su ubicación en la barra lateral, cada
-enlace interno y las afirmaciones de las fuentes frente a los manifiestos actuales,
-la implementación, las pruebas y la plantilla canónica. La compilación demuestra
-que el sitio puede compilarse; no demuestra que una afirmación histórica siga
-siendo compatible.
+Después comprueba las rutas renderizadas, la ubicación en la barra lateral, los enlaces internos, las pestañas sincronizadas de gestor de paquetes y las afirmaciones técnicas contra el código fuente actual. Una compilación exitosa demuestra que el sitio compila; no demuestra que una afirmación obsoleta sea correcta.

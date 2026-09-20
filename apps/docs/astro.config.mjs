@@ -35,6 +35,7 @@ export default defineConfig({
                         {
                             label: 'Concepts',
                             items: [
+                                { slug: 'users/concepts' },
                                 {
                                     label: 'Templates',
                                     items: [{ autogenerate: { directory: 'users/concepts/templates' } }],
@@ -55,15 +56,18 @@ export default defineConfig({
                         {
                             label: 'Migrations',
                             translations: { es: 'Migraciones' },
+                            collapsed: true,
                             items: [{ autogenerate: { directory: 'users/migrations' } }],
                         },
                         {
                             label: 'Troubleshooting',
                             translations: { es: 'Solución de problemas' },
+                            collapsed: true,
                             items: [{ autogenerate: { directory: 'users/troubleshooting' } }],
                         },
                         {
                             label: 'Reference',
+                            collapsed: true,
                             items: [{ autogenerate: { directory: 'users/reference' } }],
                         },
                     ],
@@ -71,6 +75,7 @@ export default defineConfig({
                 {
                     label: 'Contributing to FrameKit',
                     translations: { es: 'Contribuir a FrameKit' },
+                    collapsed: true,
                     items: [
                         { slug: 'contributors' },
                         {

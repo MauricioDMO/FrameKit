@@ -1,31 +1,50 @@
 ---
 title: Writing and structure
-description: Add focused FrameKit documentation pages from current sources and keep their routes and sidebar entries aligned.
+description: Keep FrameKit documentation focused, task-oriented, and consistent across English and Spanish.
 ---
 
 # Writing and structure
 
-This page is for contributors adding or revising published documentation. Its
-primary responsibility is to keep page structure, source evidence, links, and
-navigation maintainable.
+This page is for contributors adding or revising published documentation. Keep each page focused on one responsibility and prefer the simplest Starlight primitive that makes the content easier to scan.
 
-## Start with the audience
+## Start with the audience and page type
 
-Decide who the page serves before choosing its format:
-
-- `users/` explains how to build and operate a FrameKit application;
+- `users/` explains how to build and operate a FrameKit application.
 - `contributors/` explains how to change and verify the FrameKit repository.
 
-Give the page one primary responsibility. A focused reference, workflow, or
-concept page is easier to verify and link than a second index that repeats
-several procedures. Link to an existing owner when the information already has
-a page.
+Choose one primary page type:
+
+- **Tutorial or guide:** get the reader through a task with only the details required to complete it.
+- **Concept:** explain how a part of FrameKit works and why it exists.
+- **Reference:** keep complete command, configuration, API, and file contracts.
+- **Troubleshooting:** diagnose a symptom and point to the owning workflow or reference.
+
+Do not turn index pages into copies of the sidebar. Use them to expose a small number of high-value starting points.
+
+## Prefer built-in Starlight components
+
+Plain Markdown remains the default. Use MDX when a built-in component makes a workflow materially clearer:
+
+- `Steps` for procedures with a meaningful order.
+- `Tabs` for equivalent alternatives such as pnpm and npm. Use the same `syncKey="package-manager"` so the reader's choice persists.
+- `FileTree` for repository and project layouts instead of ASCII trees.
+- `LinkCard` and `CardGrid` for short landing pages and task entrypoints.
+- Starlight asides (`:::note`, `:::tip`, `:::caution`) for information that should stand apart from the main flow.
+- Expressive Code `title="src/file.ts"` metadata when a code block represents a real file.
+
+Do not add a custom component when a built-in Starlight component already expresses the same structure.
+
+## Keep guides short
+
+A guide should contain the shortest supported path to the result. Move exhaustive switches, environment-variable contracts, generated-file details, and command behavior to **Reference**, then link to the owning reference page.
+
+This avoids maintaining the same technical contract in several places and keeps getting-started pages readable.
 
 ## Use current sources first
 
 Verify published claims against the current repository in this order:
 
-1. package manifests and their public exports or binaries;
+1. package manifests and public exports or binaries;
 2. implementation and tests under the owning workspace;
 3. the canonical generated-consumer template; and
 4. current first-party integration where it demonstrates the behavior.
@@ -35,92 +54,43 @@ are not authority over current code. `Docs/Plans/` records work coordination,
 not product behavior. Do not copy historical commands or describe unsupported
 surfaces just because an older page mentions them.
 
-## Add a page
+## Add or revise a page
 
-Create the maintained Markdown page below the audience directory, for example:
+Use `.md` for plain Markdown and `.mdx` when importing Starlight components:
 
 ```text
-apps/docs/src/content/docs/en/contributors/<area>/<slug>.md
+apps/docs/src/content/docs/en/<audience>/<area>/<slug>.md
+apps/docs/src/content/docs/en/<audience>/<area>/<slug>.mdx
 ```
 
-Use Starlight frontmatter with a concise title and description, then keep a
-matching page heading and focused sections:
+Use concise frontmatter and avoid repeating the page title as a manual `#` heading unless the layout specifically requires it.
 
-```md
----
-title: A focused page title
-description: State the page's audience and primary responsibility.
----
+Keep repository paths, package names, commands, routes, and imports exactly as they exist in current sources. English links use `/en/`; Spanish links use `/es/`.
 
-# A focused page title
-```
+Do not edit generated output such as `apps/docs/dist/` or `apps/docs/.astro/`.
 
-Use repository paths, package names, commands, routes, and imports exactly as
-they exist in the current sources. Link between published English pages with
-root-relative `/en/` paths, for example:
+## Sidebar and localization
 
-```md
-See the [contributor workflow](/en/contributors/development/workflow) before
-running repository checks.
-```
+A content file has a route but may not be visible in the sidebar. Update `apps/docs/astro.config.mjs` when navigation changes. Prefer autogenerated directory groups where the content hierarchy already expresses the structure, and collapse reference-heavy groups that do not need to stay open by default.
 
-Do not link to generated output as if it were maintained source. In particular,
-change Markdown under `apps/docs/src/content/docs/`, not `apps/docs/dist/` or
-`apps/docs/.astro/`.
-
-## Add the route to the sidebar
-
-A Markdown file has a route, but it is not necessarily visible in the Starlight
-sidebar. When a page is ready to be navigated, update the `sidebar` passed to
-Starlight in `apps/docs/astro.config.mjs`. Use an explicit slug for a single
-page or an `autogenerate` directory entry for a group:
-
-```js
-{
-  label: 'Documentation',
-  items: [{ autogenerate: { directory: 'contributors/documentation' } }]
-}
-```
-
-Keep the sidebar label and grouping aligned with the page's audience. Do not
-edit generated navigation or build output. A navigation change is a source
-configuration change and must be checked with the docs build.
+English and Spanish published routes should remain in parity. When one locale changes, update its equivalent page in the same change unless there is an explicit localization plan saying otherwise.
 
 ## Maintain skills from their source
 
-Skills are separate from published documentation. Edit a skill only under
-`Docs/skills/`, then synchronize the maintained source:
+Edit skills only under `Docs/skills/`, then synchronize them:
 
 ```bash
 pnpm sync:skills
 ```
 
-The sync copies internal skills to `.agents/skills/` and public skills to
-`packages/create-framekit/template/.agents/skills/`. Never edit either
-synchronized copy directly; change the source and run the sync instead.
+Never edit `.agents/skills/` or `packages/create-framekit/template/.agents/skills/` directly.
 
-## Preserve route parity
+## Verify documentation changes
 
-English is stabilized before localization. For each English route added under
-`en/`, phase 9 should add an equivalent Spanish page under `es/` with the same
-slug, responsibility, and technical examples. During phase 8, add only the
-English page: do not create Spanish pages or claim that the locales already
-have route or content parity.
-
-When a page is localized, English links must keep `/en/` and Spanish links must
-use `/es/`; never use a bare `/users` path or a relative link that can cross
-locales. Compare both route trees after localization and run the docs build
-before treating the pair as complete.
-
-## Verify the page
-
-Run the docs build from the repository root:
+Run:
 
 ```bash
 pnpm --filter docs build
 ```
 
-Then check the rendered route, its sidebar placement, every internal link, and
-the source claims against the current manifests, implementation, tests, and
-canonical template. The build proves the site can compile; it does not prove
-that a historical claim is still supported.
+Then check the rendered routes, sidebar placement, internal links, synchronized package-manager tabs, and technical claims against current source. A successful build proves the site compiles; it does not prove a stale claim is correct.

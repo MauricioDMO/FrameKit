@@ -1,0 +1,80 @@
+---
+title: Create a project
+description: Scaffold a FrameKit project and open Studio with the shortest supported setup.
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Use the official creator when you are starting a new application.
+
+## Prerequisites
+
+- Node.js `>=22.13.0`.
+- pnpm `>=11.14.0` when using pnpm.
+- A destination directory that does not already exist.
+
+## Create and run the project
+
+<Steps>
+
+1. **Create the application.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm dlx @mauriciodmo/create-framekit my-project
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npx @mauriciodmo/create-framekit my-project
+   ```
+
+     </TabItem>
+   </Tabs>
+
+2. **Enter the project and start development.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   cd my-project
+   pnpm dev
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   cd my-project
+   npm run dev
+   ```
+
+     </TabItem>
+   </Tabs>
+
+3. **Open Studio.**
+
+   Visit `http://localhost:3000`. The application redirects to `/editor`. On the first login against an empty database, set `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`.
+
+4. **Create your first template.**
+
+   Continue with [Create your first template](/en/users/getting-started/first-template).
+
+</Steps>
+
+## Creator options
+
+The creator can install dependencies, run pnpm build-script approval, initialize Git, accept or reject prompts non-interactively, and refresh public FrameKit skills. Those switches are reference material rather than required setup steps.
+
+See the [`create-framekit` CLI reference](/en/users/reference/cli/create-framekit) for prompts, `-y`, `-n`, `update-skills`, and recovery when installation is skipped or fails.
+
+:::tip
+If PNG rendering reports that Chromium is unavailable, follow the browser installation guidance in [Deployment](/en/users/deployment) or [rendering troubleshooting](/en/users/troubleshooting/rendering).
+:::
