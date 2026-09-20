@@ -20,24 +20,9 @@ export default defineConfig({
             title: 'FrameKit Docs',
             description: 'Template-based image editor with visual Studio, CLI, and code generation for React and Next.js',
             customCss: ['./src/styles/starlight.css'],
-            head: [
-                {
-                    tag: 'script',
-                    attrs: {
-                        defer: true,
-                        src: 'https://uma.mauriciodmo.com/script.js',
-                        'data-website-id': 'a38e1d31-77fe-4d90-86dc-c481e8c38bfb',
-                        'data-domains': 'framekit.mauriciodmo.com',
-                    },
-                },
-                {
-                    tag: 'script',
-                    attrs: {
-                        defer: true,
-                        src: '/analytics.js',
-                    },
-                },
-            ],
+            components: {
+                Head: './src/components/analytics/StarlightHead.astro',
+            },
             social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/MauricioDMO/FrameKit' }],
             sidebar: [
                 {
