@@ -1,8 +1,8 @@
 # Server Image Rendering API
 
 - **Status:** Steps 0.5 and 0.6, and Steps 1-7, are implemented and verified;
-  Step 8 final revalidation and closure are blocked by the Studio Access, API
-  Tokens, and Server-backed Export plan.
+  Step 8 final revalidation and closure are blocked by Studio Access phases 1-8
+  and the Optional Authentication plan inserted before its phase 8.
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Target runtime:** One long-lived Node.js process per generated application container.
@@ -55,6 +55,12 @@ or no persistent application data are historical Step 1-7 baseline records, not
 active Step 8 instructions. The Step 8 document uses the superseding six-file,
 session/API-token, server-backed-export baseline.
 
+The [Optional Authentication plan](../optional-authentication/README.md) runs
+after Studio Access phases 1-7 and before its phase 8. It further supersedes the
+assumption that session/API-token authentication is always enabled: the renderer
+is public by default and retains the authenticated behavior through explicit
+`FRAMEKIT_AUTH_ENABLED=true`.
+
 ## How to execute the plan
 
 Verify the completed Step 0.5 and Step 0.6 gates before continuing to Step 6.
@@ -77,7 +83,7 @@ their gates run after Step 5 and before Step 6.
 | 5 | [Private Next.js render route](./05-private-next-render-route.md) | Internal job-backed page that renders already-resolved data | Steps 2-4 |
 | 6 | [Public image API route](./06-public-image-api-route.md) | Package-owned authenticated image handler and a thin PNG route | Steps 0.5-0.6 and 1-5 |
 | 7 | [Packaging and Docker](./07-packaging-and-docker.md) | FrameKit-owned browser installation/versioning, minimal starter distribution, and production image | Steps 0.5-0.6 and 1-6 |
-| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Final unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7, then Studio Access and API Rendering Phases 1-8 |
+| 8 | [Verification and rollout](./08-verification-and-rollout.md) | Final unit/integration/browser/package/security gates and documentation rollout | Steps 0.5-0.6 and 1-7, Studio Access Phases 1-7, Optional Authentication Phases 1-5, then Studio Access Phase 8 |
 
 ## Step 0.5 - Package Client/Server Boundaries
 
@@ -700,7 +706,7 @@ apps/studio/
   studio-client.tsx
   render-client.tsx
 
-tests/e2e/
+e2e/
   # root Playwright E2E coverage remains here
 ```
 
@@ -709,8 +715,8 @@ the production domain. FrameKit server tests use
 `packages/framekit/src/server/__tests__/`; the shared raster test is
 `packages/framekit/src/shared/__tests__/raster-image.test.ts`; and the canvas
 test is `packages/framekit/src/editor/components/__tests__/template-canvas.test.tsx`.
-Compile-time type fixtures remain under `packages/framekit/tests/types/`, and
-root Playwright E2E remains under `tests/e2e/`. Generated files under
+Compile-time type fixtures remain under `packages/framekit/type-tests/`, and
+root Playwright E2E remains under `e2e/`. Generated files under
 `src/generated/framekit/` are regenerated, never hand-edited.
 
 `shared/` is reserved for legitimate cross-domain functionality consumed by
@@ -759,8 +765,9 @@ root Playwright E2E remains under `tests/e2e/`. Generated files under
 
 The feature is complete when:
 
-- an authenticated request renders any valid generated-registry template and
-  returns PNG bytes in one response;
+- a request renders any valid generated-registry template and returns PNG bytes
+  in one response; it needs no credentials by default and requires a valid
+  session or API token with `FRAMEKIT_AUTH_ENABLED=true`;
 - omitted fields preserve existing defaults/content/assets;
 - valid base64 and allowed HTTPS image overrides render correctly;
 - allowed HTTPS images are fetched by Node.js and Chromium performs no external
@@ -796,8 +803,8 @@ The feature is complete when:
   storage, or generated-image URLs;
 - multiple Node.js application processes sharing one render store;
 - serverless/Edge deployment;
-- organizations, token scopes, quotas, billing, or public unauthenticated
-  rendering;
+- organizations, token scopes, quotas, billing, or a second public-rendering
+  protocol beyond the canonical optional-auth image endpoint;
 - arbitrary URL screenshotting, scraping, crawling, caller HTML, or caller CSS;
 - browser access to arbitrary external resources;
 - remote fonts/stylesheets in templates; package them with the application for

@@ -1,7 +1,9 @@
 # Phase 6 - Architectural Import Boundaries
 
 - **Status:** Proposed and deferred; not started.
-- **Depends on:** Server Image Rendering steps 1-8 and the server gate.
+- **Depends on:** Server Image Rendering steps 1-7, Studio Access phases 1-7,
+  Optional Authentication phases 1-5, Studio Access phase 8, Server Image
+  Rendering step 8 and the server gate.
 - **Audience:** FrameKit maintainers planning the final maintainability phase.
 
 ## Goal
@@ -24,15 +26,22 @@ The global execution order is:
 ```text
 Maintainability 1 → 2 → 3 → 4 → 5
     ↓
-Server Image Rendering 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Server Image Rendering 1 → 2 → 3 → 4 → 5 → 6 → 7
+    ↓
+Studio Access 1 → 2 → 3 → 4 → 5 → 5.5 → 6 → 7
+    ↓
+Optional Authentication 1 → 2 → 3 → 4 → 5
+    ↓
+Studio Access 8 → Server Image Rendering 8
     ↓
 Server gate
     ↓
 Maintainability 6
 ```
 
-Do not start Phase 6 after Phase 5 alone. The eight server steps and the server
-gate must complete first. Until then, this document remains a plan and no
+Do not start Phase 6 after Phase 5 alone. The server, Studio Access and Optional
+Authentication sequence plus the server gate must complete first. Until then,
+this document remains a plan and no
 ESLint rule, ESLint configuration, architecture test, source import, export,
 package manifest, or build entry is changed for Phase 6.
 
@@ -142,7 +151,7 @@ actual dependency inventory. Revalidate, at minimum:
 5. The public API and private render consumer routes, their client/server
    boundaries, and every Node or Playwright dependency they reach.
 6. The nearest relevant `__tests__/` placement for runtime tests, while
-   retaining `packages/framekit/tests/types/` for compile-time type fixtures.
+   retaining `packages/framekit/type-tests/` for compile-time type fixtures.
 
 Do not carry forward the pre-server inventory by assumption. If the actual graph
 differs from this model, update the plan or obtain an architecture decision
@@ -186,7 +195,7 @@ The final Phase 6 gate should require, as applicable to the approved graph:
 - dynamic imports and generated strings are inventoried separately from what the
   static rule enforces;
 - runtime tests live under the nearest relevant `__tests__/` directory and
-  compile-time fixtures remain under `packages/framekit/tests/types/`;
+  compile-time fixtures remain under `packages/framekit/type-tests/`;
 - package exports, build entries, generated output, isolated consumers, and the
   server routes pass their relevant checks; and
 - no source, ESLint/configuration, package, export, or generated-file change is

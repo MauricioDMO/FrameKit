@@ -9,6 +9,9 @@ distribution, documentation, and the surrounding FrameKit plans.
 ## Depends on
 
 - Phases 1-7 with passing focused exit gates.
+- All five phases of
+  [Optional Authentication](../optional-authentication/README.md), which runs
+  after Phase 7 and changes the runtime default.
 - Built FrameKit and creator tarballs.
 - An isolated creator-generated consumer outside the workspace.
 - The verified Server Image Rendering Steps 1-7 baseline.
@@ -38,6 +41,8 @@ Database and credentials:
 
 Sessions and HTTP:
 
+- strict `FRAMEKIT_AUTH_ENABLED` parsing, open default, authenticated opt-in and
+  invalid-configuration fail-closed behavior;
 - create, validate, expire, logout, and password invalidation;
 - inactive/deleted-user rejection;
 - bounded exact body parsing;
@@ -55,6 +60,8 @@ Users and tokens:
 
 Image API and Editor:
 
+- unauthenticated Editor, Brand and image API behavior in the default open mode;
+- absent login, Settings and access API in the default open mode;
 - session and API-token Studio-handler success;
 - invalid Bearer precedence over ambient session;
 - authentication before body/template/fetch/browser work;
@@ -78,7 +85,8 @@ Generated consumer and Docker:
 
 Runtime environment:
 
-- verify the six FrameKit-specific application variables: first-boot
+- verify the seven FrameKit-specific application variables: optional
+  `FRAMEKIT_AUTH_ENABLED`, first-boot
   `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD`, persistent
   `FRAMEKIT_DATABASE_PATH`, rendering `FRAMEKIT_ALLOWED_IMAGE_HOSTS`,
   `FRAMEKIT_MAX_CONCURRENT_RENDERS`, and `FRAMEKIT_RENDER_TIMEOUT_MS`, plus the
@@ -88,8 +96,9 @@ Runtime environment:
   defaults and bounds are applied as documented;
 - verify the runtime-only administrator password is not committed, passed during
   image build, or stored in image layers;
-- verify the canonical image route uses only a same-origin session or database
-  API token, while access mutations retain their session boundary;
+- verify the canonical image route requires no credentials by default and uses
+  only a same-origin session or database API token when auth is enabled, while
+  access mutations exist only in that authenticated mode;
 - verify `FRAMEKIT_PUBLIC_ORIGIN` is not read or supported.
 
 ## Browser E2E
@@ -287,20 +296,24 @@ a separate post-publication handoff requiring an exact published version.
 
 ## Final acceptance checklist
 
-- [ ] Empty database bootstrap requires explicit administrator credentials.
+- [ ] Empty-database bootstrap does not run in open mode and requires explicit
+  administrator credentials when auth is enabled for the first time.
 - [ ] Environment bootstrap never overwrites existing account data.
 - [ ] Passwords, sessions, and API tokens are hash-only at rest.
 - [ ] Last-active-administrator mutations fail transactionally.
-- [ ] Protected Studio routes, cookie-authenticated access mutations, and
-  development asset writes require an active session.
+- [ ] With auth enabled, protected Studio routes, cookie-authenticated access
+  mutations, and development writes require a session; with auth disabled,
+  Editor and Brand are public, access API is absent, and development upload
+  retains same-origin enforcement.
 - [ ] API-token owner and administrator boundaries pass.
 - [ ] Cookie mutations reject cross-origin requests.
 - [ ] Same-origin cookie requests pass through the supported HTTPS-to-HTTP
   reverse-proxy topology without extra origin configuration.
 - [ ] Public deployment requirements state HTTPS and external login throttling.
-- [ ] All six FrameKit-specific application variables and the standard `PORT` setting have
-  documented first-boot, persistent, and rendering verification.
-- [ ] Canonical image API accepts a session or API token.
+- [ ] All seven FrameKit-specific variables and the standard `PORT` setting have
+  documented bootstrap, persistence, and rendering verification.
+- [ ] The canonical image API requires no credentials by default and accepts a
+  session or API token when auth is enabled.
 - [ ] `FRAMEKIT_PUBLIC_ORIGIN` is documented as unsupported.
 - [ ] Studio Download PNG and Copy PNG use the server API.
 - [ ] Local preview behavior remains unchanged.
@@ -313,7 +326,8 @@ a separate post-publication handoff requiring an exact published version.
 - [ ] English and Spanish public documentation agree.
 - [ ] Canonical skills are synchronized from `Docs/skills/`.
 - [ ] Focused, repository, E2E, tarball, and Docker gates pass.
-- [ ] Server Image Rendering Step 8 is revalidated against this final baseline.
+- [ ] Server Image Rendering Step 8 receives this verified baseline as its next
+  revalidation gate.
 - [ ] Maintainability Phase 6 baseline includes the final access architecture.
 
 ## Exit gate
