@@ -1,0 +1,32 @@
+---
+import { IconCode, IconEdit, IconPhotoCheck } from '@tabler/icons-astro'
+import type { LandingContent } from '../../content/landing'
+
+interface Props {
+  copy: LandingContent
+}
+
+const { copy } = Astro.props
+---
+
+<section id="workflow" class="mx-auto w-[calc(100%-2rem)] max-w-6xl border-t border-white/10 py-20 sm:w-[calc(100%-3rem)] sm:py-24" aria-labelledby="workflow-title">
+  <div class="mb-10 max-w-2xl">
+    <p class="mb-5 text-xs font-extrabold uppercase tracking-[0.16em] text-[#b9f8d2]">FrameKit workflow</p>
+    <h2 id="workflow-title" class="mb-4 text-4xl font-extrabold leading-none tracking-[-0.055em] sm:text-5xl">{copy.workflowTitle}</h2>
+    <p class="mb-0 leading-[1.6] text-[#91ae9f]">{copy.workflowDescription}</p>
+  </div>
+  <div class="grid grid-cols-1 border-y border-white/10 sm:grid-cols-3 sm:divide-x sm:divide-white/10">
+    {copy.workflow.map((step, index) => (
+      <article class="py-6 sm:px-6 sm:first:pl-0 sm:last:pr-0">
+        <div class="mb-8 flex items-center justify-between text-[#537568]">
+          {index === 0 && <IconCode size={22} stroke={1.7} aria-hidden="true" />}
+          {index === 1 && <IconEdit size={22} stroke={1.7} aria-hidden="true" />}
+          {index === 2 && <IconPhotoCheck size={22} stroke={1.7} aria-hidden="true" />}
+          <span class="font-mono text-xs">0{index + 1}</span>
+        </div>
+        <h3 class="mb-3 text-2xl font-extrabold tracking-[-0.04em]">{step.title}</h3>
+        <p class="m-0 text-[0.95rem] leading-[1.6] text-[#91ae9f]">{step.description}</p>
+      </article>
+    ))}
+  </div>
+</section>

@@ -3,14 +3,18 @@
 ## Direction
 
 FrameKit is a visual workshop for creating consistent content from code. The
-interface and brand components should feel editorial, technical, and calm:
+interface and brand components should feel editorial, technical, and calm. The
+design should use structure, whitespace, typography, and contrast before
+decoration:
 
 - Use a deep forest canvas as the primary visual surface.
 - Use mint as the signal for action, focus, and editable values.
 - Use warm ivory for readable content surfaces and exported light artwork.
 - Pair strong sans-serif headlines with restrained monospace details.
-- Prefer generous spacing, rounded geometry, and quiet borders over dense UI.
-- Use layered circles, thin rules, and soft gradients as background texture.
+- Prefer generous spacing, flat surfaces, and structural rules over dense UI or
+  floating cards.
+- Use circles, gradients, and other texture only as a restrained atmospheric
+  detail; never let decoration compete with editable content.
 
 ## Color Tokens
 
@@ -53,13 +57,21 @@ interface and brand components should feel editorial, technical, and calm:
 
 ## Shape and Spacing
 
-- Use rounded corners between `12px` and `24px` for cards, controls, and
-  artwork blocks.
-- Use pill shapes for short tags, statuses, and compact metadata.
-- Use thin borders with low opacity rather than heavy outlines.
+- Use a small radius scale: `0px` by default, `4px` for minor grouping, and
+  `8px` for controls or intentionally emphasized blocks.
+- Keep cards, panels, and artwork blocks mostly square. Do not round every
+  container or use pill shapes as a general control language.
+- Reserve pills for compact statuses or tags whose meaning depends on their
+  badge-like appearance.
+- Use one-pixel rules to organize regions and related content. Do not outline
+  every control when spacing, surface contrast, or a divider already provides
+  enough structure.
+- Avoid drop shadows on ordinary surfaces. Use a restrained shadow only when
+  an overlay, menu, or modal must clearly sit above the page.
 - Base spacing on multiples of `4px`; prefer large internal padding in artwork
   compositions (`70px` to `92px` at the current 1440px canvas size).
-- Keep decorative elements partially outside the canvas to create depth.
+- Keep decorative elements sparse and partially outside the canvas only when
+  they create useful depth without introducing visual noise.
 - Preserve clear whitespace around the main message; decoration must not compete
   with editable content.
 
@@ -69,11 +81,14 @@ interface and brand components should feel editorial, technical, and calm:
   URL or call to action.
 - Anchor brand identity in a compact header and keep it consistent across
   formats.
-- Use a thin divider or accent rule to separate supporting content from the
-  headline.
+- Use a thin structural or accent rule to separate supporting content from the
+  headline; do not rely on rounded containers to create hierarchy.
 - Prefer asymmetrical layouts with one strong content column and one supporting
   visual or code motif.
-- Use gradients and circles as atmosphere, not as primary content.
+- Use gradients and circles as occasional atmosphere, not as a recurring layer
+  in every composition.
+- Let whitespace and a clear reading path do more work than borders, shadows,
+  or decorative surfaces.
 - Keep channel-specific dimensions, exports, and platform labels in templates;
   reusable brand components stay channel-neutral.
 

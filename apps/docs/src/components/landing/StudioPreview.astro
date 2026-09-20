@@ -1,0 +1,48 @@
+---
+import { IconBrackets, IconPhoto } from '@tabler/icons-astro'
+import type { LandingContent } from '../../content/landing'
+
+interface Props {
+  copy: LandingContent
+}
+
+const { copy } = Astro.props
+---
+
+<div class="relative" aria-label={copy.preview.templateLabel}>
+  <div class="absolute -right-12 top-10 h-64 w-64 rounded-full border border-[#b9f8d2]/15 bg-[#2a3931]/30 blur-sm" aria-hidden="true"></div>
+  <div class="relative border border-[#c8f7d9]/30 bg-[#10271f] shadow-2xl shadow-black/30">
+    <div class="flex items-center justify-between border-b border-white/10 px-4 py-3 font-mono text-[0.7rem] text-[#91ae9f]">
+      <span class="flex items-center gap-2">
+        <IconBrackets size={14} stroke={1.8} aria-hidden="true" />
+        {copy.preview.templateLabel}
+      </span>
+      <span>Studio</span>
+    </div>
+    <div class="grid min-h-72 grid-cols-[minmax(0,1fr)_7rem] gap-4 p-4 sm:min-h-80">
+      <div class="relative overflow-hidden bg-[#f5f7ee]">
+        <div class="absolute right-[-15%] top-[10%] aspect-square w-[72%] rounded-full bg-[#b9f8d2]"></div>
+        <div class="absolute bottom-[-15%] left-[-12%] aspect-square w-[74%] rounded-full bg-[#537568]"></div>
+        <div class="absolute left-[12%] top-[45%] h-3 w-[76%] -rotate-12 rounded-full bg-[#10271f]"></div>
+        <span class="absolute bottom-5 left-5 font-mono text-xs font-bold text-[#10271f]">{copy.preview.fieldValue}</span>
+      </div>
+      <div class="flex flex-col gap-3 pt-1 text-[0.68rem] text-[#91ae9f]">
+        <div>
+          <span class="mb-1 block font-mono text-[#537568]">{copy.preview.fieldLabel}</span>
+          <span class="block border-b border-[#b9f8d2]/50 pb-1 text-[#f5f7ee]">{copy.preview.fieldValue}</span>
+        </div>
+        <div>
+          <span class="mb-1 block font-mono text-[#537568]">{copy.preview.variantLabel}</span>
+          <span class="block border-b border-[#b9f8d2]/50 pb-1 text-[#f5f7ee]">{copy.preview.variantValue}</span>
+        </div>
+        <div class="mt-auto border-t border-white/10 pt-3">
+          <span class="flex items-center gap-1.5 font-mono text-[#537568]">
+            <IconPhoto size={13} stroke={1.8} aria-hidden="true" />
+            {copy.preview.exportLabel}
+          </span>
+          <span class="mt-1 block text-[#c8f7d9]">{copy.preview.exportValue}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+---
+import { IconArrowDown, IconArrowUpRight } from '@tabler/icons-astro'
+import type { LandingContent, LandingLanguage } from '../../content/landing'
+import StudioPreview from './StudioPreview.astro'
+
+interface Props {
+  copy: LandingContent
+  language: LandingLanguage
+}
+
+const { copy, language } = Astro.props
+---
+
+<section
+  class="mx-auto grid w-[calc(100%-2rem)] max-w-6xl grid-cols-1 items-center gap-14 py-20 sm:w-[calc(100%-3rem)] sm:py-24 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-20 lg:py-32"
+  aria-labelledby="hero-title"
+>
+  <div class="max-w-2xl">
+    <p class="mb-5 text-xs font-extrabold uppercase tracking-[0.16em] text-[#b9f8d2]">{copy.eyebrow}</p>
+    <h1 id="hero-title" class="mb-6 max-w-[11ch] text-5xl font-extrabold leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-[5.8rem]">
+      {copy.heroTitle}
+    </h1>
+    <p class="mb-8 max-w-xl text-[1.05rem] leading-[1.65] text-[#91ae9f] sm:text-xl">{copy.heroDescription}</p>
+    <div class="flex flex-wrap gap-3">
+      <a
+        class="flex items-center gap-2 rounded-lg bg-[#c8f7d9] px-5 py-3 text-sm font-bold text-[#071a15] no-underline transition-transform hover:-translate-y-0.5 hover:bg-[#f5f7ee] focus-visible:outline-2 focus-visible:outline-[#b9f8d2] focus-visible:outline-offset-4 motion-reduce:transition-none"
+        href={`/${language}/users/getting-started/`}
+      >
+        {copy.getStarted}
+        <IconArrowUpRight size={17} stroke={2.2} aria-hidden="true" />
+      </a>
+      <a
+        class="flex items-center gap-2 rounded-lg border border-[#b9f8d2]/35 px-5 py-3 text-sm font-bold text-[#c8f7d9] no-underline transition-transform hover:-translate-y-0.5 hover:border-[#c8f7d9] hover:bg-[#b9f8d2]/10 focus-visible:outline-2 focus-visible:outline-[#b9f8d2] focus-visible:outline-offset-4 motion-reduce:transition-none"
+        href="#workflow"
+      >
+        {copy.seeHowItWorks}
+        <IconArrowDown size={17} stroke={2.2} aria-hidden="true" />
+      </a>
+    </div>
+  </div>
+
+  <StudioPreview copy={copy} />
+</section>
