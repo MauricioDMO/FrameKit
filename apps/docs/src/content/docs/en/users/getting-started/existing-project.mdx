@@ -1,0 +1,169 @@
+---
+title: Integrate an existing Next.js project
+description: Add FrameKit to an existing App Router application through the supported public entrypoints.
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+FrameKit can be added to an existing Next.js App Router application without replacing the rest of the project.
+
+## Requirements
+
+- Node.js `>=22.13.0`.
+- pnpm `>=11.14.0` when using pnpm.
+- Next.js `>=16 <17`.
+- React and React DOM `>=19 <20`.
+
+## Integrate FrameKit
+
+<Steps>
+
+1. **Install the package.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm add @mauriciodmo/framekit
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm install @mauriciodmo/framekit
+   ```
+
+     </TabItem>
+   </Tabs>
+
+2. **Wrap the Next.js configuration.**
+
+   ```ts title="next.config.ts"
+   import { withFrameKit } from '@mauriciodmo/framekit/next'
+
+   export default withFrameKit()
+   ```
+
+   Pass your existing Next.js options to `withFrameKit({...})` when needed. FrameKit owns `output: 'standalone'`, `distDir: '.framekit/next'`, and the temporary `/` to `/editor` redirect.
+
+3. **Add the generated alias and FrameKit styles.**
+
+   ```json title="tsconfig.json"
+   {
+     "compilerOptions": {
+       "paths": {
+         "@/*": ["./src/*"],
+         "@framekit/generated/*": ["./src/generated/framekit/*"]
+       }
+     }
+   }
+   ```
+
+   ```css title="src/app/globals.css"
+   @import "tailwindcss";
+   @import "@mauriciodmo/framekit/styles.css";
+   ```
+
+   Keep the Tailwind import only when the project uses Tailwind.
+
+4. **Wrap the root layout.**
+
+   ```tsx title="src/app/layout.tsx"
+   import { FrameKitStudioRoot } from '@mauriciodmo/framekit/studio/root'
+
+   import './globals.css'
+
+   export default function RootLayout({ children }: { children: React.ReactNode }) {
+     return <FrameKitStudioRoot>{children}</FrameKitStudioRoot>
+   }
+   ```
+
+   The root layout must remain a server component. Do not add another `<html>`, `<head>`, or `<body>` around `FrameKitStudioRoot`.
+
+5. **Add the FrameKit routes.**
+
+   ```tsx title="src/app/[section]/[[...slug]]/page.tsx"
+   import { createStudioPage } from '@mauriciodmo/framekit/studio/root'
+   import { StudioClient } from '@framekit/generated/studio-client'
+
+   export const runtime = 'nodejs'
+   export const dynamic = 'force-dynamic'
+
+   export default createStudioPage(StudioClient)
+   ```
+
+   ```tsx title="src/app/login/page.tsx"
+   import { createLoginPage } from '@mauriciodmo/framekit/studio/root'
+
+   export const runtime = 'nodejs'
+   export const dynamic = 'force-dynamic'
+
+   export default createLoginPage()
+   ```
+
+   ```tsx title="src/app/api/framekit/[...action]/route.ts"
+   import { createFrameKitApiHandler } from '@mauriciodmo/framekit/server'
+   import { templates } from '@framekit/generated/templates'
+
+   export const runtime = 'nodejs'
+   export const dynamic = 'force-dynamic'
+
+   const handler = createFrameKitApiHandler(templates)
+
+   export const GET = handler
+   export const POST = handler
+   export const PATCH = handler
+   export const DELETE = handler
+   ```
+
+   ```tsx title="src/app/framekit/render/[id]/page.tsx"
+   import type { Metadata } from 'next'
+
+   import { createRenderPage } from '@mauriciodmo/framekit/server'
+   import { RenderClient } from '@framekit/generated/render-client'
+
+   export const runtime = 'nodejs'
+   export const dynamic = 'force-dynamic'
+   export const revalidate = 0
+   export const fetchCache = 'force-no-store'
+
+   export const metadata: Metadata = {
+     robots: { index: false, follow: false },
+   }
+
+   export default createRenderPage(RenderClient)
+   ```
+
+6. **Generate the registry and start development.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm framekit generate
+   pnpm framekit dev
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npm exec -- framekit generate
+   npm exec -- framekit dev
+   ```
+
+     </TabItem>
+   </Tabs>
+
+</Steps>
+
+FrameKit writes `src/generated/framekit/templates.ts`, `brands.ts`, `studio-client.tsx`, and `render-client.tsx`. Treat them as generated output.
+
+:::caution
+The private render route is an internal server-side handoff, not a public rendering URL. Keep the API and render routes on the Node.js runtime.
+:::
+
+Next, create [your first template](/en/users/getting-started/first-template) and review [Project structure](/en/users/getting-started/project-structure). For command behavior and generated-file details, use the CLI and generated-files pages under **Reference**.
