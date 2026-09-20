@@ -3,6 +3,7 @@ import "../../styles/global.css";
 import type { LandingLanguage } from "../../content/landing";
 import { landingContent as en } from "../../content/landing/en";
 import { landingContent as es } from "../../content/landing/es";
+import Analytics from "../../components/analytics/Analytics.astro";
 import LandingFooter from "../../components/landing/LandingFooter.astro";
 import LandingHeader from "../../components/landing/LandingHeader.astro";
 import LandingHero from "../../components/landing/LandingHero.astro";
@@ -28,13 +29,7 @@ const languages = ["en", "es"] as const;
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={copy.description} />
     <link rel="icon" href="/favicon.svg" />
-    <script
-      defer
-      src="https://uma.mauriciodmo.com/script.js"
-      data-website-id="a38e1d31-77fe-4d90-86dc-c481e8c38bfb"
-      data-domains="framekit.mauriciodmo.com"
-    ></script>
-    <script defer src="/analytics.js"></script>
+    <Analytics />
     <title>{copy.title}</title>
   </head>
   <body class="m-0 bg-[#071a15] font-sans text-[#f5f7ee]">
