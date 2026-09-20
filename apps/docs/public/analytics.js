@@ -97,28 +97,22 @@
 
   const waitForCopySuccess = (button, onSuccess) => {
     const container = button.parentElement;
-    if (!container) return;
+    if (!container || container.querySelector('.feedback')) return;
 
     let settled = false;
-    const finish = () => {
-      if (settled) return;
+    let timeout;
+
+    const observer = new MutationObserver(() => {
+      if (settled || !container.querySelector('.feedback')) return;
+
       settled = true;
       observer.disconnect();
       window.clearTimeout(timeout);
       onSuccess();
-    };
-
-    if (container.querySelector('.feedback')) {
-      finish();
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      if (container.querySelector('.feedback')) finish();
     });
 
     observer.observe(container, { childList: true, subtree: true });
-    const timeout = window.setTimeout(() => {
+    timeout = window.setTimeout(() => {
       settled = true;
       observer.disconnect();
     }, 2000);
