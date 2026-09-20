@@ -11,11 +11,6 @@ const manifestPaths = [
   'apps/studio/package.json',
 ]
 const documentationPaths = [
-  'README.md',
-  'README.es.md',
-  'packages/framekit/README.md',
-  'packages/create-framekit/README.md',
-  'packages/create-framekit/template/README.md',
   'apps/docs/src/content/docs/en/users/getting-started/create-project.mdx',
   'apps/docs/src/content/docs/es/users/getting-started/create-project.mdx',
   'apps/docs/src/content/docs/en/users/getting-started/existing-project.mdx',

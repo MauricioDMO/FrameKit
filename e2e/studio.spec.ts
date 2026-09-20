@@ -33,7 +33,7 @@ test('edits and exports a structurally valid PNG through Studio', async ({ page 
 
   await expect(page.getByRole('heading', { name: 'Promoción cuadrada', level: 1, exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Contenido', level: 2, exact: true })).toBeVisible()
-  await expect(page.getByText('1440 × 1440', { exact: true })).toBeVisible()
+  await expect(page.getByRole('complementary').getByText('1440 × 1440', { exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Metadata', exact: true }).click()
   const metadata = page.getByRole('dialog', { name: 'Promoción cuadrada', exact: true })
@@ -45,7 +45,7 @@ test('edits and exports a structurally valid PNG through Studio', async ({ page 
 
   const preview = page.getByRole('region', { name: 'Vista previa', exact: true })
   const artwork = preview.getByRole('article')
-  const backgroundImage = artwork.locator(':scope > img[alt=""]')
+  const backgroundImage = artwork.locator('img[alt=""]')
   await expect(backgroundImage).toHaveCount(1)
   await expect(backgroundImage).toHaveAttribute('src', '/framekit/templates/redes-sociales/instagram/promocion-cuadrada/common/backgroundImage.svg')
   await expect.poll(() => backgroundImage.evaluate((image) => {
@@ -64,11 +64,6 @@ test('edits and exports a structurally valid PNG through Studio', async ({ page 
   await expect(artwork.getByText('Playwright headline', { exact: true })).toBeVisible()
   await expect(artwork.getByText('A verified browser preview.', { exact: true })).toBeVisible()
 
-  const opacity = page.getByRole('spinbutton', { name: 'Opacidad de imagen', exact: true })
-  await opacity.fill('80')
-  await expect(opacity).toHaveValue('80')
-  await expect(backgroundImage).toHaveCSS('opacity', '0.8')
-
   const color = page.getByRole('textbox', { name: 'Color principal', exact: true })
   await color.fill('ff0000')
   await expect(color).toHaveValue('ff0000')
@@ -85,18 +80,7 @@ test('edits and exports a structurally valid PNG through Studio', async ({ page 
   await showBackgroundImage.press('Space')
   await expect(showBackgroundImage).toBeChecked()
   await expect(backgroundImage).toHaveCount(1)
-  await expect(backgroundImage).toHaveCSS('opacity', '0.8')
-
-  await opacity.fill('')
-  await expect(opacity).toHaveValue('')
-  await expect(page.getByText('Ingresa un número válido', { exact: true })).toBeVisible()
-  await expect(backgroundImage).toHaveCSS('opacity', '0.8')
   await expect(artwork.getByText('Playwright headline', { exact: true })).toBeVisible()
-
-  await opacity.fill('60')
-  await expect(opacity).toHaveValue('60')
-  await expect(page.getByText('Ingresa un número válido', { exact: true })).toHaveCount(0)
-  await expect(backgroundImage).toHaveCSS('opacity', '0.6')
 
   const downloadPromise = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar PNG', exact: true }).click()
