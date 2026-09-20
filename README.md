@@ -104,8 +104,8 @@ Studio renders this React node in the preview and exports a PNG named after the 
 
 ## Links
 
-- [Documentation](Docs/en/README.md)
-- [Documentación](Docs/es/README.md)
+- [Documentation](https://framekit.mauriciodmo.com/en/)
+- [Documentación](https://framekit.mauriciodmo.com/es/)
 - [@mauriciodmo/framekit package README](packages/framekit/README.md)
 - [License](LICENSE)
 

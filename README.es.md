@@ -105,8 +105,8 @@ Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado se
 
 ## Enlaces
 
-- [Documentación en inglés](Docs/en/README.md)
-- [Documentación](Docs/es/README.md)
+- [Documentación en inglés](https://framekit.mauriciodmo.com/en/)
+- [Documentación](https://framekit.mauriciodmo.com/es/)
 - [README del paquete @mauriciodmo/framekit](packages/framekit/README.md)
 - [Licencia](LICENSE)
 

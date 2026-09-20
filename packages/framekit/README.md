@@ -246,7 +246,7 @@ template slug, an optional variant, and optional field data:
 Authenticate with an active `framekit_session` cookie or
 `Authorization: Bearer <API_TOKEN>`. Cookie-authenticated requests must be
 same-origin. A successful request returns `200` with `image/png`; failures return
-stable JSON errors. See the [Public API Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
+stable JSON errors. See the [server image API reference](https://framekit.mauriciodmo.com/en/users/reference/http-api/image-render/)
 for the six FrameKit-specific runtime variables plus the standard `PORT` process
 setting, authentication, validation,
 bootstrap, and persistence details. On the first login request against an empty
@@ -301,8 +301,8 @@ array to `FrameKitStudio` from a client page under `/editor`.
 
 ## Full documentation
 
-- [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
-- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
-- [Template Authoring Guide](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md)
-- [CLI Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/cli.md)
-- [Public API Reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
+- [Documentation](https://framekit.mauriciodmo.com/en/)
+- [Documentación](https://framekit.mauriciodmo.com/es/)
+- [Template Authoring Guide](https://framekit.mauriciodmo.com/en/users/guides/create-template/)
+- [CLI Reference](https://framekit.mauriciodmo.com/en/users/reference/cli/)
+- [Public API Reference](https://framekit.mauriciodmo.com/en/users/reference/package-api/)

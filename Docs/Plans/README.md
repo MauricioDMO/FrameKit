@@ -948,9 +948,10 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 
 * [ ] Las fases 0 a 10 de `documentation-site/` aprobaron sus exit gates.
 * [ ] El sitio publicado separa usuarios y contribuidores bajo `/en/` y `/es/`.
-* [ ] Los enlaces públicos del repositorio usan la URL canónica.
-* [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
-* [ ] `Docs/Plans/` y `Docs/skills/` permanecen fuera del sitio publicado.
+* [x] Los enlaces públicos del repositorio usan la URL canónica.
+* [x] `Docs/en/` y `Docs/es/` fueron retirados del repositorio; la verificación
+  de producción queda pendiente.
+* [x] `Docs/Plans/` y `Docs/skills/` permanecen fuera del sitio publicado.
 
 ## Registro de decisiones
 

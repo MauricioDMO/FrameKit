@@ -4,8 +4,8 @@
 - **Depende de:** Fases 0-9.
 - **Resultado objetivo:** Sitio publicado y reconocido como única fuente
   canónica de documentación humana de FrameKit.
-- **Resultado actual:** Sitio verificado localmente y preparado para publicación;
-  deployment, enlaces públicos y retirada legacy siguen pendientes.
+- **Resultado actual:** Sitio verificado localmente; enlaces fuente y retirada
+  legacy aplicados. Deployment público y actualización de npm siguen pendientes.
 
 ## Objetivo
 
@@ -128,14 +128,17 @@ contribuidores cuando cambien snippets de packaging, browser o Docker.
 - Verificar rutas públicas `/en/` y `/es/` en el deployment real.
 - Actualizar homepage/repository/package metadata con la URL canónica.
 - Aplicar los cambios de links preparados en la fase 9.
-- Retirar `Docs/en/` y `Docs/es/` solo después de verificar producción.
+- La retirada local de `Docs/en/` y `Docs/es/` se aplicó anticipadamente por
+  decisión explícita, después de la verificación local.
 - Confirmar que enlaces desde npm y GitHub resuelven.
 - Registrar la evidencia de build, browser y deployment.
 - Marcar el sitio como fuente canónica solo después de verificar producción.
 - Actualizar `Docs/Plans/README.md` y este tracker con el cierre.
 
-Esta ejecución no aplica el rollout externo: no cambia enlaces de README, GitHub,
-npm ni metadata de paquetes, y no elimina `Docs/en/` o `Docs/es/`.
+Esta ejecución aplica el cierre local: cambia los enlaces activos del repositorio,
+actualiza la metadata fuente de los paquetes y elimina `Docs/en/` y `Docs/es/`.
+No publica nuevas versiones npm ni verifica el deployment público; las versiones
+ya publicadas en npm todavía contienen enlaces legacy.
 
 ## Rollback
 
@@ -152,5 +155,6 @@ repetir el gate antes de volver a anunciarlo.
 - [x] No quedan referencias operativas a superficies retiradas o no soportadas.
 - [ ] El deployment público responde en todas las rutas principales.
 - [ ] GitHub, npm y READMEs enlazan a la URL canónica.
-- [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
+- [x] `Docs/en/` y `Docs/es/` fueron retirados del repositorio por decisión
+  explícita antes de verificar producción.
 - [ ] El tracker maestro está cerrado con evidencia de producción.

@@ -24,6 +24,9 @@ solo coordinan el trabajo.
 - Ambos idiomas tienen la misma jerarquía y responsabilidad temática.
 - `Docs/en/` y `Docs/es/` se retiran cuando el sitio Starlight esté publicado y
   todos los enlaces del repositorio apunten al sitio nuevo.
+- El 2026-09-19 se aplicó una excepción explícita: los árboles legacy se
+  retiraron después de la verificación local y la migración de enlaces fuente,
+  antes de comprobar el deployment público y publicar nuevas versiones npm.
 - No se mantienen dos copias permanentes de la documentación pública.
 - El estado actual del código, tests, manifests y template canónico tiene
   prioridad sobre READMEs, documentación antigua y lenguaje histórico de Plans.
@@ -51,7 +54,7 @@ Usa este orden cuando dos fuentes discrepen:
 3. Template canónico en `packages/create-framekit/template/`.
 4. Integración first-party en `apps/studio/`.
 5. `CHANGELOG.md` para cambios todavía no publicados.
-6. Documentación existente bajo `Docs/en/`, `Docs/es` y los README como material
+6. Documentación histórica previamente bajo `Docs/en/`, `Docs/es/` y los README como material
    de migración, nunca como autoridad superior al código.
 
 ## Arquitectura objetivo
@@ -152,8 +155,9 @@ del producto.
   actual; no incluyas snippets, comandos ni instrucciones para ejecutar APIs,
   rutas, variables, imports, archivos, flags o comportamientos retirados.
 - Cada fase actualiza este tracker cuando completa su exit gate.
-- No retires `Docs/en/` ni `Docs/es/` hasta que la fase 10 haya verificado el
-  deployment de producción.
+- La regla prevista era no retirar `Docs/en/` ni `Docs/es/` hasta que la fase 10
+  verificara el deployment de producción; la excepción aplicada el 2026-09-19
+  queda registrada arriba y no cierra los gates externos.
 - No anuncies el sitio como canónico antes del gate de la fase 10.
 
 ## Gate global
@@ -169,8 +173,9 @@ del producto.
 - [x] Todos los exports y comandos publicados están representados.
 - [x] Los requisitos de seguridad y deployment están visibles antes de los
   ejemplos de exposición pública.
-- [ ] Los enlaces del repositorio apuntan al sitio nuevo.
-- [ ] `Docs/en/` y `Docs/es/` fueron retirados.
+- [x] Los enlaces activos del repositorio apuntan al sitio nuevo.
+- [x] `Docs/en/` y `Docs/es/` fueron retirados; la verificación de producción
+  sigue pendiente.
 - [x] `Docs/Plans/` y `Docs/skills/` permanecen separados.
 - [x] `pnpm --filter docs build` pasa.
 - [x] `pnpm lint`, `pnpm typecheck` y `pnpm build` pasan.

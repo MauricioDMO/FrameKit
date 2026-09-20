@@ -31,7 +31,7 @@ referenced by an image field with a root-relative value such as
 
 The included example template uses the inline pattern with `defineTemplate`.
 For complex layouts, see the extracted definition pattern with
-[`defineTemplateBase`](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md#extracted-definition).
+[`defineTemplateBase`](https://framekit.mauriciodmo.com/en/users/guides/split-template-definition/).
 
 ## Available commands
 
@@ -95,5 +95,5 @@ Dockerfile or image layers.
 
 ## Documentation
 
-- [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
-- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
+- [Documentation](https://framekit.mauriciodmo.com/en/)
+- [Documentación](https://framekit.mauriciodmo.com/es/)
