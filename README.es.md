@@ -1,113 +1,110 @@
-# FrameKit
+<div align="center">
+  <img src="https://framekit.mauriciodmo.com/favicon.svg" alt="Logo de FrameKit" width="72" />
+  <h1>FrameKit</h1>
+  <p><strong>Crea imágenes de marca como componentes de React.</strong></p>
+  <p>Convierte tu sistema visual en código reutilizable, edita el contenido en Studio y renderiza cada variante bajo demanda.</p>
+  <p>
+    <a href="https://framekit.mauriciodmo.com/es/users/getting-started/create-project">Crear un proyecto</a>
+    ·
+    <a href="https://framekit.mauriciodmo.com/es/">Leer la documentación</a>
+    ·
+    <a href="https://github.com/MauricioDMO/FrameKit">Ver en GitHub</a>
+  </p>
+</div>
 
-**Crea contenido visual consistente a partir de plantillas React, sin repetir ediciones manuales.**
+<p align="center">
+  <a href="https://www.npmjs.com/package/@mauriciodmo/framekit"><img src="https://img.shields.io/npm/v/%40mauriciodmo%2Fframekit?logo=npm&label=framekit" alt="framekit en npm" /></a>
+  <a href="https://www.npmjs.com/package/@mauriciodmo/create-framekit"><img src="https://img.shields.io/npm/v/%40mauriciodmo%2Fcreate-framekit?logo=npm&label=create-framekit" alt="create-framekit en npm" /></a>
+  <a href="https://github.com/MauricioDMO/FrameKit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MauricioDMO/FrameKit" alt="Licencia Apache 2.0" /></a>
+  <img src="https://img.shields.io/badge/status-beta-f2c94c" alt="Estado beta" />
+</p>
 
-FrameKit es un editor de imágenes basado en plantillas para React y Next.js. Define la pieza una vez en código, expón solo el contenido que debe cambiar y usa Studio para previsualizar, validar y exportar el resultado con sus dimensiones declaradas.
+FrameKit está pensado para desarrolladores que necesitan crear muchas
+imágenes que sigan pareciendo parte de la misma marca. En lugar de pedirle a
+un modelo de difusión que reinterprete tu estilo en cada prompt, define el
+lenguaje visual una vez con componentes React y cambia solo el contenido que
+debe variar.
 
-[English](README.md)
+## Por qué FrameKit
 
-**Estado: beta**
+- **Componentes, no prompts.** Mantén en código el layout, la tipografía, los colores, los assets y las dimensiones de exportación.
+- **Edición enfocada.** Expón campos y variantes editables en FrameKit Studio mientras el código conserva las restricciones de marca.
+- **Listo para automatizaciones.** Exporta PNG desde Studio o renderízalos mediante la API para campañas, catálogos, previews y otros flujos.
 
-## Qué problema resuelve
-
-Las publicaciones sociales, tarjetas de campaña y otros gráficos recurrentes suelen convertirse en una cadena de diseños duplicados, archivos copiados y correcciones manuales. FrameKit ofrece una única fuente de verdad tipada para el diseño y una superficie de edición enfocada en las variantes de contenido.
-
-El flujo es repetible: el equipo de desarrollo define la plantilla y sus restricciones; quienes editan contenido cambian textos, colores, assets de imagen y variantes en Studio; el navegador exporta el PNG final sin rehacer el diseño.
-
-## Studio
-
-Studio es el espacio visual para explorar plantillas, editar sus campos, cambiar variantes de contenido y revisar la composición antes de exportarla.
-
-![FrameKit Studio](Docs/img/studio.webp)
-
-## Instalación y ejecución
-
-Crea un proyecto con la CLI:
+## Crea un proyecto
 
 ```bash
-pnpm dlx @mauriciodmo/create-framekit my-project
-cd my-project
+pnpm dlx @mauriciodmo/create-framekit mi-proyecto
+cd mi-proyecto
 pnpm dev
 ```
 
-El creador copia un proyecto Next.js funcional, pregunta si debe instalar las dependencias y puede inicializar Git. Cuando se instalan las dependencias, genera el registro de plantillas; si omites la instalación, instala las dependencias y ejecuta `pnpm framekit generate` (o `npm exec -- framekit generate`) antes de iniciar Studio. Usa `-y` para aceptar todas las preguntas o `-n` para rechazarlas; sin nombre en estos modos, crea la carpeta `framekit`. El servidor de desarrollo abre FrameKit Studio con `pnpm dev`.
+Abre `http://localhost:3000`, inicia sesión y empieza a editar la plantilla
+incluida. La [guía para crear un proyecto](https://framekit.mauriciodmo.com/es/users/getting-started/create-project)
+explica el primer inicio de sesión y las opciones disponibles de la CLI.
 
-## Ejemplo de una plantilla renderizada
+## Una plantilla es solo React
 
-Una plantilla define sus dimensiones, campos editables, variantes de contenido y renderizador React. Este ejemplo renderiza una tarjeta social con contenido por variante y texto Markdown:
+Define una vez el contrato editable. FrameKit descubre el archivo, valida sus
+datos y renderiza el mismo componente en Studio y mediante la API de imágenes.
 
 ```tsx
-import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
+import { defineTemplate, field } from '@mauriciodmo/framekit'
 
 export default defineTemplate({
-  meta: { title: 'Tarjeta social' },
+  meta: { title: 'Tarjeta de lanzamiento' },
   width: 1200,
   height: 630,
   fields: {
-    title: field.text({ label: 'Título', required: true, minLength: 1, maxLength: 80 }),
-    accent: field.color({ label: 'Acento', defaultValue: '#b9f8d2' }),
+    title: field.text({ label: 'Título', required: true }),
   },
   content: {
-    en: { title: 'Build once. **Publish often.**' },
-    es: { title: 'Diseña una vez. **Publica siempre.**' },
+    default: { title: 'Diseña una vez. Publica siempre.' },
   },
-  variants: { default: 'en', labels: { en: 'English', es: 'Español' } },
-  render({ data, variant, width, height }) {
+  variants: { default: 'default' },
+  render({ data, width, height }) {
     return (
-      <article style={{ width, height, background: '#10271f', color: data.accent }}>
-        <Markdown value={`${data.title} (${variant})`} />
+      <article className="flex items-center justify-center bg-[#10271f] p-16 text-center text-6xl text-white" style={{ width, height }}>
+        {data.title}
       </article>
     )
   },
 })
 ```
 
-Studio renderiza este nodo React en la vista previa y exporta un PNG nombrado según el slug de la plantilla, usando las dimensiones declaradas de `1200×630`.
+Consulta [Crea tu primera plantilla](https://framekit.mauriciodmo.com/es/users/getting-started/first-template)
+para ver el flujo completo.
 
-## Funciones actuales
+## Studio
 
-- Plantillas tipadas con `defineTemplate` o definiciones reutilizables mediante `defineTemplateBase`.
-- Campos editables `text`, `number`, `color`, `image`, `choice` de conjunto cerrado y `boolean`, con valores predeterminados y validación. Los campos `text` usan un textarea multilínea y admiten límites de longitud; `choice` usa un select nativo ordenado; `boolean` usa un checkbox nativo; los campos de imagen pueden usar assets de la plantilla o imágenes desde `public` mediante rutas desde la raíz.
-- Assets locales por plantilla en `src/templates/**/assets` y assets globales compartidos en `public/assets`.
-- Variantes de contenido arbitrarias como `en`, `es` o variantes propias del producto.
-- Renderizado Markdown para formato de texto en línea y listas básicas.
-- Descubrimiento de plantillas en `src/templates/**/template.tsx` y registros generados.
-- Navegación en Studio, cambio de variante, tema claro/oscuro, persistencia local en el navegador, zoom y desplazamiento de la vista previa.
-- Comandos CLI para `generate`, `check`, `dev`, `build`, `start` y la instalación
-  explícita del headless shell de Chromium con `framekit browser install`.
-- Exportación de PNG en el navegador con el ancho y alto declarados por la plantilla.
-- La fachada de servidor `@mauriciodmo/framekit/server`, con las APIs públicas
-  `createFrameKitApiHandler` y `createStudioImageHandler` para el acceso y la API
-  PNG autenticada, preparación de inputs de imagen, renderizado PNG, trabajos
-  temporales de render y el handoff privado de la página.
+Explora plantillas, edita campos, cambia variantes, revisa la composición final
+y exporta un PNG sin rehacer el diseño manualmente.
 
-## Limitaciones conocidas
+![FrameKit Studio](Docs/img/studio.webp)
 
-- Es software beta: las APIs y los detalles del proyecto generado pueden cambiar entre versiones.
-- La exportación de Studio solo admite PNG en el navegador. El consumidor
-  generado también proporciona la API PNG de servidor
-  `POST /api/framekit/images/render`; no se admiten exportación a GIF/video,
-  otros formatos, control de escala ni DPI.
-- Studio guarda las ediciones en el `localStorage`; las imágenes se reemplazan en el proyecto solo durante `framekit dev`.
-- Las plantillas deben vivir en `src/templates` y usar un archivo de entrada `template.tsx`. La CLI todavía no ofrece otra carpeta de plantillas ni archivo de configuración.
-- La interfaz de Studio está disponible en inglés y español. El contenido de cada plantilla puede definir sus propias keys de variante.
-- El paquete solo publica módulos ESM; no ofrece exports CommonJS.
+## Explora el flujo
+
+- [Usa Studio](https://framekit.mauriciodmo.com/es/users/guides/use-studio) para editar y exportar plantillas.
+- [Crea plantillas](https://framekit.mauriciodmo.com/es/users/guides/create-template) con campos, variantes y assets.
+- [Renderiza imágenes con la API](https://framekit.mauriciodmo.com/es/users/guides/render-images-with-the-api) para automatizar flujos.
+- [Despliega un proyecto](https://framekit.mauriciodmo.com/es/users/deployment) con la configuración de runtime y persistencia necesaria.
+- [Lee la guía para contribuidores](https://framekit.mauriciodmo.com/es/contributors) si quieres trabajar en FrameKit.
 
 ## Compatibilidad
 
-| Dependencia | Versiones compatibles |
-| ----------- | --------------------- |
-| Node.js     | `>=22.13.0`           |
-| React       | `>=19 <20`            |
-| React DOM   | `>=19 <20`            |
-| Next.js     | `>=16 <17`            |
-| pnpm        | `>=11.14.0`           |
+FrameKit requiere Node.js `>=22.13.0`, React `>=19 <20` y Next.js `>=16 <17`.
+Consulta la [referencia completa de compatibilidad y la CLI](https://framekit.mauriciodmo.com/es/users/reference/cli/)
+para conocer los comandos y versiones compatibles.
 
-## Enlaces
+## Paquetes
+
+- [`@mauriciodmo/framekit`](packages/framekit/README.md): contrato de plantillas, componentes de Studio, CLI y APIs de renderizado.
+- [`@mauriciodmo/create-framekit`](packages/create-framekit/README.md): scaffolding de proyectos con una plantilla Next.js lista para ejecutar.
+
+## Más información
 
 - [Documentación en inglés](https://framekit.mauriciodmo.com/en/)
-- [Documentación](https://framekit.mauriciodmo.com/es/)
-- [README del paquete @mauriciodmo/framekit](packages/framekit/README.md)
+- [Documentación en español](https://framekit.mauriciodmo.com/es/)
 - [Licencia](LICENSE)
 
-Para desarrollo del repositorio: `pnpm install --frozen-lockfile && pnpm dev`
+Para desarrollar el repositorio, consulta la [guía de desarrollo local](https://framekit.mauriciodmo.com/es/contributors/getting-started/local-development).

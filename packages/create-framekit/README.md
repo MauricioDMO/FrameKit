@@ -1,96 +1,74 @@
-# @mauriciodmo/create-framekit
+<div align="center">
+  <img src="https://framekit.mauriciodmo.com/favicon.svg" alt="FrameKit logo" width="64" />
+  <h1>@mauriciodmo/create-framekit</h1>
+  <p><strong>Start building branded images with code.</strong></p>
+  <p>Scaffold a ready-to-run Next.js project with FrameKit Studio, an example template, and an image API.</p>
+</div>
 
-Scaffold a new FrameKit project with one command. The generated project
-includes a local Studio preview, server-backed Download/Copy, and a server-side
-`POST /api/framekit/images/render` PNG API.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@mauriciodmo/create-framekit"><img src="https://img.shields.io/npm/v/%40mauriciodmo%2Fcreate-framekit?logo=npm" alt="npm version" /></a>
+  <a href="https://github.com/MauricioDMO/FrameKit/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/%40mauriciodmo%2Fcreate-framekit" alt="license" /></a>
+  <a href="https://github.com/MauricioDMO/FrameKit"><img src="https://img.shields.io/github/stars/MauricioDMO/FrameKit?style=flat" alt="GitHub stars" /></a>
+</p>
+
+Create a project in seconds, then keep the visual system in React components
+instead of rebuilding the brand style with a prompt for every image.
+
+## Create a project
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit my-project
 cd my-project
-# Required before the first login when the database is empty.
-export FRAMEKIT_ADMIN_PASSWORD='replace-with-a-strong-password'
 pnpm dev
 ```
 
-The first login against an empty database creates the administrator and needs
-`FRAMEKIT_ADMIN_PASSWORD` (12–256 UTF-8 bytes). `FRAMEKIT_ADMIN_USERNAME` is
-optional and defaults to `admin`; these bootstrap values are used only while
-the database has no users.
-
-## Compatibility
-
-- Node.js `>=22.13.0`
-- pnpm `>=11.14.0` when using pnpm
-
-The package manifest does not declare an npm engine range, but the creator supports npm when installing the generated project. The creator is interactive: if no project name is given, it asks for one. It detects which package manager you are using from your environment (`pnpm` or `npm`); if it cannot detect it, it asks you to choose. It then asks whether to install dependencies, and if you are using pnpm, whether to run `pnpm approve-builds`. Finally, it asks whether to initialize a Git repository with an initial commit.
-
-Use `-y` to accept all questions or `-n` to reject them all. When either flag is used without a project name, the project is created in `./framekit`; an undetected package manager defaults to pnpm in this non-interactive mode.
+Or use npm:
 
 ```bash
-pnpm dlx @mauriciodmo/create-framekit -y
-pnpm dlx @mauriciodmo/create-framekit my-project -n
+npx @mauriciodmo/create-framekit my-project
+cd my-project
+npm run dev
 ```
 
-After copying the template, the creator runs `install` and `framekit generate` automatically if you chose to install dependencies. If either step fails, the partially-created project directory is preserved so you can diagnose the issue.
+Open `http://localhost:3000` to enter Studio. On the first login against an
+empty database, set `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` is
+optional and defaults to `admin`.
 
-The generated project does not download browsers during dependency
-installation. Install FrameKit's Chromium headless shell explicitly from the
-project root:
+## What you get
 
-```bash
-pnpm framekit browser install
-pnpm framekit browser install --with-deps
-```
+- A Next.js project with the FrameKit runtime already configured.
+- FrameKit Studio for editing fields, switching variants, previewing, and exporting PNGs.
+- An example template you can replace with your own brand components and visual compositions.
+- A server-side `POST /api/framekit/images/render` route for automated PNG generation.
+- The standard `dev`, `check`, `build`, and `start` commands.
 
-The second form also installs Playwright system dependencies and may require
-root or equivalent system-package privileges on Linux. The generated template
-includes a pnpm-only `Dockerfile` that uses
-`framekit browser install --with-deps`. A suitable `pnpm-lock.yaml` must exist
-in the generated project before `docker build`; npm or Yarn scaffolds and
- scaffolds created without dependency installation are not
-Docker-ready or validated by this path. Its Studio bootstrap credentials,
-database path, and deployment-specific render settings are supplied at runtime
-rather than baked into the image. Tarball checks inspect deployment artifacts;
-`pnpm smoke:docker -- <exact-published-framekit-version>` performs the live
-Docker build and two-container smoke when the published package includes the
-browser runtime.
+## Your first edits
 
-## Runtime configuration
+- Add or change templates under `src/templates/**/template.tsx`.
+- Put reusable visual language in `src/brand/`.
+- Keep shared public assets in `public/assets/`.
+- Run `pnpm framekit check` to validate templates, then `pnpm dev` to open Studio.
 
-`FRAMEKIT_DATABASE_PATH` is optional and defaults to
-`.framekit-data/framekit.sqlite`, relative to the project working directory.
-Persist the directory containing this database when deploying. The image route
-automatically infers its private loopback origin as `http://localhost:${PORT}`
-from trusted process configuration; `PORT` defaults to `3000`. Optional render settings are
-`FRAMEKIT_ALLOWED_IMAGE_HOSTS` (empty disables remote images),
-`FRAMEKIT_MAX_CONCURRENT_RENDERS` (default `2`), and
-`FRAMEKIT_RENDER_TIMEOUT_MS` (default `30000` ms). Supply credentials and these
-settings through the runtime environment or deployment secret manager.
+The [project structure guide](https://framekit.mauriciodmo.com/en/users/getting-started/project-structure)
+explains where each piece belongs.
 
-The API route accepts JSON containing `template`, optional `variant`, and
-optional `data`, authenticates an active Studio session or an API token created
-from Studio settings, and returns `image/png` on success. It is mounted at
-`POST /api/framekit/images/render`. See the [server image API reference](https://framekit.mauriciodmo.com/en/users/reference/http-api/image-render/)
-for runtime variables, authentication, validation, bootstrap, and persistence details.
+## CLI options
 
-To update the official agent skills in an existing project, run this from the project root:
+The creator can install dependencies, initialize Git, accept or reject prompts
+non-interactively, and refresh the official FrameKit skills. See the
+[`create-framekit` CLI reference](https://framekit.mauriciodmo.com/en/users/reference/cli/create-framekit)
+for `-y`, `-n`, `update-skills`, and recovery options.
+
+To refresh the skills in an existing project:
 
 ```bash
 pnpm dlx @mauriciodmo/create-framekit update-skills
 ```
 
-You can pass another project directory as the second argument. The command replaces the official FrameKit skill directories and preserves other skill directories.
+## Next steps
 
-For template authoring patterns, see the [Template Authoring Guide](https://framekit.mauriciodmo.com/en/users/guides/create-template/).
-
-For full documentation:
-- [Documentation](https://framekit.mauriciodmo.com/en/)
-- [Documentación](https://framekit.mauriciodmo.com/es/)
-
-## Test locally
-
-From the repository root, build and run the local CLI without publishing it:
-
-```bash
-pnpm --filter @mauriciodmo/create-framekit build && node packages/create-framekit/dist/cli.js ./my-local-framekit
-```
+- [Create your first template](https://framekit.mauriciodmo.com/en/users/getting-started/first-template)
+- [Use Studio](https://framekit.mauriciodmo.com/en/users/guides/use-studio)
+- [Render images with the API](https://framekit.mauriciodmo.com/en/users/guides/render-images-with-the-api)
+- [Deploy the generated project](https://framekit.mauriciodmo.com/en/users/deployment)
+- [Read the full documentation](https://framekit.mauriciodmo.com/en/)
