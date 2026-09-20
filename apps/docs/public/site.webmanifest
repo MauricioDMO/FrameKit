@@ -1,0 +1,25 @@
+{
+  "name": "FrameKit",
+  "short_name": "FrameKit",
+  "description": "Create consistent visual content from React templates with FrameKit.",
+  "id": "/en/",
+  "start_url": "/en/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071a15",
+  "theme_color": "#071a15",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -20,6 +20,25 @@ export default defineConfig({
             title: 'FrameKit Docs',
             description: 'Template-based image editor with visual Studio, CLI, and code generation for React and Next.js',
             customCss: ['./src/styles/starlight.css'],
+            favicon: '/favicon.svg',
+            head: [
+                {
+                    tag: 'meta',
+                    attrs: { name: 'theme-color', content: '#071a15' },
+                },
+                {
+                    tag: 'link',
+                    attrs: { rel: 'manifest', href: '/site.webmanifest' },
+                },
+                {
+                    tag: 'link',
+                    attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+                },
+                {
+                    tag: 'link',
+                    attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+                },
+            ],
             social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/MauricioDMO/FrameKit' }],
             sidebar: [
                 {
