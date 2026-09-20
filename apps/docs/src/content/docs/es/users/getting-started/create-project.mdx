@@ -1,0 +1,80 @@
+---
+title: Crear un proyecto
+description: Genera un proyecto de FrameKit y abre Studio con la configuración compatible más corta.
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Usa el creador oficial cuando vayas a iniciar una aplicación nueva.
+
+## Requisitos previos
+
+- Node.js `>=22.13.0`.
+- pnpm `>=11.14.0` cuando uses pnpm.
+- Un directorio de destino que no exista.
+
+## Crea y ejecuta el proyecto
+
+<Steps>
+
+1. **Crea la aplicación.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   pnpm dlx @mauriciodmo/create-framekit my-project
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   npx @mauriciodmo/create-framekit my-project
+   ```
+
+     </TabItem>
+   </Tabs>
+
+2. **Entra al proyecto e inicia el desarrollo.**
+
+   <Tabs syncKey="package-manager">
+     <TabItem label="pnpm">
+
+   ```bash
+   cd my-project
+   pnpm dev
+   ```
+
+     </TabItem>
+     <TabItem label="npm">
+
+   ```bash
+   cd my-project
+   npm run dev
+   ```
+
+     </TabItem>
+   </Tabs>
+
+3. **Abre Studio.**
+
+   Visita `http://localhost:3000`. La aplicación redirige a `/editor`. En el primer inicio de sesión contra una base de datos vacía, define `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` es opcional y usa `admin` de forma predeterminada.
+
+4. **Crea tu primera plantilla.**
+
+   Continúa con [Crear tu primera plantilla](/es/users/getting-started/first-template).
+
+</Steps>
+
+## Opciones del creador
+
+El creador puede instalar dependencias, ejecutar la aprobación de scripts de compilación de pnpm, inicializar Git, aceptar o rechazar preguntas de forma no interactiva y actualizar las skills públicas de FrameKit. Esos controles pertenecen a la referencia y no al flujo mínimo de instalación.
+
+Consulta la [referencia de la CLI `create-framekit`](/es/users/reference/cli/create-framekit) para las preguntas, `-y`, `-n`, `update-skills` y la recuperación cuando la instalación se omite o falla.
+
+:::tip
+Si el renderizado PNG indica que Chromium no está disponible, sigue la guía de instalación del navegador en [Despliegue](/es/users/deployment) o la [solución de problemas de renderizado](/es/users/troubleshooting/rendering).
+:::

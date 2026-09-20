@@ -1,0 +1,46 @@
+---
+title: Primeros pasos
+description: Elige la ruta de configuración más corta y lleva FrameKit desde la instalación hasta su primera plantilla.
+sidebar:
+  order: 1
+---
+
+import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+Elige la ruta que corresponda a tu proyecto.
+
+<CardGrid>
+  <LinkCard
+    title="Crear un proyecto nuevo"
+    href="/es/users/getting-started/create-project"
+    description="Empieza desde la plantilla canónica de FrameKit para Next.js."
+  />
+  <LinkCard
+    title="Integrar un proyecto existente"
+    href="/es/users/getting-started/existing-project"
+    description="Añade FrameKit a una aplicación existente de Next.js con App Router."
+  />
+</CardGrid>
+
+## Requisitos
+
+- Node.js `>=22.13.0`.
+- pnpm `>=11.14.0` cuando uses pnpm.
+- Las aplicaciones existentes deben usar Next.js `>=16 <17`, React `>=19 <20` y React DOM `>=19 <20`.
+
+## El flujo de trabajo
+
+<Steps>
+
+1. **Configura la aplicación.** Crea un proyecto nuevo o integra uno existente.
+2. **Añade plantillas en `src/templates/`.**
+3. **Genera y valida el registro.** FrameKit escribe los clientes generados y el registro de plantillas.
+4. **Abre Studio.** Usa la aplicación generada para editar y exportar tus plantillas.
+
+</Steps>
+
+:::caution
+No edites manualmente `src/generated/framekit/`, `public/framekit/` ni `.framekit/`. Son salidas generadas. Mantén `.framekit-data/` en almacenamiento persistente si usas la base de datos SQLite predeterminada.
+:::
+
+Después de configurar el proyecto, revisa [la estructura del proyecto](/es/users/getting-started/project-structure) y crea [tu primera plantilla](/es/users/getting-started/first-template).

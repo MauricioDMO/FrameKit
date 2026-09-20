@@ -1,0 +1,89 @@
+---
+title: Estructura del proyecto
+description: Identifica el código fuente mantenido, la salida generada y los datos de ejecución de un proyecto de FrameKit.
+sidebar:
+  order: 4
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+`create-framekit` genera un proyecto de Next.js con App Router. La distinción importante es si una ruta contiene código fuente mantenido, salida generada o datos persistentes de ejecución.
+
+## Estructura canónica
+
+<FileTree>
+
+- my-project/
+  - src/
+    - app/
+      - `[section]/[[...slug]]/page.tsx`
+      - `api/framekit/[...action]/route.ts`
+      - `framekit/render/[id]/page.tsx`
+      - globals.css
+      - layout.tsx
+      - `login/page.tsx`
+    - profile.ts
+    - **templates/**
+      - example/
+        - assets/
+        - **template.tsx**
+    - generated/
+      - framekit/
+        - brands.ts
+        - render-client.tsx
+        - studio-client.tsx
+        - templates.ts
+  - public/
+    - framekit/
+  - `.framekit/`
+  - `.framekit-data/`
+  - `.env.example`
+  - Dockerfile
+  - next.config.ts
+  - package.json
+  - pnpm-workspace.yaml
+  - tsconfig.json
+
+</FileTree>
+
+El creador elimina `pnpm-workspace.yaml` cuando se selecciona npm.
+
+## Archivos que mantienes
+
+- `src/templates/` contiene las plantillas detectables.
+- `src/brand/` es opcional y contiene componentes de marca reutilizables.
+- `src/profile.ts` contiene información pública opcional que las plantillas pueden usar.
+- `src/app/` conecta la estructura de la aplicación, Studio, inicio de sesión, API, ruta de renderizado y estilos globales.
+- `next.config.ts` envuelve Next.js con `withFrameKit()`.
+- `.env.example` documenta las variables de ejecución sin guardar secretos.
+
+La plantilla generada define estos alias:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@framekit/generated/*": ["./src/generated/framekit/*"]
+    }
+  }
+}
+```
+
+Usa los entrypoints publicados como `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server` y `@mauriciodmo/framekit/studio/root`. No importes `packages/framekit/src/**` desde código consumidor.
+
+## Salida generada
+
+FrameKit puede volver a crear estas rutas:
+
+- `src/generated/framekit/` — registro de plantillas y clientes generados.
+- `public/framekit/` — assets de plantillas copiados.
+- `.framekit/` — validación y salida de compilación de Next.js.
+
+Elimina y regenera esas rutas cuando sea necesario en lugar de editarlas.
+
+:::caution
+`.framekit-data/` es diferente: contiene la base de datos SQLite predeterminada. Trátala como datos persistentes de ejecución y no la elimines al limpiar salida generada.
+:::
+
+Para el contrato detallado de archivos, usa la [referencia de archivos generados](/es/users/reference/generated-files). Continúa con [Crear tu primera plantilla](/es/users/getting-started/first-template) cuando estés listo para editar `src/templates/`.
