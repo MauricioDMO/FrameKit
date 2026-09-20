@@ -67,13 +67,12 @@ Después de la generación, los enlaces locales del proyecto usan los alias
 `@framekit/generated/*`. Son archivos generados del consumidor, no
 exportaciones adicionales de FrameKit publicadas.
 
-## No evites el límite
+## Mantén el límite público
 
-No importes `packages/framekit/src/**` desde un consumidor, un proyecto
-generado o un adaptador de primera parte. No importes un archivo interno de
-`dist` que no esté incluido en el manifiesto. Usa uno de los especificadores
-exactos anteriores y usa `@framekit/generated/*` únicamente para archivos
-generados dentro del proyecto consumidor.
+Los imports del consumidor, del proyecto generado y de los adaptadores propios
+deben usar uno de los especificadores exactos anteriores. Usa
+`@framekit/generated/*` únicamente para archivos generados dentro del proyecto
+consumidor.
 
 Esto mantiene el contrato público independiente de la disposición del
 repositorio y mantiene los grafos de cliente, servidor y herramientas en sus

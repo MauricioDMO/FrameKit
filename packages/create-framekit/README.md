@@ -70,7 +70,7 @@ settings through the runtime environment or deployment secret manager.
 The API route accepts JSON containing `template`, optional `variant`, and
 optional `data`, authenticates an active Studio session or an API token created
 from Studio settings, and returns `image/png` on success. It is mounted at
-`POST /api/framekit/images/render`. See the [server image API reference](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/reference/public-api.md)
+`POST /api/framekit/images/render`. See the [server image API reference](https://framekit.mauriciodmo.com/en/users/reference/http-api/image-render/)
 for runtime variables, authentication, validation, bootstrap, and persistence details.
 
 To update the official agent skills in an existing project, run this from the project root:
@@ -81,11 +81,11 @@ pnpm dlx @mauriciodmo/create-framekit update-skills
 
 You can pass another project directory as the second argument. The command replaces the official FrameKit skill directories and preserves other skill directories.
 
-For template authoring patterns, see the [Template Authoring Guide](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/guides/template-authoring.md).
+For template authoring patterns, see the [Template Authoring Guide](https://framekit.mauriciodmo.com/en/users/guides/create-template/).
 
 For full documentation:
-- [Documentation](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/en/README.md)
-- [Documentación](https://github.com/MauricioDMO/FrameKit/blob/main/Docs/es/README.md)
+- [Documentation](https://framekit.mauriciodmo.com/en/)
+- [Documentación](https://framekit.mauriciodmo.com/es/)
 
 ## Test locally
 

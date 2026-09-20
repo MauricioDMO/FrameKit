@@ -122,6 +122,8 @@ y no presentarse como instrucción actual.
 - `pnpm check:runtime` — PASS.
 - No quedan enlaces publicados a `Docs/en/` o `Docs/es/` fuera de las páginas
   de colaboradores que explican explícitamente el contexto de migración.
-- `Docs/en/` y `Docs/es/` no se eliminaron y los enlaces externos no se cambiaron;
-  ambas acciones permanecen reservadas para la verificación de producción de la
-  fase 10.
+- La retirada de `Docs/en/` y `Docs/es/` se aplicó el 2026-09-19 tras la
+  verificación local y la migración de los enlaces fuente al sitio canónico.
+- Los README y metadata ya publicados en npm no se actualizaron porque esta
+  operación no publica nuevas versiones; su actualización queda para el próximo
+  release.

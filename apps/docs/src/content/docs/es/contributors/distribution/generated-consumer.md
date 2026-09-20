@@ -114,8 +114,8 @@ ejemplo bajo `src/templates/example/`. La forma canónica de las rutas contiene:
 El consumidor generado debe importar el código reutilizable desde los puntos de
 entrada públicos del paquete, como `@mauriciodmo/framekit/studio/root`,
 `@mauriciodmo/framekit/server` y `@mauriciodmo/framekit/styles.css`. Sus módulos
-generados deben importar mediante `@framekit/generated/*`. No debe importar
-`packages/framekit/src/**`.
+generados deben importar mediante `@framekit/generated/*`; mantén los imports
+reutilizables dentro de esos límites publicados y generados.
 
 ## Código fuente y salida generada
 

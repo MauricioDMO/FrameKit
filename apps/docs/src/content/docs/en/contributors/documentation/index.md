@@ -31,9 +31,9 @@ directories remain outside the published site; do not move them into the docs
 tree or use historical plan prose as current product guidance.
 
 When sources disagree, prefer the current package manifests, implementation,
-tests, and canonical consumer template. Treat `Docs/en/` and `Docs/es/` as
-migration context only. Omit any command, route, import, file, or behavior that
-cannot be verified against the current repository.
+tests, and canonical consumer template. Treat historical documentation outside
+the published tree as migration context only. Omit any command, route, import,
+file, or behavior that cannot be verified against the current repository.
 
 ## Keep page responsibilities narrow
 

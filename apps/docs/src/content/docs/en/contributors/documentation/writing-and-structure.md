@@ -49,7 +49,10 @@ Verify published claims against the current repository in this order:
 3. the canonical generated-consumer template; and
 4. current first-party integration where it demonstrates the behavior.
 
-Legacy `Docs/en/` and `Docs/es/` pages can reveal migration topics, but they are not authority over current code. `Docs/Plans/` records work coordination, not product behavior.
+Legacy pages outside the published tree can reveal migration topics, but they
+are not authority over current code. `Docs/Plans/` records work coordination,
+not product behavior. Do not copy historical commands or describe unsupported
+surfaces just because an older page mentions them.
 
 ## Add or revise a page
 

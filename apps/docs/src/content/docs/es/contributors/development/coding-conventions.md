@@ -66,6 +66,6 @@ import { defineTemplate } from '@mauriciodmo/framekit'
 import { TemplateCanvas } from '@mauriciodmo/framekit/editor'
 ```
 
-No importes `packages/framekit/src/**` desde un consumidor, un adaptador de Studio de primera parte o un proyecto generado. Mantén el código cliente fuera de la fachada de servidor y los módulos integrados de Node y las dependencias de Playwright en Server o Tooling. Usa las páginas de [arquitectura de paquetes](/es/contributors/architecture/packages) y [límites de importación](/es/contributors/development/import-boundaries) cuando un cambio cruce un límite público o de capa de runtime.
+El código orientado al consumidor debe mantenerse en los entrypoints publicados. Mantén el código cliente fuera de la fachada de servidor y los módulos integrados de Node y las dependencias de Playwright en Server o Tooling. Usa las páginas de [arquitectura de paquetes](/es/contributors/architecture/packages) y [límites de importación](/es/contributors/development/import-boundaries) cuando un cambio cruce un límite público o de capa de runtime.
 
 Los registros generados, los recursos copiados y la salida de compilación son resultados, no una segunda implementación. Cambia su fuente mantenida y vuelve a generarlos en lugar de editar directamente los archivos generados.

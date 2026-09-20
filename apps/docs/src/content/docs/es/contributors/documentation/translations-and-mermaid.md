@@ -24,10 +24,10 @@ variables, rutas de archivos y contratos de código.
 
 Cada locale debe describir el contrato actual, no uno histórico. Comprueba los
 manifiestos, la implementación, las pruebas y la plantilla canónica antes de
-trasladar una afirmación a una traducción. Las páginas heredadas de `Docs/en/`
-y `Docs/es/` son contexto de migración, mientras que `Docs/Plans/` y
-`Docs/skills/` siguen siendo conocimiento operativo del repositorio, no páginas
-publicadas ni objetivos de traducción.
+trasladar una afirmación a una traducción. Las páginas heredadas fuera del árbol
+publicado son contexto de migración, mientras que `Docs/Plans/` y `Docs/skills/`
+siguen siendo conocimiento operativo del repositorio, no páginas publicadas ni
+objetivos de traducción.
 
 Usa enlaces explícitos con prefijo de locale: las páginas en inglés enlazan a
 `/en/...` y sus equivalentes futuros en español enlazan a `/es/...`. No uses

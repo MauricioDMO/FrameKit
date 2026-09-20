@@ -31,9 +31,9 @@ permanecen fuera del sitio publicado; no los muevas al árbol de documentación 
 planes históricos como orientación actual del producto.
 
 Cuando las fuentes discrepen, da preferencia a los manifiestos de paquetes actuales, la implementación,
-las pruebas y la plantilla canónica de consumidor. Trata `Docs/en/` y `Docs/es/` únicamente como
-contexto de migración. Omite cualquier comando, ruta, importación, archivo o comportamiento que no
-pueda verificarse en el repositorio actual.
+las pruebas y la plantilla canónica de consumidor. Trata la documentación histórica fuera del árbol
+publicado únicamente como contexto de migración. Omite cualquier comando, ruta, importación, archivo o
+comportamiento que no pueda verificarse en el repositorio actual.
 
 ## Mantén acotadas las responsabilidades de las páginas
 

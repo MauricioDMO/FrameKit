@@ -16,12 +16,12 @@ const documentationPaths = [
   'packages/framekit/README.md',
   'packages/create-framekit/README.md',
   'packages/create-framekit/template/README.md',
-  'Docs/en/getting-started/create-project.md',
-  'Docs/es/getting-started/create-project.md',
-  'Docs/en/getting-started/existing-project.md',
-  'Docs/es/getting-started/existing-project.md',
-  'Docs/en/development/release.md',
-  'Docs/es/development/release.md',
+  'apps/docs/src/content/docs/en/users/getting-started/create-project.md',
+  'apps/docs/src/content/docs/es/users/getting-started/create-project.md',
+  'apps/docs/src/content/docs/en/users/getting-started/existing-project.md',
+  'apps/docs/src/content/docs/es/users/getting-started/existing-project.md',
+  'apps/docs/src/content/docs/en/contributors/getting-started/prerequisites.md',
+  'apps/docs/src/content/docs/es/contributors/getting-started/prerequisites.md',
 ]
 
 async function readJson(relativePath) {

@@ -49,7 +49,11 @@ Verifica las afirmaciones publicadas contra el repositorio actual en este orden:
 3. plantilla canónica del consumidor generado; y
 4. integración actual de primera parte cuando demuestre el comportamiento.
 
-Las páginas heredadas de `Docs/en/` y `Docs/es/` pueden revelar temas de migración, pero no tienen autoridad sobre el código actual. `Docs/Plans/` registra coordinación del trabajo, no comportamiento del producto.
+Las páginas heredadas fuera del árbol publicado pueden revelar temas de migración,
+pero no tienen autoridad sobre el código actual. `Docs/Plans/` registra la
+coordinación del trabajo, no el comportamiento del producto. No copies comandos
+históricos ni describas superficies no compatibles solo porque una página antigua
+las mencione.
 
 ## Añade o revisa una página
 

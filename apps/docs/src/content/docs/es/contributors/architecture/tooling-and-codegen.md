@@ -81,7 +81,6 @@ flowchart LR
 ```
 
 El consumidor generado importa los entrypoints públicos del paquete y sus propios
-módulos generados. No importa `packages/framekit/src/**`. Una compilación del
-paquete no convierte la salida del proyecto generado en un árbol de código fuente
-mantenido; la generación sigue siendo el paso reproducible del proyecto
-consumidor.
+módulos generados. Una compilación del paquete no convierte la salida del proyecto
+generado en un árbol de código fuente mantenido; la generación sigue siendo el
+paso reproducible del proyecto consumidor.

@@ -1,7 +1,7 @@
 # FrameKit Plan Maestro de Ejecución
 
 * **Estado:** Activo.
-* **Última revisión:** 2026-09-17.
+* **Última revisión:** 2026-09-19.
 * **Alcance:** Coordinar los planes de `Docs/Plans/`, sus issues de GitHub,
   dependencias y gates de finalización.
 * **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -37,6 +37,9 @@ casos de prueba, comandos y exit gates detallados.
 * [Studio Access, API Tokens, and Server-backed Export](./studio-access-and-api-rendering/README.md):
   ocho fases para acceso a Studio mediante SQLite, usuarios, sesiones, API
   tokens, export server-side y persistencia Docker.
+* [Optional Authentication](./optional-authentication/README.md): cinco fases
+  para desactivar auth por defecto, mantener un opt-in seguro para producción y
+  hacer públicos Studio y el renderer sin conservar una administración anónima.
 * [Documentation Site](./documentation-site/README.md): once fases para migrar
   la documentación pública a Starlight, separarla por audiencia, mantener
   paridad EN/ES y retirar las copias legacy después de verificar producción.
@@ -49,18 +52,19 @@ casos de prueba, comandos y exit gates detallados.
 |     1 | Cerrar el bloque Future: `#12 -> #17 -> #13 -> #14 -> #15` | `#12`, `#13`, `#14`, `#15` y `#17` cerradas                                   |
 |     2 | Maintainability fases 1 a 5                           | Tooling, validación, Editor, Studio y estilos estabilizados                   |
 |     3 | Server Image Rendering pasos 1 a 7                    | API, browser, seguridad, packaging y Docker base verificados                   |
-|     4 | Studio Access & API Rendering fases 1 a 8             | SQLite, auth, usuarios, tokens, export server-side y volumen verificados       |
-|     5 | Server Image Rendering paso 8: reverificación y cierre | Evidencia final publicada contra la arquitectura transversal definitiva       |
-|     6 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
-|     7 | Documentation Site                                    | Starlight publicado, paridad EN/ES y documentación legacy retirada            |
-|     8 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
+|     4 | Studio Access & API Rendering fases 1 a 7             | SQLite, auth, usuarios, tokens, export server-side y volumen implementados     |
+|     5 | Optional Authentication fases 1 a 5                   | Default abierto, opt-in autenticado y rollout de producción verificados       |
+|     6 | Studio Access fase 8 y Server Rendering paso 8        | Evidencia final publicada contra la arquitectura transversal definitiva       |
+|     7 | Maintainability fase 6                                | Límites arquitectónicos definidos contra la arquitectura final con `./server` |
+|     8 | Documentation Site                                    | Starlight publicado, paridad EN/ES y documentación legacy retirada            |
+|     9 | Backlog `#18` y `#19`                                 | No bloquea los planes anteriores                                              |
 
 El estado operativo del servidor es explícito: los límites 0.5 y 0.6 y los
 pasos 1 a 7 están implementados y verificados. La mayor parte de la evidencia
 técnica del Paso 8 también se ejecutó contra el baseline histórico, ya retirado,
 de API key compartida y export browser-side, pero su cierre final queda bloqueado
-por Studio Access & API Rendering y debe revalidarse contra esa arquitectura. La
-fase 6 de Maintainability también sigue pendiente.
+por Studio Access & API Rendering y Optional Authentication, y debe revalidarse
+contra esa arquitectura. La fase 6 de Maintainability también sigue pendiente.
 
 El roadmap de mantenibilidad conserva su dependencia interna, pero su última
 fase se ejecuta después del servidor.
@@ -93,10 +97,13 @@ Server Image Rendering
 1 → 2 → 3 → 4 → 5 → 6 → 7
     ↓
 Studio Access & API Rendering
-1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+1 → 2 → 3 → 4 → 5 → 5.5 → 6 → 7
     ↓
-Server Image Rendering
-8 (reverificación y cierre)
+Optional Authentication
+1 → 2 → 3 → 4 → 5
+    ↓
+Studio Access 8 + Server Image Rendering 8
+(reverificación y cierre)
     ↓
 Maintainability
 6
@@ -699,11 +706,16 @@ No iniciar Maintainability 6 hasta confirmar:
 Plan:
 [Studio Access, API Tokens, and Server-backed Export](./studio-access-and-api-rendering/README.md).
 
-Este bloque se ejecuta después de Server Image Rendering 1 a 7 y antes de su
-Paso 8 final. Sus fases son obligatoriamente secuenciales:
+Este bloque se ejecuta después de Server Image Rendering 1 a 7. Las fases 1 a 7
+se ejecutan antes de Optional Authentication; su fase 8 se revalida después de
+ese plan y antes del Paso 8 final del renderer. Su orden es:
 
 ```text
-1 → 2 → 3 → 4 → 5 → 5.5 → 6 → 7 → 8
+1 → 2 → 3 → 4 → 5 → 5.5 → 6 → 7
+                              ↓
+                Optional Authentication
+                              ↓
+                              8
 ```
 
 * [x] Fase 1: SQLite and Migrations.
@@ -733,6 +745,33 @@ tests), la suite E2E (3 tests), el build, el typecheck y el lint. El handler
 clásico y `FRAMEKIT_API_KEY` fueron eliminados; la ruta canónica usa sesión o
 token API de base de datos. Las fases 7 y 8 siguen pendientes y el gate final del
 Step 8 permanece bloqueado hasta completar este bloque.
+
+## 4.5 Optional Authentication
+
+Plan:
+[Optional Authentication](./optional-authentication/README.md).
+
+Este bloque se ejecuta después de estabilizar la implementación de Studio Access
+y antes de cerrar sus verificaciones finales, Server Image Rendering Step 8 y
+Maintainability fase 6. Sus fases son secuenciales:
+
+```text
+1 → 2 → 3 → 4 → 5
+```
+
+* [ ] Fase 1: contrato estricto de `FRAMEKIT_AUTH_ENABLED`, default `false`.
+* [ ] Fase 2: image API abierta, access API desactivada y upload dev same-origin.
+* [ ] Fase 3: Studio sin login, Ajustes ausentes y codegen con usuario opcional.
+* [ ] Fase 4: matriz de ambos modos y gates del repositorio.
+* [ ] Fase 5: consumer, documentación EN/ES, migración y rollout.
+* [ ] Revalidar Studio Access fase 8 y Server Image Rendering Step 8 sobre el
+  nuevo baseline.
+
+El modo abierto no crea un administrador implícito: `/settings` y las rutas de
+cuentas, usuarios y tokens están ausentes. El render privado, same-origin del
+upload dev y todas las restricciones no relacionadas con autenticación se
+conservan. Producción debe optar explícitamente por
+`FRAMEKIT_AUTH_ENABLED=true`.
 
 ## 5. Maintainability: fase 6
 
@@ -862,15 +901,30 @@ El plan raíz está completo cuando todas estas condiciones se cumplen:
 ### Studio Access and API Rendering
 
 * [ ] Las ocho fases aprobaron sus exit gates.
-* [ ] Studio exige una sesión activa sin proteger la ruta privada con esa sesión.
+* [ ] Studio exige una sesión activa cuando `FRAMEKIT_AUTH_ENABLED=true`; con el
+  default `false`, Editor y Brand no consultan sesión ni protegen la ruta privada
+  con identidad de Studio.
 * [ ] Usuarios, sesiones y API tokens se almacenan bajo el contrato SQLite final.
 * [ ] Download PNG y Copy PNG usan exclusivamente el renderer server-side.
-* [ ] La ruta canónica de imagen acepta sesión o token API.
+* [ ] La ruta canónica de imagen acepta sesión o token API cuando auth está
+  activada y no exige credenciales cuando está desactivada.
 * [ ] El starter final contiene seis archivos mantenidos bajo `src/app`.
 * [ ] Docker preserva SQLite entre containers cuando `/data` está montado como
   volumen y limpia jobs al reiniciar proceso.
-* [ ] Las seis variables específicas de FrameKit, el `PORT` estándar y la ausencia de soporte para
+* [ ] Las siete variables específicas de FrameKit, el `PORT` estándar y la ausencia de soporte para
   `FRAMEKIT_PUBLIC_ORIGIN` están verificadas y documentadas.
+
+### Optional Authentication
+
+* [ ] `FRAMEKIT_AUTH_ENABLED` acepta solo `true` o `false` y usa `false` cuando
+  está ausente.
+* [ ] Editor, Brand, image API y upload dev funcionan sin sesión en el modo
+  abierto.
+* [ ] Login, Ajustes y access API no están disponibles en el modo abierto.
+* [ ] El modo autenticado conserva sesiones, roles, tokens, ownership y
+  same-origin.
+* [ ] Producción documenta y prueba `FRAMEKIT_AUTH_ENABLED=true` explícito.
+* [ ] El render privado y las demás defensas del pipeline no cambian.
 
 ### Repository gates
 
@@ -894,9 +948,10 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 
 * [ ] Las fases 0 a 10 de `documentation-site/` aprobaron sus exit gates.
 * [ ] El sitio publicado separa usuarios y contribuidores bajo `/en/` y `/es/`.
-* [ ] Los enlaces públicos del repositorio usan la URL canónica.
-* [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
-* [ ] `Docs/Plans/` y `Docs/skills/` permanecen fuera del sitio publicado.
+* [x] Los enlaces públicos del repositorio usan la URL canónica.
+* [x] `Docs/en/` y `Docs/es/` fueron retirados del repositorio; la verificación
+  de producción queda pendiente.
+* [x] `Docs/Plans/` y `Docs/skills/` permanecen fuera del sitio publicado.
 
 ## Registro de decisiones
 
@@ -918,3 +973,4 @@ Rendering. Sus comandos afectados deben repetirse antes del cierre maestro.
 | 2026-09-15 | Completar y verificar la fase 5 de Studio Access UI; mantener las fases 6-8 pendientes y el Step 8 bloqueado                     |
 | 2026-09-16 | Completar y verificar la fase 6; eliminar el contrato legado `FRAMEKIT_API_KEY`; mantener las fases 7-8 y el Step 8 bloqueados       |
 | 2026-09-17 | Ejecutar Documentation Site después de estabilizar la arquitectura final; publicar `/en/` y `/es/` y retirar `Docs/en` y `Docs/es` solo tras verificar producción |
+| 2026-09-19 | Insertar Optional Authentication antes de los gates finales; usar `FRAMEKIT_AUTH_ENABLED=false` por defecto y recomendar opt-in explícito en producción |

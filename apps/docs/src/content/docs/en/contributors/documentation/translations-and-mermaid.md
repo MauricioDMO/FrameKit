@@ -23,7 +23,7 @@ contracts exact.
 
 Every locale must describe the current contract, not a historical one. Check
 manifests, implementation, tests, and the canonical template before carrying a
-claim into a translation. Legacy `Docs/en/` and `Docs/es/` pages are migration
+claim into a translation. Legacy pages outside the published tree are migration
 context, while `Docs/Plans/` and `Docs/skills/` remain operational repository
 knowledge rather than published pages or translation targets.
 

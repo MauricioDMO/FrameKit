@@ -79,6 +79,5 @@ flowchart LR
 ```
 
 The generated consumer imports public package entrypoints and its own generated
-modules. It does not import `packages/framekit/src/**`. A package build does not
-make generated project output a maintained source tree; generation remains the
-consumer project's reproducible step.
+modules. A package build does not make generated project output a maintained
+source tree; generation remains the consumer project's reproducible step.

@@ -64,12 +64,11 @@ After generation, project-local bindings use the `@framekit/generated/*`
 aliases. They are generated consumer files, not additional published FrameKit
 exports.
 
-## Do not bypass the boundary
+## Keep the public boundary
 
-Do not import `packages/framekit/src/**` from a consumer, a generated project,
-or a first-party adapter. Do not import an internal `dist` file that is not
-addressed by the manifest. Use one of the exact specifiers above and use
-`@framekit/generated/*` only for files generated inside the consumer project.
+Consumer, generated-project, and first-party adapter imports must use one of the
+exact specifiers above. Use `@framekit/generated/*` only for files generated
+inside the consumer project.
 
 This keeps the public contract independent of the repository layout and keeps
 client, server, and tooling graphs on their supported sides of the boundary.

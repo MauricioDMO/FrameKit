@@ -3,8 +3,9 @@
 - **Status:** In progress; phases 1 through 5 are implemented and the Phase 5 shared exit gate passes.
 - **Next:** After phases 1 through 5 pass their exit gates, preserve the verified
   Server Image Rendering Steps 1-7 baseline, execute Studio Access and API
-  Rendering Phases 1-8, then revalidate and close Server Step 8. Phase 6 remains
-  deferred until those blocks are complete.
+  Rendering Phases 1-7, Optional Authentication Phases 1-5, Studio Access Phase
+  8, then revalidate and close Server Step 8. Phase 6 remains deferred until
+  those blocks are complete.
 - **GitHub issue:** None required; this roadmap is intentionally independent of GitHub issues.
 - **Audience:** FrameKit maintainers implementing one behavior-preserving PR per phase.
 - **Scope:** Six behavior-preserving maintainability changes covering validation,
@@ -66,7 +67,7 @@ preserved, update the plan or obtain separate approval before implementation.
 Across all phases, use kebab-case file names, PascalCase React component names,
 and `useSomething` names for hooks. Put new tests under the nearest relevant
 `__tests__/` directory, mirroring the production domain; retain FrameKit
-compile-time type fixtures under `packages/framekit/tests/types/`. Use `index.ts`
+compile-time type fixtures under `packages/framekit/type-tests/`. Use `index.ts`
 only for re-exports. The ESLint Standard contract is two spaces, no semicolons,
 single quotes in JavaScript and TypeScript, no trailing commas, and a final
 newline for linted source files. ESLint enforces only the code-style and lint
@@ -106,7 +107,7 @@ Implement and merge these PRs in order:
 | 3 | [Editor orchestration](./03-editor-orchestration.md) | Smaller editor coordinator with existing state, controls, preview, and export owners reused | PRs 1-2 |
 | 4 | [Studio shell split](./04-studio-shell-split.md) | Internal Studio resource, state, settings, and shell ownership split | PRs 1-3 |
 | 5 | [Published design tokens](./05-design-tokens.md) | A small public theme-role contract with internal visual details kept private and the export unchanged | PRs 1-4 |
-| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Final boundary plan covering rendering, SQLite access, Studio root integration, and generated consumers | Server Steps 1-7, Studio Access and API Rendering Phases 1-8, and Server Step 8 final gate |
+| 6 | [Architectural import boundaries](./06-architectural-import-boundaries.md) | Final boundary plan covering rendering, SQLite access, Studio root integration, and generated consumers | Server Steps 1-7, Studio Access Phases 1-7, Optional Authentication Phases 1-5, Studio Access Phase 8, and Server Step 8 final gate |
 
 The links above are the complete phase index for this roadmap. A later phase
 must not be folded into an earlier PR merely because both touch documentation or

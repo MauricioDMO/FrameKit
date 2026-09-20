@@ -1,9 +1,11 @@
 # Fase 10 - Verificación y rollout
 
-- **Estado:** Pendiente.
+- **Estado:** Preparación local completada; rollout externo pendiente.
 - **Depende de:** Fases 0-9.
-- **Resultado:** Sitio publicado y reconocido como única fuente canónica de
-  documentación humana de FrameKit.
+- **Resultado objetivo:** Sitio publicado y reconocido como única fuente
+  canónica de documentación humana de FrameKit.
+- **Resultado actual:** Sitio verificado localmente; enlaces fuente y retirada
+  legacy aplicados. Deployment público y actualización de npm siguen pendientes.
 
 ## Objetivo
 
@@ -86,17 +88,57 @@ pnpm build
 Ejecutar además los smokes enfocados definidos por la documentación de
 contribuidores cuando cambien snippets de packaging, browser o Docker.
 
+## Evidencia de verificación local
+
+- **Fecha:** 2026-09-19.
+- `pnpm --filter docs build` — PASS; Astro generó 189 páginas y un sitemap con
+  188 URLs canónicas, 94 bajo `/en/` y 94 bajo `/es/`.
+- `apps/docs/src/content/docs/404.md` — fallback personalizado verificado; el
+  build conserva solo el warning no fatal de colisión entre la ruta `/404` y el
+  catch-all de Starlight.
+- `pnpm check:runtime` — PASS.
+- `pnpm lint` — PASS.
+- `pnpm test` — PASS; FrameKit ejecutó 793 tests en 78 archivos, creator 15
+  tests en 2 archivos y Studio 7 tests en 3 archivos.
+- `pnpm typecheck` — PASS.
+- `pnpm build` — PASS; los cuatro workspaces con build completaron.
+- `pnpm smoke:tarballs` — PASS; verificó ambos paquetes, exports públicos,
+  consumers aislados, `generate`, `check`, `build`, `start` y API de acceso.
+- `pnpm test:e2e` — PASS; 3 pruebas Chromium cubrieron login, edición/export y
+  API de imagen autenticada.
+- `pnpm smoke:docker -- 0.8.1` — BLOQUEADO por el artefacto ya publicado: npm
+  no declara `playwright-core` para `0.8.1`, requisito del smoke Docker. No se
+  hizo release para corregirlo.
+- Auditoría de rutas — PASS; EN y ES tienen 93 archivos fuente equivalentes,
+  sin rutas faltantes, enlaces internos con el prefijo de idioma correcto ni
+  destinos publicados inexistentes.
+- Revisión local en `http://localhost:4321` — PASS para `/en/`, `/es/` y una
+  página profunda de arquitectura; el selector EN/ES, landmarks, navegación y
+  dos diagramas Mermaid fueron verificados.
+- Lighthouse — homepage ES mobile: 100 en accesibilidad, buenas prácticas,
+  SEO y navegación agéntica; homepage EN desktop: 100 en accesibilidad,
+  buenas prácticas y navegación agéntica. El único hallazgo SEO desktop es el
+  enlace `Learn more` del overlay de desarrollo de Astro.
+- La URL `https://framekit.mauriciodmo.com` todavía no resuelve DNS, por lo que
+  no se verificó deployment público.
+
 ## Rollout
 
 - Publicar en el destino definido durante la fase 0.
 - Verificar rutas públicas `/en/` y `/es/` en el deployment real.
 - Actualizar homepage/repository/package metadata con la URL canónica.
 - Aplicar los cambios de links preparados en la fase 9.
-- Retirar `Docs/en/` y `Docs/es/` solo después de verificar producción.
+- La retirada local de `Docs/en/` y `Docs/es/` se aplicó anticipadamente por
+  decisión explícita, después de la verificación local.
 - Confirmar que enlaces desde npm y GitHub resuelven.
 - Registrar la evidencia de build, browser y deployment.
 - Marcar el sitio como fuente canónica solo después de verificar producción.
 - Actualizar `Docs/Plans/README.md` y este tracker con el cierre.
+
+Esta ejecución aplica el cierre local: cambia los enlaces activos del repositorio,
+actualiza la metadata fuente de los paquetes y elimina `Docs/en/` y `Docs/es/`.
+No publica nuevas versiones npm ni verifica el deployment público; las versiones
+ya publicadas en npm todavía contienen enlaces legacy.
 
 ## Rollback
 
@@ -106,12 +148,13 @@ repetir el gate antes de volver a anunciarlo.
 
 ## Exit gate
 
-- [ ] Build de docs y gates del repositorio pasan.
-- [ ] Quick Start, API de imagen y flujos de Studio fueron verificados.
-- [ ] EN/ES pasan paridad y revisión visual.
-- [ ] El contenido publicado enseña exclusivamente contratos actuales verificados.
-- [ ] No quedan referencias a superficies retiradas o no soportadas.
+- [x] Build de docs y gates del repositorio pasan.
+- [x] Quick Start, API de imagen y flujos de Studio fueron verificados.
+- [x] EN/ES pasan paridad y revisión visual local.
+- [x] El contenido publicado enseña exclusivamente contratos actuales verificados.
+- [x] No quedan referencias operativas a superficies retiradas o no soportadas.
 - [ ] El deployment público responde en todas las rutas principales.
 - [ ] GitHub, npm y READMEs enlazan a la URL canónica.
-- [ ] `Docs/en/` y `Docs/es/` fueron retirados después de verificar producción.
-- [ ] El tracker maestro está cerrado con evidencia.
+- [x] `Docs/en/` y `Docs/es/` fueron retirados del repositorio por decisión
+  explícita antes de verificar producción.
+- [ ] El tracker maestro está cerrado con evidencia de producción.

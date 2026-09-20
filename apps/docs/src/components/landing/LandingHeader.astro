@@ -1,0 +1,54 @@
+---
+import { IconBook2, IconLanguage } from '@tabler/icons-astro'
+import type { LandingContent, LandingLanguage } from '../../content/landing'
+
+interface Props {
+  copy: LandingContent
+  language: LandingLanguage
+  languages: readonly LandingLanguage[]
+}
+
+const { copy, language, languages } = Astro.props
+---
+
+<header class="border-b border-white/10 bg-[#10271f]/70 backdrop-blur-lg">
+  <div
+    class="mx-auto flex min-h-18 w-[calc(100%-2rem)] max-w-6xl items-center justify-between gap-6 sm:w-[calc(100%-3rem)] max-sm:flex-col max-sm:items-start max-sm:py-4"
+  >
+    <a
+      class="flex items-center gap-2.5 text-[1.05rem] font-extrabold tracking-[-0.04em] no-underline focus-visible:outline-2 focus-visible:outline-[#b9f8d2] focus-visible:outline-offset-4"
+      href={`/${language}/`}
+      aria-label={copy.brandHome}
+    >
+      <img src="/favicon.svg" alt="" class="h-8 w-8" width="32" height="32" />
+      <span>FrameKit</span>
+    </a>
+
+    <nav class="flex items-center gap-5 text-sm max-sm:w-full max-sm:justify-between" aria-label={copy.navigation}>
+      <a
+        class="flex items-center gap-2 text-[#b9f8d2] no-underline transition-colors hover:text-[#f5f7ee] focus-visible:outline-2 focus-visible:outline-[#b9f8d2] focus-visible:outline-offset-4"
+        href={`/${language}/users/`}
+      >
+        <IconBook2 size={17} stroke={1.8} aria-hidden="true" />
+        {copy.docs}
+      </a>
+      <div class="flex items-center gap-2 border-l border-white/20 pl-5" aria-label={copy.language}>
+        <IconLanguage size={17} stroke={1.8} aria-hidden="true" />
+        <div class="flex items-center gap-1">
+          {languages.map((locale) => (
+            <a
+              class:list={[
+                'rounded-full px-2 py-1 no-underline transition-colors focus-visible:outline-2 focus-visible:outline-[#b9f8d2] focus-visible:outline-offset-4',
+                locale === language ? 'bg-[#c8f7d9] text-[#071a15]' : 'text-[#b9f8d2] hover:text-[#f5f7ee]',
+              ]}
+              href={`/${locale}/`}
+              aria-current={locale === language ? 'page' : undefined}
+            >
+              {copy.languageNames[locale]}
+            </a>
+          ))}
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>

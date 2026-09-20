@@ -4,8 +4,9 @@
 - **GitHub issue:** Not assigned.
 - **Release:** No version preselected.
 - **Depends on:** Verified Server Image Rendering Steps 1-7.
-- **Must finish before:** Server Image Rendering Step 8 final revalidation and
-  closure, and Maintainability Phase 6.
+- **Must finish before:** Optional Authentication starts after Phase 7; Phase 8
+  then finishes before Server Image Rendering Step 8 final revalidation and
+  Maintainability Phase 6.
 - **Target runtime:** One long-lived Node.js process per application container.
 - **Primary package:** `@mauriciodmo/framekit`.
 - **Canonical consumer:** `packages/create-framekit/template/`.
@@ -15,6 +16,12 @@
 Require authenticated access to the canonical FrameKit Studio, support simple
 local users and API tokens, and move Studio Download PNG and Copy PNG onto the
 existing server-rendering pipeline.
+
+This plan establishes the authenticated implementation. The later
+[Optional Authentication plan](../optional-authentication/README.md) makes that
+boundary opt-in through `FRAMEKIT_AUTH_ENABLED=true`; Phase 8 of this plan must
+therefore verify both the open default and the authenticated mode rather than
+assuming authentication is unconditional.
 
 This is a cross-cutting plan rather than an extension of one completed server
 rendering step. It changes the reusable server package, Studio root integration,
@@ -45,8 +52,9 @@ Download and Copy request PNGs from the authenticated image route and the
   implementation is present in the current checkout, but Docker exit-gate
   verification remains blocked because the available published
   `@mauriciodmo/framekit@0.8.1` lacks `playwright-core`, the browser-runtime
-  dependency; Phase 8 remains pending. Server Image Rendering Step 8 final
-  revalidation and closure remain blocked until this plan is complete.
+  dependency; Phase 8 remains pending and runs after Optional Authentication.
+  Server Image Rendering Step 8 final revalidation and closure remain blocked
+  until both plans are complete.
 
 ## Target architecture
 

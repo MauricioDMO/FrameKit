@@ -26,10 +26,8 @@ Consumers import the public package, not its source tree. The current
 | `@mauriciodmo/framekit/server` | `./server` | Node/server-only access, image, and rendering contracts. |
 | `@mauriciodmo/framekit/styles.css` | `./styles.css` | Published stylesheet. |
 
-Do not import `packages/framekit/src/**` from a consumer, first-party Studio
-adapter, or generated project. The generated project uses its own
-`@framekit/generated/*` aliases for generated modules and the published
-FrameKit entrypoints for reusable code. See the [user package API reference](/en/users/reference/package-api)
+The generated project uses its own `@framekit/generated/*` aliases for generated
+modules and the published FrameKit entrypoints for reusable code. See the [user package API reference](/en/users/reference/package-api)
 for symbols and consumer examples instead of duplicating those contracts here.
 
 ## Preserve layer direction

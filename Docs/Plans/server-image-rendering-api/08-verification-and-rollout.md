@@ -10,8 +10,10 @@ distribution; update documentation; and define a safe compatibility rollout.
 
 - Completion of Steps 1-7 with passing focused exit gates.
 - Steps 0.5 and 0.6 package/integration gates, including the minimal starter.
-- Completion of all eight phases in
-  [Studio Access, API Tokens, and Server-backed Export](../studio-access-and-api-rendering/README.md).
+- Completion of phases 1-7 in
+  [Studio Access, API Tokens, and Server-backed Export](../studio-access-and-api-rendering/README.md),
+  all five [Optional Authentication](../optional-authentication/README.md)
+  phases, and Studio Access phase 8.
 - Built public package tarballs.
 - An isolated creator-generated consumer outside the workspace.
 
@@ -47,9 +49,9 @@ the production domain. FrameKit server tests use
 `packages/framekit/src/server/__tests__/`; the shared raster and canvas tests use
 `packages/framekit/src/shared/__tests__/raster-image.test.ts` and
 `packages/framekit/src/editor/components/__tests__/template-canvas.test.tsx`.
-Compile-time type fixtures remain under `packages/framekit/tests/types/`, Studio
+Compile-time type fixtures remain under `packages/framekit/type-tests/`, Studio
 integration tests under `apps/studio/src/__tests__/`, and root Playwright E2E
-under `tests/e2e/`.
+under `e2e/`.
 
 | Level | Proves | Does not prove |
 |---|---|---|
@@ -180,10 +182,13 @@ fixture.
 
 The current runtime configuration is:
 
+- `FRAMEKIT_AUTH_ENABLED`, defaulting to `false`; authenticated production smokes
+  set it to `true` explicitly, while one focused integration path verifies the
+  open default;
 - `FRAMEKIT_DATABASE_PATH`, defaulting to `.framekit-data/framekit.sqlite` and
   resolved relative to the working directory, for SQLite access data; in the
-  generated runner the default is `/app/.framekit-data/framekit.sqlite`, and the
-  Dockerfile neither sets the variable nor declares a volume;
+  generated runner the Dockerfile sets `/data/framekit.sqlite` and creates
+  `/data`, which the operator mounts when persistence is required;
 - on the first `POST /api/framekit/login` against an empty database,
   `bootstrapUsers()` reads only `FRAMEKIT_ADMIN_USERNAME`, defaulting to `admin`
   and limited to 3-64 ASCII letters, numbers, `.`, `_`, or `-`, and
@@ -207,24 +212,25 @@ unsupported and is not consumed.
 1. Container process is `tini` -> non-root Node standalone server.
 2. HTTP readiness succeeds.
 3. The configured database path is writable by the runtime user and is mounted
-   for persistence when required. The generated image does not create or declare
-   `/data`; with the default path, database files resolve under `/app/.framekit-data`
-   and appear on first database access, not at container startup.
+   at `/data` for persistence when required. Database files appear on first
+   authenticated access, not at container startup or in the default open mode.
 4. Public/generated static template assets return `200`.
 5. Chromium executable exists under configured browser path.
 6. No browser starts at process/container startup; Chromium launches lazily for
-   the first authenticated render after payload resolution and is reused.
+   the first valid render after payload resolution and is reused.
 7. No FrameKit temp render-job directory/file exists.
 
 ### API checks
 
-1. The first login request against an empty database creates the administrator
-   from the configured username and password.
-2. Missing session/API token -> `401`.
-3. Same-origin login and session-authenticated render -> non-empty PNG.
-4. Generated API-token render -> non-empty PNG.
-5. Response headers, signature, and declared dimensions match.
-6. Container replacement with the same mounted database volume preserves users,
+1. With `FRAMEKIT_AUTH_ENABLED=false`, a credential-free render returns a
+   non-empty PNG and access endpoints return `404`.
+2. With `FRAMEKIT_AUTH_ENABLED=true`, the first login request against an empty
+   database creates the administrator from the configured username and password.
+3. In authenticated mode, missing session/API token -> `401`.
+4. Same-origin login and session-authenticated render -> non-empty PNG.
+5. Generated API-token render -> non-empty PNG.
+6. Response headers, signature, and declared dimensions match.
+7. Container replacement with the same mounted database volume preserves users,
    sessions, and API tokens while clearing temporary render jobs.
 
 Detailed malformed input, remote-image policy, browser network/token scoping,
@@ -283,9 +289,11 @@ The registry-backed Docker smoke is separate because it requires an exact
 published FrameKit version. It builds the canonical image and verifies one local
 asset render without repeating the tarball checks.
 
-The current `scripts/smoke-tarballs.mjs` start smoke uses
-`FRAMEKIT_DATABASE_PATH=:memory:` and checks startup/routes/Map handoff; it does
-not install Chromium or exercise the image-render capture path.
+Update the `tooling/smoke-tarballs.mjs` start smoke to use
+`FRAMEKIT_AUTH_ENABLED=true` alongside its existing
+`FRAMEKIT_DATABASE_PATH=:memory:` when checking the authenticated
+startup/routes/Map handoff; it does not install Chromium or exercise the
+image-render capture path.
 
 Exercise both creator install-and-generate and skip-install workflows. In the
 latter, install dependencies before a normal FrameKit generate/check/dev/build
@@ -296,13 +304,15 @@ the installer does not pick it up.
 
 ## Small smoke harness
 
-The current `scripts/smoke-docker.mjs` builds the image for an exact published
+The current `tooling/smoke-docker.mjs` builds the image for an exact published
 FrameKit version, runs one ephemeral container, passes the admin password, and
-logs in; that first login request performs bootstrap. It then rejects an
-unauthenticated render, creates an API token, and verifies a token-authenticated
-PNG. It does not set `FRAMEKIT_DATABASE_PATH`, mount/reuse a volume, or replace
-the container, so it does not prove persistence. A separate Step 8 harness may
-build on it to test a writable mounted database and container replacement.
+logs in. Update it to pass `FRAMEKIT_AUTH_ENABLED=true` explicitly so that first
+login still performs bootstrap, an unauthenticated render is rejected, and the
+API-token PNG check retains its meaning. It uses the image's
+`FRAMEKIT_DATABASE_PATH=/data/framekit.sqlite` but does not mount/reuse a volume
+or replace the container, so it does not prove persistence. A separate Step 8
+harness may build on it to test a writable mounted database and container
+replacement.
 HTTPS reverse-proxy behavior remains in the browser E2E rather than adding
 certificate management to this smoke.
 
@@ -463,13 +473,15 @@ logs.
 ## Rollout sequence
 
 1. Retain the completed Steps 1-7 rendering evidence.
-2. Complete Studio Access, API Tokens, and Server-backed Export Phases 1-8.
-3. Build and pack both public packages and generate an isolated six-file
+2. Complete Studio Access phases 1-7.
+3. Complete Optional Authentication phases 1-5, then revalidate Studio Access
+   phase 8 on that baseline.
+4. Build and pack both public packages and generate an isolated six-file
    consumer.
-4. Run focused, repository, browser, tarball, reverse-proxy, and two-container
+5. Run focused, repository, browser, tarball, reverse-proxy, and two-container
    persistence gates against the final architecture.
-5. Update English/Spanish docs, changelog, migration, and rollback notes.
-6. Release only when every final checklist item passes.
+6. Update English/Spanish docs, changelog, migration, and rollback notes.
+7. Release only when every final checklist item passes.
 
 ## Rollback
 

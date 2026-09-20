@@ -1,0 +1,23 @@
+---
+import type { LandingContent } from '../../content/landing'
+
+interface Props {
+  copy: LandingContent
+}
+
+const { copy } = Astro.props
+---
+
+<div class="relative">
+  <div class="absolute -right-12 top-10 h-64 w-64 rounded-full border border-[#b9f8d2]/15 bg-[#2a3931]/30 blur-sm" aria-hidden="true"></div>
+  <img
+    src="/assets/what-is-framekit.webp"
+    alt={copy.lang === 'es' ? 'Editor de FrameKit Studio' : 'FrameKit Studio editor'}
+    width="3238"
+    height="2296"
+    loading="eager"
+    decoding="async"
+    fetchpriority="high"
+    class="relative w-full border border-[#c8f7d9]/30 bg-[#10271f] shadow-2xl shadow-black/30"
+  />
+</div>

@@ -1,7 +1,8 @@
 # FrameKit Documentation Site
 
-- **Estado:** Activo; fases pendientes.
-- **Última revisión:** 2026-09-18.
+- **Estado:** Activo; preparación local de fase 10 completada; rollout externo
+  pendiente.
+- **Última revisión:** 2026-09-19.
 - **Alcance:** Convertir `apps/docs` en la documentación canónica bilingüe de
   FrameKit, separada por audiencia y alineada con el producto actual.
 - **Release:** Este plan no selecciona versiones ni dist-tags.
@@ -23,6 +24,9 @@ solo coordinan el trabajo.
 - Ambos idiomas tienen la misma jerarquía y responsabilidad temática.
 - `Docs/en/` y `Docs/es/` se retiran cuando el sitio Starlight esté publicado y
   todos los enlaces del repositorio apunten al sitio nuevo.
+- El 2026-09-19 se aplicó una excepción explícita: los árboles legacy se
+  retiraron después de la verificación local y la migración de enlaces fuente,
+  antes de comprobar el deployment público y publicar nuevas versiones npm.
 - No se mantienen dos copias permanentes de la documentación pública.
 - El estado actual del código, tests, manifests y template canónico tiene
   prioridad sobre READMEs, documentación antigua y lenguaje histórico de Plans.
@@ -50,7 +54,7 @@ Usa este orden cuando dos fuentes discrepen:
 3. Template canónico en `packages/create-framekit/template/`.
 4. Integración first-party en `apps/studio/`.
 5. `CHANGELOG.md` para cambios todavía no publicados.
-6. Documentación existente bajo `Docs/en/`, `Docs/es` y los README como material
+6. Documentación histórica previamente bajo `Docs/en/`, `Docs/es/` y los README como material
    de migración, nunca como autoridad superior al código.
 
 ## Arquitectura objetivo
@@ -98,7 +102,7 @@ apps/docs/src/content/docs/
 | 7 | [Onboarding y arquitectura para contribuidores](./07-contributor-onboarding-and-architecture.md) | Mapa vigente del monorepo y sus límites |
 | 8 | [Workflow, testing y releases](./08-contributor-workflow-testing-and-releases.md) | Operación del repositorio documentada |
 | 9 | [Localización y migración legacy](./09-spanish-localization-and-legacy-migration.md) | Paridad EN/ES y retirada legacy preparada |
-| 10 | [Verificación y rollout](./10-verification-and-rollout.md) | Sitio publicado, enlaces migrados y copias legacy retiradas |
+| 10 | [Verificación y rollout](./10-verification-and-rollout.md) | Verificación local aprobada; deployment, enlaces y copias legacy pendientes |
 
 Las fases son secuenciales para evitar traducir o enlazar una arquitectura que
 todavía cambia. El contenido inglés se estabiliza en las fases 2-8 y se replica
@@ -151,25 +155,27 @@ del producto.
   actual; no incluyas snippets, comandos ni instrucciones para ejecutar APIs,
   rutas, variables, imports, archivos, flags o comportamientos retirados.
 - Cada fase actualiza este tracker cuando completa su exit gate.
-- No retires `Docs/en/` ni `Docs/es/` hasta que la fase 10 haya verificado el
-  deployment de producción.
+- La regla prevista era no retirar `Docs/en/` ni `Docs/es/` hasta que la fase 10
+  verificara el deployment de producción; la excepción aplicada el 2026-09-19
+  queda registrada arriba y no cierra los gates externos.
 - No anuncies el sitio como canónico antes del gate de la fase 10.
 
 ## Gate global
 
 - [ ] Las fases 0-10 están completadas.
-- [ ] `/en/` y `/es/` tienen paridad de rutas y temas.
-- [ ] Los enlaces internos de `/en/` y `/es/` conservan su prefijo incluso al
+- [x] `/en/` y `/es/` tienen paridad de rutas y temas.
+- [x] Los enlaces internos de `/en/` y `/es/` conservan su prefijo incluso al
   abrir las URLs sin slash final.
-- [ ] No queda contenido placeholder de Starlight.
-- [ ] El contenido publicado refleja únicamente contratos actuales verificados.
-- [ ] No hay referencias a superficies retiradas o no soportadas en guías,
+- [x] No queda contenido placeholder de Starlight.
+- [x] El contenido publicado refleja únicamente contratos actuales verificados.
+- [x] No hay referencias operativas a superficies retiradas o no soportadas en guías,
   referencias, ejemplos ni migraciones publicadas.
-- [ ] Todos los exports y comandos publicados están representados.
-- [ ] Los requisitos de seguridad y deployment están visibles antes de los
+- [x] Todos los exports y comandos publicados están representados.
+- [x] Los requisitos de seguridad y deployment están visibles antes de los
   ejemplos de exposición pública.
-- [ ] Los enlaces del repositorio apuntan al sitio nuevo.
-- [ ] `Docs/en/` y `Docs/es/` fueron retirados.
-- [ ] `Docs/Plans/` y `Docs/skills/` permanecen separados.
-- [ ] `pnpm --filter docs build` pasa.
-- [ ] `pnpm lint`, `pnpm typecheck` y `pnpm build` pasan.
+- [x] Los enlaces activos del repositorio apuntan al sitio nuevo.
+- [x] `Docs/en/` y `Docs/es/` fueron retirados; la verificación de producción
+  sigue pendiente.
+- [x] `Docs/Plans/` y `Docs/skills/` permanecen separados.
+- [x] `pnpm --filter docs build` pasa.
+- [x] `pnpm lint`, `pnpm typecheck` y `pnpm build` pasan.

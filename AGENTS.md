@@ -48,4 +48,4 @@
 ## Distribution
 
 - Only `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` are public packages; the root and Studio are not publish targets.
-- For packaging changes, run `pnpm --filter @mauriciodmo/framekit pack` and `pnpm --filter @mauriciodmo/create-framekit pack`, then follow `Docs/en/development/testing-and-distribution.md` for the external consumer smoke test.
+- For packaging changes, run `pnpm --filter @mauriciodmo/framekit pack` and `pnpm --filter @mauriciodmo/create-framekit pack`, then follow the [generated consumer guide](https://framekit.mauriciodmo.com/en/contributors/distribution/generated-consumer/) for the external consumer smoke test.
