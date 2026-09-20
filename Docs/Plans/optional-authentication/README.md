@@ -1,31 +1,31 @@
-# Optional Authentication
+# Optional Authentication and FrameKit 1.0
 
-- **Estado:** Planificado; ninguna fase implementada.
-- **GitHub issue:** No asignada.
-- **Release:** Sin versión preseleccionada.
-- **Depende de:** Studio Access, API Tokens, and Server-backed Export fases 1-7.
-- **Debe terminar antes de:** Studio Access fase 8, Server Image Rendering paso 8
-  y Maintainability fase 6.
+- **Estado:** Planificado; ninguna fase implementada por completo.
+- **Release objetivo:** `@mauriciodmo/framekit@1.0.0` y
+  `@mauriciodmo/create-framekit@1.0.0`.
 - **Runtime objetivo:** Un proceso Node de larga duración por aplicación.
 - **Paquete principal:** `@mauriciodmo/framekit`.
 - **Consumer canónico:** `packages/create-framekit/template/`.
 
+La versión conjunta fue aprobada para este cierre concreto aunque los dos
+paquetes conserven versionado independiente después de 1.0.
+
 ## Propósito
 
-Hacer opcional la autenticación de FrameKit mediante una única variable booleana,
-con un modo local cómodo por defecto y un modo autenticado explícito para
-despliegues que exponen Studio o la API a una red no confiable.
+Hacer opcional la autenticación mediante una única variable booleana, conservar
+el modo autenticado existente como opt-in y cerrar en el mismo plan todos los
+gates necesarios para publicar FrameKit 1.0.
 
-La variable canónica será `FRAMEKIT_AUTH_ENABLED`:
+La variable canónica es `FRAMEKIT_AUTH_ENABLED`:
 
 - ausente o `false`: autenticación desactivada;
-- `true`: autenticación activada con el comportamiento actual de usuarios,
-  sesiones y API tokens;
-- cualquier otro valor: configuración inválida; no se acepta coerción silenciosa.
+- `true`: autenticación activada con usuarios, sesiones y API tokens;
+- cualquier otro valor: configuración inválida, sin coerción silenciosa.
 
-La documentación debe recomendar `FRAMEKIT_AUTH_ENABLED=true` para producción.
-El valor predeterminado sigue siendo `false`; ni `NODE_ENV=production` ni Docker
-lo cambian implícitamente.
+El default permanece en `false`. Ni `NODE_ENV=production`, Docker, una base de
+datos existente ni credenciales bootstrap lo cambian implícitamente. La
+documentación debe recomendar `FRAMEKIT_AUTH_ENABLED=true` antes de exponer una
+instalación de producción a una red no confiable.
 
 ## Contrato de comportamiento
 
@@ -33,67 +33,43 @@ lo cambian implícitamente.
 |---|---|---|
 | `/editor` y `/brand` | Acceso directo, sin cookie ni usuario | Requieren una sesión activa |
 | `/login` | Redirige a `/editor` | Muestra login o redirige si ya existe sesión |
-| `/settings` | No existe para el cliente; responde como no encontrada | Requiere sesión y conserva cuentas, tokens y usuarios |
-| API de acceso `/api/framekit/{login,logout,account,tokens,users,...}` | Responde `404` sin tocar SQLite | Conserva métodos, origen, sesión, roles y ownership actuales |
+| `/settings` | Responde como no encontrada | Requiere sesión y conserva cuentas, tokens y usuarios |
+| API `/api/framekit/{login,logout,account,tokens,users,...}` | `404` antes de body, origen o SQLite | Conserva métodos, sesiones, roles y ownership |
 | `POST /api/framekit/images/render` | No exige cookie ni Bearer | Acepta sesión same-origin o API token válido |
 | Upload dev `/framekit/assets` | No exige sesión; conserva same-origin | Exige sesión válida y same-origin |
 | Render privado `/framekit/render/[id]` | Sin cambios | Sin cambios |
 
-Desactivar autenticación no convierte las rutas de gestión en operaciones de
-administrador anónimo. No se crea un usuario sintético, no se inicializa SQLite y
-no se exponen operaciones de cuenta, usuarios o tokens. El protocolo del render
-privado conserva su token interno en ambos modos.
+Desactivar autenticación no crea un administrador anónimo. No se inicializa
+SQLite, no se crea un usuario sintético y no se exponen operaciones de cuentas,
+usuarios o tokens. El render privado conserva su token interno en ambos modos.
 
 ## Límites de seguridad
 
-- El modo desactivado hace públicos Studio y el endpoint de render para cualquier
-  cliente con acceso de red al proceso.
-- La comprobación same-origin del upload de desarrollo se conserva porque evita
-  escrituras cross-site y no es autenticación de usuario.
-- Las restricciones de imágenes remotas, límites de body, validación de datos,
-  concurrencia, timeout, red de Chromium y token del render privado no cambian.
-- Un header `Authorization` malformado se ignora solamente cuando la autenticación
-  está desactivada; cuando está activada conserva la precedencia y rechazo actual.
-- La configuración se consulta en request time para que los adapters y tests no
-  congelen un valor de entorno al importar el módulo.
-- No se añade compatibilidad con nombres alternativos como
-  `FRAMEKIT_AUTH_DISABLED`, `AUTH_ENABLED` o `FRAMEKIT_API_KEY`.
-
-## Arquitectura objetivo
-
-```text
-                    FRAMEKIT_AUTH_ENABLED
-                       /              \
-                  false                true
-                    |                    |
-        +-----------+-----------+    users / sessions / api_tokens
-        |           |           |        |              |
-      Studio    image API   dev upload  session       Bearer token
-    editor/brand   public    same-origin   +--------------+
-        |           |                                |
-        +-----------+--------------------------------+
-                            |
-                    shared image pipeline
-                            |
-                  private render token
-                            |
-                         Chromium
-                            |
-                           PNG
-```
+- El modo abierto hace públicos Studio y el renderer para cualquier cliente con
+  acceso de red al proceso.
+- Same-origin del upload de desarrollo se conserva porque evita escrituras
+  cross-site y no representa autenticación de usuario.
+- Límites de body, validación, imágenes remotas, concurrencia, timeout, red de
+  Chromium y tokens privados no cambian.
+- Un `Authorization` malformado se ignora solo cuando auth está desactivada; con
+  auth activada conserva la precedencia y el rechazo actuales.
+- La configuración se consulta en request time para no congelar el entorno al
+  importar módulos.
+- No se aceptan aliases como `FRAMEKIT_AUTH_DISABLED`, `AUTH_ENABLED` o
+  `FRAMEKIT_API_KEY`.
 
 ## Ownership
 
 | Responsabilidad | Owner |
 |---|---|
 | Parseo estricto de `FRAMEKIT_AUTH_ENABLED` | Internals server-only de `packages/framekit/src/server/access/` |
-| Bypass de autenticación del render y desactivación de access API | `packages/framekit/src/server/` |
-| Protección same-origin del upload dev | `packages/framekit/src/tooling/dev/` |
+| Image API y desactivación de access API | `packages/framekit/src/server/` |
+| Upload dev con same-origin | `packages/framekit/src/tooling/dev/` |
 | Rutas de Studio y login | `@mauriciodmo/framekit/studio/root` |
-| Visibilidad de Ajustes y usuario opcional | `@mauriciodmo/framekit/studio` |
-| Binding `StudioClient` con usuario opcional | Codegen de FrameKit |
-| Valor de despliegue | Cada aplicación consumer |
-| Referencia y recomendación de producción | Template, package README y documentación EN/ES |
+| Usuario opcional y navegación | `@mauriciodmo/framekit/studio` |
+| Binding `StudioClient` | Codegen de FrameKit |
+| Configuración de despliegue | Cada aplicación consumer |
+| Documentación y release | Template, paquetes, sitio EN/ES y tooling de release |
 
 No se añade un nuevo export público. El parser es un detalle interno compartido
 por server, Studio root y tooling dev.
@@ -102,75 +78,58 @@ por server, Studio root y tooling dev.
 
 Incluido:
 
-- una variable booleana server-only, estricta y desactivada por defecto;
-- acceso sin sesión a Editor y Brand;
-- render PNG sin credenciales;
-- upload de assets de desarrollo sin sesión y con same-origin;
-- desactivación completa de login, cuentas, usuarios, sesiones y API tokens;
-- ocultar la navegación hacia Ajustes cuando no hay autenticación;
-- conservar sin cambios el modo autenticado mediante opt-in;
-- tests de ambos modos y documentación EN/ES;
-- actualización del consumer generado, ejemplos de entorno y smokes.
+- variable server-only estricta y desactivada por defecto;
+- Editor, Brand, render PNG y upload dev utilizables sin sesión;
+- ausencia total de login, Ajustes y API de acceso en modo abierto;
+- modo autenticado actual preservado mediante opt-in;
+- tests de ambos modos y actualización del consumer;
+- límites de imports contra la arquitectura final;
+- documentación, migración, tarballs, E2E y Docker;
+- publicación y promoción de ambos paquetes `1.0.0`.
 
 Excluido:
 
-- detectar automáticamente desarrollo o producción;
-- activar autenticación implícitamente por `NODE_ENV`;
-- un usuario administrador anónimo o sintético;
-- permisos parciales en el modo desactivado;
-- auth por API key compartida;
-- cambios de schema o migraciones SQLite;
-- OAuth, MFA, scopes, RBAC nuevo o rate limiting;
-- hacer confidenciales assets públicos o bundles cliente;
-- cambiar el protocolo del render privado.
+- inferir el modo mediante desarrollo, producción o credenciales existentes;
+- permisos parciales o un usuario administrador sintético;
+- API key compartida, OAuth, MFA, scopes o RBAC nuevo;
+- cambios de schema SQLite o persistencia de render jobs;
+- rate limiting interno, serverless o múltiples procesos;
+- issues #18 y #19 y cambios de gobierno del repositorio.
 
 ## Fases
 
-Las fases son secuenciales. Cada una conserva un check ejecutable antes de
-continuar.
-
-| Fase | Plan | Resultado principal | Depende de |
+| Fase | Plan | Resultado | Depende de |
 |---:|---|---|---|
-| 1 | [Contrato de configuración](./01-runtime-configuration.md) | Parser estricto, default desactivado y contrato testeado | Baseline actual |
-| 2 | [Límites API y desarrollo](./02-api-and-development-boundaries.md) | Render público opcional, access API apagada y upload dev funcional | Fase 1 |
-| 3 | [Studio y codegen](./03-studio-and-codegen.md) | Studio sin login, Ajustes ausentes y binding con usuario opcional | Fases 1-2 |
-| 4 | [Verificación](./04-verification.md) | Cobertura de ambos modos, E2E autenticado y gates del repositorio | Fases 1-3 |
-| 5 | [Documentación y rollout](./05-documentation-and-rollout.md) | Consumer, docs EN/ES y advertencia de producción coherentes | Fase 4 |
-
-Orden obligatorio:
+| 1 | [Contrato de configuración](./01-runtime-configuration.md) | Parser estricto y default desactivado | Baseline actual |
+| 2 | [Límites API y desarrollo](./02-api-and-development-boundaries.md) | Renderer abierto, access API ausente y upload dev protegido | Fase 1 |
+| 3 | [Studio y codegen](./03-studio-and-codegen.md) | Studio sin login, Ajustes ausentes y usuario opcional | Fases 1-2 |
+| 4 | [Verificación, arquitectura y release 1.0](./04-v1-verification-and-release.md) | Gates finales, publicación y promoción | Fases 1-3 |
 
 ```text
-1 → 2 → 3 → 4 → 5
+1 → 2 → 3 → 4
 ```
 
 ## Compatibilidad
 
-Este cambio modifica intencionalmente el default. Una aplicación que actualice
-FrameKit sin definir la variable dejará de exigir login y tokens. Para conservar
-el comportamiento anterior debe configurar:
+El cambio modifica intencionalmente el default. Una aplicación que actualice sin
+definir la variable dejará de exigir login y tokens. Para conservar el
+comportamiento anterior debe configurar antes del despliegue:
 
 ```dotenv
 FRAMEKIT_AUTH_ENABLED=true
 ```
 
-No se mantiene un fallback basado en la presencia de
-`FRAMEKIT_ADMIN_PASSWORD`, usuarios existentes, la base de datos o
-`NODE_ENV=production`: cualquiera de esos heurísticos haría ambiguo el contrato y
-podría alternar el modo sin intención explícita.
+No se mantiene fallback basado en `FRAMEKIT_ADMIN_PASSWORD`, usuarios existentes,
+SQLite o `NODE_ENV`. Volver temporalmente a `false` no elimina usuarios, sesiones
+ni tokens; simplemente deja de consultarlos.
+
+Todo despliegue existente que deba seguir siendo privado configura
+`FRAMEKIT_AUTH_ENABLED=true` antes de instalar o desplegar `1.0.0`. No se promueve
+el release si ese paso no está visible en la migración y los ejemplos de
+producción.
 
 ## Gate final
 
-El plan se completa cuando:
-
-- las cinco fases aprobaron sus exit gates;
-- sin variable, Editor, Brand, render PNG y upload dev funcionan sin credenciales;
-- sin variable, login, Ajustes y la API de acceso no están disponibles;
-- con `FRAMEKIT_AUTH_ENABLED=true`, sesiones, roles, tokens y same-origin conservan
-  el comportamiento previo;
-- ningún camino desactivado inicializa SQLite o crea un usuario implícito;
-- el render privado y las demás defensas del pipeline permanecen intactos;
-- consumer generado, primera aplicación, E2E, build, typecheck y lint pasan;
-- `.env.example`, README y documentación EN/ES describen el default inseguro para
-  redes públicas y recomiendan activar autenticación en producción;
-- el handoff hacia Studio Access fase 8 y Server Image Rendering paso 8 queda
-  actualizado para revalidar este nuevo baseline después de cerrar el plan.
+El plan se completa únicamente cuando la fase 4 ha publicado y verificado ambos
+paquetes `1.0.0` y los ha promovido al dist-tag final. Presencia de código,
+publicación en npm o éxito local por separado no bastan para cerrar el plan.

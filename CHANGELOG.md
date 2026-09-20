@@ -61,37 +61,34 @@
   tokens, process-global connection reuse, WAL and busy-timeout setup, and ignored
   local database artifacts. This phase provides the internal schema; login/session
   HTTP, token management, Studio UI, and server-backed Studio export remain
-  subsequent phases. See the [SQLite and migrations phase plan](Docs/Plans/studio-access-and-api-rendering/01-sqlite-and-migrations.md).
+  subsequent phases.
 - Completed Phase 2 users and passwords with asynchronous fixed-profile
   `scrypt:v1` credentials, lazy first-administrator bootstrap without legacy
   render-key import, safe user DTOs and mutations, session
   cleanup on password changes and deactivation, and the last-active-administrator
   invariant. Session/HTTP access, Studio UI, API-token endpoints, and
-  server-backed export remain subsequent phases. See the [users, passwords, and
-  bootstrap phase plan](Docs/Plans/studio-access-and-api-rendering/02-users-passwords-and-bootstrap.md).
+  server-backed export remain subsequent phases.
 - Implemented Studio Access Phase 3 with hashed 30-day sessions, an exact-origin
   security boundary, protected Studio routes and login behavior, and authenticated
   development asset uploads; no release-version or persisted-content migration
-  is introduced. See the [sessions, HTTP, and route protection phase plan](Docs/Plans/studio-access-and-api-rendering/03-sessions-http-and-route-protection.md).
+  is introduced.
 - Implemented and verified Studio Access Phase 4 with owner-scoped token
   creation/listing/revocation, administrator user management and token
   metadata/revocation, one-time generated `fk_` secrets stored only as SHA-256
   hashes, active-owner credential lookup with `last_used_at`, safe DTOs,
   transactional last-active-administrator protection, exact access routes, and
   DELETE route adapters. Authenticated image API/session export remain pending
-  phases 6-8. See the [API tokens, users, and authorization phase
-  plan](Docs/Plans/studio-access-and-api-rendering/04-api-tokens-users-and-authorization.md).
+  phases 6-8.
 - Implemented and verified Studio Access Phase 5 with reusable authenticated
   login, account, token, and administrator user UI, safe `StudioUser` handoff,
   `/settings` section routing, accessible confirmation flows, and English/Spanish
-  message coverage. See the [Studio access UI phase plan](Docs/Plans/studio-access-and-api-rendering/05-studio-access-ui.md).
+  message coverage.
 - Implemented and verified Studio Access Phase 5.5 with the public
   `createFrameKitApiHandler(templates)` dispatcher, one catch-all
   `/api/framekit/[...action]` adapter in Studio and generated consumers,
   canonical session/API-token image rendering at
   `POST /api/framekit/images/render`, and
   removal of the unshipped `/api/v1/images` route. The image pipeline and
-  existing access-handler security boundaries remain unchanged. See the
-  [FrameKit API namespace phase plan](Docs/Plans/studio-access-and-api-rendering/05.5-framekit-api-namespace.md).
+  existing access-handler security boundaries remain unchanged.
 - Consolidated the English and Spanish rolling migration guides and marked the
   `v0.8.0` guides as historical records. See [GitHub issue #14](https://github.com/MauricioDMO/FrameKit/issues/14).
