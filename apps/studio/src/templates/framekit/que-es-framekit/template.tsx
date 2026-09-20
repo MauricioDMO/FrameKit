@@ -1,7 +1,5 @@
 import { defineTemplate, field, Markdown } from '@mauriciodmo/framekit'
 
-import { BrandHero } from '@/brand/communication/hero/component'
-
 export default defineTemplate({
   meta: {
     title: 'Qué es FrameKit',
@@ -15,24 +13,18 @@ export default defineTemplate({
     eyebrow: field.text({ label: 'Etiqueta', placeholder: 'NUEVO / FRAMEKIT' }),
     title: field.text({ label: 'Título', placeholder: 'Diseña imágenes desde React' }),
     description: field.text({ label: 'Descripción' }),
-    website: field.text({ label: 'Sitio web' }),
-    opacity: field.number({ label: 'Opacidad', defaultValue: 100, min: 0, max: 100 }),
     accentColor: field.color({ label: 'Color de acento', defaultValue: '#c8f7d9' })
   },
   content: {
     es: {
       eyebrow: 'NUEVO / FRAMEKIT',
       title: 'Diseña imágenes desde **React**',
-      description: 'Plantillas editables para crear contenido visual consistente, reutilizable y listo para exportar.',
-      website: 'framekit.dev',
-      opacity: 100
+      description: 'Plantillas editables para crear contenido visual consistente, reutilizable y listo para exportar.'
     },
     en: {
       eyebrow: 'NEW / FRAMEKIT',
       title: 'Design images with **React**',
-      description: 'Editable templates for consistent, reusable visual content that is ready to export.',
-      website: 'framekit.dev',
-      opacity: 100
+      description: 'Editable templates for consistent, reusable visual content that is ready to export.'
     }
   },
   variants: { default: 'es', labels: { es: 'Español', en: 'English' } },
@@ -45,54 +37,121 @@ export default defineTemplate({
     return (
       <article
         className="relative flex overflow-hidden bg-[#10271f] text-[#f5f7ee]"
-        style={{ width, height, opacity: data.opacity / 100 }}
+        style={{ width, height }}
       >
-        <div className="absolute top-[-260px] right-[-170px] size-[720px] rounded-full border-[110px] opacity-20" style={{ borderColor: accentColor }} />
-        <div className="absolute -bottom-100 left-[-300px] size-[780px] rounded-full border border-white/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(200,247,217,0.16),transparent_25%),linear-gradient(135deg,transparent_35%,rgba(3,15,11,0.55))]" />
+        <div className="absolute top-[-310px] right-[-220px] size-[760px] rounded-full border-[96px] opacity-15" style={{ borderColor: accentColor }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_77%_18%,rgba(200,247,217,0.14),transparent_24%),linear-gradient(135deg,transparent_32%,rgba(3,15,11,0.58))]" />
 
         <div className="relative z-10 flex size-full flex-col px-[92px] py-[78px]">
-          <header className="flex items-start justify-between">
+          <header className="flex items-center justify-between border-b border-white/15 pb-6">
             <div className="flex items-center gap-4">
-              <div className="flex size-[58px] items-center justify-center rounded-[18px] text-[30px] font-black" style={{ backgroundColor: accentColor, color: '#10271f' }}>F</div>
+              <div className="flex size-[58px] items-center justify-center rounded-[8px]" style={{ backgroundColor: accentColor }}>
+                <span
+                  aria-hidden="true"
+                  className="size-[40px] bg-current text-black"
+                  style={{
+                    maskImage: "url('/assets/logos/framekit-small.svg')",
+                    maskPosition: 'center',
+                    maskRepeat: 'no-repeat',
+                    maskSize: 'contain',
+                    WebkitMaskImage: "url('/assets/logos/framekit-small.svg')",
+                    WebkitMaskPosition: 'center',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskSize: 'contain'
+                  }}
+                />
+              </div>
               <div>
-                <p className="text-[20px] font-black tracking-[0.14em] uppercase">FrameKit</p>
-                <p className="mt-1 text-[12px] font-bold tracking-[0.24em] text-[#91ae9f] uppercase">{labels.studio}</p>
+                <p className="text-[27px] font-black tracking-[0.14em] uppercase">FrameKit</p>
+                <p className="mt-1 text-[15px] font-bold tracking-[0.24em] text-[#91ae9f] uppercase">{labels.studio}</p>
               </div>
             </div>
-            <div className="rounded-full border border-white/20 px-5 py-2 text-[12px] font-bold tracking-[0.2em] text-white/65 uppercase">React → PNG</div>
+            <div className="flex items-center gap-3 text-[16px] font-bold tracking-[0.2em] text-white/65 uppercase">
+              <span className="size-2 rounded-full" style={{ backgroundColor: accentColor }} />
+              <span>React → PNG</span>
+            </div>
           </header>
 
-          <main className="my-auto grid grid-cols-[1fr_0.8fr] items-center gap-16">
-            <BrandHero eyebrow={data.eyebrow} title={data.title} description={data.description} accentColor={accentColor} />
+          <main className="grid flex-1 grid-cols-[1.08fr_0.92fr] gap-[72px] py-[56px]">
+            <div className="flex items-center">
+              <section className="max-w-[720px]">
+                <Markdown
+                  value={data.eyebrow}
+                  className="mb-7 text-[19px] font-black tracking-[0.28em] uppercase"
+                  style={{ color: accentColor }}
+                />
+                <Markdown
+                  value={data.title}
+                  lists
+                  className="text-[104px] leading-[0.9] font-medium tracking-[-0.07em]"
+                />
+                <div className="mt-9 flex items-start gap-5">
+                  <span className="mt-3 h-[3px] w-14 shrink-0" style={{ backgroundColor: accentColor }} />
+                  <Markdown
+                    value={data.description}
+                    lists
+                    className="max-w-[570px] text-[26px] leading-[1.35] text-white/70"
+                  />
+                </div>
+              </section>
+            </div>
 
-            <div className="relative h-[465px]">
-              <div className="absolute top-0 right-0 w-[330px] rounded-[22px] border border-white/15 bg-[#173d31] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.28)]">
-                <div className="mb-5 flex items-center justify-between text-[11px] font-bold tracking-[0.18em] text-white/45 uppercase"><span>template.tsx</span><span>01</span></div>
-                <div className="space-y-3 font-mono text-[14px] leading-6">
+            <div className="flex flex-col justify-center border-l border-white/15 pl-[60px]">
+              <div className="flex items-center justify-between border-b border-white/15 pb-4 text-[12px] font-bold tracking-[0.2em] text-white/45 uppercase">
+                <span>FrameKit / flow</span>
+                <span>01 — 03</span>
+              </div>
+
+              <div className="mt-5 border border-white/15 bg-[#173d31] p-7">
+                <div className="mb-6 flex items-center justify-between text-[12px] font-bold tracking-[0.18em] text-white/45 uppercase">
+                  <span>template.tsx</span>
+                  <span>React</span>
+                </div>
+                <div className="space-y-3 font-mono text-[16px] leading-7">
                   <p><span className="text-[#b9f8d2]">defineTemplate</span><span className="text-white/60">({'{'}</span></p>
-                  <p className="pl-5 text-white/65">width: <span style={{ color: accentColor }}>1440</span>,</p>
-                  <p className="pl-5 text-white/65">fields: <span className="text-[#b9f8d2]">editable</span>,</p>
-                  <p className="pl-5 text-white/65">render: <span className="text-[#b9f8d2]">yourDesign</span></p>
+                  <p className="pl-6 text-white/65">width: <span style={{ color: accentColor }}>1440</span>,</p>
+                  <p className="pl-6 text-white/65">fields: <span className="text-[#b9f8d2]">editable</span>,</p>
+                  <p className="pl-6 text-white/65">render: <span className="text-[#b9f8d2]">yourDesign</span></p>
                   <p className="text-white/60">{'}'}</p>
                 </div>
               </div>
 
-              <div className="absolute bottom-0 left-0 w-[330px] rotate-[-5deg] rounded-[22px] bg-[#f5f7ee] p-5 text-[#10271f] shadow-[0_28px_70px_rgba(0,0,0,0.28)]">
+              <div className="mt-5 flex min-h-[250px] flex-col justify-between rounded-[4px] bg-[#f5f7ee] p-7 text-[#10271f]">
                 <div className="flex items-start justify-between">
-                  <div><p className="text-[11px] font-black tracking-[0.18em] text-[#537568] uppercase">{labels.output}</p><p className="mt-2 text-[29px] leading-none font-black tracking-[-0.06em]">Your idea,<br />framed.</p></div>
-                  <div className="flex size-10 items-center justify-center rounded-xl" style={{ backgroundColor: accentColor }}><span className="text-[18px] font-black">↗</span></div>
+                  <div>
+                    <p className="text-[12px] font-black tracking-[0.18em] text-[#537568] uppercase">{labels.output}</p>
+                    <p className="mt-4 text-[44px] leading-[0.9] font-black tracking-[-0.06em]">Your idea,<br />framed.</p>
+                  </div>
+                  <div className="flex size-12 items-center justify-center rounded-[8px]" style={{ backgroundColor: accentColor }}>
+                    <span className="text-[20px] font-black">↗</span>
+                  </div>
                 </div>
-                <div className="mt-8 flex items-center justify-between border-t border-[#10271f]/15 pt-4 text-[11px] font-bold tracking-[0.12em] text-[#537568] uppercase"><span>1440 × 1440</span><span>PNG</span></div>
+                <div className="mt-10 flex items-center justify-between border-t border-[#10271f]/15 pt-4 text-[12px] font-bold tracking-[0.12em] text-[#537568] uppercase">
+                  <span>1440 × 1440</span>
+                  <span>PNG</span>
+                </div>
               </div>
-
-              <div className="absolute top-[180px] left-[112px] rounded-full border border-white/20 bg-[#10271f] px-4 py-2 text-[11px] font-black tracking-[0.16em] text-white/70 uppercase">{labels.define} · {labels.edit} · {labels.export}</div>
             </div>
           </main>
 
-          <footer className="flex items-end justify-between border-t border-white/15 pt-6">
-            <Markdown value={data.website} className="text-[16px] font-bold tracking-[0.08em]" />
-            <p className="text-[12px] font-bold tracking-[0.2em] text-white/45 uppercase">Build once · create more</p>
+          <div className="grid grid-cols-3 divide-x divide-white/15 border-y border-white/15 py-5">
+            <div className="flex items-baseline gap-4">
+              <span className="font-mono text-[13px] text-[#91ae9f]">01</span>
+              <span className="text-[15px] font-black tracking-[0.16em] uppercase">{labels.define}</span>
+            </div>
+            <div className="flex items-baseline gap-4 pl-6">
+              <span className="font-mono text-[13px] text-[#91ae9f]">02</span>
+              <span className="text-[15px] font-black tracking-[0.16em] uppercase">{labels.edit}</span>
+            </div>
+            <div className="flex items-baseline gap-4 pl-6">
+              <span className="font-mono text-[13px] text-[#91ae9f]">03</span>
+              <span className="text-[15px] font-black tracking-[0.16em] uppercase">{labels.export}</span>
+            </div>
+          </div>
+
+          <footer className="flex items-end justify-between pt-6">
+            <Markdown value="framekit.mauriciodmo.com" className="text-[22px] font-bold tracking-[0.08em]" />
+            <p className="text-[16px] font-bold tracking-[0.2em] text-white/45 uppercase">Build once · create more</p>
           </footer>
         </div>
       </article>
