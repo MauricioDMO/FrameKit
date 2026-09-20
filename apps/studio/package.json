@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "framekit generate && vitest run",
-    "typecheck": "framekit generate && tsc --noEmit"
+    "typecheck": "framekit generate && tsc --noEmit",
+    "sync:skills": "node ../../tooling/sync-skills.mjs"
   },
   "dependencies": {
     "@mauriciodmo/framekit": "workspace:*",

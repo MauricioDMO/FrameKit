@@ -7,7 +7,8 @@
 
 Run `pnpm sync:skills` after changing a source skill. It replaces the generated destinations below; do not edit them directly:
 
-- `.agents/skills/`
-- `packages/create-framekit/template/.agents/skills/`
+- `.agents/skills/` (internal)
+- `apps/studio/.agents/skills/` (public)
+- `packages/create-framekit/template/.agents/skills/` (public)
 
-The Husky pre-commit hook runs this command and stages both destinations automatically.
+The Husky pre-commit hook runs this command and stages all destinations automatically.

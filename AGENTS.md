@@ -41,8 +41,8 @@
 
 ## Skills Synchronization
 
-- Never edit `.agents/skills/` or `packages/create-framekit/template/.agents/skills/` directly. Husky synchronizes these copies from `Docs/skills/` via `pnpm sync:skills` during pre-commit.
-- The pre-commit hook must retain `pnpm sync:skills` and explicit staging of both synchronized skill-copy locations after the full lint passes.
+- Never edit `.agents/skills/`, `apps/studio/.agents/skills/`, or `packages/create-framekit/template/.agents/skills/` directly. Husky synchronizes these copies from `Docs/skills/` via `pnpm sync:skills` during pre-commit.
+- The pre-commit hook must retain `pnpm sync:skills` and explicit staging of all synchronized skill-copy locations after the full lint passes.
 - When a skill must change, edit its source under `Docs/skills/` and let synchronization regenerate the copies.
 
 ## Distribution

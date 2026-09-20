@@ -7,6 +7,7 @@ const skills = path.join(root, 'Docs', 'skills')
 
 const targets = [
   ['internal', path.join(root, '.agents', 'skills')],
+  ['public', path.join(root, 'apps', 'studio', '.agents', 'skills')],
   ['public', path.join(root, 'packages', 'create-framekit', 'template', '.agents', 'skills')],
 ]
 
