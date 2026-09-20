@@ -5,15 +5,19 @@ sidebar:
   order: 1
 ---
 
+import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
 El despliegue inicial compatible de FrameKit consiste en un proceso Node.js de larga duración por contenedor, con HTTPS y limitación de solicitudes proporcionados por un proxy inverso o balanceador de carga externo. El proceso aloja Studio, la API de acceso y el renderizado síncrono de PNG del lado del servidor.
 
-Empieza por las restricciones operativas y, después, elige las instrucciones del entorno de ejecución y del contenedor:
-
-- [Entorno de ejecución y configuración](/es/users/deployment/runtime): Node, Chromium, variables de entorno, capacidad de renderizado y estado local del proceso.
-- [Docker y persistencia](/es/users/deployment/docker-and-persistence): la imagen independiente canónica, `/data` y el comportamiento al reiniciar.
-- [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies): credenciales, cookies del mismo origen, tokens Bearer, restricciones de imágenes y exposición pública.
+<CardGrid>
+  <LinkCard title="Entorno de ejecución y configuración" href="/es/users/deployment/runtime" description="Node, Chromium, variables de entorno, capacidad de renderizado y estado local del proceso." />
+  <LinkCard title="Docker y persistencia" href="/es/users/deployment/docker-and-persistence" description="La imagen independiente canónica, /data, persistencia de SQLite y comportamiento al reiniciar." />
+  <LinkCard title="Seguridad y proxies inversos" href="/es/users/deployment/security-and-reverse-proxies" description="Credenciales, cookies del mismo origen, tokens Bearer, restricciones de imágenes, HTTPS y exposición pública." />
+</CardGrid>
 
 ## Secuencia de despliegue
+
+<Steps>
 
 1. Establece una `FRAMEKIT_ADMIN_PASSWORD` segura para crear el primer usuario y mantén los secretos fuera de la imagen y del repositorio de código fuente.
 2. Proporciona una ubicación escribible y duradera para SQLite si los usuarios, las sesiones y los tokens de API deben sobrevivir a los reinicios.
@@ -22,7 +26,11 @@ Empieza por las restricciones operativas y, después, elige las instrucciones de
 5. Inicia la aplicación compilada con `pnpm framekit start`.
 6. Coloca HTTPS y la limitación de solicitudes de inicio de sesión delante del proceso antes de exponerlo públicamente.
 
-`framekit start` es de solo lectura con respecto al registro generado. Espera que la compilación se haya realizado correctamente y no regenera las plantillas por ti.
+</Steps>
+
+:::note
+`framekit start` es de solo lectura con respecto al registro generado. Espera una compilación correcta y no regenera las plantillas por ti.
+:::
 
 ## Límites del estado
 

@@ -5,15 +5,19 @@ sidebar:
   order: 1
 ---
 
+import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
 FrameKit's supported initial deployment is one long-lived Node.js process per container, with HTTPS and request throttling provided by an external reverse proxy or load balancer. The process hosts Studio, the access API, and synchronous server-side PNG rendering.
 
-Start with the operational constraints, then choose the runtime and container instructions:
-
-- [Runtime and configuration](/en/users/deployment/runtime) - Node, Chromium, environment variables, render capacity, and process-local state.
-- [Docker and persistence](/en/users/deployment/docker-and-persistence) - the canonical standalone image, `/data`, and restart behavior.
-- [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) - credentials, same-origin cookies, Bearer tokens, image restrictions, and public exposure.
+<CardGrid>
+  <LinkCard title="Runtime and configuration" href="/en/users/deployment/runtime" description="Node, Chromium, environment variables, render capacity, and process-local state." />
+  <LinkCard title="Docker and persistence" href="/en/users/deployment/docker-and-persistence" description="The canonical standalone image, /data, SQLite persistence, and restart behavior." />
+  <LinkCard title="Security and reverse proxies" href="/en/users/deployment/security-and-reverse-proxies" description="Credentials, same-origin cookies, Bearer tokens, image restrictions, HTTPS, and public exposure." />
+</CardGrid>
 
 ## Deployment sequence
+
+<Steps>
 
 1. Set a strong `FRAMEKIT_ADMIN_PASSWORD` for first-user bootstrap and keep secrets outside the image and source repository.
 2. Provide a writable, durable location for SQLite if users, sessions, and API tokens must survive restarts.
@@ -22,7 +26,11 @@ Start with the operational constraints, then choose the runtime and container in
 5. Start the built application with `pnpm framekit start`.
 6. Put HTTPS and login throttling in front of the process before public exposure.
 
-`framekit start` is read-only with respect to the generated registry. It expects the successful build and does not regenerate templates for you.
+</Steps>
+
+:::note
+`framekit start` is read-only with respect to the generated registry. It expects a successful build and does not regenerate templates for you.
+:::
 
 ## State boundaries
 

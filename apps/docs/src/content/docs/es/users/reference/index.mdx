@@ -1,0 +1,29 @@
+---
+title: Referencia
+description: Consulta comandos, configuración, archivos generados, API y contratos de autoría de FrameKit.
+sidebar:
+  order: 0
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Las páginas de referencia describen el contrato compatible completo. Usa [Primeros pasos](/es/users/getting-started/) o [Guías](/es/users/guides/) cuando quieras un recorrido orientado a una tarea.
+
+## Entorno de ejecución y generación
+
+<CardGrid>
+  <LinkCard title="CLI" href="/es/users/reference/cli/" description="Consulta los comandos, opciones y comportamiento de FrameKit y create-framekit." />
+  <LinkCard title="Configuración" href="/es/users/reference/configuration" description="Variables de entorno y configuración del runtime utilizadas por los proyectos generados." />
+  <LinkCard title="Archivos generados" href="/es/users/reference/generated-files" description="Distingue código fuente mantenido, salida generada desechable y datos persistentes del runtime." />
+</CardGrid>
+
+## API y autoría
+
+<CardGrid>
+  <LinkCard title="Referencia de plantillas" href="/es/users/reference/template" description="Contratos completos de metadatos, campos, contenido, variantes, recursos y renderizado." />
+  <LinkCard title="API HTTP" href="/es/users/reference/http-api/" description="Rutas, autenticación, cuerpos de solicitud, trabajos de renderizado y respuestas." />
+  <LinkCard title="API del paquete" href="/es/users/reference/package-api/" description="Puntos de entrada publicados y API disponibles para el código de la aplicación." />
+  <LinkCard title="Catálogo de marca" href="/es/users/reference/brand-catalog" description="Descubrimiento de componentes de marca, metadatos README, vistas previas y cargadores generados." />
+  <LinkCard title="Markdown" href="/es/users/reference/markdown" description="Comportamiento de renderizado Markdown compatible con los componentes de FrameKit." />
+  <LinkCard title="Estilos y temas" href="/es/users/reference/styles-and-theming" description="Puntos de integración para estilos del proyecto y temas de Studio." />
+</CardGrid>

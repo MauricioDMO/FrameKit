@@ -34,6 +34,7 @@ export default defineConfig({
                         {
                             label: 'Concepts',
                             items: [
+                                { slug: 'users/concepts' },
                                 {
                                     label: 'Templates',
                                     items: [{ autogenerate: { directory: 'users/concepts/templates' } }],

@@ -1,0 +1,127 @@
+---
+title: Crear un componente de marca
+description: Añade, documenta, crea una vista previa, genera y consume un componente de marca reutilizable de FrameKit.
+sidebar:
+  order: 2
+---
+
+import { FileTree, Steps } from '@astrojs/starlight/components';
+
+Usa un componente de marca cuando el mismo patrón visual o de comunicación del código fuente del proyecto pertenece a más de una plantilla. Conserva los elementos gráficos de un solo uso en su plantilla. Los componentes de marca se descubren desde `component.tsx`; las plantillas se descubren desde `template.tsx` y son propietarias de la definición de salida.
+
+<Steps>
+
+1. **Crea el directorio del componente.**
+
+   Crea un directorio hoja debajo de `src/brand/` con la estructura que espera el descubrimiento.
+
+   <FileTree>
+
+   - src/
+     - brand/
+       - communication/
+         - hero/
+           - **README.md**
+           - **component.tsx**
+           - **preview.tsx**
+
+   </FileTree>
+
+   Consulta [Componentes de marca](/es/users/concepts/brand-components) para conocer las reglas exactas de descubrimiento y nombres.
+
+2. **Escribe el componente reutilizable.**
+
+   Acepta entradas semánticas y mantén fuera del componente las decisiones que pertenecen a la plantilla.
+
+   ```tsx title="src/brand/communication/hero/component.tsx"
+   import { Markdown } from '@mauriciodmo/framekit'
+
+   export interface BrandHeroProps {
+     eyebrow: string
+     title: string
+     description: string
+     accentColor?: string
+   }
+
+   export function BrandHero ({ eyebrow, title, description, accentColor = '#c8f7d9' }: BrandHeroProps) {
+     return (
+       <section>
+         <Markdown value={eyebrow} style={{ color: accentColor }} />
+         <Markdown value={title} lists />
+         <Markdown value={description} lists />
+       </section>
+     )
+   }
+   ```
+
+   No añadas dimensiones propias de la plantilla, etiquetas de plataforma, controles de exportación ni llamadas a la acción solo para facilitar el primer consumidor. La plantilla consumidora proporciona su canvas, campos, contenido, variantes, recursos y composición circundante.
+
+3. **Documenta el directorio hoja.**
+
+   Añade el README requerido e incluye cerca del principio un resumen independiente para que el catálogo generado tenga una descripción útil.
+
+   ```md title="src/brand/communication/hero/README.md"
+   # Hero
+
+   Bloque editorial reutilizable para un mensaje de marca con una etiqueta breve, un título y una descripción.
+
+   ## Entradas
+
+   - `eyebrow`: etiqueta breve.
+   - `title`: titular; se admite Markdown.
+   - `description`: texto de apoyo; se admiten listas de Markdown.
+   - `accentColor`: color de acento opcional.
+   ```
+
+4. **Añade una vista previa representativa.**
+
+   ```tsx title="src/brand/communication/hero/preview.tsx"
+   import { BrandHero } from './component'
+
+   export default function Preview () {
+     return (
+       <div>
+         <BrandHero
+           eyebrow="NUEVO / FRAMEKIT"
+           title="Diseña imágenes con **React**"
+           description="Contenido visual reutilizable para plantillas coherentes."
+         />
+       </div>
+     )
+   }
+   ```
+
+   La vista previa exporta por defecto un componente de React y reutiliza el componente fuente con props estáticas representativas.
+
+5. **Genera el catálogo.**
+
+   ```bash
+   pnpm framekit generate
+   ```
+
+   El comando escribe `src/generated/framekit/brands.ts` como salida generada. No lo edites directamente; corrige el componente fuente, la vista previa o el README y vuelve a generar.
+
+6. **Consume el componente desde una plantilla.**
+
+   ```tsx title="src/templates/example/template.tsx"
+   import { BrandHero } from '@/brand/communication/hero/component'
+
+   render ({ data }) {
+     return (
+       <main>
+         <BrandHero
+           eyebrow={data.eyebrow}
+           title={data.title}
+           description={data.description}
+           accentColor={data.accentColor}
+         />
+       </main>
+     )
+   }
+   ```
+
+   La plantilla sigue siendo responsable de declarar esos campos y de sus dimensiones, contenido, variantes, recursos y composición exterior.
+
+</Steps>
+
+Para conocer las reglas exactas de directorios, README, módulos generados y cargadores, consulta [Componentes de marca](/es/users/concepts/brand-components) y la [Referencia del catálogo de marca](/es/users/reference/brand-catalog). Para la definición completa de una plantilla, consulta [Crear una plantilla](/es/users/guides/create-template). El comportamiento de `Markdown` utilizado por el ejemplo está en la [referencia de Markdown](/es/users/reference/markdown).

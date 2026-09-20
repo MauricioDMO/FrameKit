@@ -1,0 +1,33 @@
+---
+title: Troubleshooting
+description: Find actionable diagnostics for installing, generating, using, and deploying FrameKit projects.
+sidebar:
+  order: 1
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Start with the area that matches the failing part of your project.
+
+<CardGrid>
+  <LinkCard title="Installation" href="/en/users/troubleshooting/installation" description="Project creation, dependency installation, and starting development." />
+  <LinkCard title="Templates and assets" href="/en/users/troubleshooting/templates-and-assets" description="Source discovery, template definitions, and image files." />
+  <LinkCard title="Generated registry" href="/en/users/troubleshooting/generated-registry" description="Generated modules, copied assets, and stale output." />
+  <LinkCard title="Studio" href="/en/users/troubleshooting/studio" description="The editor, brand catalog, uploads, preview, and PNG export." />
+  <LinkCard title="Access" href="/en/users/troubleshooting/access" description="Login, sessions, users, passwords, and API tokens." />
+  <LinkCard title="Rendering" href="/en/users/troubleshooting/rendering" description="Server-side image rendering, Chromium, jobs, and output." />
+  <LinkCard title="Deployment" href="/en/users/troubleshooting/deployment" description="Runtime, persistence, reverse proxies, and production startup." />
+</CardGrid>
+
+## First checks
+
+From the project root, run the command that matches the symptom:
+
+```bash
+pnpm framekit check
+pnpm framekit generate
+```
+
+`check` validates template definitions and resolved content. `generate` refreshes generated modules and copied template assets. Fix maintained source under `src/templates/` or `src/brand/`, then run the command again; do not edit generated output.
+
+For setup instructions, see [Create a project](/en/users/getting-started/create-project), [Project structure](/en/users/getting-started/project-structure), and [Use Studio](/en/users/guides/use-studio).

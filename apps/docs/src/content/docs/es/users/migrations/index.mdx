@@ -1,0 +1,19 @@
+---
+title: Migraciones
+description: Aplica el contrato actual de FrameKit y distínguelo de los registros históricos de migración.
+sidebar:
+  order: 1
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Usa las páginas de migración cuando adaptes un proyecto existente a un contrato diferente de FrameKit.
+
+<CardGrid>
+  <LinkCard title="Migración al contrato actual" href="/es/users/migrations/next" description="Lista de comprobación para plantillas, salida generada, persistencia, acceso y exportación del lado del servidor." />
+  <LinkCard title="Registro de migración de v0.8" href="/es/users/migrations/v08" description="Registro histórico del proceso de lanzamiento de 0.7 a 0.8." />
+</CardGrid>
+
+:::note
+La página del contrato actual describe acciones sobre las API, los archivos generados, el almacenamiento y el comportamiento del runtime implementados por el repositorio. No sustituye las notas de lanzamiento ni funciona como selector de versiones.
+:::
