@@ -80,7 +80,7 @@ The generated template defines these aliases in `tsconfig.json`:
 }
 ```
 
-Use `@/*` for project source and `@framekit/generated/*` for generated FrameKit modules. Consumer code should import the package through its published entrypoints, such as `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server`, and `@mauriciodmo/framekit/studio/root`; do not import `packages/framekit/src/**`.
+Use `@/*` for project source and `@framekit/generated/*` for generated FrameKit modules. Consumer code should import the package through its published entrypoints, such as `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server`, and `@mauriciodmo/framekit/studio/root`.
 
 ## Generated output
 

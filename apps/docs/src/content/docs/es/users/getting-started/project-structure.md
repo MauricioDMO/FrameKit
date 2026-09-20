@@ -80,7 +80,7 @@ La plantilla generada define estos alias en `tsconfig.json`:
 }
 ```
 
-Usa `@/*` para el código fuente del proyecto y `@framekit/generated/*` para los módulos generados de FrameKit. El código consumidor debe importar el paquete mediante sus entrypoints publicados, como `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server` y `@mauriciodmo/framekit/studio/root`; no importes `packages/framekit/src/**`.
+Usa `@/*` para el código fuente del proyecto y `@framekit/generated/*` para los módulos generados de FrameKit. El código consumidor debe importar el paquete mediante sus entrypoints publicados, como `@mauriciodmo/framekit`, `@mauriciodmo/framekit/server` y `@mauriciodmo/framekit/studio/root`.
 
 ## Salida generada
 

@@ -68,8 +68,7 @@ workspaces that define those scripts. Repository maintenance scripts live under
 Consumer and generated-project code imports the package through published
 entrypoints such as `@mauriciodmo/framekit`,
 `@mauriciodmo/framekit/editor`, `@mauriciodmo/framekit/studio/root`, and
-`@mauriciodmo/framekit/server`. A consumer must not import
-`packages/framekit/src/**` directly.
+`@mauriciodmo/framekit/server`.
 
 The maintained and generated sides are deliberately separate:
 

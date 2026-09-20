@@ -77,12 +77,11 @@ import { defineTemplate } from '@mauriciodmo/framekit'
 import { TemplateCanvas } from '@mauriciodmo/framekit/editor'
 ```
 
-Do not import `packages/framekit/src/**` from a consumer, first-party Studio
-adapter, or generated project. Keep client code out of the server facade and
-keep Node built-ins and Playwright dependencies in Server or Tooling. Use the
-[package architecture](/en/contributors/architecture/packages) and
-[import boundaries](/en/contributors/development/import-boundaries) pages when
-a change crosses a public or runtime-layer boundary.
+Consumer-facing code stays on the published package entrypoints. Keep client
+code out of the server facade and keep Node built-ins and Playwright
+dependencies in Server or Tooling. Use the [package architecture](/en/contributors/architecture/packages)
+and [import boundaries](/en/contributors/development/import-boundaries) pages
+when a change crosses a public or runtime-layer boundary.
 
 Generated registries, copied assets, and build output are outputs, not a second
 implementation. Change their maintained source and regenerate them instead of

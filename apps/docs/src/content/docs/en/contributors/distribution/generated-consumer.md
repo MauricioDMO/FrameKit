@@ -111,8 +111,8 @@ example under `src/templates/example/`. The canonical route shape contains:
 The generated consumer should import reusable code from the public package
 entrypoints, such as `@mauriciodmo/framekit/studio/root`,
 `@mauriciodmo/framekit/server`, and `@mauriciodmo/framekit/styles.css`. Its
-generated modules should import through `@framekit/generated/*`. It must not
-import `packages/framekit/src/**`.
+generated modules should import through `@framekit/generated/*`; keep reusable
+imports on those published and generated boundaries.
 
 ## Source and generated output
 

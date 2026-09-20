@@ -67,8 +67,7 @@ con su paquete.
 El código de consumidores y de proyectos generados importa el paquete a través
 de entrypoints publicados como `@mauriciodmo/framekit`,
 `@mauriciodmo/framekit/editor`, `@mauriciodmo/framekit/studio/root` y
-`@mauriciodmo/framekit/server`. Un consumidor no debe importar
-`packages/framekit/src/**` directamente.
+`@mauriciodmo/framekit/server`.
 
 Las fuentes mantenidas y la salida generada están deliberadamente separadas:
 

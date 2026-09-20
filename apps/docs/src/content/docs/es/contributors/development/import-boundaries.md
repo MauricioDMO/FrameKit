@@ -27,10 +27,9 @@ Los consumidores importan el paquete público, no su árbol de código fuente. E
 | `@mauriciodmo/framekit/server` | `./server` | Contratos de acceso, imágenes y renderizado exclusivos de Node/servidor. |
 | `@mauriciodmo/framekit/styles.css` | `./styles.css` | Hoja de estilos publicada. |
 
-No importes `packages/framekit/src/**` desde un consumidor, un adaptador de
-Studio de primera parte o un proyecto generado. El proyecto generado usa sus
-propios alias `@framekit/generated/*` para los módulos generados y los
-entrypoints publicados de FrameKit para el código reutilizable. Consulta la
+El proyecto generado usa sus propios alias `@framekit/generated/*` para los
+módulos generados y los entrypoints publicados de FrameKit para el código
+reutilizable. Consulta la
 [referencia de la API del paquete para usuarios](/es/users/reference/package-api)
 para conocer los símbolos y ejemplos de consumidores, en lugar de duplicar
 estos contratos aquí.

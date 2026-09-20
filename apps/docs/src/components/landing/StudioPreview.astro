@@ -24,19 +24,19 @@ const { copy } = Astro.props
         <div class="absolute right-[-15%] top-[10%] aspect-square w-[72%] rounded-full bg-[#b9f8d2]"></div>
         <div class="absolute bottom-[-15%] left-[-12%] aspect-square w-[74%] rounded-full bg-[#537568]"></div>
         <div class="absolute left-[12%] top-[45%] h-3 w-[76%] -rotate-12 rounded-full bg-[#10271f]"></div>
-        <span class="absolute bottom-5 left-5 font-mono text-xs font-bold text-[#10271f]">{copy.preview.fieldValue}</span>
+        <span class="absolute bottom-5 left-5 rounded bg-[#f5f7ee] px-1.5 py-0.5 font-mono text-xs font-bold text-[#10271f]">{copy.preview.fieldValue}</span>
       </div>
       <div class="flex flex-col gap-3 pt-1 text-[0.68rem] text-[#91ae9f]">
         <div>
-          <span class="mb-1 block font-mono text-[#537568]">{copy.preview.fieldLabel}</span>
+          <span class="mb-1 block font-mono text-[#91ae9f]">{copy.preview.fieldLabel}</span>
           <span class="block border-b border-[#b9f8d2]/50 pb-1 text-[#f5f7ee]">{copy.preview.fieldValue}</span>
         </div>
         <div>
-          <span class="mb-1 block font-mono text-[#537568]">{copy.preview.variantLabel}</span>
+          <span class="mb-1 block font-mono text-[#91ae9f]">{copy.preview.variantLabel}</span>
           <span class="block border-b border-[#b9f8d2]/50 pb-1 text-[#f5f7ee]">{copy.preview.variantValue}</span>
         </div>
         <div class="mt-auto border-t border-white/10 pt-3">
-          <span class="flex items-center gap-1.5 font-mono text-[#537568]">
+          <span class="flex items-center gap-1.5 font-mono text-[#91ae9f]">
             <IconPhoto size={13} stroke={1.8} aria-hidden="true" />
             {copy.preview.exportLabel}
           </span>
