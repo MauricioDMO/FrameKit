@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
+import { isAuthenticationEnabled } from '../../../server/access/config'
 import { getSession, isValidSessionSecret } from '../../../server/access/sessions'
 import { sendJson } from '../asset-upload/errors'
 
@@ -64,6 +65,22 @@ function isSameOrigin (request: IncomingMessage): boolean {
 }
 
 export function authorizeAssetRequest (request: IncomingMessage, response: ServerResponse): boolean {
+  let authenticationEnabled: boolean
+  try {
+    authenticationEnabled = isAuthenticationEnabled()
+  } catch {
+    sendJson(response, 500, { error: 'Internal server error' })
+    return false
+  }
+
+  if (!authenticationEnabled) {
+    if (!isSameOrigin(request)) {
+      sendJson(response, 403, { error: 'Forbidden' })
+      return false
+    }
+    return true
+  }
+
   const secret = readSessionCookie(request)
   if (!isValidSessionSecret(secret)) {
     sendJson(response, 401, { error: 'Unauthorized' })

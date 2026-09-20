@@ -51,7 +51,7 @@ describe('Studio app adapters', () => {
 
   it('uses forwarded HTTPS origin headers through the actual Next route adapter', async () => {
     const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-access-adapter-'))
-    const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'NODE_ENV'] as const
+    const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_AUTH_ENABLED', 'NODE_ENV'] as const
     const originalEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
     const internalOrigin = 'http://127.0.0.1:3000'
     const publicOrigin = 'https://framekit.example.com'
@@ -66,6 +66,7 @@ describe('Studio app adapters', () => {
       process.env.FRAMEKIT_DATABASE_PATH = path.join(temporaryRoot, 'framekit.sqlite')
       process.env.FRAMEKIT_ADMIN_USERNAME = 'adapter-admin'
       process.env.FRAMEKIT_ADMIN_PASSWORD = 'adapter-test-password'
+      process.env.FRAMEKIT_AUTH_ENABLED = 'true'
       Object.assign(process.env, { NODE_ENV: 'production' })
 
       const loginResponse = await POST(new NextRequest(`${internalOrigin}/api/framekit/login`, {

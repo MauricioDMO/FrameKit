@@ -1,4 +1,5 @@
 import { authenticateApiToken } from '../access/api-tokens'
+import { isAuthenticationEnabled } from '../access/config'
 import { getSession } from '../access/sessions'
 import { isSameOrigin } from '../access/http/origin'
 import { readSessionCookie } from '../access/http/session'
@@ -37,15 +38,17 @@ function createStudioImageHandlerInternal (
 ): (request: Request) => Promise<Response> {
   return async function imageHandler (request: Request): Promise<Response> {
     let config: ImageRenderRuntimeConfig
+    let authenticationEnabled: boolean
     try {
       config = parseImageRenderConfig(process.env)
+      authenticationEnabled = isAuthenticationEnabled()
     } catch (error) {
       return errorResponse(failure('api_not_configured', error))
     }
 
     const deadline = createRequestDeadline(request, config.renderTimeoutMs)
     try {
-      if (!authenticateStudioImageRequest(request)) {
+      if (authenticationEnabled && !authenticateStudioImageRequest(request)) {
         return errorResponse(failure('unauthorized'))
       }
 

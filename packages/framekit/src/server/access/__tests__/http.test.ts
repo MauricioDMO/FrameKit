@@ -18,7 +18,7 @@ const password = 'correct horse battery staple'
 const changedPassword = 'another correct battery staple'
 const accessRequestLimit = 64 * 1024
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000
-const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'NODE_ENV'] as const
+const environmentKeys = ['FRAMEKIT_DATABASE_PATH', 'FRAMEKIT_ADMIN_USERNAME', 'FRAMEKIT_ADMIN_PASSWORD', 'FRAMEKIT_AUTH_ENABLED', 'NODE_ENV'] as const
 
 let passwordHash = ''
 let originalEnvironment: Partial<Record<typeof environmentKeys[number], string>>
@@ -39,6 +39,7 @@ beforeEach(async () => {
 
   temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-http-'))
   process.env.FRAMEKIT_DATABASE_PATH = path.join(temporaryRoot, 'framekit.sqlite')
+  process.env.FRAMEKIT_AUTH_ENABLED = 'true'
   handler = createStudioAccessHandler()
 })
 
@@ -149,6 +150,37 @@ describe('createStudioAccessHandler', () => {
   it('does not initialize SQLite during public import or factory creation', () => {
     expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
     expect(handler).toBeTypeOf('function')
+    expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+  })
+
+  it('hides matched routes in open mode before method, origin, body, or database work', async () => {
+    process.env.FRAMEKIT_AUTH_ENABLED = 'false'
+    process.env.FRAMEKIT_ADMIN_PASSWORD = password
+
+    const requests = [
+      rawRequest('/api/framekit/login', 'POST', '{', { Origin: 'https://other.test' }),
+      rawRequest('/api/framekit/users/target', 'POST', '{')
+    ]
+
+    for (const request of requests) {
+      const response = await handler(request)
+
+      expect(response.status).toBe(404)
+      expectJsonResponse(response)
+      expect(await responseBody(response)).toEqual({ error: 'not_found', message: 'Not found' })
+      expect(request.bodyUsed).toBe(false)
+      expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+    }
+  })
+
+  it('maps invalid authentication configuration to an internal error', async () => {
+    process.env.FRAMEKIT_AUTH_ENABLED = 'invalid'
+
+    const response = await handler(jsonRequest('/api/framekit/login', 'POST', { username: 'admin', password }))
+
+    expect(response.status).toBe(500)
+    expectJsonResponse(response)
+    expect(await responseBody(response)).toEqual({ error: 'internal_error', message: 'Internal server error' })
     expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
   })
 

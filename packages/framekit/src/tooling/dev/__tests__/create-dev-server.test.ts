@@ -92,6 +92,7 @@ class MockHttpServer extends EventEmitter {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
   mocks.next.mockReturnValue(mocks.app)
   mocks.app.prepare.mockResolvedValue(undefined)
   mocks.app.getRequestHandler.mockReturnValue(() => undefined)
@@ -107,6 +108,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
 })
 
 function deferred (): { promise: Promise<void>; resolve: () => void } {
@@ -200,6 +202,64 @@ describe('createDevServer', () => {
       expect(response.body).toBeUndefined()
       expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret)
       expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('allows a same-origin asset upload without authentication when disabled', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), {
+        host: localHeaders.host,
+        origin: localHeaders.origin
+      })
+
+      expect(response.body).toBeUndefined()
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('rejects cross-origin asset uploads without authentication', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), {
+        ...localHeaders,
+        origin: 'http://other.test:40000',
+        cookie: 'framekit_session=malformed'
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(response.body).toBe(JSON.stringify({ error: 'Forbidden' }))
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).not.toHaveBeenCalled()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('returns a generic error for invalid authentication configuration', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'invalid')
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), localHeaders)
+
+      expect(response.statusCode).toBe(500)
+      expect(response.body).toBe(JSON.stringify({ error: 'Internal server error' }))
+      expect(response.body).not.toContain('FRAMEKIT_AUTH_ENABLED')
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).not.toHaveBeenCalled()
     } finally {
       await server.close()
     }
