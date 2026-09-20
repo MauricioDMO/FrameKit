@@ -35,6 +35,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.42.1
         version: 0.42.1(astro@7.3.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.5)(jiti@2.7.0)(tsx@4.23.1))(typescript@5.9.3)
+      '@tabler/icons-astro':
+        specifier: ^3.47.0
+        version: 3.47.0(astro@7.3.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.5)(jiti@2.7.0)(tsx@4.23.1))
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.1.5(@types/node@24.13.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
@@ -1658,6 +1661,11 @@ packages:
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
 
+  '@tabler/icons-astro@3.47.0':
+    resolution: {integrity: sha512-Usxu1GN0eg0YK5ttlpQ9oFpu/c8/n6zTnnsZIka8sGk/r2al67i3iGLEvPHgVcF0pUA25d+2kwfhBHAvIM4pmQ==}
+    peerDependencies:
+      astro: '>=4.0.0'
+
   '@tabler/icons-react@3.45.0':
     resolution: {integrity: sha512-t/AuKs7ALMDDTY+B9IvfZnlO0mbLlP/lJxP/HnGC49QkM8mCsTN38kYyxjXxgrb1+TeK53ioVBJqIV7n/eysXQ==}
     peerDependencies:
@@ -1665,6 +1673,9 @@ packages:
 
   '@tabler/icons@3.45.0':
     resolution: {integrity: sha512-jiATwV8+zGYLTZ7gMLGivCic+KtsMZXcDmufIG8umlLxoHhI6902hGYIEt0Oa9Y9SXblNzUlrisHm5jOFMxOQA==}
+
+  '@tabler/icons@3.47.0':
+    resolution: {integrity: sha512-aCbSemVrGvSA3w0sJi8mka6QrnQCN8wCD1jKNXXIR/h6Q4ffov/yFPyzjTULDM8ETtK4DABUZhWdYlygqy3npA==}
 
   '@tailwindcss/cli@4.3.3':
     resolution: {integrity: sha512-ZvS/n1ZHOBKcVlhkt8l5NNr1EDXk1NboYO5CYDOs6NUmvT9z6bzkwsosaJftY57T/3gWNzWMJzIXLodZC8ssdw==}
@@ -6285,12 +6296,19 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@tabler/icons-astro@3.47.0(astro@7.3.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.5)(jiti@2.7.0)(tsx@4.23.1))':
+    dependencies:
+      '@tabler/icons': 3.47.0
+      astro: 7.3.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.5)(jiti@2.7.0)(tsx@4.23.1)
+
   '@tabler/icons-react@3.45.0(react@19.2.4)':
     dependencies:
       '@tabler/icons': 3.45.0
       react: 19.2.4
 
   '@tabler/icons@3.45.0': {}
+
+  '@tabler/icons@3.47.0': {}
 
   '@tailwindcss/cli@4.3.3':
     dependencies:
