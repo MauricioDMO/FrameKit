@@ -2,7 +2,7 @@
 title: Image API errors
 description: Handle the stable status and error codes returned by the FrameKit image render endpoint.
 sidebar:
-  order: 4
+  order: 9
 ---
 
 The image endpoint returns JSON errors with this shape:

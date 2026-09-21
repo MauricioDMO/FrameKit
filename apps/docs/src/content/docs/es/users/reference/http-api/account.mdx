@@ -1,0 +1,128 @@
+---
+title: API de cuenta
+description: Referencia de las rutas de inicio de sesión, cierre de sesión, cuenta y contraseña de FrameKit.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Estas rutas solo están disponibles cuando `FRAMEKIT_AUTH_ENABLED=true`. Consulta
+la [descripción general del acceso](/es/users/reference/http-api/access) para
+conocer las reglas comunes de cookie, origen, solicitud y respuesta.
+
+## `POST /api/framekit/login`
+
+Envía exactamente `username` y `password`:
+
+```json
+{
+  "username": "admin",
+  "password": "your-password"
+}
+```
+
+Usa la ruta de inicio de sesión desde un cliente del lado del servidor. Establece
+`FRAMEKIT_ORIGIN` en el origen de la solicitud y sustituye los marcadores de
+credenciales por los valores de la cuenta:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+
+const response = await fetch(`${origin}/api/framekit/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Origin: origin
+  },
+  body: JSON.stringify({
+    username: 'admin',
+    password: 'your-password'
+  })
+})
+
+console.log(response.status, response.headers.get('set-cookie'))
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+
+curl --fail-with-body --include \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/login" \
+  --header 'Content-Type: application/json' \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"username":"admin","password":"your-password"}'
+```
+
+  </TabItem>
+</Tabs>
+
+Si tiene éxito, la respuesta es `200`, devuelve el objeto de usuario seguro y
+establece la cookie `framekit_session`:
+
+```json
+{
+  "id": "user-id",
+  "username": "admin",
+  "role": "admin"
+}
+```
+
+Las credenciales inválidas, desconocidas o inactivas devuelven `401 unauthorized`
+sin indicar qué caso ocurrió. Después de aceptar la forma de la solicitud, en una
+base de datos vacía esta ruta inicia el primer administrador usando
+`FRAMEKIT_ADMIN_PASSWORD` y el `FRAMEKIT_ADMIN_USERNAME` opcional (cuyo valor
+predeterminado es `admin`) antes de autenticarlo.
+
+## `POST /api/framekit/logout`
+
+Devuelve `200` con:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+La respuesta hace caducar `framekit_session`. Repetir el cierre de sesión es
+seguro cuando no existe una sesión utilizable.
+
+## `GET /api/framekit/account`
+
+Requiere una sesión y devuelve el objeto de usuario seguro con `id`, `username` y
+`role`.
+
+## `PATCH /api/framekit/account`
+
+Requiere una mutación de sesión del mismo origen. Envía exactamente:
+
+```json
+{
+  "username": "new-name"
+}
+```
+
+La respuesta es `200` con el objeto de usuario seguro actualizado. Los nombres de
+usuario tienen entre 3 y 64 letras ASCII, números, `.`, `_` o `-`, y deben ser
+únicos sin distinguir mayúsculas y minúsculas.
+
+## `POST /api/framekit/account/password`
+
+Requiere la sesión y la contraseña actuales. Envía exactamente:
+
+```json
+{
+  "currentPassword": "old-password",
+  "newPassword": "new-password"
+}
+```
+
+La contraseña nueva debe tener entre 12 y 256 bytes UTF-8. Un cambio correcto
+devuelve `200`, `{ "status": "ok" }` y una cookie de sesión caducada. Invalida
+todas las sesiones de esa cuenta, pero no revoca los tokens de API.

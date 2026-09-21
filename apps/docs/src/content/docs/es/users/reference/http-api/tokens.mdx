@@ -1,0 +1,82 @@
+---
+title: API de tokens
+description: Referencia de las rutas de creación, listado y revocación de tokens de API de FrameKit.
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Estas rutas solo están disponibles cuando `FRAMEKIT_AUTH_ENABLED=true`. Consulta
+la [descripción general del acceso](/es/users/reference/http-api/access) para
+conocer las reglas comunes de cookie, origen, solicitud y respuesta.
+
+## `GET /api/framekit/tokens`
+
+Devuelve `200` con un array de los metadatos de los tokens del usuario que ha
+iniciado sesión. Cada elemento contiene `id`, `name`, `tokenPrefix`, `createdAt`,
+`lastUsedAt` y `revokedAt`. El secreto completo no se incluye.
+
+## `POST /api/framekit/tokens`
+
+Requiere una mutación de sesión del mismo origen. Envía exactamente:
+
+```json
+{
+  "name": "image-renderer"
+}
+```
+
+Las rutas de acceso usan la cookie de sesión, no tokens Bearer. Mantén privado el
+valor del servidor `FRAMEKIT_SESSION_COOKIE` y envíalo con un `Origin` coincidente:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+const sessionCookie = process.env.FRAMEKIT_SESSION_COOKIE
+if (!sessionCookie) throw new Error('FRAMEKIT_SESSION_COOKIE is required')
+
+const response = await fetch(`${origin}/api/framekit/tokens`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Cookie: `framekit_session=${sessionCookie}`,
+    Origin: origin
+  },
+  body: JSON.stringify({ name: 'image-renderer' })
+})
+
+console.log(response.status, await response.json())
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_SESSION_COOKIE='replace-with-session-cookie-value'
+
+curl --fail-with-body \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/tokens" \
+  --header 'Content-Type: application/json' \
+  --header "Cookie: framekit_session=$FRAMEKIT_SESSION_COOKIE" \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"name":"image-renderer"}'
+```
+
+  </TabItem>
+</Tabs>
+
+El nombre recortado debe tener entre 1 y 80 caracteres. Una respuesta correcta es
+`201` y contiene los metadatos más `token`. El secreto generado comienza por
+`fk_` y se devuelve únicamente en esta respuesta. Guárdalo en el servidor antes
+de descartar la respuesta; no se devuelve de nuevo.
+
+## `DELETE /api/framekit/tokens/:id`
+
+Un propietario puede revocar uno de sus propios tokens. Un administrador puede
+revocar cualquier token. Una respuesta correcta es `200` con
+`{ "status": "ok" }`. La revocación mantiene disponibles los metadatos con
+`revokedAt` establecido y no se puede deshacer mediante la API.

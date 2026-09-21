@@ -1,0 +1,131 @@
+---
+title: User-management API
+description: Reference the FrameKit administrator user-management and user-token routes.
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The user-management routes are available only when `FRAMEKIT_AUTH_ENABLED=true`.
+All routes except `GET /api/framekit/users/:id/tokens` require an administrator
+session. See the [access overview](/en/users/reference/http-api/access) for the
+shared cookie, origin, request, and response rules.
+
+## `GET /api/framekit/users`
+
+Returns `200` with an array of managed users. Each item contains:
+
+```json
+{
+  "id": "user-id",
+  "username": "editor",
+  "role": "user",
+  "active": true,
+  "createdAt": 0,
+  "updatedAt": 0
+}
+```
+
+## `POST /api/framekit/users`
+
+Create an active user. `username` and `password` are required; `role` is
+optional and defaults to `user`:
+
+```json
+{
+  "username": "editor",
+  "password": "a-strong-password",
+  "role": "user"
+}
+```
+
+Send the request from a server-side client using an administrator's session
+cookie and a matching `Origin`:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+const adminSessionCookie = process.env.FRAMEKIT_SESSION_COOKIE
+if (!adminSessionCookie) throw new Error('FRAMEKIT_SESSION_COOKIE is required')
+
+const response = await fetch(`${origin}/api/framekit/users`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Cookie: `framekit_session=${adminSessionCookie}`,
+    Origin: origin
+  },
+  body: JSON.stringify({
+    username: 'editor',
+    password: 'a-strong-password',
+    role: 'user'
+  })
+})
+
+console.log(response.status, await response.json())
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_SESSION_COOKIE='replace-with-admin-session-cookie-value'
+
+curl --fail-with-body \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/users" \
+  --header 'Content-Type: application/json' \
+  --header "Cookie: framekit_session=$FRAMEKIT_SESSION_COOKIE" \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"username":"editor","password":"a-strong-password","role":"user"}'
+```
+
+  </TabItem>
+</Tabs>
+
+The response is `201` with the safe user object. Passwords are never returned.
+Usernames are 3-64 ASCII letters, numbers, `.`, `_`, or `-`, and are unique
+case-insensitively.
+
+## `PATCH /api/framekit/users/:id`
+
+Send at least one of `username`, `role`, or `active`, and no other keys:
+
+```json
+{
+  "active": false
+}
+```
+
+The response is `200` with the updated safe user object. Deactivating a user
+removes that user's sessions and stops the user's tokens from authenticating
+until reactivation. The server rejects an operation that would remove the last
+active administrator.
+
+## `DELETE /api/framekit/users/:id`
+
+Deletes the user and returns `200` with `{ "status": "ok" }`. The user's
+sessions and API tokens are removed. The last active administrator cannot be
+deleted.
+
+## `POST /api/framekit/users/:id/password`
+
+An administrator can reset a user's password without the current password:
+
+```json
+{
+  "password": "a-new-strong-password"
+}
+```
+
+The response is `200` with `{ "status": "ok" }`. All sessions for that user
+are invalidated; API tokens remain.
+
+## `GET /api/framekit/users/:id/tokens`
+
+An administrator can request any managed user's token metadata. A normal user
+can request only the user's own ID. The response is `200` and contains token
+metadata without any full token secret.

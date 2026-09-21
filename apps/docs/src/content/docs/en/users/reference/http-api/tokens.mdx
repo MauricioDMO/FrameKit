@@ -1,0 +1,82 @@
+---
+title: Token API
+description: Reference the FrameKit API token creation, listing, and revocation routes.
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+These routes are available only when `FRAMEKIT_AUTH_ENABLED=true`. See the
+[access overview](/en/users/reference/http-api/access) for the shared cookie,
+origin, request, and response rules.
+
+## `GET /api/framekit/tokens`
+
+Returns `200` with an array of the signed-in user's token metadata. Each item
+contains `id`, `name`, `tokenPrefix`, `createdAt`, `lastUsedAt`, and
+`revokedAt`. The full secret is not included.
+
+## `POST /api/framekit/tokens`
+
+Requires a same-origin session mutation. Send exactly:
+
+```json
+{
+  "name": "image-renderer"
+}
+```
+
+Access routes use the session cookie rather than Bearer tokens. Keep the
+server-side `FRAMEKIT_SESSION_COOKIE` value private, and send it with a
+matching `Origin`:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+const sessionCookie = process.env.FRAMEKIT_SESSION_COOKIE
+if (!sessionCookie) throw new Error('FRAMEKIT_SESSION_COOKIE is required')
+
+const response = await fetch(`${origin}/api/framekit/tokens`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Cookie: `framekit_session=${sessionCookie}`,
+    Origin: origin
+  },
+  body: JSON.stringify({ name: 'image-renderer' })
+})
+
+console.log(response.status, await response.json())
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_SESSION_COOKIE='replace-with-session-cookie-value'
+
+curl --fail-with-body \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/tokens" \
+  --header 'Content-Type: application/json' \
+  --header "Cookie: framekit_session=$FRAMEKIT_SESSION_COOKIE" \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"name":"image-renderer"}'
+```
+
+  </TabItem>
+</Tabs>
+
+The trimmed name must be 1-80 characters. A successful response is `201` and
+contains the metadata plus `token`. The generated secret starts with `fk_` and
+is returned only in this response. Store it server-side before discarding the
+response; it is not returned again.
+
+## `DELETE /api/framekit/tokens/:id`
+
+An owner can revoke an own token. An administrator can revoke any token. A
+successful response is `200` with `{ "status": "ok" }`. Revocation leaves
+metadata available with `revokedAt` set and cannot be undone through the API.

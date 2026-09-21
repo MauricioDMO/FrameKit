@@ -2,8 +2,10 @@
 title: Image render API
 description: Render a defined FrameKit template as a server-side PNG through the optional-authentication HTTP endpoint.
 sidebar:
-  order: 3
+  order: 7
 ---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ## Endpoint
 
@@ -49,15 +51,7 @@ Unknown keys, empty `template` or `variant` values, arrays, and prototype-pollut
 
 Use `Content-Type: application/json`. The endpoint rejects other content types and content encodings other than `identity`.
 
-## Data and image fields
-
-Non-image values in `data` are resolved and validated against the template's declared fields. An image field value can be:
-
-- a root-relative path under `/assets/` or `/framekit/templates/`;
-- a raster data URL for PNG, JPEG, WebP, or GIF; or
-- an HTTPS URL whose hostname is listed exactly in `FRAMEKIT_ALLOWED_IMAGE_HOSTS`.
-
-Remote images are fetched by Node and converted to a canonical data URL before Chromium renders the template. A remote response must have a supported raster MIME type and matching file signature. See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) for the restrictions and [Image API errors](/en/users/reference/http-api/errors) for failure codes.
+For field values and image sources, see [Image inputs](/en/users/reference/http-api/image-inputs). See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) for deployment restrictions and [Image API errors](/en/users/reference/http-api/errors) for failure codes.
 
 ## Success response
 
@@ -67,6 +61,7 @@ Success returns `200` with the PNG bytes produced at the template's declared `wi
 Content-Type: image/png
 Cache-Control: no-store
 Content-Disposition: inline; filename="example.png"
+Content-Length: <PNG byte length>
 X-Content-Type-Options: nosniff
 ```
 
@@ -77,6 +72,32 @@ The filename replaces `/` in a template slug with `-`. The response is always PN
 For an authenticated deployment, create an API token in Studio, keep the full
 secret in a server-side environment variable, and replace `example` with a slug
 from your generated registry:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+import { writeFile } from 'node:fs/promises'
+
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+const token = process.env.FRAMEKIT_TOKEN
+if (!token) throw new Error('FRAMEKIT_TOKEN is required')
+
+const response = await fetch(`${origin}/api/framekit/images/render`, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ template: 'example' })
+})
+
+if (!response.ok) throw new Error(`Render failed: ${response.status}`)
+await writeFile('example.png', Buffer.from(await response.arrayBuffer()))
+```
+
+  </TabItem>
+  <TabItem label="curl">
 
 ```bash
 export FRAMEKIT_ORIGIN=http://localhost:3000
@@ -90,6 +111,9 @@ curl --fail-with-body \
   --data '{"template":"example"}' \
   --output example.png
 ```
+
+  </TabItem>
+</Tabs>
 
 Do not put the token in the URL or send it from an untrusted browser. The [render images guide](/en/users/guides/render-images-with-the-api) adds a request workflow and failure handling.
 

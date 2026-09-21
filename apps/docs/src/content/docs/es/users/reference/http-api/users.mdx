@@ -1,0 +1,133 @@
+---
+title: API de gestión de usuarios
+description: Referencia de las rutas administrativas de gestión de usuarios y tokens de usuarios de FrameKit.
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Las rutas de gestión de usuarios solo están disponibles cuando
+`FRAMEKIT_AUTH_ENABLED=true`. Todas las rutas salvo
+`GET /api/framekit/users/:id/tokens` requieren una sesión de administrador.
+Consulta la [descripción general del acceso](/es/users/reference/http-api/access)
+para conocer las reglas comunes de cookie, origen, solicitud y respuesta.
+
+## `GET /api/framekit/users`
+
+Devuelve `200` con un array de usuarios administrados. Cada elemento contiene:
+
+```json
+{
+  "id": "user-id",
+  "username": "editor",
+  "role": "user",
+  "active": true,
+  "createdAt": 0,
+  "updatedAt": 0
+}
+```
+
+## `POST /api/framekit/users`
+
+Crea un usuario activo. `username` y `password` son obligatorios; `role` es
+opcional y su valor predeterminado es `user`:
+
+```json
+{
+  "username": "editor",
+  "password": "a-strong-password",
+  "role": "user"
+}
+```
+
+Envía la solicitud desde un cliente del lado del servidor usando la cookie de
+sesión de un administrador y un `Origin` coincidente:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+const adminSessionCookie = process.env.FRAMEKIT_SESSION_COOKIE
+if (!adminSessionCookie) throw new Error('FRAMEKIT_SESSION_COOKIE is required')
+
+const response = await fetch(`${origin}/api/framekit/users`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Cookie: `framekit_session=${adminSessionCookie}`,
+    Origin: origin
+  },
+  body: JSON.stringify({
+    username: 'editor',
+    password: 'a-strong-password',
+    role: 'user'
+  })
+})
+
+console.log(response.status, await response.json())
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_SESSION_COOKIE='replace-with-admin-session-cookie-value'
+
+curl --fail-with-body \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/users" \
+  --header 'Content-Type: application/json' \
+  --header "Cookie: framekit_session=$FRAMEKIT_SESSION_COOKIE" \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"username":"editor","password":"a-strong-password","role":"user"}'
+```
+
+  </TabItem>
+</Tabs>
+
+La respuesta es `201` con el objeto de usuario seguro. Las contraseñas nunca se
+devuelven. Los nombres de usuario tienen entre 3 y 64 letras ASCII, números,
+`.`, `_` o `-`, y deben ser únicos sin distinguir mayúsculas y minúsculas.
+
+## `PATCH /api/framekit/users/:id`
+
+Envía al menos una de `username`, `role` o `active`, y ninguna otra clave:
+
+```json
+{
+  "active": false
+}
+```
+
+La respuesta es `200` con el objeto de usuario seguro actualizado. Desactivar un
+usuario elimina las sesiones de ese usuario e impide que sus tokens se
+autentiquen hasta que se reactive. El servidor rechaza una operación que
+eliminaría al último administrador activo.
+
+## `DELETE /api/framekit/users/:id`
+
+Elimina el usuario y devuelve `200` con `{ "status": "ok" }`. Se eliminan las
+sesiones y los tokens de API del usuario. No se puede eliminar al último
+administrador activo.
+
+## `POST /api/framekit/users/:id/password`
+
+Un administrador puede restablecer la contraseña de un usuario sin conocer la
+contraseña actual:
+
+```json
+{
+  "password": "a-new-strong-password"
+}
+```
+
+La respuesta es `200` con `{ "status": "ok" }`. Todas las sesiones de ese
+usuario se invalidan; los tokens de API se conservan.
+
+## `GET /api/framekit/users/:id/tokens`
+
+Un administrador puede solicitar los metadatos de los tokens de cualquier
+usuario administrado. Un usuario normal solo puede solicitar el ID propio. La
+respuesta es `200` y contiene metadatos de tokens sin ningún secreto completo.

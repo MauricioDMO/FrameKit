@@ -1,0 +1,39 @@
+---
+title: HTTP API
+description: Understand the optional-access FrameKit HTTP API for account management and server-side PNG rendering.
+sidebar:
+  order: 1
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+FrameKit exposes a Node.js HTTP handler for optional Studio access and synchronous PNG rendering. In the canonical project, mount it from the App Router catch-all route at `/api/framekit/[...action]` and keep that route on the Node.js runtime. The [existing-project integration](/en/users/getting-started/existing-project) shows the complete route setup.
+
+The dispatcher exposes only the routes documented in this section. `POST /api/framekit/images/render` is the image endpoint in both modes. The other routes manage the Studio session, account, API tokens, and users only when `FRAMEKIT_AUTH_ENABLED=true`; in open mode they return `404 not_found`.
+
+## Choose a reference
+
+<CardGrid>
+  <LinkCard title="Access API" href="/en/users/reference/http-api/access" description="The common contract and complete route map." />
+  <LinkCard title="Account API" href="/en/users/reference/http-api/account" description="Login, logout, account, and password operations." />
+  <LinkCard title="Token API" href="/en/users/reference/http-api/tokens" description="API token creation, listing, and revocation." />
+  <LinkCard title="User-management API" href="/en/users/reference/http-api/users" description="Administrator user management and user token metadata." />
+  <LinkCard title="Access API errors" href="/en/users/reference/http-api/access-errors" description="Stable access status and error codes." />
+  <LinkCard title="Image render API" href="/en/users/reference/http-api/image-render" description="Endpoint, authentication, and the PNG response." />
+  <LinkCard title="Image inputs" href="/en/users/reference/http-api/image-inputs" description="Template data and supported image sources." />
+  <LinkCard title="Image API errors" href="/en/users/reference/http-api/errors" description="Stable image-render status and error codes." />
+</CardGrid>
+
+## Common response rules
+
+Access responses are JSON and use `Cache-Control: no-store`. Image errors are also JSON and use `Cache-Control: no-store`; a successful image response is a PNG with the same cache directive. Clients should branch on the documented `error` code rather than parsing human-readable messages.
+
+The API is synchronous. In authenticated mode, a render request is authenticated before the request is parsed. In open mode, credentials are not checked, but the renderer's defenses remain in place. The request then resolves the template and its data, starts the server-side Chromium render, and returns the PNG bytes in the same response.
+
+## Security boundary
+
+The session cookie is for same-origin Studio access when authentication is
+enabled. A Bearer API token is accepted only by the image render endpoint and
+only in authenticated mode. In open mode the image endpoint needs no
+credential. Do not put a token in a URL, browser bundle, rendered DOM, or
+client-side code. Read [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) before exposing the handler publicly.

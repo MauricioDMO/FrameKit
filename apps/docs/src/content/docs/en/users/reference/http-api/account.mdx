@@ -1,0 +1,125 @@
+---
+title: Account API
+description: Reference the FrameKit login, logout, account, and password routes.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+These routes are available only when `FRAMEKIT_AUTH_ENABLED=true`. See the
+[access overview](/en/users/reference/http-api/access) for the shared cookie,
+origin, request, and response rules.
+
+## `POST /api/framekit/login`
+
+Send exactly `username` and `password`:
+
+```json
+{
+  "username": "admin",
+  "password": "your-password"
+}
+```
+
+Use the login route from a server-side client. Set `FRAMEKIT_ORIGIN` to the
+request origin and replace the credential placeholders with the account values:
+
+<Tabs syncKey="http-client">
+  <TabItem label="Node.js">
+
+```js
+const origin = process.env.FRAMEKIT_ORIGIN ?? 'http://localhost:3000'
+
+const response = await fetch(`${origin}/api/framekit/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Origin: origin
+  },
+  body: JSON.stringify({
+    username: 'admin',
+    password: 'your-password'
+  })
+})
+
+console.log(response.status, response.headers.get('set-cookie'))
+```
+
+  </TabItem>
+  <TabItem label="curl">
+
+```bash
+export FRAMEKIT_ORIGIN=http://localhost:3000
+
+curl --fail-with-body --include \
+  --request POST "$FRAMEKIT_ORIGIN/api/framekit/login" \
+  --header 'Content-Type: application/json' \
+  --header "Origin: $FRAMEKIT_ORIGIN" \
+  --data '{"username":"admin","password":"your-password"}'
+```
+
+  </TabItem>
+</Tabs>
+
+On success, the response is `200`, returns the safe user object, and sets the
+`framekit_session` cookie:
+
+```json
+{
+  "id": "user-id",
+  "username": "admin",
+  "role": "admin"
+}
+```
+
+Invalid, unknown, or inactive credentials return `401 unauthorized` without
+identifying which case occurred. After the request shape is accepted, on an
+empty database this route bootstraps the first administrator using `FRAMEKIT_ADMIN_PASSWORD` and the optional
+`FRAMEKIT_ADMIN_USERNAME` (which defaults to `admin`) before authenticating.
+
+## `POST /api/framekit/logout`
+
+Returns `200` with:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+The response expires `framekit_session`. Repeating logout is safe when no
+usable session exists.
+
+## `GET /api/framekit/account`
+
+Requires a session and returns the safe user object with `id`, `username`, and
+`role`.
+
+## `PATCH /api/framekit/account`
+
+Requires a same-origin session mutation. Send exactly:
+
+```json
+{
+  "username": "new-name"
+}
+```
+
+The response is `200` with the updated safe user object. Usernames are 3-64
+ASCII letters, numbers, `.`, `_`, or `-`, and are unique case-insensitively.
+
+## `POST /api/framekit/account/password`
+
+Requires the current session and current password. Send exactly:
+
+```json
+{
+  "currentPassword": "old-password",
+  "newPassword": "new-password"
+}
+```
+
+The new password must be between 12 and 256 UTF-8 bytes. A successful change
+returns `200`, `{ "status": "ok" }`, and an expired session cookie. It
+invalidates all sessions for that account but does not revoke API tokens.

@@ -2,7 +2,7 @@
 title: Errores de la API de imágenes
 description: Gestiona los estados y códigos de error estables que devuelve el endpoint de renderizado de imágenes de FrameKit.
 sidebar:
-  order: 4
+  order: 9
 ---
 
 El endpoint de imágenes devuelve errores JSON con esta forma:
