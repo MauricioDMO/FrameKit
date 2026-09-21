@@ -7,7 +7,7 @@ import type {
   TemplateInput,
   TemplateRenderProps,
   TemplateVariants
-} from '../types'
+} from '@/types'
 import type { ReactNode } from 'react'
 
 import { validateTemplateBase, validateTemplateDefinition } from './validation'

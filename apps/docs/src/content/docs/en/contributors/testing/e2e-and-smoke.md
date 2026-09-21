@@ -22,12 +22,14 @@ pnpm test:e2e
 The root `playwright.config.ts` discovers `e2e/**/*.spec.ts` and uses a Desktop
 Chrome device against `http://localhost:3000`. Its web server command builds
 `@mauriciodmo/framekit`, builds Studio, and starts the production Studio
-server with test-only administrator credentials and an in-memory database.
+server with `FRAMEKIT_AUTH_ENABLED=true`, test-only administrator credentials,
+and an in-memory database. Private authenticated scenarios must set the switch
+explicitly; the application default remains open mode.
 
 ### Studio flow
 
-`e2e/studio.spec.ts` checks that the login route is public and protected routes
-redirect without credentials. The authenticated flow opens the generated
+`e2e/studio.spec.ts` checks that the login route is public and, with the explicit
+auth switch, protected routes redirect without credentials. The authenticated flow opens the generated
 template route, checks metadata and declared dimensions, switches variants,
 edits text, number, color, choice, and boolean fields, and verifies that an
 incomplete number draft does not replace the committed preview value. It then
@@ -37,7 +39,9 @@ downloads a PNG and checks its PNG signature, header, and declared dimensions.
 
 `e2e/image-api.spec.ts` checks the authenticated production image API with both
 a Studio session and an API token. It verifies rejected unauthenticated access,
-PNG response headers, the PNG signature, and the rendered dimensions.
+PNG response headers, the PNG signature, and the rendered dimensions. An
+open-mode image smoke should set `FRAMEKIT_AUTH_ENABLED=false` explicitly and
+verify credential-free rendering separately.
 
 The E2E command is a Chromium critical-path check. It does not promise visual
 pixel regression coverage, a complete browser matrix, clipboard coverage, or
@@ -64,8 +68,9 @@ It then verifies two isolated consumer paths:
   and `framekit build`;
 - a consumer created by the `@mauriciodmo/create-framekit` tarball, including a
   clean install, generated bindings, `generate`, `check`, production `build`,
-  standalone `start`, HTTP readiness, authentication and route checks, and
-  clean shutdown.
+  standalone `start`, an explicit `FRAMEKIT_AUTH_ENABLED=false` open baseline,
+  an authenticated `FRAMEKIT_AUTH_ENABLED=true` start with bootstrap, token and
+  image coverage, and clean shutdown.
 
 This smoke proves that the packed artifacts can be installed and used outside
 the checkout. It is not a Vitest suite, does not run a live Docker build or
@@ -83,10 +88,13 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 canonical consumer to a temporary directory, creates a lockfile using the
 published package, builds the generated Docker image, and runs it with a
 persistent volume. It checks the image's non-root `node` user and `tini`
-entrypoint, waits for readiness, rejects an unauthenticated image request,
-logs in, creates an API token, and verifies a PNG response. It also replaces
-the container to check persisted account and token behavior and confirms that a
-temporary render job is not retained after replacement.
+entrypoint, waits for readiness, runs an explicit `FRAMEKIT_AUTH_ENABLED=false`
+open-mode scenario with credential-free rendering, then runs an explicit
+`FRAMEKIT_AUTH_ENABLED=true` authenticated scenario that rejects an
+unauthenticated image request, logs in, creates an API token, and verifies a PNG
+response. It also replaces the container to check persisted account and token
+behavior and confirms that a temporary render job is not retained after
+replacement.
 
 Docker smoke is a registry-backed operational release gate. It requires Docker
 and an exact published package version, and it does not replace unit tests,
@@ -97,9 +105,9 @@ visual regression or a full browser matrix.
 
 | Check | Artifact and environment | Proves | Does not prove |
 | --- | --- | --- | --- |
-| Chromium E2E | Production Studio build and real Chromium | Critical login, editing, image API, and PNG paths | Pixel equality, clipboard gate, Firefox/WebKit, or every UI flow |
+| Chromium E2E | Production Studio build and real Chromium with auth explicitly enabled | Critical login, editing, image API, and PNG paths | Open-mode behavior, pixel equality, clipboard gate, Firefox/WebKit, or every UI flow |
 | Tarball smoke | Locally packed public tarballs and temporary consumers | Package contents, public exports, generated consumer build, standalone readiness | Docker image behavior or browser installation |
-| Docker smoke | Exact npm package in the generated Docker image | Registry-backed container build, startup, persistence, authentication, and PNG API behavior | Unit-test coverage, visual coverage, or broad browser support |
+| Docker smoke | Exact npm package in the generated Docker image in both explicit modes | Registry-backed container build, startup, open/auth behavior, persistence, authentication, and PNG API behavior | Unit-test coverage, visual coverage, or broad browser support |
 
 For package ownership and generated-consumer procedures, use the approved
 [distribution guide](/en/contributors/distribution) and [generated consumer

@@ -24,12 +24,22 @@ The handler has two branches:
 Cookie-authenticated mutations require a same-origin request. Authorization is
 performed server-side; hiding a control in the client does not grant access.
 
+The single server-side auth switch is `FRAMEKIT_AUTH_ENABLED`. Missing or
+`false` selects open mode: the access branch returns not found, `/editor` and
+`/brand` render without a user, `/login` redirects to `/editor`, and the image
+handler skips credential checks while retaining renderer defenses. `true` enables
+the access branch, users, sessions, API tokens, and protected Studio routes.
+Other values are configuration errors; there is no `NODE_ENV`, credential, or
+SQLite fallback.
+
 ## SQLite access model
 
-The access layer opens SQLite lazily and runs the current schema migration. The
-default database path is `.framekit-data/framekit.sqlite`;
-`FRAMEKIT_DATABASE_PATH` can select another path or `:memory:` for a process.
-The connection enables foreign keys, WAL mode, and a busy timeout.
+When authentication is enabled, the access layer opens SQLite lazily and runs
+the current schema migration. The default database path is
+`.framekit-data/framekit.sqlite`; `FRAMEKIT_DATABASE_PATH` can select another
+path or `:memory:` for a process. The connection enables foreign keys, WAL mode,
+and a busy timeout. Open mode does not initialize SQLite or create an anonymous
+administrator.
 
 The schema currently contains:
 
@@ -38,8 +48,9 @@ The schema currently contains:
 - `api_tokens`, which stores token metadata, a token hash, last use, and
   revocation state.
 
-On the first login against an empty database, `FRAMEKIT_ADMIN_PASSWORD` and the
-optional `FRAMEKIT_ADMIN_USERNAME` bootstrap the first active administrator.
+On the first login against an empty database, and only when auth is enabled,
+`FRAMEKIT_ADMIN_PASSWORD` and the optional `FRAMEKIT_ADMIN_USERNAME` bootstrap
+the first active administrator.
 Passwords are hashed before storage. The database returns a safe
 `StudioUser` DTO, not password or token secrets.
 
@@ -70,15 +81,17 @@ only. An active owner can use an unrevoked token. A normal user can manage its
 own tokens, while an administrator can manage users and inspect or revoke
 another user's token metadata.
 
-The protected Studio sections are `/editor`, `/brand`, and `/settings`. The
-login page renders when no valid session exists and redirects an existing
-session to `/editor`. Access route details belong in the [access API reference](/en/users/reference/http-api/access)
+When auth is enabled, the protected Studio sections are `/editor`, `/brand`, and
+`/settings`; the login page renders when no valid session exists and redirects an
+existing session to `/editor`. In open mode, `/editor` and `/brand` are direct,
+`/settings` is absent, and `/login` redirects to `/editor`. Access route details belong in the [access API reference](/en/users/reference/http-api/access)
 and the [account guide](/en/users/guides/manage-account-and-tokens).
 
 ## Server-side image rendering
 
-The image handler authenticates before reading the request body or loading a
-template. It then parses the render request, loads the matching registry entry,
+The image handler validates render configuration first. When auth is enabled, it
+then authenticates before reading the request body or loading a template. In
+open mode it does not require a credential. It then parses the render request, loads the matching registry entry,
 prepares field data and image inputs, resolves the canonical template data, and
 calls `renderTemplateImage`.
 

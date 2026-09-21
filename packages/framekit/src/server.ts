@@ -1,4 +1,5 @@
-export type { ImageRenderRequest, ImageRenderRuntimeConfig, ResolvedRenderPayload } from './server/config'
+export type { ImageRenderRequest, ImageRenderRuntimeConfig } from './server/config'
+export type { ResolvedRenderPayload } from './types'
 export { ImageRenderError } from './server/errors'
 export type { ImageRenderErrorCode, ImageRenderFailure } from './server/errors'
 export { prepareRenderInputs } from './server/image-input/index'

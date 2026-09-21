@@ -1,5 +1,5 @@
-import { assertRasterSignature, type RasterMimeType } from '../../shared/raster-image'
-import { ImageRenderError } from '../errors'
+import { assertRasterSignature, type RasterMimeType } from '@/shared/raster-image'
+import { ImageRenderError } from '@/server/errors'
 import {
   canonicalDataUrl,
   hasControlCharacters,

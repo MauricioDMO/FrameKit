@@ -1,6 +1,6 @@
-import { isPlainObject } from '../../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
-import type { FieldRecord } from '../common'
+import type { FieldRecord } from '@/core/validation/fields/common'
 
 export function validateChoiceField (key: string, field: FieldRecord): string | undefined {
   if ('required' in field) {

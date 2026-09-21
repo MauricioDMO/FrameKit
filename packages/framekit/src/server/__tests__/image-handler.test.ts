@@ -53,6 +53,7 @@ function createEntry (overrides: Partial<TemplateRegistryEntry> = {}): TemplateR
 }
 
 function setEnvironment (overrides: Record<string, string> = {}): void {
+  vi.stubEnv('FRAMEKIT_AUTH_ENABLED', overrides.FRAMEKIT_AUTH_ENABLED ?? 'true')
   vi.stubEnv('PORT', overrides.PORT ?? '3000')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', overrides.FRAMEKIT_ALLOWED_IMAGE_HOSTS ?? 'images.example.com')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', overrides.FRAMEKIT_MAX_CONCURRENT_RENDERS ?? '2')
@@ -168,6 +169,18 @@ describe('createStudioImageHandler', () => {
     const defaultPort = await handler(requestFor({ template: entry.slug }))
     expect(defaultPort.status).toBe(200)
     expect(mocks.render.mock.calls[1][0].config.internalOrigin.href).toBe('http://localhost:3000/')
+  })
+
+  it('maps invalid authentication configuration to a safe unavailable response', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'invalid')
+
+    const response = await createStudioImageHandler([createEntry()])(requestFor({ template: 'social/card' }))
+
+    expect(response.status).toBe(503)
+    expect(await responseJson(response)).toEqual({
+      error: 'api_not_configured',
+      message: 'Image rendering API is not configured'
+    })
   })
 
   it.each([

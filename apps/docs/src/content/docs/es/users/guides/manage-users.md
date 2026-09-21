@@ -5,7 +5,9 @@ sidebar:
   order: 6
 ---
 
-Solo un administrador puede usar la sección **Usuarios** en los ajustes de Studio. Consulta [Administrar tu cuenta y tus tokens](/es/users/guides/manage-account-and-tokens) para conocer los flujos de la cuenta personal, la sesión y los tokens.
+Esta guía se aplica solo cuando `FRAMEKIT_AUTH_ENABLED=true`. Solo un
+administrador puede usar la sección **Usuarios** en los ajustes de Studio. En
+el modo abierto, Ajustes y la API de acceso no existen. Consulta [Administrar tu cuenta y tus tokens](/es/users/guides/manage-account-and-tokens) para conocer los flujos de la cuenta personal, la sesión y los tokens.
 
 ## 1. Entender los roles
 

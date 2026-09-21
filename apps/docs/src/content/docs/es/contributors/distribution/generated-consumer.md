@@ -43,7 +43,7 @@ npx --no-install framekit check
 npx --no-install framekit build
 
 PORT=4317
-HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+FRAMEKIT_AUTH_ENABLED=false HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
 node --input-type=module - "$PORT" <<'NODE'
 const port = process.argv[2]
@@ -70,6 +70,11 @@ capturados, consulta periódicamente la ruta `/login` del consumidor para
 comprobar que está listo y deja que el trap de limpieza lo detenga y elimine el
 directorio temporal. La [referencia de create-framekit](/es/users/reference/cli/create-framekit)
 documenta las rutas compatibles del creador con `pnpm` y `npm`.
+
+Este flujo manual fija `FRAMEKIT_AUTH_ENABLED=false` para comprobar el baseline
+abierto. El smoke canónico `pnpm smoke:tarballs` añade un arranque autenticado
+con `FRAMEKIT_AUTH_ENABLED=true`, una contraseña de bootstrap explícita y
+cobertura de sesión, token de API y renderizado de imagen antes de limpiar.
 
 Para la versión reproducible de este flujo basada en artefactos de paquetes,
 ejecuta el smoke del repositorio en lugar de sustituir las versiones de los
@@ -125,7 +130,7 @@ Mantén separadas la plantilla canónica y el consumidor generado:
 | --- | --- | --- |
 | Código fuente mantenido de la plantilla | `packages/create-framekit/template/src/`, `next.config.ts`, `Dockerfile`, `.env.example` y la configuración del proyecto | Cambia estas fuentes cuando cambie el proyecto inicial. Vuelve a compilar y empaqueta el paquete creador. |
 | Salida generada del consumidor | `src/generated/framekit/`, `public/framekit/`, `.framekit/`, `.framekit/next/`, `.next/`, `*.tsbuildinfo` y `next-env.d.ts` | Salida desechable. Vuelve a generarla o compílala; no la edites manualmente ni la añadas al archivo comprimido del creador. |
-| Datos de runtime del consumidor | `.framekit-data/` | Almacenamiento SQLite persistente cuando se usa. Consérvalo entre reinicios y despliegues; no es un registro generado. |
+| Datos de runtime del consumidor | `.framekit-data/` | Almacenamiento SQLite persistente cuando la autenticación se usa. Consérvalo entre reinicios y despliegues; no es un registro generado. El modo abierto no necesita este directorio para acceso. |
 
 La referencia de archivos generados explica con más detalle las rutas de salida
 del consumidor: [archivos generados](/es/users/reference/generated-files). El
@@ -147,8 +152,10 @@ manual de release independiente. Usa valores exactos de `CORE_SPEC` y
 independientes de `EXPECTED_FRAMEKIT_DIST_TAG` y
 `EXPECTED_CREATE_FRAMEKIT_DIST_TAG`, instálalos en un runner temporal, crea el
 consumidor, instala su versión exacta de core y repite `generate`, `check`,
-`build` y `start`. Registra las versiones resueltas y el resultado antes de la
-limpieza.
+`build` y `start` en modo abierto y autenticado. En el recorrido autenticado,
+comprueba el inicio de sesión, la creación de un token y un renderizado PNG.
+Registra las versiones resueltas y el resultado antes de la limpieza; este gate
+debe ejecutarse fuera del checkout y antes de promover cualquier dist-tag.
 Consulta [pruebas E2E y smoke](/es/contributors/testing/e2e-and-smoke) para
 conocer la diferencia entre las comprobaciones basadas en archivos y las
 basadas en el registro.

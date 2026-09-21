@@ -1,4 +1,4 @@
-import { UserDomainError } from '../users/errors'
+import { UserDomainError } from '@/server/access/users/errors'
 
 export type AccessErrorCode =
   | 'invalid_request'

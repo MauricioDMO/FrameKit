@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 
-import type { ResolvedRenderPayload } from './config'
+import type { ResolvedRenderPayload } from '@/types'
 import { loadRenderRequest } from './render-job'
 
 interface RenderClientProps {

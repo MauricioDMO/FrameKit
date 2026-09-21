@@ -26,7 +26,7 @@ El endpoint de imágenes devuelve errores JSON con esta forma:
 | Estado | Código | Significado |
 | ---: | --- | --- |
 | `400` | `invalid_request` | La estructura JSON, el tipo de contenido, la plantilla, la variante o los metadatos de la solicitud no son válidos. |
-| `401` | `unauthorized` | No se proporcionó una sesión válida del mismo origen ni un token de API válido. La respuesta incluye `WWW-Authenticate: Bearer`. |
+| `401` | `unauthorized` | En el modo autenticado, no se proporcionó una sesión válida del mismo origen ni un token de API válido. La respuesta incluye `WWW-Authenticate: Bearer`; la falta de credenciales no produce `401` en modo abierto. |
 | `404` | `template_not_found` | El slug de la plantilla solicitada no está en el registro generado. |
 | `405` | `method_not_allowed` | El dispatcher de imágenes solo acepta `POST` y envía `Allow: POST`. |
 | `413` | `request_too_large` | El cuerpo JSON supera los 12,000,000 bytes o una imagen preparada supera los 8,000,000 bytes. |
@@ -45,11 +45,15 @@ Todos los errores de imagen usan `Cache-Control: no-store` y `Content-Type: appl
 
 ## Gestión por parte del cliente
 
-1. Gestiona `401` comprobando la credencial y el estado de su propietario. Un encabezado Bearer no válido no recurre a una cookie de sesión.
+1. En el modo autenticado, gestiona `401` comprobando la credencial y el estado de su propietario. Un encabezado Bearer no válido no recurre a una cookie de sesión. La falta de credenciales es válida en modo abierto.
 2. Gestiona `400`, `415` y `422` como correcciones de la solicitud o de los datos de la plantilla. Para `invalid_template_data`, usa `fields` cuando esté presente.
 3. Gestiona `413` reduciendo el tamaño del JSON o de la entrada de imagen.
 4. Gestiona `502` comprobando HTTPS, la lista de hosts permitidos, la respuesta remota y las reglas de redirección.
 5. Gestiona la capacidad de `503` con reintentos acotados y limitación externa; no reintentes un error de configuración hasta que se corrija el entorno.
 6. Gestiona `504` comprobando la plantilla y el entorno de ejecución del navegador; después, ajusta el tiempo de espera dentro de su rango compatible solo cuando el renderizado realmente necesite más tiempo.
 
-Después de validar la configuración del renderizado de imágenes, la autenticación ocurre antes del análisis de la solicitud, la búsqueda de la plantilla, las obtenciones remotas y la reserva del navegador. Corrige un `401` antes de diagnosticar el cuerpo o la ruta de renderizado.
+Después de validar la configuración del renderizado de imágenes, la autenticación
+ocurre antes del análisis de la solicitud, la búsqueda de la plantilla, las
+obtenciones remotas y la reserva del navegador cuando está activada. En el modo
+abierto no se comprueban credenciales, pero se mantienen las mismas defensas de
+validación y aislamiento del renderizador.

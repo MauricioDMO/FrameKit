@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 
-import type { StudioUser } from '../../../studio/types'
+import type { StudioUser } from '@/types'
 
-import { getDatabase } from '../database'
-import { hashPassword } from '../passwords'
+import { getDatabase } from '@/server/access/database'
+import { hashPassword } from '@/server/access/passwords'
 import {
   duplicateUsernameError,
   lastAdministratorError,

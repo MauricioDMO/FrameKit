@@ -1,4 +1,4 @@
-import { isPlainObject } from '../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 export type FieldRecord = Record<string, unknown>
 

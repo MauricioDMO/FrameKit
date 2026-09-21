@@ -1,13 +1,13 @@
 ---
 title: HTTP API
-description: Understand the authenticated FrameKit HTTP API for access management and server-side PNG rendering.
+description: Understand the optional-access FrameKit HTTP API for account management and server-side PNG rendering.
 sidebar:
   order: 1
 ---
 
-FrameKit exposes a Node.js HTTP handler for Studio access and synchronous PNG rendering. In the canonical project, mount it from the App Router catch-all route at `/api/framekit/[...action]` and keep that route on the Node.js runtime. The [existing-project integration](/en/users/getting-started/existing-project) shows the complete route setup.
+FrameKit exposes a Node.js HTTP handler for optional Studio access and synchronous PNG rendering. In the canonical project, mount it from the App Router catch-all route at `/api/framekit/[...action]` and keep that route on the Node.js runtime. The [existing-project integration](/en/users/getting-started/existing-project) shows the complete route setup.
 
-The dispatcher exposes only the routes documented in this section. `POST /api/framekit/images/render` is the image endpoint. The other routes manage the Studio session, account, API tokens, and users.
+The dispatcher exposes only the routes documented in this section. `POST /api/framekit/images/render` is the image endpoint in both modes. The other routes manage the Studio session, account, API tokens, and users only when `FRAMEKIT_AUTH_ENABLED=true`; in open mode they are absent.
 
 ## Choose a reference
 
@@ -23,4 +23,8 @@ The API is synchronous. A render request authenticates first, resolves the templ
 
 ## Security boundary
 
-The session cookie is for same-origin Studio access. A Bearer API token is accepted only by the image render endpoint. Do not put a token in a URL, browser bundle, rendered DOM, or client-side code. Read [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) before exposing the handler publicly.
+The session cookie is for same-origin Studio access when authentication is
+enabled. A Bearer API token is accepted only by the image render endpoint and
+only in authenticated mode. In open mode the image endpoint needs no
+credential. Do not put a token in a URL, browser bundle, rendered DOM, or
+client-side code. Read [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) before exposing the handler publicly.

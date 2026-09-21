@@ -42,12 +42,13 @@ async function waitForHttp (origin) {
 }
 
 async function renderImage (origin, token) {
+  // Docker verifies the local render path; intercepted browser traffic is not reliably observable here.
+  const headers = { 'content-type': 'application/json' }
+  if (token !== undefined) headers.authorization = `Bearer ${token}`
+
   const response = await fetch(`${origin}/api/framekit/images/render`, {
     method: 'POST',
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json'
-    },
+    headers,
     body: JSON.stringify({ template: 'example' }),
     signal: AbortSignal.timeout(90_000)
   })
@@ -60,6 +61,31 @@ async function renderImage (origin, token) {
   assert.equal(bytes.toString('ascii', 12, 16), 'IHDR')
   assert.equal(bytes.readUInt32BE(16), 1200)
   assert.equal(bytes.readUInt32BE(20), 800)
+}
+
+async function verifyOpenMode (origin, container) {
+  for (const pathname of ['/editor', '/brand']) {
+    const response = await fetch(`${origin}${pathname}`, { redirect: 'manual' })
+    await response.arrayBuffer()
+    assert.equal(response.status, 200, `${pathname} did not resolve in open mode`)
+  }
+
+  const login = await fetch(`${origin}/login`, { redirect: 'manual' })
+  await login.arrayBuffer()
+  assert.equal(login.status, 307, 'open-mode login did not redirect')
+  assert.equal(login.headers.get('location'), '/editor', 'open-mode login redirected to an unexpected path')
+
+  const settings = await fetch(`${origin}/settings`, { redirect: 'manual' })
+  await settings.arrayBuffer()
+  assert.equal(settings.status, 404, 'open-mode settings did not return not-found')
+
+  const accessApi = await fetch(`${origin}/api/framekit/login`, { method: 'POST' })
+  await accessApi.arrayBuffer()
+  assert.equal(accessApi.status, 404, 'open-mode access API was exposed')
+
+  await renderImage(origin)
+  await run('docker', ['exec', container, 'sh', '-c', 'touch /data/.framekit-docker-smoke-writable && rm /data/.framekit-docker-smoke-writable'])
+  await run('docker', ['exec', container, 'test', '!', '-e', '/data/framekit.sqlite'])
 }
 
 async function verifyApi (origin) {
@@ -163,7 +189,9 @@ async function smoke () {
   const tag = `framekit-docker-smoke:${process.pid}`
   const containerA = `framekit-docker-smoke-${process.pid}-a`
   const containerB = `framekit-docker-smoke-${process.pid}-b`
+  const containerOpen = `framekit-docker-smoke-${process.pid}-open`
   const volume = `framekit-docker-smoke-volume-${process.pid}`
+  const openVolume = `framekit-docker-smoke-open-volume-${process.pid}`
   const startedContainers = new Set()
   const savedLogs = new Map()
 
@@ -173,10 +201,9 @@ async function smoke () {
       version,
       'FrameKit version is not available from npm'
     )
-    assert(
-      await run('npm', ['view', `@mauriciodmo/framekit@${version}`, 'dependencies.playwright-core']),
-      `FrameKit ${version} does not include the Docker browser runtime`
-    )
+    const playwrightCoreVersion = await run('npm', ['view', `@mauriciodmo/framekit@${version}`, 'dependencies.playwright-core'])
+    assert(playwrightCoreVersion, `FrameKit ${version} does not include the Docker browser runtime`)
+    assert.match(playwrightCoreVersion, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/, `FrameKit ${version} does not pin playwright-core`)
     await cp(templateRoot, consumerRoot, {
       recursive: true,
       filter: (source) => path.basename(source) !== 'node_modules'
@@ -223,11 +250,32 @@ export function GET (request: Request) {
       'node|["/usr/bin/tini","--"]'
     )
 
+    assert.equal(await run('docker', ['volume', 'create', openVolume]), openVolume)
+    startedContainers.add(containerOpen)
+    await run('docker', [
+      'run', '--detach', '--name', containerOpen,
+      '--publish', '127.0.0.1::3000',
+      '--env', 'FRAMEKIT_AUTH_ENABLED=false',
+      '--mount', `type=volume,source=${openVolume},target=/data`,
+      tag
+    ])
+    const mappingOpen = await run('docker', ['port', containerOpen, '3000/tcp'])
+    const portOpen = mappingOpen.match(/:(\d+)$/)?.[1]
+    assert(portOpen, `could not determine Docker port from: ${mappingOpen}`)
+
+    const originOpen = `http://127.0.0.1:${portOpen}`
+    await waitForHttp(originOpen)
+    await verifyOpenMode(originOpen, containerOpen)
+    savedLogs.set(containerOpen, await run('docker', ['logs', containerOpen], repoRoot, { includeStderr: true }).catch(() => ''))
+    await run('docker', ['stop', containerOpen])
+    await run('docker', ['rm', containerOpen])
+
     assert.equal(await run('docker', ['volume', 'create', volume]), volume)
     startedContainers.add(containerA)
     await run('docker', [
       'run', '--detach', '--name', containerA,
       '--publish', '127.0.0.1::3000',
+      '--env', 'FRAMEKIT_AUTH_ENABLED=true',
       '--env', 'FRAMEKIT_ADMIN_PASSWORD=framekit-docker-smoke-password',
       '--mount', `type=volume,source=${volume},target=/data`,
       tag
@@ -249,6 +297,7 @@ export function GET (request: Request) {
     await run('docker', [
       'run', '--detach', '--name', containerB,
       '--publish', '127.0.0.1::3000',
+      '--env', 'FRAMEKIT_AUTH_ENABLED=true',
       '--env', 'FRAMEKIT_ADMIN_PASSWORD=framekit-docker-smoke-password',
       '--mount', `type=volume,source=${volume},target=/data`,
       tag
@@ -261,6 +310,7 @@ export function GET (request: Request) {
     await waitForHttp(originB)
     await verifySmokeJobGone(originB, job)
     await verifyReplacementApi(originB, persisted)
+    console.log('DOCKER SMOKE NOTE: browser network isolation remains covered by render-image unit tests; local-origin rendering passed')
     console.log(`DOCKER SMOKE RESULT: PASS (${version})`)
   } catch (error) {
     for (const container of startedContainers) {
@@ -269,9 +319,11 @@ export function GET (request: Request) {
     }
     throw error
   } finally {
+    await run('docker', ['rm', '--force', containerOpen]).catch(() => undefined)
     await run('docker', ['rm', '--force', containerA]).catch(() => undefined)
     await run('docker', ['rm', '--force', containerB]).catch(() => undefined)
     await run('docker', ['image', 'rm', '--force', tag]).catch(() => undefined)
+    await run('docker', ['volume', 'rm', '--force', openVolume]).catch(() => undefined)
     await run('docker', ['volume', 'rm', '--force', volume]).catch(() => undefined)
     await rm(temporaryRoot, { recursive: true, force: true }).catch(() => undefined)
   }

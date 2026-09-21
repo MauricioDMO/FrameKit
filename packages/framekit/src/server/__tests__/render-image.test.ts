@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ImageRenderRuntimeConfig, ResolvedRenderPayload } from '@/server/config'
+import type { ImageRenderRuntimeConfig } from '@/server/config'
+import type { ResolvedRenderPayload } from '@/types'
 import { ImageRenderError } from '@/server/errors'
 import { renderTemplateImage } from '@/server/render-image'
 

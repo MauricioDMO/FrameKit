@@ -12,6 +12,12 @@ Keep the package versions, release-time npm dist-tag, exact registry specs, and
 final dist-tag as values supplied during the release. This page does not select
 any of them.
 
+Authenticated release smokes must set `FRAMEKIT_AUTH_ENABLED=true` and provide a
+test bootstrap password explicitly. Open-mode checks must set
+`FRAMEKIT_AUTH_ENABLED=false` explicitly. Final npm publication and dist-tag
+promotion remain separate external release gates; validation commands never
+publish or promote packages.
+
 ## Before publication
 
 Run release commands from the repository root with the Node.js and pnpm
@@ -64,7 +70,8 @@ The same command runs two isolated consumer paths:
   `framekit build`;
 - a consumer generated from the creator tarball, with a clean install,
   generated bindings, `generate`, `check`, production `build`, standalone
-  `start`, HTTP readiness, authentication and route checks, and cleanup.
+  `start`, HTTP readiness, authentication and route checks with
+  `FRAMEKIT_AUTH_ENABLED=true`, and cleanup.
 
 These are local artifact checks before publication. They do not prove that npm
 serves the package or that a Docker image can install it. The [distribution guide](/en/contributors/distribution) and [generated consumer guide](/en/contributors/distribution/generated-consumer) describe the artifact and consumer boundaries in detail.
@@ -122,7 +129,8 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 
 The script requires one exact published semver. It verifies the package through
 npm, builds and runs the generated image, checks its non-root `node` user and
-`tini` entrypoint, exercises authentication and PNG rendering, and checks
+`tini` entrypoint, covers explicit open and authenticated modes, exercises
+authentication and PNG rendering in the authenticated mode, and checks
 persistence across container replacement. It is not a substitute for the local
 tarball smoke, unit tests, type-checking, or Chromium E2E.
 
@@ -226,7 +234,7 @@ npx --no-install framekit build
 test -f src/generated/framekit/templates.ts
 
 PORT=4318
-HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+FRAMEKIT_AUTH_ENABLED=true FRAMEKIT_ADMIN_PASSWORD=framekit-registry-smoke-password FRAMEKIT_DATABASE_PATH=:memory: HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
 node --input-type=module - "$PORT" <<'NODE'
 const port = process.argv[2]
@@ -244,6 +252,51 @@ while (Date.now() < deadline) {
 
 console.error(`Studio was not ready on port ${port}`)
 process.exit(1)
+NODE
+
+node --input-type=module - "$PORT" <<'NODE'
+const port = process.argv[2]
+const origin = `http://127.0.0.1:${port}`
+const request = { template: 'example' }
+
+const missingAuth = await fetch(`${origin}/api/framekit/images/render`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify(request)
+})
+if (missingAuth.status !== 401) throw new Error(`Expected 401 before login, got ${missingAuth.status}`)
+
+const login = await fetch(`${origin}/api/framekit/login`, {
+  method: 'POST',
+  headers: { origin, 'content-type': 'application/json' },
+  body: JSON.stringify({ username: 'admin', password: 'framekit-registry-smoke-password' })
+})
+const loginBody = await login.text()
+if (login.status !== 200) throw new Error(`Login failed: ${login.status} ${loginBody}`)
+const sessionCookie = login.headers.get('set-cookie')?.split(';', 1)[0]
+if (!sessionCookie) throw new Error('Login did not return a session cookie')
+
+const tokenResponse = await fetch(`${origin}/api/framekit/tokens`, {
+  method: 'POST',
+  headers: { cookie: sessionCookie, origin, 'content-type': 'application/json' },
+  body: JSON.stringify({ name: 'Registry smoke token' })
+})
+const tokenBody = await tokenResponse.json()
+if (tokenResponse.status !== 201 || typeof tokenBody.token !== 'string') {
+  throw new Error(`Token creation failed: ${tokenResponse.status} ${JSON.stringify(tokenBody)}`)
+}
+
+const image = await fetch(`${origin}/api/framekit/images/render`, {
+  method: 'POST',
+  headers: { authorization: `Bearer ${tokenBody.token}`, 'content-type': 'application/json' },
+  body: JSON.stringify(request)
+})
+const imageBytes = new Uint8Array(await image.arrayBuffer())
+const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10]
+if (image.status !== 200 || image.headers.get('content-type') !== 'image/png' || !pngSignature.every((byte, index) => imageBytes[index] === byte)) {
+  throw new Error(`PNG render failed: ${image.status} ${image.headers.get('content-type')}`)
+}
+console.log('Authenticated registry smoke passed: login, token, and PNG render')
 NODE
 ```
 
@@ -270,4 +323,5 @@ npm dist-tag add <package>@<resolved-version> <final-dist-tag>
 ```
 
 The command above is a release-time handoff. This page intentionally does not
-choose a version or a final dist-tag.
+choose a version or a final dist-tag. The final npm publication and promotion
+are separate external gates performed by the release owner.

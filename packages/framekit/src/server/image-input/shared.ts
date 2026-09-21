@@ -1,5 +1,5 @@
-import type { RasterMimeType } from '../../shared/raster-image'
-import { ImageRenderError } from '../errors'
+import type { RasterMimeType } from '@/shared/raster-image'
+import { ImageRenderError } from '@/server/errors'
 
 export const maxImageBytes = 8_000_000
 export const maxRedirects = 3

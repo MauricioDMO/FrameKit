@@ -1,4 +1,4 @@
-import type { ChoiceFieldDescriptor } from '../../types'
+import type { ChoiceFieldDescriptor } from '@/types'
 
 type ChoiceOption = { value: string; label: string }
 

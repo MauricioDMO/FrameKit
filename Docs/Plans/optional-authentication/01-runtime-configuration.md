@@ -1,5 +1,7 @@
 # Fase 1 - Contrato de configuración
 
+- **Estado:** Completada.
+
 ## Objetivo
 
 Introducir una única fuente de verdad server-only para decidir si la
@@ -74,6 +76,11 @@ Esto incluye explícitamente los setups de:
 
 ## Exit gate
 
-La fase termina cuando el parser tiene cobertura completa, el valor ausente es
-`false`, los valores inválidos fallan de forma explícita, el helper permanece
-interno y los tests enfocados de access pasan.
+- [x] El parser tiene cobertura completa.
+- [x] El valor ausente es `false`.
+- [x] Los valores inválidos fallan de forma explícita.
+- [x] El helper permanece interno.
+- [x] Los tests enfocados de access pasan.
+
+Implementación: `packages/framekit/src/server/access/config.ts`.
+Cobertura: `packages/framekit/src/server/access/__tests__/config.test.ts`.

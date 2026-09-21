@@ -5,13 +5,12 @@ import { useEffect, useState } from 'react'
 
 import { AccountSettings } from './account-settings'
 import { AdminUsersSettings } from './admin-users-settings'
-import { Feedback } from './settings-components'
 import type { SettingsMessages } from './types'
 import { TokenSettings } from './token-settings'
-import type { StudioUser } from '../types'
-import type { FrameKitLocale } from '../i18n/messages'
+import type { StudioUser } from '@/studio/types'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
 
-export function FrameKitStudioSettings ({ user, locale, messages }: { user?: StudioUser, locale: FrameKitLocale, messages: SettingsMessages }) {
+export function FrameKitStudioSettings ({ user, locale, messages }: { user: StudioUser, locale: FrameKitLocale, messages: SettingsMessages }) {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState(user)
 
@@ -20,7 +19,7 @@ export function FrameKitStudioSettings ({ user, locale, messages }: { user?: Stu
   }, [user])
 
   function updateUser (nextUser: StudioUser) {
-    setCurrentUser((current) => current?.id === nextUser.id ? nextUser : current)
+    setCurrentUser((current) => current.id === nextUser.id ? nextUser : current)
   }
 
   function endSession () {
@@ -39,17 +38,15 @@ export function FrameKitStudioSettings ({ user, locale, messages }: { user?: Stu
           <nav aria-label={messages.navigationLabel} className="flex max-w-full flex-wrap gap-2 text-sm font-bold">
             <a href="#framekit-settings-account" className="rounded-lg px-3 py-2 text-fk-forest-300 underline-offset-4 hover:underline focus:ring-2 focus:ring-fk-forest-300 focus:outline-none dark:text-fk-mint-200 dark:focus:ring-fk-mint-200">{messages.account.title}</a>
             <a href="#framekit-settings-tokens" className="rounded-lg px-3 py-2 text-fk-forest-300 underline-offset-4 hover:underline focus:ring-2 focus:ring-fk-forest-300 focus:outline-none dark:text-fk-mint-200 dark:focus:ring-fk-mint-200">{messages.tokens.title}</a>
-            {currentUser?.role === 'admin' && <a href="#framekit-settings-users" className="rounded-lg px-3 py-2 text-fk-forest-300 underline-offset-4 hover:underline focus:ring-2 focus:ring-fk-forest-300 focus:outline-none dark:text-fk-mint-200 dark:focus:ring-fk-mint-200">{messages.users.title}</a>}
+            {currentUser.role === 'admin' && <a href="#framekit-settings-users" className="rounded-lg px-3 py-2 text-fk-forest-300 underline-offset-4 hover:underline focus:ring-2 focus:ring-fk-forest-300 focus:outline-none dark:text-fk-mint-200 dark:focus:ring-fk-mint-200">{messages.users.title}</a>}
           </nav>
         </header>
 
-        {!currentUser
-          ? <section className="rounded-3xl border border-black/5 bg-fk-ivory-100 p-6 shadow-xl dark:border-white/10 dark:bg-fk-forest-200 sm:p-8"><Feedback message={messages.account.sessionRequired} /></section>
-          : <div className="grid gap-5 xl:grid-cols-2">
-            <AccountSettings user={currentUser} messages={messages.account} errors={messages.errors} onUserChange={updateUser} onSessionEnded={endSession} />
-            <TokenSettings locale={locale} messages={messages.tokens} errors={messages.errors} enabled />
-            {currentUser.role === 'admin' && <AdminUsersSettings currentUser={currentUser} locale={locale} messages={messages.users} tokenMessages={messages.tokens} errors={messages.errors} onUserChange={updateUser} onSessionEnded={endSession} />}
-          </div>}
+        <div className="grid gap-5 xl:grid-cols-2">
+          <AccountSettings user={currentUser} messages={messages.account} errors={messages.errors} onUserChange={updateUser} onSessionEnded={endSession} />
+          <TokenSettings locale={locale} messages={messages.tokens} errors={messages.errors} enabled />
+          {currentUser.role === 'admin' && <AdminUsersSettings currentUser={currentUser} locale={locale} messages={messages.users} tokenMessages={messages.tokens} errors={messages.errors} onUserChange={updateUser} onSessionEnded={endSession} />}
+        </div>
       </div>
     </div>
   )

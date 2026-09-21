@@ -5,9 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
 import { frameKitMessages } from '@/studio/i18n/messages'
-import { FrameKitStudioSettings } from '../studio-settings'
-import type { ManagedStudioUser, StudioTokenMetadata } from '../types'
-import type { StudioUser } from '../../types'
+import { FrameKitStudioSettings } from '@/studio/settings/studio-settings'
+import type { ManagedStudioUser, StudioTokenMetadata } from '@/studio/settings/types'
+import type { StudioUser } from '@/studio/types'
 
 const router = vi.hoisted(() => ({ replace: vi.fn() }))
 

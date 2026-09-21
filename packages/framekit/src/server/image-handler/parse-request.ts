@@ -1,5 +1,5 @@
-import { isPlainObject } from '../../core/validation/utils'
-import type { ImageRenderRequest } from '../config'
+import { isPlainObject } from '@/core/validation/utils'
+import type { ImageRenderRequest } from '@/server/config'
 import { invalidRequest } from './errors'
 
 const requestKeys = new Set(['template', 'variant', 'data'])

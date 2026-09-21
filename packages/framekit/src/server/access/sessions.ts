@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto'
 
-import type { StudioUser } from '../../studio/types'
+import type { StudioUser } from '@/types'
 import { getDatabase } from './database'
-import { toStudioUser } from './users/validation'
+import { toStudioUser } from '@/server/access/users/validation'
 
 const sessionSecretBytes = 32
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000

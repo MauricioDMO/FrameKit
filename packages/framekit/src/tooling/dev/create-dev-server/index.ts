@@ -2,7 +2,7 @@ import next from 'next'
 
 import { createDevHttpServer, listenDevHttpServer, type DevHttpServer } from './http-server'
 import { createTemplateGenerator } from './template-generation'
-import { watchTemplates, type TemplateWatcher } from '../watch-templates'
+import { watchTemplates, type TemplateWatcher } from '@/tooling/dev/watch-templates'
 
 export interface DevServerOptions {
   projectRoot: string

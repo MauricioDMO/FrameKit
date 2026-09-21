@@ -1,7 +1,7 @@
-import { isPlainObject } from '../../core/validation/utils'
-import type { TemplateDataValidationError } from '../../core/validation'
-import { ImageRenderError } from '../errors'
-import type { ImageRenderErrorCode } from '../errors'
+import { isPlainObject } from '@/core/validation/utils'
+import type { TemplateDataValidationError } from '@/core/validation'
+import { ImageRenderError } from '@/server/errors'
+import type { ImageRenderErrorCode } from '@/server/errors'
 import { publicMessageFor } from './errors'
 
 const statusByCode: Record<ImageRenderErrorCode, number> = {

@@ -1,4 +1,4 @@
-import type { InferTemplateData, TemplateAssetManifest, TemplateBase } from '../../types'
+import type { InferTemplateData, TemplateAssetManifest, TemplateBase } from '@/types'
 import { getDefaultValues } from './get-default-values'
 
 const emptyAssets: TemplateAssetManifest = { common: {}, variants: {} }

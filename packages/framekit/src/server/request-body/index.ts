@@ -1,4 +1,4 @@
-import { ImageRenderError } from '../errors'
+import { ImageRenderError } from '@/server/errors'
 import { abortReason, readChunk } from './reader'
 import { invalidRequest, maxRequestBytes, requestTooLarge, validateRequestMetadata } from './validate-request'
 

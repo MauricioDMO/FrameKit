@@ -71,6 +71,19 @@ export default function HomePage() {
 }
 ```
 
+The generated integration is open by default. With `FRAMEKIT_AUTH_ENABLED`
+missing or `false`, `/editor` and `/brand` do not require login, `/login`
+redirects to `/editor`, `/settings` and the access API are not found, and image
+rendering does not require credentials while retaining renderer defenses. Do not
+make login a prerequisite for the default editor flow.
+
+Before exposing production to an untrusted network, set
+`FRAMEKIT_AUTH_ENABLED=true` explicitly. That enables users, sessions, API
+tokens, and protected Studio/access routes; set `FRAMEKIT_ADMIN_PASSWORD` only
+for this mode when bootstrapping the first administrator. Any configured value
+must be exactly `true` or `false`. `NODE_ENV`, credentials, and SQLite do not
+enable authentication.
+
 Run `pnpm framekit generate`. It writes the source-side registry to
 `src/generated/framekit/templates.ts`; its entries contain `slug`, `segments`,
 validated metadata, dimensions, variants, declaration-ordered variant keys,

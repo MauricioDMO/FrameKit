@@ -7,6 +7,14 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 FrameKit turns React templates into editable image workflows. Start with the task you need to complete; the sidebar contains the deeper concepts and reference material.
 
+:::caution
+Authentication is opt-in. When `FRAMEKIT_AUTH_ENABLED` is missing or `false`,
+`/editor` and `/brand` are open, `/login` redirects to `/editor`, `/settings`
+and the access API are absent, and image rendering needs no credential while
+retaining its renderer defenses. Set `FRAMEKIT_AUTH_ENABLED=true` before
+exposing production to an untrusted network.
+:::
+
 ## Start here
 
 <CardGrid>
@@ -48,12 +56,12 @@ FrameKit turns React templates into editable image workflows. Start with the tas
   <LinkCard
     title="HTTP API"
     href="/en/users/reference/http-api"
-    description="Integrate access and authenticated server-side image rendering."
+    description="Integrate optional access management and server-side image rendering."
   />
   <LinkCard
     title="Deployment"
     href="/en/users/deployment"
-    description="Prepare the Node runtime, Chromium, SQLite, secrets, and persistence."
+    description="Prepare Node, Chromium, optional auth data, secrets, and persistence."
   />
 </CardGrid>
 

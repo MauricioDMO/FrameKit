@@ -23,10 +23,13 @@ export function Studio () {
 }
 ```
 
-The generated project also supplies `brands` and a client binding for authenticated Studio pages. Studio chooses the template's default content variant; its interface locale is independent of template variant keys.
+The generated project also supplies `brands` and a client binding for Studio
+pages. Authentication of those pages is controlled by `FRAMEKIT_AUTH_ENABLED`;
+Studio chooses the template's default content variant, and its interface locale
+is independent of template variant keys.
 
 ## Bundle and runtime constraints
 
-`FrameKitStudio` is a client component and depends on Next.js client navigation and browser state. Use it behind a client boundary. The authenticated route and document shell belong to the [Studio root API](/en/users/reference/package-api/studio-root), while access and image requests belong to the [server API](/en/users/reference/package-api/server).
+`FrameKitStudio` is a client component and depends on Next.js client navigation and browser state. Use it behind a client boundary. The route and document shell belong to the [Studio root API](/en/users/reference/package-api/studio-root), while optional access and image requests belong to the [server API](/en/users/reference/package-api/server).
 
 See [Use Studio](/en/users/guides/use-studio) and the [Studio concept](/en/users/concepts/studio).

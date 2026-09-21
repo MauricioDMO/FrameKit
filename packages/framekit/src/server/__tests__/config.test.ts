@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   parseImageRenderConfig,
   type ImageRenderRequest,
-  type ImageRenderRuntimeConfig,
-  type ResolvedRenderPayload
+  type ImageRenderRuntimeConfig
 } from '@/server/config'
 import { ImageRenderError, type ImageRenderErrorCode, type ImageRenderFailure } from '@/server/errors'
+import type { ResolvedRenderPayload } from '@/types'
 
 const baseEnvironment: NodeJS.ProcessEnv = {
   NODE_ENV: 'test'

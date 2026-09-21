@@ -50,7 +50,7 @@ The generated project reserves these paths:
 | --- | --- |
 | `.framekit/next/` | Next.js standalone production output created by the FrameKit Next.js configuration. |
 | `.framekit/` | Temporary FrameKit output, including the temporary directory used while `framekit check` validates templates. |
-| `.framekit-data/` | The default SQLite database directory when `FRAMEKIT_DATABASE_PATH` is not set. |
+| `.framekit-data/` | The default SQLite database directory when authentication is enabled and `FRAMEKIT_DATABASE_PATH` is not set. Open mode does not initialize it. |
 | `public/framekit/` | Copied generated assets. |
 | `src/generated/framekit/` | Generated registries and client bindings. |
 

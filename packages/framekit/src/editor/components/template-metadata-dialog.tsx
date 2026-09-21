@@ -1,8 +1,8 @@
 import { IconX } from '@tabler/icons-react'
 import { useEffect, useRef } from 'react'
 
-import type { TemplateMeta } from '../../types'
-import type { EditorMessages } from '../types'
+import type { TemplateMeta } from '@/types'
+import type { EditorMessages } from '@/editor/types'
 
 interface TemplateMetadataDialogProps {
   open: boolean

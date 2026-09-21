@@ -14,4 +14,4 @@ export type {
   ImageFieldDescriptor,
   ChoiceFieldDescriptor,
   BooleanFieldDescriptor
-} from '../../types'
+} from '@/types'

@@ -1,6 +1,6 @@
 ---
 title: Arquitectura del servidor y el acceso
-description: Comprende la fachada del servidor para Node, la capa de acceso a SQLite, la autorización mediante sesiones y tokens y el flujo privado de renderizado con Chromium.
+description: Comprende la fachada del servidor para Node, el acceso opcional a SQLite, la autorización mediante sesiones y tokens y el flujo privado de renderizado con Chromium.
 ---
 
 # Arquitectura del servidor y del acceso
@@ -18,18 +18,20 @@ y lo exporta para `GET`, `POST`, `PATCH` y `DELETE`.
 El handler tiene dos ramas:
 
 - `POST /api/framekit/images/render` va al handler de imágenes.
-- Las demás rutas compatibles `/api/framekit/...` van al handler de acceso, que
-  busca las rutas y los métodos exactos antes de invocar un handler de ruta.
+- Las demás rutas compatibles `/api/framekit/...` van al handler de acceso cuando
+  `FRAMEKIT_AUTH_ENABLED=true`, que busca las rutas y los métodos exactos antes
+  de invocar un handler de ruta. En modo abierto, esas rutas no existen.
 
 Las mutaciones que usan autenticación mediante cookies requieren una solicitud del mismo
-origen. La autorización se realiza en el servidor; ocultar un control en el cliente
-no concede acceso.
+origen. La autorización se realiza en el servidor cuando está activada; ocultar un control
+en el cliente no concede acceso.
 
 ## Modelo de acceso a SQLite
 
 La capa de acceso abre SQLite de forma diferida y ejecuta la migración de esquema
-actual. La ruta de base de datos predeterminada es `.framekit-data/framekit.sqlite`;
-`FRAMEKIT_DATABASE_PATH` puede seleccionar otra ruta o `:memory:` para un proceso.
+actual solo cuando `FRAMEKIT_AUTH_ENABLED=true`. La ruta de base de datos predeterminada
+es `.framekit-data/framekit.sqlite`; `FRAMEKIT_DATABASE_PATH` puede seleccionar otra
+ruta o `:memory:` para un proceso. El modo abierto no inicializa SQLite.
 La conexión habilita las claves foráneas, el modo WAL y un tiempo de espera cuando
 SQLite está ocupado.
 
@@ -40,10 +42,10 @@ El esquema contiene actualmente:
 - `api_tokens`, que almacena metadatos del token, un hash del token, su último uso
   y su estado de revocación.
 
-En la primera solicitud de inicio de sesión contra una base de datos vacía,
-`FRAMEKIT_ADMIN_PASSWORD` y el `FRAMEKIT_ADMIN_USERNAME` opcional inicializan el primer
-administrador activo. Si no se define `FRAMEKIT_ADMIN_USERNAME`, el valor predeterminado
-es `admin`. Las contraseñas se almacenan como hashes. La base de datos
+Con la autenticación activada, en la primera solicitud de inicio de sesión contra una base
+de datos vacía, `FRAMEKIT_ADMIN_PASSWORD` y el `FRAMEKIT_ADMIN_USERNAME` opcional
+inicializan el primer administrador activo. Si no se define `FRAMEKIT_ADMIN_USERNAME`, el
+valor predeterminado es `admin`. Las contraseñas se almacenan como hashes. La base de datos
 devuelve un DTO `StudioUser` seguro, no los secretos de contraseñas ni de tokens.
 
 ## Sesiones, tokens y autorización
@@ -64,7 +66,7 @@ flowchart LR
   roleCheck --> managementRoutes["Rutas de acceso autorizadas"]
 ```
 
-Las sesiones tienen una vigencia de 30 días. El cliente solo recibe el id, el nombre
+Las sesiones tienen una vigencia de 30 días cuando la autenticación está activada. El cliente solo recibe el id, el nombre
 de usuario y el rol. Se rechaza una sesión expirada o asociada a un usuario inactivo
 o eliminado.
 
@@ -75,16 +77,19 @@ revocado. Un usuario normal puede gestionar sus propios tokens, mientras que un
 administrador puede gestionar usuarios e inspeccionar los metadatos del token de otro
 usuario o revocarlo.
 
-Las secciones protegidas de Studio son `/editor`, `/brand` y `/settings`. La página
-de inicio de sesión se muestra cuando no existe una sesión válida; si ya existe una,
-redirige a `/editor`. Los detalles de las rutas de acceso se encuentran en
+Con la autenticación activada, las secciones protegidas de Studio son `/editor`, `/brand`
+y `/settings`. La página de inicio de sesión se muestra cuando no existe una sesión válida;
+si ya existe una, redirige a `/editor`. En modo abierto, `/editor` y `/brand` funcionan
+sin sesión, `/login` redirige a `/editor` y `/settings` no existe. Los detalles de las rutas
+de acceso se encuentran en
 la [referencia de la API de acceso](/es/users/reference/http-api/access)
 y en la [guía de la cuenta](/es/users/guides/manage-account-and-tokens).
 
 ## Renderizado de imágenes en el servidor
 
 El handler de imágenes autentica la solicitud antes de leer el cuerpo de la
-solicitud o cargar una plantilla. Después analiza la solicitud de renderizado, carga
+solicitud o cargar una plantilla cuando la autenticación está activada. En modo abierto
+omite las credenciales, pero conserva la validación y el aislamiento. Después analiza la solicitud de renderizado, carga
 la entrada correspondiente del registro, prepara los datos de campos y las
 entradas de imagen, resuelve los datos canónicos de la plantilla y llama a
 `renderTemplateImage`.

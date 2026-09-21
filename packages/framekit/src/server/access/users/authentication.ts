@@ -1,7 +1,7 @@
-import type { StudioUser } from '../../../studio/types'
+import type { StudioUser } from '@/types'
 
-import { getDatabase } from '../database'
-import { dummyPasswordHash, isValidPassword, verifyPassword } from '../passwords'
+import { getDatabase } from '@/server/access/database'
+import { dummyPasswordHash, isValidPassword, verifyPassword } from '@/server/access/passwords'
 import { readAuthenticationUser } from './repository'
 import { isValidUsername, toStudioUser } from './validation'
 

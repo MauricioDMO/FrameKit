@@ -1,4 +1,4 @@
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 export function BooleanField ({ field, value, onChange, error }: EditorFieldProps) {
   return (

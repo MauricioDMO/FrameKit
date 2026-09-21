@@ -1,3 +1,4 @@
+import { isAuthenticationEnabled } from '@/server/access/config'
 import { isSameOrigin } from './origin'
 import { errorResponse, responseForError } from './errors'
 import { account, login, logout, password, token, tokens, user, userPassword, userTokens, users } from './routes'
@@ -62,11 +63,14 @@ export function createStudioAccessHandler (): (request: Request) => Promise<Resp
 
     const matchedRoute = matchRoute(pathname)
     if (matchedRoute === undefined) return errorResponse('not_found', 404)
-    const { route, parameters } = matchedRoute
-    if (!route.methods.includes(request.method)) return errorResponse('method_not_allowed', 405, { Allow: route.methods.join(', ') })
-    if (request.method !== 'GET' && !isSameOrigin(request)) return errorResponse('forbidden', 403)
 
     try {
+      if (!isAuthenticationEnabled()) return errorResponse('not_found', 404)
+
+      const { route, parameters } = matchedRoute
+      if (!route.methods.includes(request.method)) return errorResponse('method_not_allowed', 405, { Allow: route.methods.join(', ') })
+      if (request.method !== 'GET' && !isSameOrigin(request)) return errorResponse('forbidden', 403)
+
       return await route.handle(request, parameters)
     } catch (error) {
       return responseForError(error)

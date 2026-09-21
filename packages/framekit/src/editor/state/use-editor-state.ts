@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import type { TemplateBase } from '../../types'
+import type { TemplateBase } from '@/types'
 import { getInitialState, loadPersistedState, rebaseState, resetVariant, selectVariant, storageKey, updateField } from './editor-state'
 
 export function useEditorState (slug: string, definition: TemplateBase) {

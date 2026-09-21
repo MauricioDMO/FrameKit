@@ -1,6 +1,6 @@
 ---
 title: Image render API
-description: Render a defined FrameKit template as a server-side PNG through the authenticated HTTP endpoint.
+description: Render a defined FrameKit template as a server-side PNG through the optional-authentication HTTP endpoint.
 sidebar:
   order: 3
 ---
@@ -11,9 +11,17 @@ sidebar:
 POST /api/framekit/images/render
 ```
 
-The route accepts either a same-origin `framekit_session` cookie or an API token in `Authorization: Bearer <token>`. It accepts no other authentication scheme. Before authentication, the handler validates the image-render configuration. It then authenticates the request before parsing the request body, looking up a template, fetching remote images, or reserving a browser slot.
+When `FRAMEKIT_AUTH_ENABLED` is missing or `false`, the route is credential-free.
+When it is `true`, the route accepts either a same-origin `framekit_session`
+cookie or an API token in `Authorization: Bearer <token>`. It accepts no other
+authentication scheme. In both modes, the handler validates the image-render
+configuration and retains its request, image, browser, capacity, timeout, and
+cleanup defenses before rendering.
 
-If an `Authorization` header is present, it takes precedence. A malformed or invalid Bearer value returns `401`; the handler does not fall back to a valid session cookie in that request.
+When authentication is enabled and an `Authorization` header is present, it
+takes precedence. A malformed or invalid Bearer value returns `401`; the
+handler does not fall back to a valid session cookie in that request. In open
+mode no credential is required.
 
 ## Request
 
@@ -66,10 +74,13 @@ The filename replaces `/` in a template slug with `-`. The response is always PN
 
 ## Example
 
-Create an API token in Studio, keep the full secret in a server-side environment variable, and replace `example` with a slug from your generated registry:
+For an authenticated deployment, create an API token in Studio, keep the full
+secret in a server-side environment variable, and replace `example` with a slug
+from your generated registry:
 
 ```bash
 export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_AUTH_ENABLED=true
 export FRAMEKIT_TOKEN='fk_replace_with_the_full_secret'
 
 curl --fail-with-body \
@@ -81,3 +92,7 @@ curl --fail-with-body \
 ```
 
 Do not put the token in the URL or send it from an untrusted browser. The [render images guide](/en/users/guides/render-images-with-the-api) adds a request workflow and failure handling.
+
+For open mode, leave `FRAMEKIT_AUTH_ENABLED` unset or set it to `false` and
+omit the `Authorization` header. The image endpoint remains protected by its
+renderer defenses even though it does not require credentials.

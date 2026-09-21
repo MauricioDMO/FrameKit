@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { FrameKitLocaleProvider, useFrameKitLocale } from '../locale-provider'
+import { FrameKitLocaleProvider, useFrameKitLocale } from '@/studio/i18n/locale-provider'
 
 afterEach(cleanup)
 

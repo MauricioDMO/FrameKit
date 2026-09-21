@@ -43,7 +43,7 @@ npx --no-install framekit check
 npx --no-install framekit build
 
 PORT=4317
-HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+FRAMEKIT_AUTH_ENABLED=true FRAMEKIT_ADMIN_PASSWORD=framekit-consumer-smoke-password FRAMEKIT_DATABASE_PATH=:memory: HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
 node --input-type=module - "$PORT" <<'NODE'
 const port = process.argv[2]
@@ -64,10 +64,12 @@ process.exit(1)
 NODE
 ```
 
-`framekit start` is a long-running command. Run it only after a successful
-build, keep it in the background with its PID and log captured, poll the
-consumer's `/login` route for readiness, and let the cleanup trap stop it and
-remove the temporary directory. The [create-framekit reference](/en/users/reference/cli/create-framekit)
+`framekit start` is a long-running command. This authenticated smoke explicitly
+sets `FRAMEKIT_AUTH_ENABLED=true` and a test bootstrap password. Run it only
+after a successful build, keep it in the background with its PID and log
+captured, poll the consumer's `/login` route for readiness, and let the cleanup
+trap stop it and remove the temporary directory. A readiness-only open-mode
+check should set `FRAMEKIT_AUTH_ENABLED=false` explicitly. The [create-framekit reference](/en/users/reference/cli/create-framekit)
 documents the supported `pnpm` and `npm` creator paths.
 
 For the reproducible package-artifact version of this flow, run the repository
@@ -122,7 +124,7 @@ Keep the canonical template and the generated consumer distinct:
 | --- | --- | --- |
 | Maintained template source | `packages/create-framekit/template/src/`, `next.config.ts`, `Dockerfile`, `.env.example`, and project config | Change these sources when the starter project changes. Rebuild and repack the creator package. |
 | Consumer-generated output | `src/generated/framekit/`, `public/framekit/`, `.framekit/`, `.framekit/next/`, `.next/`, `*.tsbuildinfo`, and `next-env.d.ts` | Disposable output. Regenerate or rebuild it; do not hand-edit it or add it to the creator archive. |
-| Consumer runtime data | `.framekit-data/` | Persistent SQLite storage when used. Preserve it across restarts and deployments; it is not a generated registry. |
+| Consumer runtime data | `.framekit-data/` | Persistent SQLite storage when auth is enabled and used. Preserve it across restarts and deployments; it is not a generated registry. Open mode does not initialize it. |
 
 The generated files reference explains the consumer output paths in more detail:
 [generated files](/en/users/reference/generated-files). The contributor workflow

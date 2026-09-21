@@ -1,6 +1,5 @@
 import { isIP } from 'node:net'
 
-import type { TemplateAssetManifest } from '../types'
 import { ImageRenderError } from './errors'
 
 export interface ImageRenderRequest {
@@ -14,15 +13,6 @@ export interface ImageRenderRuntimeConfig {
   allowedImageHosts: ReadonlySet<string>
   maxConcurrentRenders: number
   renderTimeoutMs: number
-}
-
-export interface ResolvedRenderPayload {
-  template: string
-  variant: string
-  data: Record<string, string | number | boolean>
-  assets: TemplateAssetManifest
-  width: number
-  height: number
 }
 
 const invalidConfigurationMessage = 'Image rendering API configuration is invalid'

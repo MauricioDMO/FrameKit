@@ -1,4 +1,4 @@
-import { writeTemplateModule } from '../../codegen/write-template-module'
+import { writeTemplateModule } from '@/tooling/codegen/write-template-module'
 
 export interface TemplateGenerator {
   generate(): Promise<void>

@@ -3,12 +3,13 @@
 import { IconMoon, IconSettings, IconSun } from '@tabler/icons-react'
 import Link from 'next/link'
 
-import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection } from '../types'
+import type { FrameKitLocale, FrameKitStudioMessages } from '@/studio/i18n/messages'
+import type { FrameKitStudioSection, StudioUser } from '@/studio/types'
 
 type SidebarMessages = FrameKitStudioMessages['sidebar']
 
 type FrameKitStudioSettingsProps = {
+  user?: StudioUser
   open: boolean
   section: FrameKitStudioSection
   locale: FrameKitLocale
@@ -16,7 +17,7 @@ type FrameKitStudioSettingsProps = {
   onLocaleChange: (locale: FrameKitLocale) => void
 }
 
-export function FrameKitStudioSettings ({ open, section, locale, messages, onLocaleChange }: FrameKitStudioSettingsProps) {
+export function FrameKitStudioSettings ({ user, open, section, locale, messages, onLocaleChange }: FrameKitStudioSettingsProps) {
   function toggleTheme () {
     const dark = !document.documentElement.classList.contains('dark')
     document.documentElement.classList.toggle('dark', dark)
@@ -38,14 +39,14 @@ export function FrameKitStudioSettings ({ open, section, locale, messages, onLoc
         <IconMoon size={16} className="hidden dark:block" />
         {messages.themeToggleLabel}
       </button>
-      <Link
+      {user && <Link
         href="/settings"
         aria-current={section === 'settings' ? 'page' : undefined}
         className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/20 px-3 text-sm font-bold transition focus:ring-2 focus:ring-fk-mint-200 focus:outline-none ${section === 'settings' ? 'bg-fk-mint-200 text-fk-forest-400' : 'bg-white/10 text-fk-mint-200 hover:bg-white/15'}`}
       >
         <IconSettings size={16} aria-hidden="true" />
         {messages.settingsLabel}
-      </Link>
+      </Link>}
     </div>
   )
 }

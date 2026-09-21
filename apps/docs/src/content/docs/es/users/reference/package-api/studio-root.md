@@ -1,6 +1,6 @@
 ---
 title: API del paquete raíz de Studio
-description: Añade el shell de documento del servidor y las fábricas de páginas autenticadas de Studio.
+description: Añade el shell de documento del servidor y las fábricas de páginas de Studio con autenticación opcional.
 sidebar:
   order: 7
 ---
@@ -8,7 +8,7 @@ sidebar:
 **Importación:** `@mauriciodmo/framekit/studio/root`  
 **Entorno:** solo servidor.
 
-Este punto de entrada exporta `FrameKitStudioRoot`, `createStudioPage` y `createLoginPage`. El componente raíz lee las cookies y las cabeceras de la solicitud, emite el shell completo del documento y proporciona el contexto de configuración regional de Studio. Las fábricas de páginas aplican el límite de sesión de Studio a las rutas generadas.
+Este punto de entrada exporta `FrameKitStudioRoot`, `createStudioPage` y `createLoginPage`. El componente raíz lee las cookies y las cabeceras de la solicitud, emite el shell completo del documento y proporciona el contexto de configuración regional de Studio. Las fábricas de páginas aplican el límite de sesión de Studio solo cuando `FRAMEKIT_AUTH_ENABLED=true`; el modo abierto deja disponibles `/editor` y `/brand` y oculta `/settings`.
 
 ## Ejemplo mínimo
 
@@ -22,7 +22,7 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
 }
 ```
 
-Usa `createStudioPage(StudioClient)` para `/editor`, `/brand` y `/settings`, y `createLoginPage()` para `/login`. El componente cliente que se pasa a `createStudioPage` recibe el valor seguro de `StudioUser`.
+Usa `createStudioPage(StudioClient)` para `/editor`, `/brand` y `/settings`, y `createLoginPage()` para `/login`. En el modo autenticado, el componente cliente que se pasa a `createStudioPage` recibe el valor seguro de `StudioUser`; en el modo abierto no recibe usuario para `/editor` y `/brand`.
 
 ## Restricciones del paquete y del entorno de ejecución
 

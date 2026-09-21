@@ -1,5 +1,7 @@
 # Fase 2 - Límites API y desarrollo
 
+- **Estado:** Completada.
+
 ## Objetivo
 
 Aplicar el modo opcional en las fronteras HTTP server-side sin debilitar las
@@ -63,6 +65,8 @@ Extender la cobertura más cercana:
   ni tocar bootstrap/SQLite y conserva el contrato autenticado con `true`;
 - tests de dev HTTP/asset authorization: upload same-origin sin sesión pasa con
   auth desactivada, cross-origin falla y el modo activado conserva la sesión.
+- configuración inválida: Image API responde `503 api_not_configured`, Access API
+  responde `500 internal_error` y upload dev responde `500` genérico.
 
 Los tests deben restaurar las variables modificadas para no depender del orden de
 ejecución.
@@ -78,6 +82,26 @@ ejecución.
 
 ## Exit gate
 
-La fase termina cuando el render funciona sin credenciales por defecto, la API de
-acceso está ausente sin inicializar persistencia, el upload dev conserva
-same-origin y toda la cobertura autenticada pasa con opt-in explícito.
+- [x] El render funciona sin credenciales por defecto y conserva sus defensas.
+- [x] La API de acceso está ausente sin inicializar persistencia.
+- [x] El upload dev conserva same-origin en modo abierto.
+- [x] La configuración inválida se traduce en errores seguros por frontera.
+- [x] La cobertura autenticada pasa con `FRAMEKIT_AUTH_ENABLED=true` explícito.
+
+Implementación:
+
+- `packages/framekit/src/server/image-handler/index.ts`;
+- `packages/framekit/src/server/access/http/index.ts`;
+- `packages/framekit/src/tooling/dev/create-dev-server/asset-authorization.ts`.
+
+Cobertura principal:
+
+- `packages/framekit/src/server/__tests__/image-handler.test.ts`;
+- `packages/framekit/src/server/__tests__/studio-image-handler.test.ts`;
+- `packages/framekit/src/server/__tests__/api-handler.test.ts`;
+- `packages/framekit/src/server/access/__tests__/http.test.ts`;
+- `packages/framekit/src/tooling/dev/__tests__/create-dev-server.test.ts`;
+- `apps/studio/src/__tests__/framekit/access-adapters.test.ts`.
+
+Verificación: `pnpm --filter @mauriciodmo/framekit test`, `pnpm --filter studio test`,
+`pnpm lint`, `pnpm typecheck` y `git diff --check`.

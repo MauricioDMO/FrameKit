@@ -1,4 +1,4 @@
-import type { TemplateDataValidationError } from '../../core/validation'
+import type { TemplateDataValidationError } from '@/core/validation'
 
 type ExportData = Record<string, string | number | boolean>
 

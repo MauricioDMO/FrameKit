@@ -5,11 +5,15 @@ sidebar:
   order: 7
 ---
 
-Usa esta guía cuando otro sistema del lado del servidor necesite un PNG de una plantilla. Para conocer los detalles del endpoint, consulta la [referencia de la API de renderizado de imágenes](/es/users/reference/http-api/image-render). Para un despliegue público, lee primero [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies).
+Usa esta guía cuando otro sistema del lado del servidor necesite un PNG de una plantilla. El endpoint de imágenes no requiere credenciales cuando `FRAMEKIT_AUTH_ENABLED` falta o es `false`; define `FRAMEKIT_AUTH_ENABLED=true` y usa un token cuando el despliegue necesite una API autenticada. Para conocer los detalles del endpoint, consulta la [referencia de la API de renderizado de imágenes](/es/users/reference/http-api/image-render). Para un despliegue público, lee primero [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies).
 
-## 1. Crear un token del lado del servidor
+## 1. Crear un token del lado del servidor cuando la autenticación está activada
 
-Inicia sesión en Studio, abre **Ajustes** y crea un token de API con un nombre descriptivo. El secreto completo `fk_` se muestra una sola vez. Guárdalo en el gestor de secretos o el entorno del servicio que realiza la llamada, no en un bundle del navegador, una URL, una plantilla ni un registro.
+Omite este paso en el modo abierto. Con `FRAMEKIT_AUTH_ENABLED=true`, inicia
+sesión en Studio, abre **Ajustes** y crea un token de API con un nombre
+descriptivo. El secreto completo `fk_` se muestra una sola vez. Guárdalo en el
+gestor de secretos o el entorno del servicio que realiza la llamada, no en un
+bundle del navegador, una URL, una plantilla ni un registro.
 
 El token funciona mientras no se revoque y su propietario esté activo. Cambiar una contraseña no revoca los tokens; revocar un token sí lo hace.
 
@@ -32,7 +36,8 @@ La ruta API generada del App Router debe usar `createFrameKitApiHandler(template
 
 ## 3. Enviar una solicitud de renderizado
 
-Reemplaza `example` por un slug del registro de plantillas generado. Envía el token en una cabecera `Authorization`:
+Reemplaza `example` por un slug del registro de plantillas generado. En un
+despliegue autenticado, envía el token en una cabecera `Authorization`:
 
 ```bash
 export FRAMEKIT_ORIGIN=https://framekit.example.com
@@ -45,6 +50,10 @@ curl --fail-with-body \
   --data '{"template":"example"}' \
   --output example.png
 ```
+
+En el modo abierto, omite la cabecera `Authorization` y no crees un token. El
+servidor sigue validando la solicitud, las entradas de imagen, la navegación del
+navegador, la capacidad, el tiempo de espera y la limpieza del renderizado.
 
 Para sobrescribir el contenido, incluye un `variant` y un objeto `data` que contenga únicamente claves de campos declaradas:
 

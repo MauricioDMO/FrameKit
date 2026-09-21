@@ -10,9 +10,12 @@
 pnpm dev
 ```
 
-Open `http://localhost:3000`, sign in, and choose a template in Studio. If
-dependencies were not installed when the project was created, run
-`pnpm install` first.
+Open `http://localhost:3000` and choose a template in Studio. The generated
+project starts in open mode: `/editor` and `/brand` need no login, and `/login`
+redirects to `/editor`. Set `FRAMEKIT_AUTH_ENABLED=true` to require users,
+sessions, and API tokens; only then use the bootstrap variables in `.env`.
+Before exposing the project to an untrusted network, explicitly enable auth.
+If dependencies were not installed when the project was created, run `pnpm install` first.
 
 ## Where to work
 
@@ -38,8 +41,11 @@ covers fields, variants, and assets.
 ## Production and automation
 
 The generated project includes a server-side PNG route at
-`POST /api/framekit/images/render`. See [render images with the API](https://framekit.mauriciodmo.com/en/users/guides/render-images-with-the-api)
-for tokens, requests, and runtime requirements.
+`POST /api/framekit/images/render`. In open mode it is credential-free and still
+keeps the renderer's request, image, browser, and cleanup defenses. With
+`FRAMEKIT_AUTH_ENABLED=true`, use an API token or same-origin Studio session.
+See [render images with the API](https://framekit.mauriciodmo.com/en/users/guides/render-images-with-the-api)
+for both modes, tokens, requests, and runtime requirements.
 
 For browser installation, persistence, environment variables, Docker, and
 reverse proxies, follow the [deployment documentation](https://framekit.mauriciodmo.com/en/users/deployment).

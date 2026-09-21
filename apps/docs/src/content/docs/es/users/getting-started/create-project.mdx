@@ -61,7 +61,13 @@ Usa el creador oficial cuando vayas a iniciar una aplicación nueva.
 
 3. **Abre Studio.**
 
-   Visita `http://localhost:3000`. La aplicación redirige a `/editor`. En el primer inicio de sesión contra una base de datos vacía, define `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` es opcional y usa `admin` de forma predeterminada.
+   Visita `http://localhost:3000`. Los proyectos nuevos usan el modo abierto de
+   forma predeterminada: la aplicación redirige a `/editor`, y `/editor` y
+   `/brand` funcionan sin iniciar sesión. `/login` redirige a `/editor`. Para
+   activar el inicio de sesión y el acceso protegido, define
+   `FRAMEKIT_AUTH_ENABLED=true`; solo en ese modo define
+   `FRAMEKIT_ADMIN_PASSWORD` antes del primer inicio de sesión.
+   `FRAMEKIT_ADMIN_USERNAME` es opcional y usa `admin` de forma predeterminada.
 
 4. **Crea tu primera plantilla.**
 
@@ -77,4 +83,11 @@ Consulta la [referencia de la CLI `create-framekit`](/es/users/reference/cli/cre
 
 :::tip
 Si el renderizado PNG indica que Chromium no está disponible, sigue la guía de instalación del navegador en [Despliegue](/es/users/deployment) o la [solución de problemas de renderizado](/es/users/troubleshooting/rendering).
+:::
+
+:::caution
+Antes de exponer un proyecto de producción a una red no confiable, define
+explícitamente `FRAMEKIT_AUTH_ENABLED=true`. Si está presente, el valor debe
+ser exactamente `true` o `false`; `NODE_ENV`, las credenciales y SQLite no
+activan la autenticación.
 :::

@@ -9,25 +9,35 @@ FrameKit Studio is the browser interface for browsing generated templates and br
 
 ## Access boundary
 
-`/login` is the public entry point. A successful login creates the `framekit_session` session used by Studio. The Studio sections require a valid session before the client is rendered:
+Studio has two access modes controlled only by `FRAMEKIT_AUTH_ENABLED`:
+
+- In open mode, when the variable is missing or `false`, `/editor` and `/brand`
+  render without a session, `/login` redirects to `/editor`, and `/settings`
+  returns not found. The access API is absent and image rendering is
+  credential-free.
+- When the variable is `true`, `/login` is the public entry point. A successful
+  login creates the `framekit_session` session used by Studio, and the Studio
+  sections require a valid session before the client is rendered:
 
 - `/editor` and `/editor/<template-slug>` for templates;
 - `/brand` and `/brand/<brand-slug>` for brand component previews; and
 - `/settings` for account and access settings.
 
-An unauthenticated request to a protected section redirects to `/login`. If a valid session visits `/login`, the login page redirects to `/editor`. An unknown section is a 404 rather than a Studio state.
+In authenticated mode, an unauthenticated request to a protected section
+redirects to `/login`, and a valid session visiting `/login` redirects to
+`/editor`. Any unknown section is a 404 rather than a Studio state.
 
 The generated project's root URL redirects to `/editor`. See [create a project](/en/users/getting-started/create-project) or [integrate an existing project](/en/users/getting-started/existing-project) for the route and root-layout setup.
 
 ## Navigation shell
 
-The shell surrounds all three authenticated sections. Its sidebar provides:
+The shell surrounds the available Studio sections. Its sidebar provides:
 
 - a Templates tab linking to `/editor`;
 - a Brand tab linking to `/brand`;
 - nested folders and links built from the generated manifests;
 - a collapse and expand control; and
-- an appearance menu for interface language, theme, and `/settings`.
+- an appearance menu for interface language, theme, and `/settings` when auth is enabled.
 
 Template and brand entries use their manifest segments as folders and are sorted by their visible title. The selected entry remains visible when its folders are collapsed. If a new source entry is not visible, regenerate the project before editing generated output. See [project structure](/en/users/getting-started/project-structure) for the generated files.
 
@@ -105,11 +115,11 @@ Custom zoom is bounded between 10% and 400%. The brand catalog has its own scrol
 
 Image uploads are enabled by the FrameKit development server for image fields. The upload control sends `POST /framekit/assets`, an endpoint exclusive to that server and available only while `pnpm framekit dev` is running or its generated-project equivalent `pnpm dev` is running. It is not available from an arbitrary `pnpm dev` or `next dev` command that does not run FrameKit. The upload control is not rendered by the editor in production. Select a PNG, JPEG, WebP, or GIF file from an image field.
 
-The field scope determines the destination: a `variant` field uses the selected variant directory, while a `common` field uses `assets/common`. The development server validates the image, accepts files up to 8 MB, replaces the matching field asset, regenerates the manifest, and reloads Studio. A valid same-origin Studio session is required. See [use image assets](/en/users/guides/use-image-assets) for the source layout and scope rules.
+The field scope determines the destination: a `variant` field uses the selected variant directory, while a `common` field uses `assets/common`. The development server validates the image, accepts files up to 8 MB, replaces the matching field asset, regenerates the manifest, and reloads Studio. Uploads require a same-origin request; open mode needs no session, while authenticated mode requires a valid same-origin Studio session. See [use image assets](/en/users/guides/use-image-assets) for the source layout and scope rules.
 
 ## Server-backed PNG output
 
-The browser preview is local. Download PNG and Copy PNG are server-backed and use `POST /api/framekit/images/render`; the authenticated server renderer resolves the definition and assets, validates the data, and returns a PNG rather than using the browser preview as the export source.
+The browser preview is local. Download PNG and Copy PNG are server-backed and use `POST /api/framekit/images/render`; in open mode the request is credential-free, while authenticated mode uses the same-origin session. In either mode, the server renderer resolves the definition and assets, validates the data, and returns a PNG rather than using the browser preview as the export source.
 
 Download saves the returned image as a PNG file. Copy writes the returned `image/png` data to the browser clipboard and requires image clipboard support. If validation fails, Studio marks the affected fields and focuses the first one; if rendering or clipboard support fails, it shows the localized export error state.
 

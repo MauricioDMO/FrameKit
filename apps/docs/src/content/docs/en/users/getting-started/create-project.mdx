@@ -61,7 +61,12 @@ Use the official creator when you are starting a new application.
 
 3. **Open Studio.**
 
-   Visit `http://localhost:3000`. The application redirects to `/editor`. On the first login against an empty database, set `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`.
+   Visit `http://localhost:3000`. New projects use open mode by default: the
+   application redirects to `/editor`, and `/editor` and `/brand` work without
+   login. `/login` redirects to `/editor`. To enable login and protected access,
+   set `FRAMEKIT_AUTH_ENABLED=true`; only in that mode set
+   `FRAMEKIT_ADMIN_PASSWORD` before the first login. `FRAMEKIT_ADMIN_USERNAME`
+   is optional and defaults to `admin`.
 
 4. **Create your first template.**
 
@@ -77,4 +82,10 @@ See the [`create-framekit` CLI reference](/en/users/reference/cli/create-frameki
 
 :::tip
 If PNG rendering reports that Chromium is unavailable, follow the browser installation guidance in [Deployment](/en/users/deployment) or [rendering troubleshooting](/en/users/troubleshooting/rendering).
+:::
+
+:::caution
+Before exposing a production project to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`. The value must be exactly `true` or `false` when
+present; `NODE_ENV`, credentials, and SQLite do not enable authentication.
 :::

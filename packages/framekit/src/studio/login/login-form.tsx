@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import { useFrameKitLocale } from '../i18n/locale-provider'
-import { FrameKitLogo } from '../shell/framekit-logo'
+import { useFrameKitLocale } from '@/studio/i18n/locale-provider'
+import { FrameKitLogo } from '@/studio/shell/framekit-logo'
 
 type LoginStatus = 'idle' | 'pending' | 'invalid' | 'error'
 

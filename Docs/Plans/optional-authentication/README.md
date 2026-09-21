@@ -1,6 +1,6 @@
 # Optional Authentication and FrameKit 1.0
 
-- **Estado:** Planificado; ninguna fase implementada por completo.
+- **Estado:** En progreso; Fases 1-3 completadas y fase 4 pendiente.
 - **Release objetivo:** `@mauriciodmo/framekit@1.0.0` y
   `@mauriciodmo/create-framekit@1.0.0`.
 - **Runtime objetivo:** Un proceso Node de larga duración por aplicación.
@@ -100,9 +100,9 @@ Excluido:
 
 | Fase | Plan | Resultado | Depende de |
 |---:|---|---|---|
-| 1 | [Contrato de configuración](./01-runtime-configuration.md) | Parser estricto y default desactivado | Baseline actual |
-| 2 | [Límites API y desarrollo](./02-api-and-development-boundaries.md) | Renderer abierto, access API ausente y upload dev protegido | Fase 1 |
-| 3 | [Studio y codegen](./03-studio-and-codegen.md) | Studio sin login, Ajustes ausentes y usuario opcional | Fases 1-2 |
+| 1 | [Contrato de configuración](./01-runtime-configuration.md) | Completada: parser estricto y default desactivado | Baseline actual |
+| 2 | [Límites API y desarrollo](./02-api-and-development-boundaries.md) | Completada: renderer abierto, access API ausente y upload dev protegido | Fase 1 |
+| 3 | [Studio y codegen](./03-studio-and-codegen.md) | Completada: Studio sin login, Ajustes ausentes y usuario opcional | Fases 1-2 |
 | 4 | [Verificación, arquitectura y release 1.0](./04-v1-verification-and-release.md) | Gates finales, publicación y promoción | Fases 1-3 |
 
 ```text

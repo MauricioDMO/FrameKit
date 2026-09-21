@@ -5,11 +5,17 @@ sidebar:
   order: 7
 ---
 
-Use this guide when another server-side system needs a PNG from a template. For endpoint details, see the [image render API reference](/en/users/reference/http-api/image-render). For public deployment, read [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) first.
+Use this guide when another server-side system needs a PNG from a template. The
+image endpoint is credential-free when `FRAMEKIT_AUTH_ENABLED` is missing or
+`false`; set `FRAMEKIT_AUTH_ENABLED=true` and use a token when the deployment
+needs authenticated API access. For endpoint details, see the [image render API reference](/en/users/reference/http-api/image-render). For public deployment, read [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies) first.
 
-## 1. Create a server-side token
+## 1. Create a server-side token when auth is enabled
 
-Sign in to Studio, open **Settings**, and create an API token with a descriptive name. The full `fk_` secret is shown only once. Store it in the calling service's secret manager or environment, not in a browser bundle, URL, template, or log.
+Skip this step in open mode. When `FRAMEKIT_AUTH_ENABLED=true`, sign in to
+Studio, open **Settings**, and create an API token with a descriptive name. The
+full `fk_` secret is shown only once. Store it in the calling service's secret
+manager or environment, not in a browser bundle, URL, template, or log.
 
 The token works while it is not revoked and its owner is active. Changing a password does not revoke tokens; revoking a token does.
 
@@ -32,7 +38,8 @@ The generated App Router API route must use `createFrameKitApiHandler(templates)
 
 ## 3. Submit a render request
 
-Replace `example` with a slug from the generated template registry. Send the token in an `Authorization` header:
+Replace `example` with a slug from the generated template registry. For an
+authenticated deployment, send the token in an `Authorization` header:
 
 ```bash
 export FRAMEKIT_ORIGIN=https://framekit.example.com
@@ -45,6 +52,10 @@ curl --fail-with-body \
   --data '{"template":"example"}' \
   --output example.png
 ```
+
+For open mode, omit the `Authorization` header and do not create a token. The
+server still validates the request, image inputs, browser navigation, render
+capacity, timeout, and cleanup defenses.
 
 To override content, include a `variant` and a `data` object containing only declared field keys:
 

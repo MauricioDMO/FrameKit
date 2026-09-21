@@ -1,4 +1,4 @@
-import { isPlainObject } from '../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 const VARIANT_KEYS = new Set(['default', 'labels'])
 

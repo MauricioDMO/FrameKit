@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import type { FrameKitLocale } from '../i18n/messages'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
 import { requestStudioJson } from './api'
 import { ConfirmationDialog } from './confirmation-dialog'
 import { Feedback, SettingsCard } from './settings-components'

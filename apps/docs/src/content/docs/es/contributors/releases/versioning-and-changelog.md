@@ -37,6 +37,11 @@ paquete core exacto para realizar pruebas aisladas. Por lo tanto, no validan
 por sí mismos la declaración de la plantilla; verifica el manifiesto de la plantilla
 antes de publicar el paquete del creador.
 
+Cuando los smokes de release ejerciten usuarios, sesiones o tokens de API,
+establece explícitamente `FRAMEKIT_AUTH_ENABLED=true` y una contraseña de
+bootstrap de prueba. No infieras cobertura autenticada desde el modo abierto
+predeterminado.
+
 No selecciones ni documentes una versión futura por adelantado. Durante la
 preparación de una publicación, actualiza únicamente el manifiesto del paquete
 seleccionado y, después, ejecuta las [comprobaciones de publicación](/es/contributors/releases/publishing) desde la raíz del repositorio.
@@ -72,4 +77,4 @@ Antes de publicar:
 2. Revisa las entradas correspondientes de `Unreleased` en `CHANGELOG.md`.
 3. Actualiza únicamente la versión del manifiesto del paquete público seleccionado.
 4. Si la plantilla del creador necesita una nueva API del core, prepara primero el paquete core, establece la dependencia exacta de `@mauriciodmo/framekit` en `packages/create-framekit/template/package.json` en esa versión publicada del core y hazlo antes de publicar el paquete del creador.
-5. Ejecuta `pnpm check:runtime` y, después, sigue la secuencia de compilación, empaquetado y smoke de la [guía de publicación](/es/contributors/releases/publishing).
+5. Ejecuta `pnpm check:runtime` y, después, sigue la secuencia de compilación, empaquetado y smoke de la [guía de publicación](/es/contributors/releases/publishing). La publicación final en npm y la promoción del dist-tag son gates externos separados.

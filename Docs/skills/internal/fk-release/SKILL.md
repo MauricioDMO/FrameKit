@@ -30,7 +30,7 @@ copies directly.
    pnpm --filter @mauriciodmo/create-framekit pack
    ```
 
-3. Run the manual smoke test outside this repository. Follow [Tarball Smoke Test](references/tarball-smoke-test.md).
+3. Run the manual smoke test outside this repository. Follow [Tarball Smoke Test](references/tarball-smoke-test.md). Exercise both explicit modes: `FRAMEKIT_AUTH_ENABLED=false` for the open baseline and `FRAMEKIT_AUTH_ENABLED=true` with a temporary bootstrap password for authenticated startup, token creation, and image rendering.
 
 4. Report commands, tarball paths, results, and generated artifacts. Report the Chromium E2E and manual tarball smoke separately; do not claim visual, broad cross-platform, watcher, or asset-copy coverage from the automated suite.
 
@@ -44,14 +44,18 @@ exact, release-time `CORE_SPEC` and `CREATOR_SPEC` values plus
 encode a version or tag here. The check must run outside the repository and
 install from npm, verify the package export targets and both binaries, record
 the creator template's FrameKit version/range, scaffold with `-n`, install the
-exact core package, run `generate`, `check`, `build`, and `start`, poll
-`/login` over HTTP, and clean up.
+exact core package, run `generate`, `check`, and `build`, then start one server
+with `FRAMEKIT_AUTH_ENABLED=false` for the open baseline and another with
+`FRAMEKIT_AUTH_ENABLED=true` plus a temporary bootstrap password. Poll `/login`
+over HTTP in both modes; in authenticated mode log in, create a token, render a
+PNG with the token, and clean up.
 
 Also run `pnpm smoke:docker -- <exact-published-framekit-version>` from the
 repository root. It must build and start the canonical generated image as
-non-root Node under `tini`, reject missing authentication, and return a valid
-PNG using the packaged local asset. It intentionally does not duplicate remote
-image and lifecycle cases covered by Vitest.
+non-root Node under `tini`, verify an explicit open-mode container, then verify
+an authenticated container that rejects missing authentication and returns a
+valid PNG using the packaged local asset. It intentionally does not duplicate
+remote image and lifecycle cases covered by Vitest.
 
 Check the intended dist-tag independently of the consumer smoke. Record the
 inputs, resolved versions, runtime, commands, logs, and PASS/FAIL result. A

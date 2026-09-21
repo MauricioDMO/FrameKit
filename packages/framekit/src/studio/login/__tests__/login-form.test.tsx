@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
-import { FrameKitLoginForm } from '../login-form'
+import { FrameKitLoginForm } from '@/studio/login/login-form'
 
 const router = vi.hoisted(() => ({ replace: vi.fn() }))
 

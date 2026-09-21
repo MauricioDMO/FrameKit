@@ -5,8 +5,8 @@ import Link from 'next/link'
 
 import { FrameKitNavigationTree } from '@/editor/navigation/framekit-navigation'
 import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
-import type { FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection } from '../types'
+import type { FrameKitStudioMessages } from '@/studio/i18n/messages'
+import type { FrameKitStudioSection } from '@/studio/types'
 
 type SidebarMessages = FrameKitStudioMessages['sidebar']
 

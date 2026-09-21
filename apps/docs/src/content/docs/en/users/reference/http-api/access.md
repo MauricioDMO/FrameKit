@@ -5,9 +5,17 @@ sidebar:
   order: 2
 ---
 
-The access API uses the `framekit_session` cookie. Login creates the cookie; logout, password changes, deactivation, and deletion can expire it. The cookie is `HttpOnly`, `SameSite=Lax`, scoped to `/`, and lasts 30 days. In production it also has `Secure`.
+The access API exists only when `FRAMEKIT_AUTH_ENABLED=true`. In open mode, all
+access routes return not found before reading the request body, checking origin,
+or opening SQLite. When enabled, the API uses the `framekit_session` cookie.
+Login creates the cookie; logout, password changes, deactivation, and deletion
+can expire it. The cookie is `HttpOnly`, `SameSite=Lax`, scoped to `/`, and lasts
+30 days. In production it also has `Secure`.
 
-All access request bodies are JSON objects no larger than 64 KiB. Use `Content-Type: application/json`; only the identity content encoding is accepted. Request objects use exact keys for each operation. Access routes do not accept Bearer tokens.
+In authenticated mode, all access request bodies are JSON objects no larger than
+64 KiB. Use `Content-Type: application/json`; only the identity content encoding
+is accepted. Request objects use exact keys for each operation. Access routes do
+not accept Bearer tokens.
 
 ## Authentication and authorization
 
@@ -55,7 +63,7 @@ The request body is read before the credentials can be authenticated. On success
 }
 ```
 
-The response also sets `framekit_session`. Invalid, unknown, or inactive credentials return `401` without identifying which case occurred. On an empty database, the login handler runs `bootstrapUsers` before authenticating the submitted credentials; bootstrap is therefore not conditional on a successful credential check. It uses `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD`; see [Manage your account and tokens](/en/users/guides/manage-account-and-tokens).
+The response also sets `framekit_session`. Invalid, unknown, or inactive credentials return `401` without identifying which case occurred. On an empty database, the login handler runs `bootstrapUsers` before authenticating the submitted credentials; bootstrap is therefore not conditional on a successful credential check. It uses `FRAMEKIT_ADMIN_USERNAME` and `FRAMEKIT_ADMIN_PASSWORD` only when authentication is enabled; see [Manage your account and tokens](/en/users/guides/manage-account-and-tokens).
 
 ### `POST /api/framekit/logout`
 

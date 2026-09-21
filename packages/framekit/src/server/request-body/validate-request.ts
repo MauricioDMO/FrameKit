@@ -1,4 +1,4 @@
-import { ImageRenderError } from '../errors'
+import { ImageRenderError } from '@/server/errors'
 
 export const maxRequestBytes = 12_000_000
 

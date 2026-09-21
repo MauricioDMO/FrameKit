@@ -1,6 +1,6 @@
 ---
 title: API de renderizado de imágenes
-description: Renderiza una plantilla definida de FrameKit como un PNG del lado del servidor mediante el endpoint HTTP autenticado.
+description: Renderiza una plantilla definida de FrameKit como un PNG del lado del servidor mediante el endpoint HTTP con autenticación opcional.
 sidebar:
   order: 3
 ---
@@ -11,9 +11,17 @@ sidebar:
 POST /api/framekit/images/render
 ```
 
-La ruta acepta una cookie `framekit_session` del mismo origen o un token de API en `Authorization: Bearer <token>`. No acepta ningún otro esquema de autenticación. Antes de la autenticación, el controlador valida la configuración de renderizado de imágenes. Después autentica la solicitud antes de analizar el cuerpo de la solicitud, buscar una plantilla, obtener imágenes remotas o reservar un espacio del navegador.
+Cuando `FRAMEKIT_AUTH_ENABLED` falta o es `false`, la ruta no requiere
+credenciales. Cuando es `true`, acepta una cookie `framekit_session` del mismo
+origen o un token de API en `Authorization: Bearer <token>`. No acepta ningún
+otro esquema de autenticación. En ambos modos, el controlador valida la
+configuración y conserva sus defensas de solicitud, imágenes, navegador,
+capacidad, tiempo de espera y limpieza antes de renderizar.
 
-Si hay un encabezado `Authorization`, este tiene prioridad. Un valor Bearer mal formado o no válido devuelve `401`; el controlador no recurre a una cookie de sesión válida en esa solicitud.
+Cuando la autenticación está activada y hay un encabezado `Authorization`, este
+tiene prioridad. Un valor Bearer mal formado o no válido devuelve `401`; el
+controlador no recurre a una cookie de sesión válida en esa solicitud. En el
+modo abierto no se requiere ninguna credencial.
 
 ## Solicitud
 
@@ -67,10 +75,13 @@ El nombre de archivo sustituye `/` en un slug de plantilla por `-`. La respuesta
 
 ## Ejemplo
 
-Crea un token de API en Studio, conserva el secreto completo en una variable de entorno del servidor y sustituye `example` por un slug de tu registro generado:
+En un despliegue autenticado, crea un token de API en Studio, conserva el
+secreto completo en una variable de entorno del servidor y sustituye `example`
+por un slug de tu registro generado:
 
 ```bash
 export FRAMEKIT_ORIGIN=http://localhost:3000
+export FRAMEKIT_AUTH_ENABLED=true
 export FRAMEKIT_TOKEN='fk_replace_with_the_full_secret'
 
 curl --fail-with-body \
@@ -82,3 +93,7 @@ curl --fail-with-body \
 ```
 
 No pongas el token en la URL ni lo envíes desde un navegador no confiable. La [guía de renderizado de imágenes](/es/users/guides/render-images-with-the-api) añade un flujo de solicitud y gestión de errores.
+
+En el modo abierto, deja `FRAMEKIT_AUTH_ENABLED` sin definir o establécelo en
+`false` y omite la cabecera `Authorization`. El endpoint conserva sus defensas
+de renderizado aunque no requiera credenciales.

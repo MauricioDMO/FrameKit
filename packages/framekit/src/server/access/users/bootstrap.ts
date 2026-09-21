@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 
-import type { StudioUser } from '../../../studio/types'
+import type { StudioUser } from '@/types'
 
-import { getDatabase } from '../database'
-import { hashPassword, isValidPassword } from '../passwords'
+import { getDatabase } from '@/server/access/database'
+import { hashPassword, isValidPassword } from '@/server/access/passwords'
 import { UserDomainError } from './errors'
 import { countUsers, withImmediateTransaction } from './repository'
 import { isValidUsername } from './validation'

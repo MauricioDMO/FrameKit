@@ -1,6 +1,6 @@
 ---
 title: Studio and Editor architecture
-description: Follow the boundary between the server-protected Studio route, client Studio, Editor state, local preview, and server-backed PNG export.
+description: Follow the boundary between the optional-auth Studio route, client Studio, Editor state, local preview, and server-backed PNG export.
 ---
 
 # Studio and Editor architecture
@@ -14,18 +14,23 @@ to generated client bindings.
 
 The catch-all Studio page imports `createStudioPage` from the public
 `@mauriciodmo/framekit/studio/root` entrypoint and passes it the generated
-`StudioClient`. The server factory:
+`StudioClient`. The single auth switch is `FRAMEKIT_AUTH_ENABLED`. When it is
+missing or `false`, the server factory:
 
 - accepts only the `editor`, `brand`, and `settings` sections;
-- reads the `framekit_session` cookie and resolves it through the server access
-  layer; and
-- redirects an unresolved session to `/login`, otherwise passing only
-  `StudioUser { id, username, role }` to the client.
+- renders `editor` and `brand` without a session;
+- redirects `/login` to `/editor`; and
+- returns `/settings` as not found. It does not initialize the access database.
+
+When it is `true`, the factory reads the `framekit_session` cookie and resolves
+it through the server access layer, redirects an unresolved session to `/login`,
+and passes only `StudioUser { id, username, role }` to the client.
 
 `FrameKitStudio` then derives the section from the pathname. It builds template
 navigation from the generated template registry, brand navigation from the
-generated brand registry, and settings from the authenticated user. Selected
-templates and brand previews are loaded through their registry loaders.
+generated brand registry, and settings from the authenticated user when that
+route exists. Selected templates and brand previews are loaded through their
+registry loaders.
 
 ## Editor responsibilities
 
@@ -59,14 +64,14 @@ sequenceDiagram
   actor User
   participant Editor as Editor in browser
   participant API as FrameKit API
-  participant Access as Session or token authorization
+  participant Access as Optional session or token authorization
   participant Chromium as Headless Chromium
   participant RenderPage as Private render page
 
   User->>Editor: Select download or copy PNG
   Editor->>API: POST template, variant, and data
-  API->>Access: Authenticate same-origin session or Bearer token
-  Access-->>API: Authorized request
+  API->>Access: Authenticate when auth is enabled
+  Access-->>API: Authorized request or open-mode pass
   API->>Chromium: Create render job and open private URL
   Chromium->>RenderPage: GET with short-lived internal render token
   RenderPage-->>Chromium: Rendered template canvas

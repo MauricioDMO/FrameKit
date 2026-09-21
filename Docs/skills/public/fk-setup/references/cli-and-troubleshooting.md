@@ -14,6 +14,12 @@ read-only and does not regenerate. `check` does not call `render` or test PNG
 export. `dev` uses `FRAMEKIT_HOST`, then `HOST`, then `localhost`; `PORT`
 defaults to `3000` and must be 1-65535.
 
+Authentication is optional and is not configured by the CLI. Missing or
+`FRAMEKIT_AUTH_ENABLED=false` is open mode; `true` enables users, sessions, API
+tokens, and protected Studio/access routes. Set it explicitly before exposing
+production to an untrusted network. Invalid values fail rather than falling
+back to `NODE_ENV`, credentials, or SQLite.
+
 The watcher observes every file and directory under `src/templates`. Additions,
 edits, and deletions there trigger regeneration; only one generation runs at a
 time. It also regenerates when paths under `src/brand` change.

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
-import { validateNumberValue } from '../../../core/validation/data'
+import { validateNumberValue } from '@/core/validation/data'
 import { controlClass } from './shared'
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 function decimalPlaces (value: number): number {
   const [coefficient, exponentText] = value.toString().toLowerCase().split('e')

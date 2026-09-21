@@ -40,7 +40,12 @@ Elige la ruta que corresponda a tu proyecto.
 </Steps>
 
 :::caution
-No edites manualmente `src/generated/framekit/`, `public/framekit/` ni `.framekit/`. Son salidas generadas. Mantén `.framekit-data/` en almacenamiento persistente si usas la base de datos SQLite predeterminada.
+No edites manualmente `src/generated/framekit/`, `public/framekit/` ni `.framekit/`. Son salidas generadas. Mantén `.framekit-data/` en almacenamiento persistente solo cuando la autenticación esté activada y se use la base de datos SQLite predeterminada.
 :::
+
+La autenticación está desactivada de forma predeterminada. Define
+`FRAMEKIT_AUTH_ENABLED=true` explícitamente antes de exponer producción a una
+red no confiable; el modo abierto no inicializa SQLite ni crea un administrador
+anónimo.
 
 Después de configurar el proyecto, revisa [la estructura del proyecto](/es/users/getting-started/project-structure) y crea [tu primera plantilla](/es/users/getting-started/first-template).

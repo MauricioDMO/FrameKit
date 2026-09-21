@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { frameKitMessages } from '@/studio/i18n/messages'
-import { FrameKitStudioSettings } from '../sidebar-settings'
+import { FrameKitStudioSettings } from '@/studio/shell/sidebar-settings'
 
 afterEach(cleanup)
 beforeEach(() => {
@@ -29,6 +29,14 @@ describe('FrameKitStudioSettings', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Idioma de la interfaz' }), { target: { value: 'en' } })
 
     expect(onLocaleChange).toHaveBeenCalledExactlyOnceWith('en')
+  })
+
+  it('hides the settings link without a user but keeps appearance controls', () => {
+    render(<FrameKitStudioSettings open section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
+
+    expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Cambiar tema' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Ajustes' })).toBeNull()
   })
 
   it('toggles the document theme and persists it in a cookie', () => {

@@ -109,7 +109,9 @@ exactamente lo que se empaquetó antes de publicar. La verificación del registr
 instala especificaciones exactas de paquetes desde npm después de publicar,
 comprueba sus versiones resueltas y los dist-tags previstos, resuelve las
 exportaciones públicas, crea un consumidor aislado y ejecuta la secuencia de
-generación, comprobación, compilación e inicio. Registra `CORE_SPEC`,
+generación, comprobación, compilación e inicio en modos abierto y autenticado,
+incluido el inicio de sesión autenticado, la creación de un token y el
+renderizado PNG. Registra `CORE_SPEC`,
 `CREATOR_SPEC`, `EXPECTED_FRAMEKIT_DIST_TAG`, `EXPECTED_CREATE_FRAMEKIT_DIST_TAG`,
 las versiones resueltas, las versiones del runtime, la marca de tiempo y PASS o
 FAIL. Usa especificaciones exactas del registro, no rangos; una carga correcta
@@ -128,8 +130,9 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 ```
 
 Compila el consumidor canónico en una imagen de Docker a partir de la versión
-exacta de FrameKit publicada, inicia la imagen, comprueba la autenticación y la
-representación PNG, y comprueba la persistencia al reemplazar el contenedor. No
+exacta de FrameKit publicada, inicia contenedores explícitos en modo abierto y
+autenticado, comprueba la autenticación y la representación PNG, y comprueba la
+persistencia al reemplazar el contenedor. No
 sustituye la prueba smoke local del tarball, las pruebas unitarias, las
 comprobaciones de tipos ni las pruebas E2E del navegador. Compara las
 verificaciones en [E2E y pruebas smoke](/es/contributors/testing/e2e-and-smoke).

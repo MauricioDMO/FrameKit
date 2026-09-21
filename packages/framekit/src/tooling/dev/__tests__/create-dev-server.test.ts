@@ -92,6 +92,7 @@ class MockHttpServer extends EventEmitter {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
   mocks.next.mockReturnValue(mocks.app)
   mocks.app.prepare.mockResolvedValue(undefined)
   mocks.app.getRequestHandler.mockReturnValue(() => undefined)
@@ -107,6 +108,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
 })
 
 function deferred (): { promise: Promise<void>; resolve: () => void } {
@@ -169,6 +171,7 @@ describe('createDevServer', () => {
     { name: 'malformed cookie', headers: { ...localHeaders, cookie: 'framekit_session=malformed' }, status: 401, error: 'Unauthorized' },
     { name: 'malformed duplicate cookie', headers: { ...localHeaders, cookie: `${localHeaders.cookie}; framekit_session` }, status: 401, error: 'Unauthorized' },
     { name: 'bearer-only credentials', headers: { host: localHeaders.host, origin: localHeaders.origin, authorization: `Bearer ${sessionSecret}` }, status: 401, error: 'Unauthorized' },
+    { name: 'cross-origin request without a cookie', headers: { host: localHeaders.host, origin: 'http://other.test:40000' }, status: 401, error: 'Unauthorized' },
     { name: 'missing Origin', headers: { host: localHeaders.host, cookie: localHeaders.cookie }, status: 403, error: 'Forbidden' },
     { name: 'null Origin', headers: { ...localHeaders, origin: 'null' }, status: 403, error: 'Forbidden' },
     { name: 'malformed Origin', headers: { ...localHeaders, origin: 'not a URL' }, status: 403, error: 'Forbidden' },
@@ -200,6 +203,65 @@ describe('createDevServer', () => {
       expect(response.body).toBeUndefined()
       expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret)
       expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('allows a same-origin asset upload without authentication when disabled', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), {
+        host: localHeaders.host,
+        origin: localHeaders.origin
+      })
+
+      expect(response.body).toBeUndefined()
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('rejects cross-origin asset uploads without authentication', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    mocks.getSession.mockReturnValue({ id: 'user-1', username: 'Alice', role: 'user' })
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), {
+        ...localHeaders,
+        origin: 'http://other.test:40000',
+        cookie: localHeaders.cookie
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(response.body).toBe(JSON.stringify({ error: 'Forbidden' }))
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).not.toHaveBeenCalled()
+    } finally {
+      await server.close()
+    }
+  })
+
+  it('returns a generic error for invalid authentication configuration', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'invalid')
+    const server = await createDevServer(options)
+
+    try {
+      const { response } = sendRequest(getHttpServer(), localHeaders)
+
+      expect(response.statusCode).toBe(500)
+      expect(response.body).toBe(JSON.stringify({ error: 'Internal server error' }))
+      expect(response.body).not.toContain('FRAMEKIT_AUTH_ENABLED')
+      expect(mocks.isValidSessionSecret).not.toHaveBeenCalled()
+      expect(mocks.getSession).not.toHaveBeenCalled()
+      expect(mocks.handleAssetUpload).not.toHaveBeenCalled()
     } finally {
       await server.close()
     }

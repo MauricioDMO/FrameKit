@@ -7,11 +7,16 @@ sidebar:
 
 Use [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for personal account and token workflows, and [Manage users](/en/users/guides/manage-users) for administrator workflows.
 
+Check `FRAMEKIT_AUTH_ENABLED` first. Missing or `false` is open mode: `/editor`
+and `/brand` should work without login, `/login` should redirect to `/editor`,
+and `/settings` plus the access API should return not found. Set exactly
+`FRAMEKIT_AUTH_ENABLED=true` before diagnosing users, sessions, or tokens.
+
 ## Login redirects back to the login page
 
-**Symptom:** Opening `/editor`, `/brand`, or `/settings` redirects to `/login`, or the login form reports invalid credentials.
+**Symptom:** With `FRAMEKIT_AUTH_ENABLED=true`, opening `/editor`, `/brand`, or `/settings` redirects to `/login`, or the login form reports invalid credentials.
 
-**Probable cause:** The session cookie is missing, expired, invalid, or belongs to an inactive user; the submitted username or password may also be incorrect.
+**Probable cause:** Authentication is enabled and the session cookie is missing, expired, invalid, or belongs to an inactive user; the submitted username or password may also be incorrect. If the switch is missing or `false`, the redirect is unexpected because open mode does not require login.
 
 **Check:** Sign in again with the current credentials and confirm that the server can read the configured database. Unknown, malformed, incorrect, and inactive credentials intentionally produce the same unauthenticated result.
 
@@ -19,13 +24,19 @@ Use [Manage your account and tokens](/en/users/guides/manage-account-and-tokens)
 
 ## First login fails on a new database
 
-**Symptom:** The first login returns a service-unavailable error on an empty database.
+**Symptom:** With `FRAMEKIT_AUTH_ENABLED=true`, the first login returns a service-unavailable error on an empty database.
 
 **Probable cause:** `FRAMEKIT_ADMIN_PASSWORD` is missing or invalid, or `FRAMEKIT_ADMIN_USERNAME` does not satisfy the account rules.
 
-**Check:** Confirm the runtime values before retrying. The password must be 12–256 UTF-8 bytes; the optional username defaults to `admin` and must be 3–64 ASCII letters, numbers, `.`, `_`, or `-`.
+**Check:** Confirm the auth switch and runtime values before retrying. The
+password must be 12–256 UTF-8 bytes; the optional username defaults to `admin`
+and must be 3–64 ASCII letters, numbers, `.`, `_`, or `-`. These variables are
+ignored when auth is disabled.
 
 **Fix:** Set valid values in the runtime environment and retry the first login. These values create the first administrator only; changing them later does not replace an existing user. See [Configuration](/en/users/reference/configuration).
+
+Switching auth back to `false` does not delete stored users, sessions, or tokens;
+it only makes the access surfaces unavailable until auth is enabled again.
 
 ## A session stops working after an account change
 

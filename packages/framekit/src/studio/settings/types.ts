@@ -1,5 +1,5 @@
-import type { StudioUser } from '../types'
-import type { FrameKitStudioMessages } from '../i18n/messages'
+import type { StudioUser } from '@/studio/types'
+import type { FrameKitStudioMessages } from '@/studio/i18n/messages'
 
 export type SettingsMessages = FrameKitStudioMessages['settings']
 export type FeedbackTone = 'error' | 'success'

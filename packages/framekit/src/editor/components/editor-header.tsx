@@ -2,7 +2,7 @@ import { IconCopy, IconDownload, IconInfoCircle } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 
-import type { EditorMessages } from '../types'
+import type { EditorMessages } from '@/editor/types'
 
 interface EditorHeaderProps {
   title: string

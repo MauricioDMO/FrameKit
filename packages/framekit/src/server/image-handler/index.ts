@@ -1,12 +1,13 @@
-import { authenticateApiToken } from '../access/api-tokens'
-import { getSession } from '../access/sessions'
-import { isSameOrigin } from '../access/http/origin'
-import { readSessionCookie } from '../access/http/session'
-import type { ImageRenderRuntimeConfig } from '../config'
-import { parseImageRenderConfig } from '../config'
-import type { TemplateRegistryEntry } from '../../types'
-import { renderTemplateImage } from '../render-image'
-import { readJsonBody } from '../request-body'
+import { authenticateApiToken } from '@/server/access/api-tokens'
+import { isAuthenticationEnabled } from '@/server/access/config'
+import { getSession } from '@/server/access/sessions'
+import { isSameOrigin } from '@/server/access/http/origin'
+import { readSessionCookie } from '@/server/access/http/session'
+import type { ImageRenderRuntimeConfig } from '@/server/config'
+import { parseImageRenderConfig } from '@/server/config'
+import type { TemplateRegistryEntry } from '@/types'
+import { renderTemplateImage } from '@/server/render-image'
+import { readJsonBody } from '@/server/request-body'
 import { failure } from './errors'
 import { awaitWithAbort, createRequestDeadline, normalizeFailure, throwIfAborted } from './request-deadline'
 import { parseImageRequest } from './parse-request'
@@ -37,15 +38,17 @@ function createStudioImageHandlerInternal (
 ): (request: Request) => Promise<Response> {
   return async function imageHandler (request: Request): Promise<Response> {
     let config: ImageRenderRuntimeConfig
+    let authenticationEnabled: boolean
     try {
       config = parseImageRenderConfig(process.env)
+      authenticationEnabled = isAuthenticationEnabled()
     } catch (error) {
       return errorResponse(failure('api_not_configured', error))
     }
 
     const deadline = createRequestDeadline(request, config.renderTimeoutMs)
     try {
-      if (!authenticateStudioImageRequest(request)) {
+      if (authenticationEnabled && !authenticateStudioImageRequest(request)) {
         return errorResponse(failure('unauthorized'))
       }
 

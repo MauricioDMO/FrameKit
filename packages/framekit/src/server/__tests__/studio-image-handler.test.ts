@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -76,6 +77,7 @@ beforeEach(async () => {
   temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'framekit-studio-image-'))
   process.env.FRAMEKIT_DATABASE_PATH = path.join(temporaryRoot, 'framekit.sqlite')
   vi.stubEnv('PORT', '3000')
+  vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
   vi.stubEnv('FRAMEKIT_ALLOWED_IMAGE_HOSTS', '')
   vi.stubEnv('FRAMEKIT_MAX_CONCURRENT_RENDERS', '2')
   vi.stubEnv('FRAMEKIT_RENDER_TIMEOUT_MS', '30000')
@@ -94,6 +96,18 @@ afterEach(async () => {
 })
 
 describe('createStudioImageHandler', () => {
+  it('renders in open mode without authentication or SQLite work', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+
+    const response = await createStudioImageHandler([createEntry()])(requestFor(undefined, undefined, { authorization: 'Bearer invalid' }))
+
+    expect(response.status).toBe(200)
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(png)
+    expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+    expect(mocks.prepare).toHaveBeenCalledOnce()
+    expect(mocks.render).toHaveBeenCalledOnce()
+  })
+
   it('accepts a valid API token and records last use', async () => {
     const user = insertUser()
     const token = createApiToken(user.id, 'Studio render')
@@ -148,6 +162,47 @@ describe('createStudioImageHandler', () => {
     expect(request.bodyUsed).toBe(false)
     expect(mocks.prepare).not.toHaveBeenCalled()
     expect(mocks.render).not.toHaveBeenCalled()
+  })
+
+  it('does not fall back to a session when a malformed Bearer header is present', async () => {
+    const user = insertUser()
+    const secret = createSession(user.id)
+    const body = new ReadableStream<Uint8Array>()
+    const request = new Request('http://framekit.test/api/framekit/images/render', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer',
+        Cookie: `framekit_session=${secret}`,
+        Origin: 'http://framekit.test',
+        'content-type': 'application/json'
+      },
+      body,
+      duplex: 'half'
+    } as RequestInit)
+
+    const response = await createStudioImageHandler([createEntry()])(request)
+
+    expect(response.status).toBe(401)
+    expect(request.bodyUsed).toBe(false)
+    expect(mocks.prepare).not.toHaveBeenCalled()
+    expect(mocks.render).not.toHaveBeenCalled()
+  })
+
+  it('ignores a malformed Bearer header in open mode when a session is present', async () => {
+    const user = insertUser()
+    const secret = createSession(user.id)
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+
+    const response = await createStudioImageHandler([createEntry()])(requestFor(undefined, undefined, {
+      authorization: 'Bearer',
+      Cookie: `framekit_session=${secret}`,
+      Origin: 'http://framekit.test'
+    }))
+
+    expect(response.status).toBe(200)
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(png)
+    expect(mocks.prepare).toHaveBeenCalledOnce()
+    expect(mocks.render).toHaveBeenCalledOnce()
   })
 
   it('rejects revoked tokens, inactive users, expired sessions, and cross-origin sessions before rendering', async () => {

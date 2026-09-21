@@ -52,6 +52,11 @@ The public entrypoint is a boundary, not a shortcut around layer ownership.
 When a change crosses layers, update the owner and its supported facade rather
 than importing an implementation file from another layer.
 
+Authentication configuration is server-owned. `FRAMEKIT_AUTH_ENABLED` is read
+only by server, Studio-root, and development-server boundaries; consumers must
+not infer auth from `NODE_ENV`, credentials, or SQLite, or expose access storage
+from client code.
+
 ## Keep client and server graphs separate
 
 Client code does not import `./server`. Use `@mauriciodmo/framekit/client` or

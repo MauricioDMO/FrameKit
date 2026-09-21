@@ -1,5 +1,5 @@
-import { ImageRenderError } from '../errors'
-import type { ImageRenderErrorCode } from '../errors'
+import { ImageRenderError } from '@/server/errors'
+import type { ImageRenderErrorCode } from '@/server/errors'
 
 const publicMessageByCode: Record<ImageRenderErrorCode, string> = {
   invalid_request: 'Invalid request',

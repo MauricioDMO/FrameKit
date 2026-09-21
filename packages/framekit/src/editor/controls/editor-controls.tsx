@@ -1,9 +1,9 @@
 import { IconRotate } from '@tabler/icons-react'
 
-import type { TemplateBase } from '../../types'
-import type { TemplateDataValidationError } from '../../core/validation'
+import type { TemplateBase } from '@/types'
+import type { TemplateDataValidationError } from '@/core/validation'
 import { EditorField } from './fields'
-import type { EditorMessages } from '../types'
+import type { EditorMessages } from '@/editor/types'
 
 interface EditorControlsProps {
   definition: TemplateBase

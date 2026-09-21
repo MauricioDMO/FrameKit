@@ -5,7 +5,9 @@ sidebar:
   order: 6
 ---
 
-Only an administrator can use the **Users** section in Studio Settings. See [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for personal account, session, and token workflows.
+This guide applies only when `FRAMEKIT_AUTH_ENABLED=true`. Only an administrator
+can use the **Users** section in Studio Settings. In open mode, Settings and the
+access API are absent. See [Manage your account and tokens](/en/users/guides/manage-account-and-tokens) for personal account, session, and token workflows.
 
 ## 1. Understand roles
 

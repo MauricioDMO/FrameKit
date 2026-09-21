@@ -1,13 +1,13 @@
 ---
 title: API HTTP
-description: Comprende la API HTTP autenticada de FrameKit para la gestión del acceso y el renderizado de PNG en el servidor.
+description: Comprende la API HTTP de acceso opcional de FrameKit para la gestión de cuentas y el renderizado de PNG en el servidor.
 sidebar:
   order: 1
 ---
 
-FrameKit expone un controlador HTTP de Node.js para el acceso a Studio y el renderizado síncrono de PNG. En el proyecto canónico, móntalo desde la ruta catch-all del App Router en `/api/framekit/[...action]` y mantén esa ruta en el runtime de Node.js. La [integración con un proyecto existente](/es/users/getting-started/existing-project) muestra la configuración completa de la ruta.
+FrameKit expone un controlador HTTP de Node.js para el acceso opcional a Studio y el renderizado síncrono de PNG. En el proyecto canónico, móntalo desde la ruta catch-all del App Router en `/api/framekit/[...action]` y mantén esa ruta en el runtime de Node.js. La [integración con un proyecto existente](/es/users/getting-started/existing-project) muestra la configuración completa de la ruta.
 
-El dispatcher solo expone las rutas documentadas en esta sección. `POST /api/framekit/images/render` es el endpoint de imágenes. Las demás rutas gestionan la sesión de Studio, la cuenta, los tokens de API y los usuarios.
+El dispatcher solo expone las rutas documentadas en esta sección. `POST /api/framekit/images/render` es el endpoint de imágenes en ambos modos. Las demás rutas gestionan la sesión de Studio, la cuenta, los tokens de API y los usuarios solo cuando `FRAMEKIT_AUTH_ENABLED=true`; en el modo abierto no existen.
 
 ## Elige una referencia
 
@@ -23,4 +23,9 @@ La API es síncrona. Una solicitud de renderizado valida primero la configuraci�
 
 ## Límite de seguridad
 
-La cookie de sesión es para el acceso a Studio desde el mismo origen. Un token de API Bearer solo se acepta en el endpoint de renderizado de imágenes. No incluyas un token en una URL, un bundle del navegador, el DOM renderizado ni el código del cliente. Lee [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies) antes de exponer públicamente el controlador.
+La cookie de sesión es para el acceso a Studio desde el mismo origen cuando la
+autenticación está activada. Un token de API Bearer solo se acepta en el
+endpoint de renderizado de imágenes y solo en el modo autenticado. En el modo
+abierto el endpoint de imágenes no necesita credenciales. No incluyas un token
+en una URL, un bundle del navegador, el DOM renderizado ni el código del cliente.
+Lee [Seguridad y proxies inversos](/es/users/deployment/security-and-reverse-proxies) antes de exponer públicamente el controlador.

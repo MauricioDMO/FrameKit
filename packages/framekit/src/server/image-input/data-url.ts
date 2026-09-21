@@ -1,4 +1,4 @@
-import { assertRasterSignature, decodeStrictBase64, type RasterMimeType } from '../../shared/raster-image'
+import { assertRasterSignature, decodeStrictBase64, type RasterMimeType } from '@/shared/raster-image'
 import { canonicalDataUrl, imageTooLarge, maxImageBytes, unsupportedImage } from './shared'
 
 function decodedLength (value: string): number {

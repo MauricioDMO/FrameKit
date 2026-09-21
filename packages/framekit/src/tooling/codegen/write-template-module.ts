@@ -1,11 +1,11 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { findTemplateAssets } from '../discovery/find-assets'
-import { findBrandComponents } from '../discovery/find-brand-components'
-import { findTemplates } from '../discovery/find-templates'
-import type { DiscoveredTemplate } from '../discovery/types'
-import type { TemplateAssetManifest } from '../../types'
+import { findTemplateAssets } from '@/tooling/discovery/find-assets'
+import { findBrandComponents } from '@/tooling/discovery/find-brand-components'
+import { findTemplates } from '@/tooling/discovery/find-templates'
+import type { DiscoveredTemplate } from '@/tooling/discovery/types'
+import type { TemplateAssetManifest } from '@/types'
 import { collectTemplateSummaries } from './collect-template-summaries'
 import { createBrandModule } from './create-brand-module'
 import { createTemplateModule } from './create-template-module'
@@ -25,7 +25,7 @@ import type { StudioUser } from '@mauriciodmo/framekit/studio'
 import { templates } from '${templatesImport}'
 import { brands } from '${brandsImport}'
 
-export function StudioClient ({ user }: { user: StudioUser }) {
+export function StudioClient ({ user }: { user?: StudioUser }) {
   return <FrameKitStudio templates={templates} brands={brands} user={user} />
 }
 `

@@ -1,6 +1,6 @@
 ---
 title: Docker and persistence
-description: Build and run the canonical FrameKit container with Chromium, a non-root process, and durable SQLite storage.
+description: Build and run the canonical FrameKit container with Chromium, a non-root process, and optional durable SQLite storage.
 sidebar:
   order: 3
 ---
@@ -16,6 +16,20 @@ docker build --tag framekit-app .
 docker volume create framekit-data
 docker run --detach \
   --publish 3000:3000 \
+  --env FRAMEKIT_AUTH_ENABLED=false \
+  --mount type=volume,source=framekit-data,target=/data \
+  --name framekit-app \
+  framekit-app
+```
+
+This explicit open-mode example needs no login, user, token, or SQLite database.
+For an authenticated private deployment, pass the switch and bootstrap secret
+explicitly instead:
+
+```bash
+docker run --detach \
+  --publish 3000:3000 \
+  --env FRAMEKIT_AUTH_ENABLED=true \
   --env FRAMEKIT_ADMIN_PASSWORD='replace-with-a-strong-password' \
   --mount type=volume,source=framekit-data,target=/data \
   --name framekit-app \
@@ -40,16 +54,24 @@ The runner sets these image-level variables:
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Installed Chromium location. |
 | `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | Default SQLite path set by the image; the runtime environment can override it. |
 
-`NODE_ENV`, `HOSTNAME`, and `PLAYWRIGHT_BROWSERS_PATH` are image operational settings, not public FrameKit configuration choices. `FRAMEKIT_ADMIN_PASSWORD`, `FRAMEKIT_ADMIN_USERNAME`, `FRAMEKIT_ALLOWED_IMAGE_HOSTS`, and render limits remain deployment environment values.
+`NODE_ENV`, `HOSTNAME`, and `PLAYWRIGHT_BROWSERS_PATH` are image operational settings, not public FrameKit configuration choices. The Dockerfile does not force authentication. Pass `FRAMEKIT_AUTH_ENABLED` explicitly at runtime; `FRAMEKIT_ADMIN_PASSWORD` and `FRAMEKIT_ADMIN_USERNAME` are used only when it is `true`, while image-host and render-limit values remain deployment environment values.
 
 The final image creates `/data`, makes it writable by `node`, exposes port `3000`, drops root privileges with `USER node`, and uses `/usr/bin/tini --` as its entrypoint before `node server.js`.
 
 ## SQLite persistence
 
-Mount `/data` as durable storage if users, sessions, and API-token metadata must survive container replacement. Without a durable mount, the image's prepared directory is part of the container filesystem and can be lost when the container is replaced. Ensure a bind mount or volume is writable by the `node` user.
+Mount `/data` as durable storage when authentication is enabled and users,
+sessions, or API-token metadata must survive container replacement. Without a
+durable mount, the image's prepared directory is part of the container
+filesystem and can be lost when the container is replaced. Ensure a bind mount
+or volume is writable by the `node` user. Open mode does not initialize SQLite.
 
 SQLite persistence does not persist render jobs. Render jobs are held in process memory, have a 120-second TTL, and are intentionally unavailable after a process restart. A replacement container can recover the database-backed account and token state while an in-flight or test render job is gone.
 
 ## Restart check
 
-After the first login and token creation, restart or replace the container while keeping the same `/data` volume. The account and session database should remain available. A render job created before the process replacement should not be expected to remain available; submit a new image request instead.
+For authenticated mode, after the first login and token creation, restart or
+replace the container while keeping the same `/data` volume. The account and
+session database should remain available. Switching back to open mode does not
+delete that state. A render job created before the process replacement should
+not be expected to remain available; submit a new image request instead.
