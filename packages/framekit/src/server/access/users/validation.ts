@@ -1,6 +1,6 @@
-import type { StudioUser } from '../../../studio/types'
+import type { StudioUser } from '@/types'
 
-import { isValidPassword } from '../passwords'
+import { isValidPassword } from '@/server/access/passwords'
 import { UserDomainError } from './errors'
 
 export type UserRole = StudioUser['role']

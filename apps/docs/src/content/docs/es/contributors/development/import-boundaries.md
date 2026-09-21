@@ -48,6 +48,11 @@ El entrypoint público es un límite, no un atajo para evitar la propiedad de la
 capas. Cuando un cambio cruza capas, actualiza al responsable y su fachada
 compatible en lugar de importar un archivo de implementación de otra capa.
 
+La configuración de autenticación pertenece al servidor. `FRAMEKIT_AUTH_ENABLED`
+solo se lee en los límites de Server, Studio-root y servidor de desarrollo; los
+consumidores no deben inferir autenticación de `NODE_ENV`, las credenciales ni
+SQLite, ni exponer el almacenamiento de acceso desde el código cliente.
+
 ## Mantén separados los grafos del cliente y del servidor
 
 El código del cliente no importa `./server` en tiempo de ejecución. Se permiten

@@ -162,8 +162,18 @@ FrameKit can be added to an existing Next.js App Router application without repl
 
 FrameKit writes `src/generated/framekit/templates.ts`, `brands.ts`, `studio-client.tsx`, and `render-client.tsx`. Treat them as generated output.
 
+The generated routes support both authentication modes. With
+`FRAMEKIT_AUTH_ENABLED` missing or `false`, `/editor` and `/brand` are usable
+without a session, `/login` redirects to `/editor`, and `/settings` plus the
+access API are unavailable. Set `FRAMEKIT_AUTH_ENABLED=true` to enable users,
+sessions, API tokens, and protected Studio/access routes.
+
 :::caution
 The private render route is an internal server-side handoff, not a public rendering URL. Keep the API and render routes on the Node.js runtime.
 :::
+
+Before exposing the application to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`. See [Configuration](/en/users/reference/configuration)
+for the strict value and bootstrap contracts.
 
 Next, create [your first template](/en/users/getting-started/first-template) and review [Project structure](/en/users/getting-started/project-structure). For command behavior and generated-file details, use the CLI and generated-files pages under **Reference**.

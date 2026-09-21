@@ -1,6 +1,6 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 
-import type { ResolvedRenderPayload } from './config'
+import type { ResolvedRenderPayload } from '@/types'
 
 const renderJobsSymbol = Symbol.for('framekit.server.render-jobs')
 const renderJobTtlMs = 120_000

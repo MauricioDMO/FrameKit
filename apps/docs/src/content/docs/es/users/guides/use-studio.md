@@ -15,7 +15,14 @@ Desde la raíz del proyecto, valida el código fuente actual y el registro gener
 pnpm framekit check
 ```
 
-Para una base de datos vacía, define `FRAMEKIT_ADMIN_PASSWORD` antes del primer inicio de sesión. `FRAMEKIT_ADMIN_USERNAME` es opcional y su valor predeterminado es `admin`. Mantén estos valores en el entorno de ejecución y no en el control de versiones.
+La autenticación está desactivada de forma predeterminada. En el modo abierto,
+`/editor` y `/brand` están disponibles sin sesión y `/login` redirige a
+`/editor`; no se inicializa SQLite ni un administrador. Para usar el inicio de
+sesión y Ajustes, define `FRAMEKIT_AUTH_ENABLED=true` y después
+`FRAMEKIT_ADMIN_PASSWORD` antes del primer inicio de sesión.
+`FRAMEKIT_ADMIN_USERNAME` es opcional y su valor predeterminado es `admin`.
+Mantén los valores de bootstrap en el entorno de ejecución y no en el control
+de versiones.
 
 Inicia el servidor de desarrollo según la configuración de tu proyecto. Los proyectos generados configuran `pnpm dev` para ejecutar `framekit dev`:
 
@@ -29,15 +36,18 @@ En un proyecto integrado, usa el comando de desarrollo de FrameKit, a menos que 
 pnpm framekit dev
 ```
 
-Abre `http://localhost:3000/login`. La URL raíz redirige a `/editor`. El formulario de inicio de sesión crea la sesión que protege las secciones de Studio.
+Abre `http://localhost:3000/editor`. En el modo abierto, la raíz y el editor
+funcionan sin iniciar sesión y `/login` redirige a `/editor`. Con
+`FRAMEKIT_AUTH_ENABLED=true`, abre `/login`; el formulario crea la sesión que
+protege `/editor`, `/brand` y `/settings`.
 
 ## 2. Elegir una sección de Studio
 
-Después de iniciar sesión, usa la barra lateral para elegir:
+Usa la barra lateral para elegir:
 
 - **Plantillas** (`/editor`) para explorar las carpetas de plantillas generadas;
 - **Marca** (`/brand`) para inspeccionar vistas previas reutilizables de marca; o
-- **Ajustes** (`/settings`) desde el menú de apariencia.
+- **Ajustes** (`/settings`) desde el menú de apariencia cuando la autenticación está activada.
 
 Selecciona una entrada de plantilla o de marca para abrir su ruta con slug. Las plantillas abren el editor. Las entradas de marca abren una vista previa y una descripción, no controles de plantilla editables.
 
@@ -94,7 +104,11 @@ El scope del campo controla dónde se escribe el asset:
 - `variant` reemplaza el asset de la variante seleccionada;
 - `common` reemplaza el asset compartido en `assets/common`.
 
-Studio escribe el asset de origen, regenera el manifiesto y vuelve a cargar la página. La carga requiere la sesión iniciada en el mismo origen. Studio en producción no expone este control de carga. Consulta [usar recursos de imagen](/es/users/guides/use-image-assets) antes de cambiar el layout de assets o el scope del campo.
+Studio escribe el asset de origen, regenera el manifiesto y vuelve a cargar la
+página. Las cargas siempre requieren una solicitud del mismo origen. En el modo
+abierto ese es el único requisito; con `FRAMEKIT_AUTH_ENABLED=true`, también se
+requiere una sesión activa de Studio del mismo origen. Studio en producción no
+expone este control de carga. Consulta [usar recursos de imagen](/es/users/guides/use-image-assets) antes de cambiar el layout de assets o el scope del campo.
 
 ## 7. Descargar o copiar un PNG
 
@@ -103,7 +117,7 @@ Usa la acción de exportación en la cabecera del editor después de validar los
 1. Selecciona **Descargar PNG** para guardar la imagen generada.
 2. Abre la opción secundaria de la misma acción y selecciona **Copiar PNG** para colocar la imagen generada en el portapapeles.
 
-Ambas acciones usan el renderizador del servidor mediante `POST /api/framekit/images/render` y la plantilla, variante, ediciones y assets descubiertos actuales. La vista previa del navegador permanece local. Mientras se genera la imagen, la acción se desactiva y muestra su estado de generación. Los errores de validación del servidor regresan al campo correspondiente en lugar de producir una imagen no válida.
+Ambas acciones usan el renderizador del servidor mediante `POST /api/framekit/images/render` y la plantilla, variante, ediciones y assets descubiertos actuales. En el modo abierto la solicitud de imágenes no necesita credenciales; con la autenticación activada usa la sesión del mismo origen. La vista previa del navegador permanece local. Mientras se genera la imagen, la acción se desactiva y muestra su estado de generación. Los errores de validación del servidor regresan al campo correspondiente en lugar de producir una imagen no válida.
 
 Copiar requiere compatibilidad del navegador con la escritura de datos `image/png` en el portapapeles. Si esa compatibilidad no está disponible, Studio informa del fallo de copia en lugar de indicar éxito silenciosamente.
 

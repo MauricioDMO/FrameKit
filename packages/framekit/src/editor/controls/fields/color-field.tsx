@@ -1,8 +1,8 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 
-import { isValidColor } from '../../../core/validation'
+import { isValidColor } from '@/core/validation'
 import { controlClass } from './shared'
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 export function ColorField ({ field, value, onChange, error, colorPickerLabel }: EditorFieldProps) {
   const stringValue = typeof value === 'string' ? value : ''

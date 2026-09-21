@@ -11,7 +11,7 @@ import type {
   TemplateDefinition,
   TemplateRegistryEntry
 } from '@mauriciodmo/framekit'
-import type { ResolvedRenderPayload } from '@mauriciodmo/framekit/server'
+import type { ResolvedRenderPayload } from '@/types'
 
 const templates: TemplateRegistryEntry[] = []
 const RenderClient = createRenderClient(templates)

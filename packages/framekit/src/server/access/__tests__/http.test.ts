@@ -159,6 +159,7 @@ describe('createStudioAccessHandler', () => {
 
     const requests = [
       rawRequest('/api/framekit/login', 'POST', '{', { Origin: 'https://other.test' }),
+      jsonRequest('/api/framekit/login', 'POST', { username: 'admin', password }),
       rawRequest('/api/framekit/users/target', 'POST', '{')
     ]
 
@@ -171,6 +172,25 @@ describe('createStudioAccessHandler', () => {
       expect(request.bodyUsed).toBe(false)
       expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
     }
+  })
+
+  it('hides account access in open mode and requires a session when enabled', async () => {
+    process.env.FRAMEKIT_AUTH_ENABLED = 'false'
+    const openRequest = emptyRequest('/api/framekit/account', 'GET')
+    const openResponse = await handler(openRequest)
+
+    expect(openResponse.status).toBe(404)
+    expectJsonResponse(openResponse)
+    expect(await responseBody(openResponse)).toEqual({ error: 'not_found', message: 'Not found' })
+    expect(openRequest.bodyUsed).toBe(false)
+    expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
+
+    process.env.FRAMEKIT_AUTH_ENABLED = 'true'
+    const authenticatedResponse = await handler(emptyRequest('/api/framekit/account', 'GET'))
+
+    expect(authenticatedResponse.status).toBe(401)
+    expectJsonResponse(authenticatedResponse)
+    expect(await responseBody(authenticatedResponse)).toEqual({ error: 'unauthorized', message: 'Unauthorized' })
   })
 
   it('maps invalid authentication configuration to an internal error', async () => {

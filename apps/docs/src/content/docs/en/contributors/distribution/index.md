@@ -106,7 +106,8 @@ questions. The local gate inspects exactly what was packed before publication.
 The registry gate installs exact package specs from npm after publication,
 checks their resolved versions and intended dist-tags, resolves the public
 exports, creates an isolated consumer, and runs its generation, check, build,
-and start path. Record `CORE_SPEC`, `CREATOR_SPEC`,
+and start path in explicit open and authenticated modes, including authenticated
+login, token creation, and PNG rendering. Record `CORE_SPEC`, `CREATOR_SPEC`,
 `EXPECTED_FRAMEKIT_DIST_TAG`, `EXPECTED_CREATE_FRAMEKIT_DIST_TAG`, the resolved
 versions, runtime versions, timestamp, and PASS or FAIL. Use exact registry
 specs, not ranges; a successful upload is not a successful registry gate.
@@ -123,8 +124,9 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 ```
 
 It builds the canonical consumer into a Docker image from the exact published
-FrameKit version, starts the image, checks authentication and PNG rendering,
-and checks persistence across container replacement. It is not a substitute for
+FrameKit version, starts explicit open and authenticated containers, checks
+authentication and PNG rendering, and checks persistence across container
+replacement. It is not a substitute for
 the local tarball smoke, unit tests, type checks, or browser E2E. Compare the
 gates in [E2E and smoke tests](/en/contributors/testing/e2e-and-smoke).
 

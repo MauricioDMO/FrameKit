@@ -1,6 +1,6 @@
 import type { ReactNode, Ref } from 'react'
 
-import type { InferTemplateData, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '../../types'
+import type { InferTemplateData, TemplateAssetManifest, TemplateBase, TemplateRenderProps } from '@/types'
 
 interface TemplateCanvasProps<Definition extends TemplateBase> {
   definition: Definition & {

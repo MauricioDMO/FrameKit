@@ -444,7 +444,7 @@ async function stopProcess(child) {
   return false
 }
 
-function startServer(consumerRoot, port) {
+function startServer(consumerRoot, port, authEnabled) {
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx'
   const child = spawn(command, ['--no-install', 'framekit', 'start'], {
     cwd: consumerRoot,
@@ -452,9 +452,14 @@ function startServer(consumerRoot, port) {
       ...process.env,
       HOSTNAME: smokeHost,
       PORT: String(port),
-      FRAMEKIT_ADMIN_USERNAME: smokeAdminUsername,
-      FRAMEKIT_ADMIN_PASSWORD: smokeAdminPassword,
-      FRAMEKIT_DATABASE_PATH: ':memory:',
+      FRAMEKIT_AUTH_ENABLED: authEnabled ? 'true' : 'false',
+      ...(authEnabled
+        ? {
+            FRAMEKIT_ADMIN_USERNAME: smokeAdminUsername,
+            FRAMEKIT_ADMIN_PASSWORD: smokeAdminPassword,
+            FRAMEKIT_DATABASE_PATH: ':memory:',
+          }
+        : {}),
     },
     detached: process.platform !== 'win32',
     shell: false,
@@ -469,18 +474,56 @@ function startServer(consumerRoot, port) {
 }
 
 async function runStartSmoke(consumerRoot, temporaryRoot) {
-  const port = await findFreePort()
-  const child = startServer(consumerRoot, port)
-  let stopped = false
-  try {
-    const status = await waitForHttp(child, `http://${smokeHost}:${port}/login`, temporaryRoot)
-    console.log(`[PASS] framekit start HTTP readiness /login returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
+  const runMode = async (authEnabled, verify) => {
+    const port = await findFreePort()
+    const child = startServer(consumerRoot, port, authEnabled)
+    try {
+      const status = await waitForHttp(child, `http://${smokeHost}:${port}/login`, temporaryRoot)
+      console.log(`[PASS] framekit start ${authEnabled ? 'authenticated' : 'open'} HTTP readiness /login returned ${status} (cwd: ${redact(consumerRoot, temporaryRoot)})`)
+      await verify(port)
+    } finally {
+      const stopped = await stopProcess(child)
+      assert(stopped, 'could not stop the standalone server cleanly')
+    }
+  }
+
+  await runMode(false, runOpenModeSmoke)
+  await runMode(true, async (port) => {
     await runStudioRouteSmoke(port)
     await runProductionRenderSmoke(port)
-  } finally {
-    stopped = await stopProcess(child)
-    assert(stopped, 'could not stop the standalone server cleanly')
+  })
+}
+
+async function runOpenModeSmoke(port) {
+  const origin = `http://${smokeHost}:${port}`
+  for (const pathname of ['/editor', '/brand']) {
+    const response = await fetch(`${origin}${pathname}`, { redirect: 'manual' })
+    await response.text()
+    assert.equal(response.status, 200, `${pathname} did not resolve in open mode`)
   }
+
+  const login = await fetch(`${origin}/login`, { redirect: 'manual' })
+  await login.text()
+  assert.equal(login.status, 307, 'open-mode login did not redirect')
+  assert.equal(login.headers.get('location'), '/editor', 'open-mode login redirected to an unexpected path')
+
+  const settings = await fetch(`${origin}/settings`, { redirect: 'manual' })
+  await settings.text()
+  assert.equal(settings.status, 404, 'open-mode settings did not return not-found')
+
+  const accessApi = await fetch(`${origin}/api/framekit/login`, { method: 'POST' })
+  await accessApi.text()
+  assert.equal(accessApi.status, 404, 'open-mode access API was exposed')
+
+  const image = await fetch(`${origin}/api/framekit/images/render`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ template: 'example' }),
+  })
+  await image.arrayBuffer()
+  assert.equal(image.status, 200, `open-mode image render returned ${image.status}`)
+  assert.equal(image.headers.get('content-type'), 'image/png')
+  console.log('[PASS] open-mode Studio routes, access absence, and credential-free image render')
 }
 
 async function runStudioRouteSmoke(port) {
@@ -521,6 +564,33 @@ async function runStudioRouteSmoke(port) {
     assert.equal(response.status, 200, `${pathname} did not resolve with a session`)
   }
 
+  const sessionImage = await fetch(`${origin}/api/framekit/images/render`, {
+    method: 'POST',
+    headers: { Cookie: sessionCookie, Origin: origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ template: 'example' }),
+  })
+  await sessionImage.arrayBuffer()
+  assert.equal(sessionImage.status, 200, `session image render returned ${sessionImage.status}`)
+  assert.equal(sessionImage.headers.get('content-type'), 'image/png')
+
+  const tokenResponse = await fetch(`${origin}/api/framekit/tokens`, {
+    method: 'POST',
+    headers: { Cookie: sessionCookie, Origin: origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Tarball smoke token' }),
+  })
+  const tokenBody = await tokenResponse.json()
+  assert.equal(tokenResponse.status, 201, `token creation returned ${tokenResponse.status}`)
+  assert.equal(typeof tokenBody.token, 'string', 'token creation did not return a token')
+
+  const tokenImage = await fetch(`${origin}/api/framekit/images/render`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${tokenBody.token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ template: 'example' }),
+  })
+  await tokenImage.arrayBuffer()
+  assert.equal(tokenImage.status, 200, `token image render returned ${tokenImage.status}`)
+  assert.equal(tokenImage.headers.get('content-type'), 'image/png')
+
   const invalidSection = await fetch(`${origin}/preview/example`, { redirect: 'manual' })
   await invalidSection.text()
   assert.equal(invalidSection.status, 404, 'unknown section did not return not-found')
@@ -529,7 +599,7 @@ async function runStudioRouteSmoke(port) {
   await unsupportedImageMethod.text()
   assert.equal(unsupportedImageMethod.status, 405, 'unsupported canonical image method did not return method-not-allowed')
   assert.equal(unsupportedImageMethod.headers.get('allow'), 'POST', 'canonical image method did not advertise POST')
-  console.log('[PASS] public login, unauthenticated redirects, authenticated Studio routes, root redirect, nested sections, invalid-section 404, and API namespace dispatch')
+  console.log('[PASS] public login, unauthenticated redirects, authenticated Studio routes, session/token image rendering, root redirect, nested sections, invalid-section 404, and API namespace dispatch')
 }
 
 async function runProductionRenderSmoke(port) {

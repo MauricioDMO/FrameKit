@@ -15,7 +15,12 @@ From the project root, validate the current source and generated registry:
 pnpm framekit check
 ```
 
-For an empty database, set `FRAMEKIT_ADMIN_PASSWORD` before the first login. `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. Keep these values in the runtime environment rather than source control.
+Authentication is disabled by default. In open mode, `/editor` and `/brand` are
+available without a session and `/login` redirects to `/editor`; no SQLite
+database or administrator is initialized. To use login and Settings, set
+`FRAMEKIT_AUTH_ENABLED=true`, then set `FRAMEKIT_ADMIN_PASSWORD` before the
+first login. `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`.
+Keep bootstrap values in the runtime environment rather than source control.
 
 Start the development server for your project setup. Generated projects configure `pnpm dev` to run `framekit dev`:
 
@@ -29,15 +34,18 @@ For an integrated project, use the FrameKit development command unless the proje
 pnpm framekit dev
 ```
 
-Open `http://localhost:3000/login`. The root URL redirects to `/editor`. The login form creates the session that protects the Studio sections.
+Open `http://localhost:3000/editor`. In open mode, the root and editor work
+without login and `/login` redirects to `/editor`. With
+`FRAMEKIT_AUTH_ENABLED=true`, open `/login`; the login form creates the session
+that protects `/editor`, `/brand`, and `/settings`.
 
 ## 2. Choose a Studio surface
 
-After signing in, use the sidebar to choose:
+Use the sidebar to choose:
 
 - **Templates** (`/editor`) to browse generated template folders;
 - **Brand** (`/brand`) to inspect reusable brand previews; or
-- **Settings** (`/settings`) from the appearance menu.
+- **Settings** (`/settings`) from the appearance menu when authentication is enabled.
 
 Select a template or brand entry to open its slug route. Templates open the editor. Brand entries open a preview and description, not editable template controls.
 
@@ -94,7 +102,11 @@ The field's scope controls where the asset is written:
 - `variant` replaces the asset for the selected variant;
 - `common` replaces the shared asset in `assets/common`.
 
-Studio writes the source asset, regenerates the manifest, and reloads the page. The upload requires the signed-in same-origin session. Production Studio does not expose this upload control. See [use image assets](/en/users/guides/use-image-assets) before changing asset layout or field scope.
+Studio writes the source asset, regenerates the manifest, and reloads the page.
+Uploads always require a same-origin request. In open mode that is the only
+requirement; with `FRAMEKIT_AUTH_ENABLED=true`, an active same-origin Studio
+session is also required. Production Studio does not expose this upload control.
+See [use image assets](/en/users/guides/use-image-assets) before changing asset layout or field scope.
 
 ## 7. Download or copy a PNG
 
@@ -103,7 +115,7 @@ Use the export action in the editor header after the current data is valid:
 1. Select **Download PNG** to save the rendered image.
 2. Open the same action's secondary option and select **Copy PNG** to place the rendered image on the clipboard.
 
-Both actions use the server-backed `POST /api/framekit/images/render` renderer and the current template, variant, edits, and discovered assets. The browser preview remains local. While rendering, the action is disabled and shows its generating state. Server validation errors return to the relevant field instead of producing an invalid image.
+Both actions use the server-backed `POST /api/framekit/images/render` renderer and the current template, variant, edits, and discovered assets. In open mode the image request is credential-free; with authentication enabled it uses the same-origin session. The browser preview remains local. While rendering, the action is disabled and shows its generating state. Server validation errors return to the relevant field instead of producing an invalid image.
 
 Copy requires browser support for writing `image/png` data to the clipboard. If that support is unavailable, Studio reports the copy failure rather than silently claiming success.
 

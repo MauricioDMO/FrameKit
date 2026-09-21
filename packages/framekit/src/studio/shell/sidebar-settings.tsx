@@ -3,8 +3,8 @@
 import { IconMoon, IconSettings, IconSun } from '@tabler/icons-react'
 import Link from 'next/link'
 
-import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection, StudioUser } from '../types'
+import type { FrameKitLocale, FrameKitStudioMessages } from '@/studio/i18n/messages'
+import type { FrameKitStudioSection, StudioUser } from '@/studio/types'
 
 type SidebarMessages = FrameKitStudioMessages['sidebar']
 

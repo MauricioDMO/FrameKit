@@ -26,7 +26,7 @@ The image endpoint returns JSON errors with this shape:
 | Status | Code | Meaning |
 | ---: | --- | --- |
 | `400` | `invalid_request` | The JSON shape, content type, template, variant, or request metadata is invalid. |
-| `401` | `unauthorized` | No valid same-origin session or API token was supplied. The response includes `WWW-Authenticate: Bearer`. |
+| `401` | `unauthorized` | In authenticated mode, no valid same-origin session or API token was supplied. The response includes `WWW-Authenticate: Bearer`; missing credentials do not cause `401` in open mode. |
 | `404` | `template_not_found` | The requested template slug is not in the generated registry. |
 | `405` | `method_not_allowed` | The image dispatcher accepts only `POST` and sends `Allow: POST`. |
 | `413` | `request_too_large` | The JSON body exceeds 12,000,000 bytes, or a prepared image exceeds 8,000,000 bytes. |
@@ -45,11 +45,14 @@ All image errors use `Cache-Control: no-store` and `Content-Type: application/js
 
 ## Client handling
 
-1. Handle `401` by checking the credential and its owner status. An invalid Bearer header does not fall back to a session cookie.
+1. In authenticated mode, handle `401` by checking the credential and its owner status. An invalid Bearer header does not fall back to a session cookie. Missing credentials are valid in open mode.
 2. Handle `400`, `415`, and `422` as request or template-data corrections. For `invalid_template_data`, use `fields` when present.
 3. Handle `413` by reducing the JSON or image input size.
 4. Handle `502` by checking HTTPS, the hostname allowlist, the remote response, and redirect rules.
 5. Handle `503` capacity with bounded retry and external throttling; do not retry a configuration error until the environment is corrected.
 6. Handle `504` by checking the template and browser runtime, then adjust the timeout within its supported range only when the render genuinely needs more time.
 
-After validating image-render configuration, authentication happens before request parsing, template lookup, remote fetches, and browser reservation. Fix a `401` before diagnosing the body or rendering path.
+After validating image-render configuration, authentication happens before
+request parsing, template lookup, remote fetches, and browser reservation when
+auth is enabled. In open mode, no credential check is performed, but the same
+renderer validation and isolation defenses still apply.

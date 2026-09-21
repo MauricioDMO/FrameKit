@@ -1,5 +1,5 @@
-import type { TemplateAssetManifest, TemplateBase } from '../../types'
-import { isPlainObject } from '../../core/validation/utils'
+import type { TemplateAssetManifest, TemplateBase } from '@/types'
+import { isPlainObject } from '@/core/validation/utils'
 import { prepareDataUrl } from './data-url'
 import { fetchRemoteRasterImage } from './remote-image'
 import { isSafeRootRelativePath, parseRemoteTarget } from './remote-target'

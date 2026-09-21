@@ -1,21 +1,26 @@
 ---
 title: Solución de problemas de renderizado de imágenes
-description: Diagnostica fallos de autenticación, solicitudes, entradas de imagen, Chromium, capacidad y tiempos de espera en la API de imágenes.
+description: Diagnostica fallos de autenticación opcional, solicitudes, entradas de imagen, Chromium, capacidad y tiempos de espera en la API de imágenes.
 sidebar:
   order: 7
 ---
 
 Empieza con el estado HTTP y el código estable de `error` de `POST /api/framekit/images/render`. La [referencia de errores de la API de imágenes](/es/users/reference/http-api/errors) contiene el contrato completo de errores.
 
-## `401 unauthorized`
+Comprueba `FRAMEKIT_AUTH_ENABLED` antes de diagnosticar credenciales. Cuando falta
+o es `false`, el modo abierto permite renderizar sin credenciales, pero conserva
+las defensas del renderizador. Exactamente `true` activa el acceso autenticado;
+cualquier otro valor configurado es inválido.
+
+## `401 unauthorized` en modo autenticado
 
 **Síntoma:** El endpoint de imágenes devuelve `401 unauthorized`.
 
-**Causa probable:** El token Bearer no es válido, se revocó o pertenece a un usuario inactivo, o una solicitud autenticada mediante cookie no tiene una sesión válida del mismo origen.
+**Causa probable:** Con `FRAMEKIT_AUTH_ENABLED=true`, el token Bearer no es válido, se revocó o pertenece a un usuario inactivo, o una solicitud autenticada mediante cookie no tiene una sesión válida del mismo origen. La falta de credenciales no es un fallo en modo abierto.
 
 **Comprobación:** Confirma que el encabezado sea exactamente `Authorization: Bearer <full-token>`, o confirma que la solicitud incluya una cookie de sesión válida y un `Origin` del mismo origen. Un encabezado `Authorization` con formato incorrecto no recurre a la cookie.
 
-**Solución:** Usa el token completo original o crea un token nuevo y vuelve a intentarlo con el método de autenticación correcto.
+**Solución:** Define explícitamente `FRAMEKIT_AUTH_ENABLED=true` para el acceso autenticado, y usa el token completo original o crea un token nuevo antes de volver a intentarlo con el método de autenticación correcto. En modo abierto, omite la credencial.
 
 ## `400 invalid_request` o `413 request_too_large`
 

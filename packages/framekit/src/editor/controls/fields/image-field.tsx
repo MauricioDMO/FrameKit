@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 export function ImageField ({ field, value, error, imageLabels, onImageUpload }: EditorFieldProps) {
   const imageValue = typeof value === 'string' ? value : ''

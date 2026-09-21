@@ -20,7 +20,7 @@ The sequence must:
 2. inspect expected package files and reject tests, secrets, `workspace:` metadata, local `link:`/relative `file:` paths, and checkout paths;
 3. install the creator tarball in a separate `npm init -y` runner and scaffold a project with `-n`;
 4. replace the generated FrameKit dependency with the core tarball and run `npm install`, `npx --no-install framekit generate`, `npx --no-install framekit check`, and `npx --no-install framekit build`;
-5. start the generated standalone server with `npx --no-install framekit start`, poll `http://localhost:<port>/login` until it returns successfully, exercise public and authenticated routes plus the production render handoff, and clean up the process.
+5. start the generated standalone server with `npx --no-install framekit start` and `FRAMEKIT_AUTH_ENABLED=false`, poll `http://localhost:<port>/login` until it returns successfully, verify the open-mode routes and credential-free image render, then repeat with `FRAMEKIT_AUTH_ENABLED=true` and a temporary bootstrap password to exercise login, token creation, authenticated image render, and protected routes before cleaning up the process.
 
 The generated project must contain `src/generated/framekit/templates.ts`, and
 its `.gitignore` must ignore that path. `file:` references created by the
@@ -35,7 +35,7 @@ as normal consumer configuration, and keep TLS verification enabled.
 ## Separate Docker gate
 
 After publication, run the registry-backed Docker smoke with the exact published
-version:
+version. It explicitly runs both open and authenticated containers:
 
 ```sh
 pnpm smoke:docker -- <exact-published-framekit-version>

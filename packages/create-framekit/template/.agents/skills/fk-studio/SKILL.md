@@ -7,6 +7,15 @@ description: Help users operate or troubleshoot FrameKit Studio in a generated p
 
 Keep advice tied to the observed behavior and use the project's existing commands.
 
+Authentication is optional and is controlled only by `FRAMEKIT_AUTH_ENABLED`.
+Missing or `false` means open mode: `/editor` and `/brand` work without a
+session, `/login` redirects to `/editor`, `/settings` and the access API are
+not found, and image rendering does not require credentials while retaining
+renderer defenses. `true` enables users, sessions, API tokens, and protected
+Studio/access routes. Treat any other value as invalid; do not infer auth from
+`NODE_ENV`, bootstrap credentials, or SQLite. Set `true` explicitly before
+exposing production to an untrusted network.
+
 For template editing, treat the generated `TemplateRegistryEntry` as Studio's
 contract. `entry.meta.title` is the canonical title for navigation and the
 selected editor heading; show `description`, `marketingDescription`, and

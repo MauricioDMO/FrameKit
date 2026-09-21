@@ -1,4 +1,4 @@
-import { isPlainObject } from '../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 import { validateChoiceField } from './kinds/choice'
 import { validateCommonField } from './common'

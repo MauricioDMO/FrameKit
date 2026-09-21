@@ -7,6 +7,19 @@
 - Folder expansion is persisted in the browser. Expanded folder child groups alone show scope lines; template links do not. The Templates and Brand route tabs use stack and tag icons, and the tree preserves `aria-current`, `aria-expanded`, keyboard operation, and visible focus. There is no search or filter feature.
 - Selected-template metadata displays optional `meta.description`, `meta.marketingDescription`, and `meta.tags` only when present, with functional and marketing descriptions kept distinct.
 
+## Access modes
+
+- FrameKit is open by default. When `FRAMEKIT_AUTH_ENABLED` is missing or
+  `false`, `/editor` and `/brand` work without a session, `/login` redirects to
+  `/editor`, `/settings` and the access API are not found, and image rendering
+  accepts no credential while retaining server-side renderer defenses.
+- Set `FRAMEKIT_AUTH_ENABLED=true` to enable users, sessions, API tokens, and
+  protected Studio/access routes. Only in this mode do
+  `FRAMEKIT_ADMIN_PASSWORD` and `FRAMEKIT_ADMIN_USERNAME` bootstrap the first
+  administrator. The value must be exactly `true` or `false` when set.
+- Development uploads remain same-origin protected in both modes. Authenticated
+  mode also requires the active same-origin Studio session.
+
 ## Variants and interface localization
 
 - **Variant** selects the template content variant and is labeled `Variant`/`Variante`. For a new editor state, `definition.variants.default` selects the initial variant. Variant keys may be any string; each variant has separate values. Option text is `definition.variants.labels?.[key] ?? key`, in content-key order.
@@ -25,7 +38,7 @@
 
 ## Export and theme
 
-- Export and Copy PNG validate current resolved committed data first and focus the first invalid field. They then send the selected template, variant, and user edits to `POST /api/framekit/images/render`; Studio authenticates this same-origin request with the active `framekit_session` cookie. Direct API callers can authenticate with `Authorization: Bearer <API_TOKEN>`. Download uses the returned PNG Blob and Copy writes that Blob to the clipboard when supported.
+- Export and Copy PNG validate current resolved committed data first and focus the first invalid field. They then send the selected template, variant, and user edits to `POST /api/framekit/images/render`; in open mode the request needs no credential, while authenticated mode uses the active same-origin `framekit_session` cookie. Direct API callers use `Authorization: Bearer <API_TOKEN>` only when authentication is enabled. Download uses the returned PNG Blob and Copy writes that Blob to the clipboard when supported.
 - The download name replaces `/` in the slug with `-`, for example `social-instagram-post.png`.
 - Export uses the server renderer and exposes no alternate format, scale, or DPI control. The preview remains local. The server-side path requires the Chromium headless shell installed explicitly with `framekit browser install`; see the [CLI reference](../../../../en/reference/cli.md#framekit-browser-install) for browser installation and runtime configuration.
 - If the image API reports a render-configuration or authentication failure, see [Studio troubleshooting](./troubleshooting.md) and the [public API reference](../../../../en/reference/public-api.md).

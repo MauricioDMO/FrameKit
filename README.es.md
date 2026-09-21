@@ -39,9 +39,17 @@ cd mi-proyecto
 pnpm dev
 ```
 
-Abre `http://localhost:3000`, inicia sesión y empieza a editar la plantilla
-incluida. La [guía para crear un proyecto](https://framekit.mauriciodmo.com/es/users/getting-started/create-project)
-explica el primer inicio de sesión y las opciones disponibles de la CLI.
+Abre `http://localhost:3000` y empieza a editar la plantilla incluida. Los
+proyectos nuevos usan el modo abierto de forma predeterminada: `/editor` y
+`/brand` funcionan sin iniciar sesión y `/login` redirige a `/editor`. Para
+activar usuarios, sesiones y acceso protegido, define
+`FRAMEKIT_AUTH_ENABLED=true` y proporciona la contraseña de bootstrap antes del
+primer inicio de sesión. La [guía para crear un proyecto](https://framekit.mauriciodmo.com/es/users/getting-started/create-project)
+explica ambos modos y las opciones disponibles de la CLI.
+
+Antes de exponer un proyecto de producción a una red no confiable, define
+explícitamente `FRAMEKIT_AUTH_ENABLED=true`. No dependas de `NODE_ENV`, las
+credenciales ni SQLite para activar la autenticación.
 
 ## Una plantilla es solo React
 

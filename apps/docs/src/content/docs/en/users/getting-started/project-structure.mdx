@@ -83,7 +83,9 @@ FrameKit can recreate these paths:
 Delete and regenerate those paths when necessary instead of editing them.
 
 :::caution
-`.framekit-data/` is different: it contains the default SQLite database. Treat it as persistent runtime data and do not delete it as part of generated-output cleanup.
+`.framekit-data/` is different: when authentication is enabled, it contains the
+default SQLite database. Treat it as persistent runtime data and do not delete it
+as part of generated-output cleanup. Open mode does not initialize this database.
 :::
 
 For the detailed file contract, use [Generated files reference](/en/users/reference/generated-files). Continue with [Create your first template](/en/users/getting-started/first-template) when you are ready to edit `src/templates/`.

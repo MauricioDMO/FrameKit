@@ -7,7 +7,7 @@ import { defineTemplate, field } from '@/index'
 import type { TemplateDefinition, TemplateRegistryEntry } from '@/types'
 import type { StudioUser } from '@/studio/types'
 
-import { FrameKitStudio } from '../framekit-studio'
+import { FrameKitStudio } from '@/studio/framekit-studio'
 import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
 import { frameKitMessages } from '@/studio/i18n/messages'
 

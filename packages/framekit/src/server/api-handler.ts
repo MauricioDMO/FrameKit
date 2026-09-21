@@ -1,4 +1,4 @@
-import type { TemplateRegistryEntry } from '../types'
+import type { TemplateRegistryEntry } from '@/types'
 
 import { createStudioAccessHandler } from './access/http'
 import { errorResponse } from './access/http/errors'

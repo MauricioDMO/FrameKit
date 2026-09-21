@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import { isAuthenticationEnabled } from '../../../server/access/config'
-import { getSession, isValidSessionSecret } from '../../../server/access/sessions'
-import { sendJson } from '../asset-upload/errors'
+import { isAuthenticationEnabled } from '@/server/access/config'
+import { getSession, isValidSessionSecret } from '@/server/access/sessions'
+import { sendJson } from '@/tooling/dev/asset-upload/errors'
 
 const sessionCookieName = 'framekit_session'
 

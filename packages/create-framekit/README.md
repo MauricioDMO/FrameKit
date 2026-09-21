@@ -30,9 +30,15 @@ cd my-project
 npm run dev
 ```
 
-Open `http://localhost:3000` to enter Studio. On the first login against an
-empty database, set `FRAMEKIT_ADMIN_PASSWORD`; `FRAMEKIT_ADMIN_USERNAME` is
-optional and defaults to `admin`.
+Open `http://localhost:3000` to enter Studio. New projects use open mode by
+default, so `/editor` and `/brand` work without login and `/login` redirects to
+`/editor`. To enable login, users, sessions, and API tokens, set
+`FRAMEKIT_AUTH_ENABLED=true`; only then set `FRAMEKIT_ADMIN_PASSWORD` for the
+first administrator. `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to
+`admin`, and both bootstrap variables are ignored for open mode.
+
+Before exposing the project to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`. See the [configuration guide](https://framekit.mauriciodmo.com/en/users/reference/configuration).
 
 ## What you get
 

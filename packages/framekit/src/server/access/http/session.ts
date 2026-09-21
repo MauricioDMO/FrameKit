@@ -1,6 +1,6 @@
-import type { StudioUser } from '../../../studio/types'
+import type { StudioUser } from '@/types'
 
-import { createSession, deleteSession, getSession } from '../sessions'
+import { createSession, deleteSession, getSession } from '@/server/access/sessions'
 import { fail } from './errors'
 
 const sessionLifetimeMs = 30 * 24 * 60 * 60 * 1000

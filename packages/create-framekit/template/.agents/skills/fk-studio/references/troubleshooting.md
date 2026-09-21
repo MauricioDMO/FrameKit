@@ -6,6 +6,17 @@ for discovery, aliases, CSS, ports, validation, builds, starts, and installation
 Use [template validation](../../fk-templates/references/validation-and-troubleshooting.md)
 for definition and content-variant errors.
 
+## Access mode mismatch
+
+- Check `FRAMEKIT_AUTH_ENABLED` first. Missing or `false` is open mode: `/editor`
+  and `/brand` work without a session, `/login` redirects to `/editor`, and
+  `/settings` plus the access API are not found. Do not add credentials or SQLite
+  just to make those routes appear.
+- `true` enables users, sessions, API tokens, and protected Studio/access routes.
+  Set it explicitly before exposing production to an untrusted network. Any
+  other value is invalid; `NODE_ENV`, bootstrap credentials, and SQLite do not
+  enable authentication.
+
 ## Template does not open
 
 - **Invalid definition** means the loaded definition failed runtime validation
@@ -26,12 +37,10 @@ for definition and content-variant errors.
   use the [CLI reference's server image API section](../../../../en/reference/cli.md#server-image-api)
   for the supported product settings. This is separate from template
   validation.
-- **Authentication failure** (`unauthorized` or “Unauthorized”) means the
-  request has neither an active same-origin Studio session nor a valid API
-  token. Sign in again for Studio export; for an API request, send a valid
-  bearer token as described in the [public API reference](../../../../en/reference/public-api.md).
-  When an `Authorization` header is present, it must be valid; the handler does
-  not fall back to a session cookie.
+- **Authentication failure** (`unauthorized` or “Unauthorized”) applies when
+  `FRAMEKIT_AUTH_ENABLED=true` and the request has neither an active same-origin
+  Studio session nor a valid API token. Sign in again for Studio export; for an
+  API request, send a valid bearer token as described in the [public API reference](../../../../en/reference/public-api.md). When an `Authorization` header is present, it must be valid; the handler does not fall back to a session cookie. In open mode, image export does not require a credential.
 - `CI`, `NEXT_TELEMETRY_DISABLED`, `PLAYWRIGHT_BROWSERS_PATH`,
   `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD`, and `NO_COLOR` do not configure image API
   authentication or rendering. Do not use test/tooling variables to fix these
@@ -56,8 +65,10 @@ only when it remains valid; otherwise it uses `variants.default`.
 ## Image upload fails
 
 Image upload is a development Studio path. A failed upload is shown as a
-localized field upload error. Check the template slug, variant, field, image
-type, and development server before retrying.
+localized field upload error. It is same-origin protected in open mode and also
+requires the active Studio session when authentication is enabled. Check the
+template slug, variant, field, image type, and development server before
+retrying.
 
 ## Preview or export looks stale
 
@@ -68,8 +79,9 @@ types: text/color/image strings, finite numbers, choice strings, and booleans.
 
 ## PNG export fails
 
-For PNG failures, validate resolved data, the active Studio session, same-origin
-cookie requests, Chromium availability, and the remote-image allowlist. Export
+For PNG failures, validate resolved data, the configured auth mode, the active
+Studio session when authentication is enabled, same-origin cookie requests,
+Chromium availability, and the remote-image allowlist. Export
 is PNG-only at the template dimensions. Export and Copy PNG validate committed
 resolved data first, associate structured server validation errors with fields,
 and focus the first invalid field. Render, download, or clipboard failures show

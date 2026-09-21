@@ -38,6 +38,10 @@ isolated testing. They therefore do not validate the published template
 declaration by themselves; verify the template manifest before publishing the
 creator package.
 
+When those release smokes exercise users, sessions, or API tokens, set
+`FRAMEKIT_AUTH_ENABLED=true` and a test bootstrap password explicitly. Do not
+infer authenticated coverage from the default open mode.
+
 Do not select or document a future version in advance. During release
 preparation, update only the package manifest for the selected package, then
 run the [publication gates](/en/contributors/releases/publishing) from the
@@ -76,4 +80,5 @@ Before publishing:
    `packages/create-framekit/template/package.json` to that published core
    version, and do this before publishing the creator package.
 5. Run `pnpm check:runtime`, then follow the build, pack, and smoke sequence in
-   the [publishing guide](/en/contributors/releases/publishing).
+   the [publishing guide](/en/contributors/releases/publishing). Final npm
+   publication and dist-tag promotion are separate external gates.

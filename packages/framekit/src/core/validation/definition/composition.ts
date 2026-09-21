@@ -1,7 +1,7 @@
-import type { NumberFieldDescriptor } from '../../../types'
+import type { NumberFieldDescriptor } from '@/types'
 
-import { validateNumberValue } from '../data'
-import { isPlainObject } from '../utils'
+import { validateNumberValue } from '@/core/validation/data'
+import { isPlainObject } from '@/core/validation/utils'
 
 export function validateComposition (
   content: unknown,

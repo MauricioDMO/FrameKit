@@ -1,5 +1,5 @@
 import { controlClass } from './shared'
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 export function ChoiceField ({ field, value, onChange, error }: EditorFieldProps) {
   const options = field.options ?? []

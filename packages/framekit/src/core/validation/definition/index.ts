@@ -1,11 +1,11 @@
-import type { TemplateBase, TemplateDefinition } from '../../../types'
+import type { TemplateBase, TemplateDefinition } from '@/types'
 
 import { validateComposition } from './composition'
 import { validateDimensions } from './dimensions'
-import { validateFields } from '../fields'
+import { validateFields } from '@/core/validation/fields'
 import { validateMetadata } from './metadata'
 import { validateVariants } from './variants'
-import { isPlainObject } from '../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 const DEFINITION_KEYS = new Set(['meta', 'width', 'height', 'fields', 'variants', 'content', 'render'])
 

@@ -83,7 +83,10 @@ FrameKit puede volver a crear estas rutas:
 Elimina y regenera esas rutas cuando sea necesario en lugar de editarlas.
 
 :::caution
-`.framekit-data/` es diferente: contiene la base de datos SQLite predeterminada. Trátala como datos persistentes de ejecución y no la elimines al limpiar salida generada.
+`.framekit-data/` es diferente: cuando la autenticación está activada, contiene
+la base de datos SQLite predeterminada. Trátala como datos persistentes de
+ejecución y no la elimines al limpiar salida generada. El modo abierto no
+inicializa esta base de datos.
 :::
 
 Para el contrato detallado de archivos, usa la [referencia de archivos generados](/es/users/reference/generated-files). Continúa con [Crear tu primera plantilla](/es/users/getting-started/first-template) cuando estés listo para editar `src/templates/`.

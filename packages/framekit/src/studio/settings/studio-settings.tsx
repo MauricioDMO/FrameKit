@@ -7,8 +7,8 @@ import { AccountSettings } from './account-settings'
 import { AdminUsersSettings } from './admin-users-settings'
 import type { SettingsMessages } from './types'
 import { TokenSettings } from './token-settings'
-import type { StudioUser } from '../types'
-import type { FrameKitLocale } from '../i18n/messages'
+import type { StudioUser } from '@/studio/types'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
 
 export function FrameKitStudioSettings ({ user, locale, messages }: { user: StudioUser, locale: FrameKitLocale, messages: SettingsMessages }) {
   const router = useRouter()

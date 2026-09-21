@@ -4,8 +4,8 @@ import { IconPhoto } from '@tabler/icons-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import type { FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection } from '../types'
+import type { FrameKitStudioMessages } from '@/studio/i18n/messages'
+import type { FrameKitStudioSection } from '@/studio/types'
 
 type CatalogSection = Exclude<FrameKitStudioSection, 'settings'>
 

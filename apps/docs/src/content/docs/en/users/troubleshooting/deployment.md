@@ -7,6 +7,10 @@ sidebar:
 
 Use [Deploy FrameKit](/en/users/deployment) for the supported topology, [Runtime and configuration](/en/users/deployment/runtime) for environment values, and [Docker and persistence](/en/users/deployment/docker-and-persistence) for the canonical image.
 
+Authentication is not inferred from production mode. Missing or `false` means
+open mode; set `FRAMEKIT_AUTH_ENABLED=true` explicitly before exposing a
+production process to an untrusted network.
+
 ## The production process does not start
 
 **Symptom:** `pnpm framekit start` exits without serving the application.
@@ -40,33 +44,35 @@ pnpm framekit browser install --with-deps
 
 ## First login fails after deployment
 
-**Symptom:** The first login on an empty database returns a service-unavailable error.
+**Symptom:** With `FRAMEKIT_AUTH_ENABLED=true`, the first login on an empty database returns a service-unavailable error.
 
 **Probable cause:** `FRAMEKIT_ADMIN_PASSWORD` is missing or invalid, or the optional username is invalid.
 
 **Check:** Confirm the runtime environment has a password of 12–256 UTF-8 bytes and, when set, a username of 3–64 ASCII letters, numbers, `.`, `_`, or `-`.
 
-**Fix:** Set valid runtime values before the first login. The bootstrap values create the first administrator only and do not replace existing users. See [Studio access troubleshooting](/en/users/troubleshooting/access).
+**Fix:** Set valid runtime values before the first login. The bootstrap values
+create the first administrator only and do not replace existing users. They are
+ignored when auth is disabled. See [Studio access troubleshooting](/en/users/troubleshooting/access).
 
 ## Users or tokens disappear after a restart
 
-**Symptom:** Accounts, sessions, or API-token metadata are missing after a container replacement or process restart.
+**Symptom:** In authenticated mode, accounts, sessions, or API-token metadata are missing after a container replacement or process restart.
 
 **Probable cause:** The SQLite directory is not durable, the configured path changed, or the database directory is not writable.
 
 **Check:** Confirm `FRAMEKIT_DATABASE_PATH`; by default it is `.framekit-data/framekit.sqlite` relative to the process working directory. In the canonical Docker image it is `/data/framekit.sqlite`.
 
-**Fix:** Mount the directory containing the database as durable storage and ensure the runtime user can write it. Do not use `:memory:` when state must survive a restart.
+**Fix:** Mount the directory containing the database as durable storage and ensure the runtime user can write it. Do not use `:memory:` when state must survive a restart. Open mode does not initialize SQLite, and switching to it does not delete an existing database.
 
 ## Cookie-authenticated requests fail behind a proxy
 
-**Symptom:** A browser mutation returns `403` even though the user is signed in.
+**Symptom:** With authentication enabled, a browser mutation returns `403` even though the user is signed in.
 
 **Probable cause:** The request `Origin` does not match the public origin derived by the server from the forwarded protocol and host.
 
 **Check:** Confirm that the proxy forwards the public HTTPS scheme and host consistently and that the browser sends the public `Origin`.
 
-**Fix:** Correct the proxy forwarding configuration. Do not disable same-origin checks or put a session cookie in a URL. For server-side image calls, use a Bearer token when a browser session is not appropriate. See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies).
+**Fix:** Correct the proxy forwarding configuration. Do not disable same-origin checks or put a session cookie in a URL. For server-side image calls, use a Bearer token only when authentication is enabled; open mode needs no credential. See [Security and reverse proxies](/en/users/deployment/security-and-reverse-proxies).
 
 ## Remote images fail only after deployment
 

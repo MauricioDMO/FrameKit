@@ -1,6 +1,6 @@
 ---
 title: Runtime and configuration
-description: Configure the Node runtime, Chromium renderer, database, image hosts, capacity, and render timeout.
+description: Configure the Node runtime, Chromium renderer, optional auth database, image hosts, capacity, and render timeout.
 sidebar:
   order: 2
 ---
@@ -34,15 +34,21 @@ These are the application variables in the canonical template. Values are read b
 
 | Variable | Default | Contract and read point |
 | --- | --- | --- |
-| `FRAMEKIT_ADMIN_USERNAME` | `admin` | Optional bootstrap username for the first user in an empty database. It must be 3-64 ASCII letters, numbers, `.`, `_`, or `-`. It is not a later user-sync setting. |
-| `FRAMEKIT_ADMIN_PASSWORD` | None | Required only while bootstrapping the first user in an empty database. It must be 12-256 UTF-8 bytes. Keep it in the runtime environment. |
-| `FRAMEKIT_DATABASE_PATH` | `.framekit-data/framekit.sqlite` | SQLite path resolved from the process working directory when the database opens. `:memory:` is explicitly non-persistent. |
+| `FRAMEKIT_AUTH_ENABLED` | `false` | The only auth switch. Missing or `false` is open mode; exactly `true` enables users, sessions, API tokens, and protected Studio/access routes. Any other value is invalid. |
+| `FRAMEKIT_ADMIN_USERNAME` | `admin` | Used only when auth is enabled to bootstrap the first user in an empty database. It must be 3-64 ASCII letters, numbers, `.`, `_`, or `-`. It is not a later user-sync setting. |
+| `FRAMEKIT_ADMIN_PASSWORD` | None | Used only when auth is enabled while bootstrapping the first user in an empty database. It must be 12-256 UTF-8 bytes. Keep it in the runtime environment. |
+| `FRAMEKIT_DATABASE_PATH` | `.framekit-data/framekit.sqlite` | Auth SQLite path resolved from the process working directory when the database opens. `:memory:` is explicitly non-persistent; open mode does not open SQLite. |
 | `PORT` | `3000` | A decimal port from `1` to `65535`. It configures the server port and the renderer's private loopback origin. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Empty | Comma-separated exact hostnames for HTTPS remote image inputs. Hostnames are lowercased, limited to 253 characters, and IP literals are rejected. Empty disables remote image fetching. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | Positive integer from `1` to `32`. It limits active renders in the process. |
 | `FRAMEKIT_RENDER_TIMEOUT_MS` | `30000` | Positive integer from `1` to `120000` milliseconds. It aborts or cancels render work after the configured duration. Page and context cleanup is attempted in `finally`; that cleanup wait has no separate documented limit. |
 
 The image handler parses its render configuration when it handles an image request. An invalid port, allowlist, capacity, or timeout value returns `api_not_configured` rather than silently using an invalid value.
+
+In open mode, image rendering needs no credential but retains all renderer
+defenses. Development uploads remain same-origin protected; authentication adds
+the active same-origin session requirement. Setting the switch back to `false`
+does not delete stored users, sessions, or tokens.
 
 ## Development server host variables
 

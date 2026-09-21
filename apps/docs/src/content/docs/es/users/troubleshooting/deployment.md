@@ -7,6 +7,10 @@ sidebar:
 
 Usa [Desplegar FrameKit](/es/users/deployment) para consultar la topología compatible, [Entorno de ejecución y configuración](/es/users/deployment/runtime) para conocer los valores del entorno y [Docker y persistencia](/es/users/deployment/docker-and-persistence) para consultar la imagen canónica.
 
+Antes de depurar acceso, confirma el modo configurado. La variable ausente o
+`FRAMEKIT_AUTH_ENABLED=false` activa el modo abierto; `true` activa usuarios,
+sesiones, tokens y SQLite. Otros valores fallan de forma explícita.
+
 ## El proceso de producción no se inicia
 
 **Síntoma:** `pnpm framekit start` termina sin servir la aplicación.
@@ -38,25 +42,25 @@ pnpm framekit start
 pnpm framekit browser install --with-deps
 ```
 
-## El primer inicio de sesión falla después del despliegue
+## El primer inicio de sesión autenticado falla después del despliegue
 
-**Síntoma:** El primer inicio de sesión en una base de datos vacía devuelve un error de servicio no disponible.
+**Síntoma:** Con `FRAMEKIT_AUTH_ENABLED=true`, el primer inicio de sesión en una base de datos vacía devuelve un error de servicio no disponible.
 
 **Causa probable:** `FRAMEKIT_ADMIN_PASSWORD` falta o no es válida, o el nombre de usuario opcional no es válido.
 
 **Comprobación:** Confirma que el entorno de ejecución tenga una contraseña de 12–256 bytes UTF-8 y, si se establece, un nombre de usuario de 3–64 letras ASCII, números, `.`, `_` o `-`.
 
-**Solución:** Define valores válidos en el entorno de ejecución antes del primer inicio de sesión. Los valores de bootstrap solo crean el primer administrador y no reemplazan a los usuarios existentes. Consulta [Solución de problemas de acceso a Studio](/es/users/troubleshooting/access).
+**Solución:** Define `FRAMEKIT_AUTH_ENABLED=true` y valores válidos en el entorno de ejecución antes del primer inicio de sesión. Los valores de bootstrap solo crean el primer administrador y no reemplazan a los usuarios existentes. Consulta [Solución de problemas de acceso a Studio](/es/users/troubleshooting/access).
 
 ## Los usuarios o los tokens desaparecen después de reiniciar
 
-**Síntoma:** Faltan cuentas, sesiones o metadatos de tokens de API después de reemplazar un contenedor o reiniciar el proceso.
+**Síntoma:** Con la autenticación activada, faltan cuentas, sesiones o metadatos de tokens de API después de reemplazar un contenedor o reiniciar el proceso.
 
 **Causa probable:** El directorio de SQLite no es duradero, la ruta configurada cambió o el directorio de la base de datos no permite escritura.
 
 **Comprobación:** Confirma `FRAMEKIT_DATABASE_PATH`; de forma predeterminada es `.framekit-data/framekit.sqlite`, relativo al directorio de trabajo del proceso. En la imagen Docker canónica es `/data/framekit.sqlite`.
 
-**Solución:** Monta como almacenamiento duradero el directorio que contiene la base de datos y asegúrate de que el usuario del runtime pueda escribir en él. No uses `:memory:` cuando el estado deba sobrevivir a un reinicio.
+**Solución:** Monta como almacenamiento duradero el directorio que contiene la base de datos y asegúrate de que el usuario del runtime pueda escribir en él. No uses `:memory:` cuando el estado deba sobrevivir a un reinicio. En modo abierto no necesitas SQLite para el acceso.
 
 ## Las solicitudes autenticadas mediante cookies fallan detrás de un proxy
 

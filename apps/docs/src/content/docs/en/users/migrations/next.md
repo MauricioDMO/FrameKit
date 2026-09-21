@@ -52,16 +52,22 @@ See [generated files](/en/users/reference/generated-files) for the output map an
 
 The editor stores overrides in browser `localStorage` under `framekit:<slug>:v2`. A stored state contains the selected variant and field data grouped by variant. Keep persisted field values aligned with the current definition: the loader drops unknown fields and variants, wrongly typed values, number values that fail their declared constraints, and choice values no longer in the options; string values for text, color, and image fields remain strings for normal data validation. A persisted selected variant must be one of the definition's content keys; otherwise the stored state is ignored.
 
-## SQLite access
+## Optional authentication and SQLite access
 
-- Set `FRAMEKIT_DATABASE_PATH` when the database must live outside the default `.framekit-data/framekit.sqlite` location.
-- Keep the database path on persistent storage for deployments. The access database is initialized lazily, uses SQLite WAL mode, and contains the current users, sessions, and API-token tables.
+- Set `FRAMEKIT_AUTH_ENABLED=false` or leave it unset for open mode. In this mode `/editor` and `/brand` work without login, `/login` redirects to `/editor`, `/settings` and access routes are absent, and the image endpoint needs no credential while keeping renderer defenses.
+- Set `FRAMEKIT_AUTH_ENABLED=true` to enable users, sessions, API tokens, protected Studio, and access routes. Only in this mode set `FRAMEKIT_DATABASE_PATH` when the database must live outside the default `.framekit-data/framekit.sqlite` location.
+- Keep the database path on persistent storage for authenticated deployments. The access database is initialized lazily, uses SQLite WAL mode, and contains the current users, sessions, and API-token tables.
 - The current schema is migration version `1`. A database with a newer schema version is rejected rather than rewritten.
 - Keep the application on the Node.js runtime for access and server rendering. Render jobs remain process-local and are not stored in SQLite.
 
+`FRAMEKIT_ADMIN_PASSWORD` and `FRAMEKIT_ADMIN_USERNAME` bootstrap the first
+administrator only when auth is enabled. Open mode does not create an anonymous
+administrator or initialize SQLite. Switching from `true` back to `false` does
+not delete stored users, sessions, or tokens.
+
 See [configuration](/en/users/reference/configuration) and [Docker and persistence](/en/users/deployment/docker-and-persistence).
 
-## Access tokens
+## Access tokens when auth is enabled
 
 Use the current Studio settings or access API to create named API tokens. The full token secret is returned once when it is created; later listings expose metadata and the visible prefix rather than the secret. Store the secret in the calling service's runtime secret store and send it as a Bearer credential when using the server image endpoint.
 

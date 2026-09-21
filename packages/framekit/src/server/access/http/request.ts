@@ -1,4 +1,4 @@
-import { isPlainObject } from '../../../core/validation/utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 import { AccessError, fail } from './errors'
 

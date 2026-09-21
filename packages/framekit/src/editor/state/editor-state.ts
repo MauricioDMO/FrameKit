@@ -1,5 +1,5 @@
-import type { TemplateBase } from '../../types'
-import { validateNumberValue } from '../../core/validation/data'
+import type { TemplateBase } from '@/types'
+import { validateNumberValue } from '@/core/validation/data'
 
 export interface EditorState {
   selectedVariant: string

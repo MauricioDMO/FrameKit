@@ -1,4 +1,4 @@
-import type { NumberFieldDescriptor, TemplateBase } from '../../types'
+import type { NumberFieldDescriptor, TemplateBase } from '@/types'
 
 export type TemplateDataValidationError =
   | { code: 'required' }

@@ -7,6 +7,14 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 FrameKit convierte plantillas React en flujos editables para crear imágenes. Empieza por la tarea que necesitas completar; la barra lateral contiene los conceptos y la referencia más detallados.
 
+:::caution
+La autenticación es opcional. Cuando `FRAMEKIT_AUTH_ENABLED` falta o es
+`false`, `/editor` y `/brand` están abiertos, `/login` redirige a `/editor`,
+`/settings` y la API de acceso no existen, y el renderizado de imágenes no
+necesita credenciales, pero conserva sus defensas. Define
+`FRAMEKIT_AUTH_ENABLED=true` antes de exponer producción a una red no confiable.
+:::
+
 ## Empieza aquí
 
 <CardGrid>
@@ -48,12 +56,12 @@ FrameKit convierte plantillas React en flujos editables para crear imágenes. Em
   <LinkCard
     title="API HTTP"
     href="/es/users/reference/http-api"
-    description="Integra acceso y renderizado autenticado de imágenes del lado del servidor."
+    description="Integra gestión de acceso opcional y renderizado de imágenes del lado del servidor."
   />
   <LinkCard
     title="Despliegue"
     href="/es/users/deployment"
-    description="Prepara Node, Chromium, SQLite, secretos y almacenamiento persistente."
+    description="Prepara Node, Chromium, datos de auth opcionales, secretos y persistencia."
   />
 </CardGrid>
 

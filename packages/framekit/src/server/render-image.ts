@@ -2,7 +2,8 @@ import { Buffer } from 'node:buffer'
 
 import type { BrowserContext, Page } from 'playwright-core'
 
-import type { ImageRenderRuntimeConfig, ResolvedRenderPayload } from './config'
+import type { ResolvedRenderPayload } from '@/types'
+import type { ImageRenderRuntimeConfig } from './config'
 import { ImageRenderError } from './errors'
 import { createRenderJob, deleteRenderJob } from './render-job'
 import { createRenderContext, reserveRender } from './browser'

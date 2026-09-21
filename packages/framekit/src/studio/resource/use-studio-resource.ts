@@ -3,9 +3,9 @@
 import type { ComponentType } from 'react'
 import { useEffect, useState } from 'react'
 
-import { validateTemplateDefinition } from '../../core/validation'
-import type { TemplateDefinition, TemplateRegistryEntry } from '../../types'
-import type { FrameKitStudioBrand, FrameKitStudioSection } from '../types'
+import { validateTemplateDefinition } from '@/core/validation'
+import type { TemplateDefinition, TemplateRegistryEntry } from '@/types'
+import type { FrameKitStudioBrand, FrameKitStudioSection } from '@/studio/types'
 
 export type StudioResourceState =
   | { status: 'loading' }

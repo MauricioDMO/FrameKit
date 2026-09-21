@@ -5,22 +5,27 @@ sidebar:
   order: 4
 ---
 
-Read this page before exposing Studio or the image API to a public network. FrameKit's application checks authentication and authorization, but HTTPS, login throttling, and proxy policy remain deployment responsibilities.
+Read this page before exposing Studio or the image API to a public network.
+Authentication is opt-in: missing or `false` leaves `/editor` and `/brand` open,
+removes `/settings` and the access API, and makes image rendering credential-free.
+Before exposing production to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`. HTTPS, request throttling, and proxy policy remain
+deployment responsibilities.
 
 ## Public exposure checklist
 
 - Terminate HTTPS at the reverse proxy or load balancer and forward requests to the long-lived Node process.
-- Apply throttling to login traffic at the proxy or load balancer.
-- Set a strong `FRAMEKIT_ADMIN_PASSWORD` before the first login to an empty database.
+- Apply request throttling at the proxy or load balancer, including login traffic when auth is enabled.
+- When auth is enabled, set a strong `FRAMEKIT_ADMIN_PASSWORD` before the first login to an empty database.
 - Keep `framekit_session` cookies and full `fk_` token secrets out of logs, URLs, browser bundles, rendered DOM, and client-side code.
-- Mount the SQLite directory durably when account and token state must survive restarts.
+- Mount the SQLite directory durably when auth is enabled and account or token state must survive restarts.
 - Keep the process and Chromium runtime on the supported Node and container setup.
 
 ## Session and token boundaries
 
-The `framekit_session` cookie is `HttpOnly` and `SameSite=Lax`; production responses add `Secure`. Cookie-authenticated mutations require a same-origin `Origin`. The server verifies the current session, account activity, role, and token ownership rather than relying on whether Studio shows a control.
+When auth is enabled, the `framekit_session` cookie is `HttpOnly` and `SameSite=Lax`; production responses add `Secure`. Cookie-authenticated mutations require a same-origin `Origin`. The server verifies the current session, account activity, role, and token ownership rather than relying on whether Studio shows a control.
 
-Bearer authentication is accepted only by `POST /api/framekit/images/render`. The full API token is returned only when it is created. Later token lists and administrator views expose metadata and a short prefix, never the recoverable secret. An inactive token owner cannot authenticate an otherwise unrevoked token; reactivation makes it usable again.
+When auth is enabled, Bearer authentication is accepted only by `POST /api/framekit/images/render`. The full API token is returned only when it is created. Later token lists and administrator views expose metadata and a short prefix, never the recoverable secret. An inactive token owner cannot authenticate an otherwise unrevoked token; reactivation makes it usable again. In open mode, no token is required or initialized.
 
 If an image request contains an `Authorization` header, it is authoritative. A malformed or invalid Bearer value returns `401` even when a valid session cookie is also present. Do not send both credentials as a fallback strategy.
 
@@ -48,7 +53,7 @@ The image API validates its image-render configuration first, then authenticates
 
 ## Development-only uploads
 
-`POST /framekit/assets` exists only on the FrameKit development server for replacing template assets from Studio. It requires a valid same-origin session and writes only to permitted template asset namespaces. It is not a route under `/api/framekit/**` and should not be treated as a production upload endpoint.
+`POST /framekit/assets` exists only on the FrameKit development server for replacing template assets from Studio. It always requires a same-origin request; authenticated mode additionally requires a valid same-origin session. It writes only to permitted template asset namespaces, is not a route under `/api/framekit/**`, and should not be treated as a production upload endpoint.
 
 ## Topology limits
 

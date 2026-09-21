@@ -1,6 +1,6 @@
 ---
 title: Server package API
-description: Mount FrameKit's Node.js access, image, and private render handlers.
+description: Mount FrameKit's Node.js optional-access, image, and private render handlers.
 sidebar:
   order: 9
 ---
@@ -29,10 +29,13 @@ export const PATCH = handler
 export const DELETE = handler
 ```
 
-The unified handler serves access operations and `POST /api/framekit/images/render`. `createRenderPage` is the separate private page handoff used by the server-side PNG renderer.
+The unified handler serves access operations when `FRAMEKIT_AUTH_ENABLED=true`
+and `POST /api/framekit/images/render` in both modes. In open mode, image
+requests need no credential and access operations are absent. `createRenderPage`
+is the separate private page handoff used by the server-side PNG renderer.
 
 ## Bundle and runtime constraints
 
-This entrypoint is server-only and must not be bundled for browsers or deployed to an Edge runtime. Keep credentials, sessions, API tokens, and render configuration on the server. The renderer requires the explicitly installed Chromium headless shell; it is intended for a long-lived Node.js process.
+This entrypoint is server-only and must not be bundled for browsers or deployed to an Edge runtime. Keep any credentials, sessions, API tokens, and render configuration on the server. The renderer requires the explicitly installed Chromium headless shell; it is intended for a long-lived Node.js process.
 
 See [HTTP API](/en/users/reference/http-api), [image render API](/en/users/reference/http-api/image-render), [existing-project integration](/en/users/getting-started/existing-project), and the [development API](/en/users/reference/package-api/dev).

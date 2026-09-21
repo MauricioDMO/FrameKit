@@ -1,6 +1,7 @@
 import { chromium, type Browser, type BrowserContext } from 'playwright-core'
 
-import type { ImageRenderRuntimeConfig, ResolvedRenderPayload } from './config'
+import type { ResolvedRenderPayload } from '@/types'
+import type { ImageRenderRuntimeConfig } from './config'
 import { ImageRenderError } from './errors'
 
 const browserStateSymbol = Symbol.for('framekit.server.browser')

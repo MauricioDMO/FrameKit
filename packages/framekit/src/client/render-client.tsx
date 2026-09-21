@@ -3,10 +3,9 @@
 import { Component, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
-import { validateTemplateDefinition } from '../core/validation'
-import { TemplateCanvas } from '../editor/components/template-canvas'
-import type { ResolvedRenderPayload } from '../server/config'
-import type { TemplateDefinition, TemplateRegistryEntry } from '../types'
+import { validateTemplateDefinition } from '@/core/validation'
+import { TemplateCanvas } from '@/editor'
+import type { ResolvedRenderPayload, TemplateDefinition, TemplateRegistryEntry } from '@/types'
 
 interface RenderClientProps {
   payload: ResolvedRenderPayload

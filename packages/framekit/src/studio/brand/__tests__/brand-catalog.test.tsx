@@ -3,7 +3,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { FrameKitBrandCatalog } from '../brand-catalog'
+import { FrameKitBrandCatalog } from '@/studio/brand/brand-catalog'
 
 afterEach(cleanup)
 

@@ -17,7 +17,7 @@ generan. Comienza con [desarrollo local](/es/contributors/getting-started/local-
 | [Arquitectura de paquetes](/es/contributors/architecture/packages) | Los paquetes públicos, el Studio de primera parte, el sitio de documentación y los puntos de entrada publicados. |
 | [Código generado](/es/contributors/architecture/generated-code) | El descubrimiento, los registros, los clientes generados, los recursos copiados y el código mantenido. |
 | [Studio y Editor](/es/contributors/architecture/studio-and-editor) | El límite entre el cliente y el editor, la composición de Studio y la ruta de exportación. |
-| [Servidor y acceso](/es/contributors/architecture/server-and-access) | El acceso a SQLite, las sesiones, los tokens, la autorización y el renderizado del lado del servidor. |
+| [Servidor y acceso](/es/contributors/architecture/server-and-access) | El acceso opcional a SQLite, las sesiones, los tokens, la autorización y el renderizado del lado del servidor. |
 | [Herramientas y codegen](/es/contributors/architecture/tooling-and-codegen) | El descubrimiento, la generación de código, el servidor de desarrollo y el ciclo de vida de la CLI. |
 
 ## Mapa de capas
@@ -42,7 +42,7 @@ Las capas tienen distintos roles en tiempo de ejecución:
 - **Foundation y core** definen los tipos de plantillas, los campos, la resolución de datos y la validación.
 - **Editor** representa una definición en un canvas, proporciona controles y estado, e inicia las acciones de exportación.
 - **Studio** añade navegación, previsualizaciones de marca, configuración, localización y el límite de página del lado del servidor alrededor de la interfaz de cliente.
-- **Server y access** gestionan las rutas HTTP exclusivas de Node, la identidad respaldada por SQLite, la preparación de entradas de imagen, los trabajos y el renderizado con Chromium.
+- **Server y access** gestionan las rutas HTTP exclusivas de Node, la identidad opcional respaldada por SQLite, la preparación de entradas de imagen, los trabajos y el renderizado con Chromium.
 - **Tooling y codegen** descubren directorios de origen, escriben bindings locales al proyecto, observan los archivos de desarrollo e implementan la CLI.
 
 ## Mapa de workspaces

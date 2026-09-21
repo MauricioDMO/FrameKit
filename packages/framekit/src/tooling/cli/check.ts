@@ -2,9 +2,9 @@ import { createRequire } from 'node:module'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { findTemplateAssets } from '../discovery/find-assets'
-import type { DiscoveredTemplate } from '../discovery/types'
-import type { TemplateAssetManifest } from '../../types'
+import { findTemplateAssets } from '@/tooling/discovery/find-assets'
+import type { DiscoveredTemplate } from '@/tooling/discovery/types'
+import type { TemplateAssetManifest } from '@/types'
 import { generate } from './generate'
 import { runChild } from './run-child'
 

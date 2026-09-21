@@ -8,10 +8,11 @@ import { fileURLToPath } from 'node:url'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { runChild } from '../run-child'
+import { runChild } from '@/tooling/cli/run-child'
 
 const cliFile = fileURLToPath(new URL('../index.ts', import.meta.url))
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'))
+const packageTsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))
 const temporaryRoots: string[] = []
 const validTemplateSource = `export default {
   meta: { title: 'Valid template' },
@@ -47,7 +48,7 @@ async function runCli (root: string, args: readonly string[]): Promise<{
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [tsxCli, cliFile, ...args], {
       cwd: root,
-      env: { ...process.env, npm_config_user_agent: '' },
+      env: { ...process.env, npm_config_user_agent: '', TSX_TSCONFIG_PATH: packageTsconfig },
       stdio: ['ignore', 'pipe', 'pipe']
     })
     let stdout = ''

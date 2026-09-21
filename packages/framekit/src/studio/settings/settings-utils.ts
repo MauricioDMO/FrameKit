@@ -1,5 +1,5 @@
-import type { FrameKitLocale } from '../i18n/messages'
-import type { StudioUser } from '../types'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
+import type { StudioUser } from '@/studio/types'
 import { requestStudioJson, StudioApiError } from './api'
 import type { ManagedStudioUser, StudioTokenMetadata, SettingsMessages } from './types'
 

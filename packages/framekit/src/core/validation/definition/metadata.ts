@@ -1,4 +1,4 @@
-import { isPlainObject } from '../utils'
+import { isPlainObject } from '@/core/validation/utils'
 
 const META_KEYS = new Set(['title', 'description', 'marketingDescription', 'tags'])
 

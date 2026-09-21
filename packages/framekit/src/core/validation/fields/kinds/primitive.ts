@@ -1,5 +1,5 @@
-import type { FieldRecord } from '../common'
-import { validateStringField } from '../common'
+import type { FieldRecord } from '@/core/validation/fields/common'
+import { validateStringField } from '@/core/validation/fields/common'
 
 export function validatePrimitiveField (key: string, field: FieldRecord): string | undefined {
   if (field.kind === 'boolean') {

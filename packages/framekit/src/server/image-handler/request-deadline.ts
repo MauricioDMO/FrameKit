@@ -1,4 +1,4 @@
-import { ImageRenderError } from '../errors'
+import { ImageRenderError } from '@/server/errors'
 import { failure } from './errors'
 
 export interface RequestDeadline {

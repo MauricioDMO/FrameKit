@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import type { FrameKitLocale } from '../i18n/messages'
-import type { StudioUser } from '../types'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
+import type { StudioUser } from '@/studio/types'
 import { requestStudioJson } from './api'
 import { ConfirmationDialog } from './confirmation-dialog'
 import { Feedback } from './settings-components'

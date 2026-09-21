@@ -5,13 +5,19 @@ sidebar:
   order: 5
 ---
 
-Use this guide from Studio's **Settings** page. See [Use Studio](/en/users/guides/use-studio) for the complete Studio workflow and [FrameKit Studio](/en/users/concepts/studio) for the access model.
+This guide applies only when `FRAMEKIT_AUTH_ENABLED=true`. In open mode,
+`/settings` and the access API are absent; no login, SQLite database, user, or
+API token is required. See [Use Studio](/en/users/guides/use-studio) for the complete Studio workflow and [FrameKit Studio](/en/users/concepts/studio) for the access model.
 
 ## 1. Sign in to Studio
 
 Open `/login` and enter your username and password. A successful login creates a `framekit_session` session. The session lasts 30 days and protects the `/editor`, `/brand`, and `/settings` sections.
 
-On an empty account database, the first login creates one active administrator. Set `FRAMEKIT_ADMIN_PASSWORD` before that login. `FRAMEKIT_ADMIN_USERNAME` is optional and defaults to `admin`. Once a user exists, changing these values does not replace or reset existing users.
+On an empty account database, the first login creates one active administrator.
+Set `FRAMEKIT_ADMIN_PASSWORD` before that login. `FRAMEKIT_ADMIN_USERNAME` is
+optional and defaults to `admin`. These bootstrap variables are used only when
+authentication is enabled. Once a user exists, changing them does not replace or
+reset existing users.
 
 Incorrect, unknown, invalid, or inactive credentials all fail as an unauthenticated login. A session for an inactive or deleted user is not accepted, even if the browser still has its old cookie.
 

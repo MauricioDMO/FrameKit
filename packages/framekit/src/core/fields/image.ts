@@ -1,4 +1,4 @@
-import type { ImageFieldDescriptor, ImageFieldScope } from '../../types'
+import type { ImageFieldDescriptor, ImageFieldScope } from '@/types'
 
 export function image (params: {
   label: string

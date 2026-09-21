@@ -1,6 +1,6 @@
 'use client'
 
-import type { FrameKitLocale } from '../i18n/messages'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
 import type { SettingsMessages, StudioTokenMetadata } from './types'
 import { dangerButtonClass, formatTimestamp } from './settings-utils'
 

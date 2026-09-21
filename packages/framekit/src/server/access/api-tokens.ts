@@ -1,11 +1,11 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 
-import type { StudioUser } from '../../studio/types'
+import type { StudioUser } from '@/types'
 
 import { getDatabase } from './database'
-import { UserDomainError, userNotFoundError } from './users/errors'
-import { isRecord, isUserRole, requireUserId, toStudioUser } from './users/validation'
-import { readUserState, withImmediateTransaction } from './users/repository'
+import { UserDomainError, userNotFoundError } from '@/server/access/users/errors'
+import { isRecord, isUserRole, requireUserId, toStudioUser } from '@/server/access/users/validation'
+import { readUserState, withImmediateTransaction } from '@/server/access/users/repository'
 
 const tokenSecretBytes = 32
 const generatedTokenPrefix = 'fk_'

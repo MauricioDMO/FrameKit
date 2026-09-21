@@ -52,18 +52,19 @@ Consulta [archivos generados](/es/users/reference/generated-files) para ver el m
 
 El editor almacena las sobrescrituras en el `localStorage` del navegador, bajo `framekit:<slug>:v2`. Un estado almacenado contiene la variante seleccionada y los datos de los campos agrupados por variante. Mantén los valores de los campos persistidos alineados con la definición actual: el cargador descarta campos y variantes desconocidos, valores con tipos incorrectos, valores numéricos que no cumplen sus restricciones declaradas y valores de opción que ya no están entre las opciones; los valores de cadena para los campos de texto, color e imagen siguen siendo cadenas para la validación normal de datos. Una variante seleccionada persistida debe ser una de las claves de contenido de la definición; de lo contrario, se ignora el estado almacenado.
 
-## Acceso a SQLite
+## Acceso opcional a SQLite
 
+- Define `FRAMEKIT_AUTH_ENABLED=true` para activar usuarios, sesiones, tokens de API y SQLite. En modo abierto no se inicializa la base de datos de acceso.
 - Establece `FRAMEKIT_DATABASE_PATH` cuando la base de datos deba estar fuera de la ubicación predeterminada `.framekit-data/framekit.sqlite`.
-- Mantén la ruta de la base de datos en almacenamiento persistente para los despliegues. La base de datos de acceso se inicializa de forma diferida, usa el modo WAL de SQLite y contiene las tablas actuales de usuarios, sesiones y tokens de API.
+- Mantén la ruta de la base de datos en almacenamiento persistente para los despliegues autenticados. La base de datos de acceso se inicializa de forma diferida, usa el modo WAL de SQLite y contiene las tablas actuales de usuarios, sesiones y tokens de API.
 - El esquema actual es la versión de migración `1`. Una base de datos con una versión de esquema más reciente se rechaza en lugar de reescribirse.
 - Mantén la aplicación en el runtime de Node.js para el acceso y el renderizado del lado del servidor. Los trabajos de renderizado permanecen en el proceso y no se almacenan en SQLite.
 
 Consulta [configuración](/es/users/reference/configuration) y [Docker y persistencia](/es/users/deployment/docker-and-persistence).
 
-## Tokens de acceso
+## Tokens de acceso autenticado
 
-Usa la configuración actual de Studio o la API de acceso para crear tokens de API con nombre. El secreto completo del token se devuelve una vez al crearlo; las listas posteriores muestran metadatos y el prefijo visible, no el secreto. Almacena el secreto en el almacén de secretos del runtime del servicio que realiza la llamada y envíalo como credencial Bearer al usar el endpoint de imágenes del servidor.
+Solo con `FRAMEKIT_AUTH_ENABLED=true`, usa la configuración actual de Studio o la API de acceso para crear tokens de API con nombre. El secreto completo del token se devuelve una vez al crearlo; las listas posteriores muestran metadatos y el prefijo visible, no el secreto. Almacena el secreto en el almacén de secretos del runtime del servicio que realiza la llamada y envíalo como credencial Bearer al usar el endpoint de imágenes del servidor. En modo abierto, el endpoint de imágenes no necesita un token.
 
 ## Exportación del lado del servidor
 

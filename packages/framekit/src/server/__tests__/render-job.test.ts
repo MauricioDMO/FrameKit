@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createRenderJob, deleteRenderJob, loadRenderRequest, type RenderJobTestOptions } from '@/server/render-job'
-import type { ResolvedRenderPayload } from '@/server/config'
+import type { ResolvedRenderPayload } from '@/types'
 
 const payload: ResolvedRenderPayload = {
   template: 'social/post',

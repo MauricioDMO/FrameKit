@@ -2,8 +2,8 @@ import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createRenderJob } from '@/server/render-job'
-import type { ResolvedRenderPayload } from '@/server/config'
 import { createRenderPage } from '@/server/render-page'
+import type { ResolvedRenderPayload } from '@/types'
 
 const pageMocks = vi.hoisted(() => {
   const notFoundError = new Error('NEXT_NOT_FOUND')

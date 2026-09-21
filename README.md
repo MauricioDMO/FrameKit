@@ -38,9 +38,16 @@ cd my-project
 pnpm dev
 ```
 
-Open `http://localhost:3000`, sign in, and start editing the included template.
-The [create a project guide](https://framekit.mauriciodmo.com/en/users/getting-started/create-project)
-covers the first login and the available CLI options.
+Open `http://localhost:3000` and start editing the included template. New
+projects use open mode by default: `/editor` and `/brand` work without login,
+and `/login` redirects to `/editor`. To enable users, sessions, and protected
+access, set `FRAMEKIT_AUTH_ENABLED=true` and provide the bootstrap password
+before the first login. The [create a project guide](https://framekit.mauriciodmo.com/en/users/getting-started/create-project)
+covers both modes and the available CLI options.
+
+Before exposing a production project to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`. Do not rely on `NODE_ENV`, credentials, or SQLite
+to enable authentication.
 
 ## A template is just React
 

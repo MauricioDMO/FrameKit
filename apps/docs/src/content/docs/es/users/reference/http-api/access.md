@@ -5,9 +5,19 @@ sidebar:
   order: 2
 ---
 
-La API de acceso utiliza la cookie `framekit_session`. Iniciar sesión crea la cookie; cerrar sesión, cambiar la contraseña, desactivar y eliminar una cuenta pueden hacer que caduque. La cookie es `HttpOnly`, `SameSite=Lax`, está limitada a `/` y dura 30 días. En producción también tiene `Secure`.
+La API de acceso solo existe cuando `FRAMEKIT_AUTH_ENABLED=true`. En el modo
+abierto, todas las rutas de acceso responden como no encontradas antes de leer
+el cuerpo, comprobar el origen o abrir SQLite. Cuando está activada, la API usa
+la cookie `framekit_session`. Iniciar sesión crea la cookie; cerrar sesión,
+cambiar la contraseña, desactivar y eliminar una cuenta pueden hacer que caduque.
+La cookie es `HttpOnly`, `SameSite=Lax`, está limitada a `/` y dura 30 días. En
+producción también tiene `Secure`.
 
-Todos los cuerpos de las solicitudes de acceso son objetos JSON de un máximo de 64 KiB. Usa `Content-Type: application/json`; solo se acepta la codificación de contenido identity. Los objetos de solicitud usan las claves exactas de cada operación. Las rutas de acceso no aceptan tokens Bearer.
+En el modo autenticado, todos los cuerpos de las solicitudes de acceso son
+objetos JSON de un máximo de 64 KiB. Usa `Content-Type: application/json`; solo
+se acepta la codificación de contenido identity. Los objetos de solicitud usan
+las claves exactas de cada operación. Las rutas de acceso no aceptan tokens
+Bearer.
 
 ## Autenticación y autorización
 
@@ -55,7 +65,13 @@ El cuerpo de la solicitud se lee antes de poder autenticar las credenciales. Si 
 }
 ```
 
-La respuesta también establece `framekit_session`. Las credenciales inválidas, desconocidas o inactivas devuelven `401` sin indicar qué caso ocurrió. En una base de datos vacía, el controlador de inicio de sesión ejecuta `bootstrapUsers` antes de autenticar las credenciales enviadas; por tanto, el arranque no está condicionado a una comprobación correcta de las credenciales. Utiliza `FRAMEKIT_ADMIN_USERNAME` y `FRAMEKIT_ADMIN_PASSWORD`; consulta [Gestionar tu cuenta y tus tokens](/es/users/guides/manage-account-and-tokens).
+La respuesta también establece `framekit_session`. Las credenciales inválidas,
+desconocidas o inactivas devuelven `401` sin indicar qué caso ocurrió. En una
+base de datos vacía, el controlador de inicio de sesión ejecuta `bootstrapUsers`
+antes de autenticar las credenciales enviadas; por tanto, el arranque no está
+condicionado a una comprobación correcta de las credenciales. Utiliza
+`FRAMEKIT_ADMIN_USERNAME` y `FRAMEKIT_ADMIN_PASSWORD` solo con la autenticación
+activada; consulta [Gestionar tu cuenta y tus tokens](/es/users/guides/manage-account-and-tokens).
 
 ### `POST /api/framekit/logout`
 

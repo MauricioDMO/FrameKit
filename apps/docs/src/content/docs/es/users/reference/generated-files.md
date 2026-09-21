@@ -50,12 +50,12 @@ El proyecto generado reserva estas rutas:
 | --- | --- |
 | `.framekit/next/` | Salida de producción standalone de Next.js creada por la configuración de Next.js de FrameKit. |
 | `.framekit/` | Salida temporal de FrameKit, incluido el directorio temporal utilizado mientras `framekit check` valida las plantillas. |
-| `.framekit-data/` | Directorio de la base de datos SQLite predeterminada (`.framekit-data/framekit.sqlite`) cuando no se establece `FRAMEKIT_DATABASE_PATH`. |
+| `.framekit-data/` | Directorio de la base de datos SQLite predeterminada (`.framekit-data/framekit.sqlite`) cuando la autenticación está activada y no se establece `FRAMEKIT_DATABASE_PATH`. El modo abierto no lo inicializa. |
 | `public/framekit/templates/` | Recursos de plantilla copiados durante la generación. |
 | `src/generated/framekit/` | Registros generados y vinculaciones de clientes. |
 
-**Advertencia:** Cuando se usa la ruta predeterminada, `.framekit-data/framekit.sqlite` contiene la base de datos SQLite persistente de FrameKit. Conserva el directorio `.framekit-data/` entre reinicios y despliegues; no lo elimines como salida generada. Si estableces `FRAMEKIT_DATABASE_PATH`, conserva el directorio de esa ruta; `:memory:` no es persistente.
+**Advertencia:** Cuando se usa la ruta predeterminada con `FRAMEKIT_AUTH_ENABLED=true`, `.framekit-data/framekit.sqlite` contiene la base de datos SQLite persistente de FrameKit. Conserva el directorio `.framekit-data/` entre reinicios y despliegues; no lo elimines como salida generada. Si estableces `FRAMEKIT_DATABASE_PATH`, conserva el directorio de esa ruta; `:memory:` no es persistente. El modo abierto no crea esta base de datos.
 
-La plantilla del repositorio ignora estas rutas. Las salidas generadas (`.framekit/`, `public/framekit/` y `src/generated/framekit/`) se pueden eliminar y regenerar según corresponda; `.framekit-data/` se ignora para no versionar datos, pero debe conservarse cuando se usa para la base de datos predeterminada. `framekit start` lee la salida de producción existente; no genera el registro.
+La plantilla del repositorio ignora estas rutas. Las salidas generadas (`.framekit/`, `public/framekit/` y `src/generated/framekit/`) se pueden eliminar y regenerar según corresponda; `.framekit-data/` se ignora para no versionar datos, pero debe conservarse cuando se usa para la base de datos predeterminada en modo autenticado. `framekit start` lee la salida de producción existente; no genera el registro.
 
 Para consultar los comandos que producen estos archivos, consulta la [referencia de la CLI de FrameKit](/es/users/reference/cli/framekit). Para conocer la estructura de origen, consulta [estructura del proyecto](/es/users/getting-started/project-structure).

@@ -1,21 +1,26 @@
 ---
 title: Troubleshoot image rendering
-description: Diagnose authentication, request, image input, Chromium, capacity, and timeout failures from the image API.
+description: Diagnose optional authentication, request, image input, Chromium, capacity, and timeout failures from the image API.
 sidebar:
   order: 7
 ---
 
 Start with the HTTP status and stable `error` code. The [image API error reference](/en/users/reference/http-api/errors) contains the complete error contract.
 
-## `401 unauthorized`
+Check `FRAMEKIT_AUTH_ENABLED` before diagnosing credentials. Missing or `false`
+is open mode: image rendering is credential-free but retains renderer defenses.
+Exactly `true` enables authenticated image access; any other configured value is
+invalid.
+
+## `401 unauthorized` in authenticated mode
 
 **Symptom:** The image endpoint returns `401 unauthorized`.
 
-**Probable cause:** The Bearer token is invalid, revoked, or owned by an inactive user, or a cookie-authenticated request has no valid same-origin session.
+**Probable cause:** With `FRAMEKIT_AUTH_ENABLED=true`, the Bearer token is invalid, revoked, or owned by an inactive user, or a cookie-authenticated request has no valid same-origin session. Missing credentials are not a failure in open mode.
 
 **Check:** Confirm that the header is exactly `Authorization: Bearer <full-token>`, or confirm that the request includes a valid session cookie and same-origin `Origin`. A malformed Authorization header does not fall back to the cookie.
 
-**Fix:** Use the original full token or create a new token, and retry with the correct authentication method.
+**Fix:** Set `FRAMEKIT_AUTH_ENABLED=true` explicitly for authenticated access, then use the original full token or create a new token and retry with the correct authentication method. In open mode, omit the credential.
 
 ## `400 invalid_request` or `413 request_too_large`
 

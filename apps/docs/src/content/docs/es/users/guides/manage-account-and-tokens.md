@@ -5,13 +5,20 @@ sidebar:
   order: 5
 ---
 
-Usa esta guía desde la página de **Ajustes** de Studio. Consulta [Usar Studio](/es/users/guides/use-studio) para conocer el flujo completo de Studio y [FrameKit Studio](/es/users/concepts/studio) para conocer el modelo de acceso.
+Esta guía se aplica solo cuando `FRAMEKIT_AUTH_ENABLED=true`. En el modo
+abierto, `/settings` y la API de acceso no existen; no se requiere iniciar
+sesión, SQLite, ningún usuario ni token de API. Consulta [Usar Studio](/es/users/guides/use-studio) para conocer el flujo completo de Studio y [FrameKit Studio](/es/users/concepts/studio) para conocer el modelo de acceso.
 
 ## 1. Iniciar sesión en Studio
 
 Abre `/login` e introduce tu usuario y contraseña. Un inicio de sesión correcto establece una cookie de sesión `framekit_session`. La sesión dura 30 días y protege las secciones `/editor`, `/brand` y `/settings`.
 
-En una base de datos de cuentas vacía, el primer inicio de sesión crea un único administrador activo. Define `FRAMEKIT_ADMIN_PASSWORD` antes de iniciar sesión. `FRAMEKIT_ADMIN_USERNAME` es opcional y su valor predeterminado es `admin`. Una vez que existe un usuario, cambiar estos valores no reemplaza ni restablece los usuarios existentes.
+En una base de datos de cuentas vacía, el primer inicio de sesión crea un único
+administrador activo. Define `FRAMEKIT_ADMIN_PASSWORD` antes de iniciar sesión.
+`FRAMEKIT_ADMIN_USERNAME` es opcional y su valor predeterminado es `admin`.
+Estas variables de bootstrap solo se usan con la autenticación activada. Una vez
+que existe un usuario, cambiar estos valores no reemplaza ni restablece los
+usuarios existentes.
 
 Las credenciales incorrectas, desconocidas, no válidas o inactivas producen un inicio de sesión no autenticado. No se acepta una sesión de un usuario inactivo o eliminado, aunque el navegador todavía conserve su cookie anterior.
 

@@ -17,6 +17,14 @@ Run `pnpm dlx @mauriciodmo/create-framekit <directory>`. The target must not exi
 2. Run `framekit generate`. It writes the source-side registry to
    `src/generated/framekit/templates.ts`.
 
+Authentication is optional. Missing or `FRAMEKIT_AUTH_ENABLED=false` leaves
+`/editor` and `/brand` open, redirects `/login` to `/editor`, and leaves
+`/settings` and the access API unavailable; image rendering remains credential-
+free but keeps its renderer defenses. Set `FRAMEKIT_AUTH_ENABLED=true` before
+exposing production to an untrusted network to enable users, sessions, API
+tokens, and protected Studio/access routes. The value is strict when set; do
+not infer authentication from `NODE_ENV`, bootstrap credentials, or SQLite.
+
 ## Commands
 
 - See [CLI and troubleshooting](references/cli-and-troubleshooting.md) for commands, discovery, and fixes.

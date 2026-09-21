@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
-import type { StudioUser } from '../types'
+import type { StudioUser } from '@/studio/types'
 import { requestStudioJson } from './api'
 import { Feedback, SettingsCard } from './settings-components'
 import type { SettingsMessages, FeedbackState } from './types'

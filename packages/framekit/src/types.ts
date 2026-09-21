@@ -63,6 +63,21 @@ export interface TemplateAssetManifest {
   variants: Record<string, Record<string, string>>
 }
 
+export interface StudioUser {
+  id: string
+  username: string
+  role: 'admin' | 'user'
+}
+
+export interface ResolvedRenderPayload {
+  template: string
+  variant: string
+  data: Record<string, string | number | boolean>
+  assets: TemplateAssetManifest
+  width: number
+  height: number
+}
+
 export type TemplateFields = Record<string, FieldDescriptor>
 
 type InferFieldValue<Field> =

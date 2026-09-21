@@ -3,8 +3,8 @@
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from '@tabler/icons-react'
 
 import type { TemplateNavigationNode } from '@/editor/navigation/navigation'
-import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection, StudioUser } from '../types'
+import type { FrameKitLocale, FrameKitStudioMessages } from '@/studio/i18n/messages'
+import type { FrameKitStudioSection, StudioUser } from '@/studio/types'
 import { FrameKitLogo } from './framekit-logo'
 import { SidebarFooter } from './sidebar-footer'
 import { SidebarNavigation } from './sidebar-navigation'

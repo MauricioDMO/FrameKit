@@ -1,5 +1,5 @@
-import { createApiToken, listApiTokens, revokeApiToken } from '../api-tokens'
-import { authenticateUser, bootstrapUsers, createUser, deleteUser, getManagedUserById, listUsers, setPassword, updateUser, updateUsername } from '../users'
+import { createApiToken, listApiTokens, revokeApiToken } from '@/server/access/api-tokens'
+import { authenticateUser, bootstrapUsers, createUser, deleteUser, getManagedUserById, listUsers, setPassword, updateUser, updateUsername } from '@/server/access/users'
 import { errorResponse, fail, jsonResponse } from './errors'
 import { exactBody, readAccessJson } from './request'
 import { deleteSession, expiredSessionCookie, requireSession, sessionCookie, createSession, readSessionCookie } from './session'

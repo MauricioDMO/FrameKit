@@ -18,7 +18,7 @@ you have not installed the repository yet.
 | [Package architecture](/en/contributors/architecture/packages) | Public packages, the first-party Studio, the docs site, and published entrypoints. |
 | [Generated code](/en/contributors/architecture/generated-code) | Discovery, registries, generated clients, copied assets, and maintained source. |
 | [Studio and Editor](/en/contributors/architecture/studio-and-editor) | The client/editor boundary, Studio composition, and the export path. |
-| [Server and access](/en/contributors/architecture/server-and-access) | SQLite access, sessions, tokens, authorization, and server-side rendering. |
+| [Server and access](/en/contributors/architecture/server-and-access) | Optional SQLite access, sessions, tokens, authorization, and server-side rendering. |
 | [Tooling and codegen](/en/contributors/architecture/tooling-and-codegen) | Discovery, code generation, the development server, and CLI lifecycle. |
 
 ## Layer map
@@ -46,7 +46,7 @@ The layers have different runtime roles:
   and starts export actions.
 - **Studio** adds navigation, brand previews, settings, localization, and the
   server-side page boundary around the client UI.
-- **Server and access** handle Node-only HTTP routes, SQLite-backed identity,
+- **Server and access** handle Node-only HTTP routes, optional SQLite-backed identity,
   image input preparation, jobs, and Chromium rendering.
 - **Tooling and codegen** discover source directories, write project-local
   bindings, watch development files, and implement the CLI.

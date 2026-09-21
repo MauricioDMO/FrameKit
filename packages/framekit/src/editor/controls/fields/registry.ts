@@ -6,7 +6,7 @@ import { TextField } from './text-field'
 import { ImageField } from './image-field'
 import { ChoiceField } from './choice-field'
 import { BooleanField } from './boolean-field'
-import type { EditorFieldProps } from '../../types'
+import type { EditorFieldProps } from '@/editor/types'
 
 export const fieldComponents = {
   text: TextField,

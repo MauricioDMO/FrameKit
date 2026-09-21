@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { EditorHeader } from '../editor-header'
+import { EditorHeader } from '@/editor/components/editor-header'
 import type { EditorMessages } from '@/editor/types'
 
 const messages = {

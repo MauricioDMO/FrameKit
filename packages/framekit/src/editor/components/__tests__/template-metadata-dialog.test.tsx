@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { TemplateMetadataDialog } from '../template-metadata-dialog'
+import { TemplateMetadataDialog } from '@/editor/components/template-metadata-dialog'
 import type { EditorMessages } from '@/editor/types'
 import type { TemplateMeta } from '@/types'
 

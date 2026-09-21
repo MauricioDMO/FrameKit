@@ -1,6 +1,6 @@
 ---
 title: Arquitectura de Studio y Editor
-description: Sigue el límite entre la ruta de Studio protegida por el servidor, la interfaz cliente de Studio, el estado del Editor, la vista previa local y la exportación de PNG respaldada por el servidor.
+description: Sigue el límite entre la ruta de Studio con autenticación opcional, la interfaz cliente de Studio, el estado del Editor, la vista previa local y la exportación de PNG respaldada por el servidor.
 ---
 
 # Arquitectura de Studio y Editor
@@ -9,13 +9,18 @@ Studio es una composición de un límite de página del servidor y una UI client
 
 ## Límite de ruta y cliente
 
-La página catch-all de Studio importa `createStudioPage` desde el entrypoint público `@mauriciodmo/framekit/studio/root` y le pasa el `StudioClient` generado. La factory del servidor:
+La página catch-all de Studio importa `createStudioPage` desde el entrypoint público `@mauriciodmo/framekit/studio/root` y le pasa el `StudioClient` generado. El único interruptor es `FRAMEKIT_AUTH_ENABLED`. Cuando falta o es `false`, la factory del servidor:
 
 - acepta solo las secciones `editor`, `brand` y `settings`;
-- lee la cookie `framekit_session` y la resuelve mediante la capa de acceso del servidor; y
-- redirige una sesión no resuelta a `/login`; de lo contrario, pasa solo `StudioUser { id, username, role }` al cliente.
+- renderiza `editor` y `brand` sin sesión;
+- redirige `/login` a `/editor`; y
+- devuelve `/settings` como no encontrado. No inicializa la base de datos de acceso.
 
-`FrameKitStudio` deriva entonces la sección a partir del pathname. Construye la navegación de plantillas a partir del registro de plantillas generado, la navegación de marca a partir del registro de marca generado y los ajustes a partir del usuario autenticado. Las plantillas seleccionadas y las vistas previas de marca se cargan mediante sus loaders de registro.
+Cuando es `true`, la factory lee la cookie `framekit_session` y la resuelve mediante
+la capa de acceso del servidor, redirige una sesión no resuelta a `/login` y pasa
+solo `StudioUser { id, username, role }` al cliente.
+
+`FrameKitStudio` deriva entonces la sección a partir del pathname. Construye la navegación de plantillas a partir del registro de plantillas generado, la navegación de marca a partir del registro de marca generado y los ajustes a partir del usuario autenticado cuando esa ruta existe. Las plantillas seleccionadas y las vistas previas de marca se cargan mediante sus loaders de registro.
 
 ## Responsabilidades del Editor
 
@@ -39,14 +44,14 @@ sequenceDiagram
   actor Usuario
   participant Editor as Editor en el navegador
   participant API as API de FrameKit
-  participant Access as Autorización por sesión o token
+  participant Access as Autorización opcional por sesión o token
   participant Chromium as Chromium sin interfaz
   participant RenderPage as Página de renderizado privada
 
   Usuario->>Editor: Selecciona descargar o copiar PNG
   Editor->>API: POST de plantilla, variante y datos
-  API->>Access: Autenticar sesión del mismo origen o token Bearer
-  Access-->>API: Solicitud autorizada
+  API->>Access: Autenticar cuando la auth está activada
+  Access-->>API: Solicitud autorizada o paso en modo abierto
   API->>Chromium: Crear trabajo de renderizado y abrir URL privada
   Chromium->>RenderPage: GET con token interno de renderizado de corta duración
   RenderPage-->>Chromium: Canvas de plantilla renderizado

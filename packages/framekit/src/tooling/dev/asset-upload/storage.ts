@@ -1,8 +1,8 @@
 import { mkdir, readdir, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { assertRasterSignature, decodeStrictBase64, type RasterMimeType } from '../../../shared/raster-image'
-import { findTemplates } from '../../discovery/find-templates'
+import { assertRasterSignature, decodeStrictBase64, type RasterMimeType } from '@/shared/raster-image'
+import { findTemplates } from '@/tooling/discovery/find-templates'
 import { AssetUploadError } from './errors'
 
 const maxAssetBytes = 8_000_000

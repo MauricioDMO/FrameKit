@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
 
-import { handleAssetUpload } from '../asset-upload'
+import { handleAssetUpload } from '@/tooling/dev/asset-upload'
 import { authorizeAssetRequest } from './asset-authorization'
 
 type RequestHandler = (request: IncomingMessage, response: ServerResponse) => void

@@ -1,13 +1,21 @@
 ---
 title: Deploy FrameKit
-description: Prepare Chromium, SQLite, secrets, and a long-lived Node process before exposing FrameKit publicly.
+description: Prepare Chromium, optional auth data, secrets, and a long-lived Node process before exposing FrameKit publicly.
 sidebar:
   order: 1
 ---
 
 import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
-FrameKit's supported initial deployment is one long-lived Node.js process per container, with HTTPS and request throttling provided by an external reverse proxy or load balancer. The process hosts Studio, the access API, and synchronous server-side PNG rendering.
+FrameKit's supported initial deployment is one long-lived Node.js process per container, with HTTPS and request throttling provided by an external reverse proxy or load balancer. The process hosts Studio and synchronous server-side PNG rendering; the access API is enabled only when `FRAMEKIT_AUTH_ENABLED=true`.
+
+:::caution
+Authentication is opt-in. Missing or `false` means open mode, where `/editor`
+and `/brand` work without login, `/login` redirects to `/editor`, `/settings`
+and the access API are absent, and image rendering is credential-free. Before
+exposing production to an untrusted network, explicitly set
+`FRAMEKIT_AUTH_ENABLED=true`.
+:::
 
 <CardGrid>
   <LinkCard title="Runtime and configuration" href="/en/users/deployment/runtime" description="Node, Chromium, environment variables, render capacity, and process-local state." />
@@ -19,12 +27,12 @@ FrameKit's supported initial deployment is one long-lived Node.js process per co
 
 <Steps>
 
-1. Set a strong `FRAMEKIT_ADMIN_PASSWORD` for first-user bootstrap and keep secrets outside the image and source repository.
-2. Provide a writable, durable location for SQLite if users, sessions, and API tokens must survive restarts.
+1. Choose the auth mode explicitly. Set `FRAMEKIT_AUTH_ENABLED=true` before exposing the process to an untrusted network; only then set a strong `FRAMEKIT_ADMIN_PASSWORD` for first-user bootstrap.
+2. If authentication is enabled, provide a writable, durable location for SQLite so users, sessions, and API tokens survive restarts.
 3. Install the Playwright Chromium browser and Linux dependencies, or use the canonical Dockerfile that does so during the image build.
 4. Run a successful production build with `pnpm framekit build`.
 5. Start the built application with `pnpm framekit start`.
-6. Put HTTPS and login throttling in front of the process before public exposure.
+6. Put HTTPS and request throttling in front of the process before public exposure. In authenticated mode, throttle login traffic as well.
 
 </Steps>
 
@@ -34,6 +42,11 @@ FrameKit's supported initial deployment is one long-lived Node.js process per co
 
 ## State boundaries
 
-SQLite stores users, sessions, and API-token metadata. Render jobs are different: they live in a process-local `globalThis` map, expire after 120 seconds, and disappear when the process restarts. A durable SQLite volume therefore does not make an in-flight render job durable.
+When authentication is enabled, SQLite stores users, sessions, and API-token
+metadata. Open mode does not initialize SQLite and does not create an anonymous
+administrator. Render jobs are different: they live in a process-local
+`globalThis` map, expire after 120 seconds, and disappear when the process
+restarts. A durable SQLite volume therefore does not make an in-flight render
+job durable.
 
 The renderer reuses one Chromium browser during the process lifetime, but gives each render an isolated context and page. Capacity is bounded per request. The timeout aborts or cancels render work; page and context cleanup is attempted in `finally`, and that cleanup wait has no separate documented limit. The supported topology is not a serverless function or a set of replicas that expects process-local render jobs and browser state to be shared.

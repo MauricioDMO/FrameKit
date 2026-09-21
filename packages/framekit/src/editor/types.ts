@@ -1,5 +1,5 @@
-import type { TemplateDataValidationError } from '../core/validation'
-import type { ImageFieldScope, TemplateFieldKind } from '../types'
+import type { TemplateDataValidationError } from '@/core/validation'
+import type { ImageFieldScope, TemplateFieldKind } from '@/types'
 
 export interface EditorMessages {
   templateEditor: string

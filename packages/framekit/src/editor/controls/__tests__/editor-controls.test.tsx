@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { defineTemplate, field } from '@/index'
 import type { EditorMessages } from '@/editor/types'
-import { EditorControls } from '../editor-controls'
+import { EditorControls } from '@/editor/controls/editor-controls'
 
 const messages = {
   content: 'Content',

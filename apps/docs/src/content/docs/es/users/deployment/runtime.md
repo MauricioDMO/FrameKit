@@ -1,6 +1,6 @@
 ---
 title: Entorno de ejecución y configuración
-description: Configura el entorno de ejecución de Node, el renderizador de Chromium, la base de datos, los hosts de imágenes, la capacidad y el tiempo de espera del renderizado.
+description: Configura el entorno de ejecución de Node, la autenticación opcional, el renderizador de Chromium, la base de datos, los hosts de imágenes, la capacidad y el tiempo de espera del renderizado.
 sidebar:
   order: 2
 ---
@@ -34,9 +34,10 @@ Estas son las variables de la aplicación en la plantilla canónica. El bootstra
 
 | Variable | Predeterminado | Contrato y punto de lectura |
 | --- | --- | --- |
-| `FRAMEKIT_ADMIN_USERNAME` | `admin` | Nombre de usuario opcional para el bootstrap del primer usuario en una base de datos vacía. Debe tener entre 3 y 64 letras ASCII, números, `.`, `_` o `-`. No es una configuración posterior de sincronización de usuarios. |
-| `FRAMEKIT_ADMIN_PASSWORD` | Ninguno | Obligatoria únicamente durante el bootstrap del primer usuario en una base de datos vacía. Debe tener entre 12 y 256 bytes UTF-8. Mantenla en el entorno de ejecución. |
-| `FRAMEKIT_DATABASE_PATH` | `.framekit-data/framekit.sqlite` | Ruta de SQLite resuelta a partir del directorio de trabajo del proceso cuando se abre la base de datos. `:memory:` es explícitamente no persistente. |
+| `FRAMEKIT_AUTH_ENABLED` | `false` | Único interruptor de autenticación. Ausente o `false` activa el modo abierto; exactamente `true` activa usuarios, sesiones, tokens de API y rutas protegidas de Studio y acceso. Otros valores son inválidos. |
+| `FRAMEKIT_ADMIN_USERNAME` | `admin` | Solo se usa con la autenticación activada para el bootstrap del primer usuario en una base de datos vacía. Debe tener entre 3 y 64 letras ASCII, números, `.`, `_` o `-`. No es una configuración posterior de sincronización de usuarios. |
+| `FRAMEKIT_ADMIN_PASSWORD` | Ninguno | Se usa únicamente con la autenticación activada durante el bootstrap del primer usuario en una base de datos vacía. Debe tener entre 12 y 256 bytes UTF-8. Mantenla en el entorno de ejecución. |
+| `FRAMEKIT_DATABASE_PATH` | `.framekit-data/framekit.sqlite` | Ruta de SQLite de autenticación resuelta a partir del directorio de trabajo del proceso cuando se abre la base de datos. `:memory:` es explícitamente no persistente; el modo abierto no inicializa SQLite. |
 | `PORT` | `3000` | Puerto decimal de `1` a `65535`. Configura el puerto del servidor y el origen privado de loopback del renderizador. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Vacío | Nombres de host exactos separados por comas para entradas de imágenes remotas HTTPS. Los nombres de host se convierten a minúsculas, se limitan a 253 caracteres y se rechazan los literales IP. Un valor vacío desactiva la obtención de imágenes remotas. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | Entero positivo de `1` a `32`. Limita los renderizados activos en el proceso. |
@@ -44,11 +45,29 @@ Estas son las variables de la aplicación en la plantilla canónica. El bootstra
 
 El controlador de imágenes analiza su configuración de renderizado cuando gestiona una solicitud de imagen. Un valor no válido de puerto, lista de permitidos, capacidad o tiempo de espera devuelve `api_not_configured` en lugar de usar silenciosamente un valor no válido.
 
+## Modos de autenticación
+
+En el modo abierto, `/editor` y `/brand` funcionan sin iniciar sesión, `/login`
+redirige a `/editor`, `/settings` y la API de acceso responden como no
+encontrados, y `POST /api/framekit/images/render` no necesita credenciales. El
+renderizador conserva sus defensas de validación, imágenes, navegación del
+navegador, capacidad, tiempo de espera y limpieza. La carga de desarrollo sigue
+protegida por una comprobación del mismo origen.
+
+Con `FRAMEKIT_AUTH_ENABLED=true` se activan usuarios, sesiones, tokens de API,
+rutas protegidas de Studio y rutas de acceso. Las variables de bootstrap solo se
+usan en este modo. El modo abierto no crea un administrador anónimo ni
+inicializa SQLite; cambiar después a `false` no elimina los datos almacenados.
+
+El valor de `FRAMEKIT_AUTH_ENABLED` debe ser exactamente `true` o `false` cuando
+se establece. No hay fallback a `NODE_ENV`, las credenciales ni la existencia de
+SQLite.
+
 ## Variables de host del servidor de desarrollo
 
 `FRAMEKIT_HOST` y `HOST` se aplican a `framekit dev`, no a la configuración pública de renderizado de imágenes. El servidor de desarrollo elige primero `FRAMEKIT_HOST`, después `HOST` y luego `localhost`. `PORT` se comparte y tiene como valor predeterminado `3000`; los valores no válidos fuera de `1-65535` detienen el inicio.
 
-El servidor de desarrollo también expone la ruta de carga protegida `POST /framekit/assets` para las cargas de imágenes de Studio. Esa ruta es una capacidad del servidor de desarrollo y no forma parte del enrutamiento de la API de producción `/api/framekit/**`.
+El servidor de desarrollo también expone la ruta de carga protegida `POST /framekit/assets` para las cargas de imágenes de Studio. En modo abierto requiere una solicitud del mismo origen; con la autenticación activada requiere además una sesión válida del mismo origen. Esa ruta es una capacidad del servidor de desarrollo y no forma parte del enrutamiento de la API de producción `/api/framekit/**`.
 
 ## Ciclo de vida del renderizado
 

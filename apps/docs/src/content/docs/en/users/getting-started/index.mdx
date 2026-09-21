@@ -40,7 +40,11 @@ Choose the path that matches your project.
 </Steps>
 
 :::caution
-Do not edit `src/generated/framekit/`, `public/framekit/`, or `.framekit/` by hand. They are generated output. Keep `.framekit-data/` persistent if you use the default SQLite database.
+Do not edit `src/generated/framekit/`, `public/framekit/`, or `.framekit/` by hand. They are generated output. Keep `.framekit-data/` persistent only when authentication is enabled and the default SQLite database is in use.
 :::
+
+Authentication is disabled by default. Set `FRAMEKIT_AUTH_ENABLED=true`
+explicitly before exposing production to an untrusted network; open mode does
+not initialize SQLite or create an anonymous administrator.
 
 After setup, read [Project structure](/en/users/getting-started/project-structure) and then build [your first template](/en/users/getting-started/first-template).

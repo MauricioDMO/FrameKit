@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineTemplate, field } from '@/index'
 import type { TemplateRegistryEntry } from '@/types'
 import type { FrameKitStudioBrand } from '@/studio/types'
-import { useStudioResource, type StudioResourceInput } from '../use-studio-resource'
+import { useStudioResource, type StudioResourceInput } from '@/studio/resource/use-studio-resource'
 
 afterEach(cleanup)
 

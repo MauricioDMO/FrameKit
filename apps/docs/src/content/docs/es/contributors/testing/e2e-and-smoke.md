@@ -23,13 +23,14 @@ pnpm test:e2e
 El archivo `playwright.config.ts` raíz descubre `e2e/**/*.spec.ts` y usa un
 dispositivo Desktop Chrome contra `http://localhost:3000`. Su comando de
 servidor web compila `@mauriciodmo/framekit`, compila Studio e inicia el
-servidor de Studio de producción con credenciales de administrador exclusivas
-para pruebas y una base de datos en memoria.
+servidor de Studio de producción con `FRAMEKIT_AUTH_ENABLED=true`, credenciales
+de administrador exclusivas para pruebas y una base de datos en memoria.
 
 ### Flujo de Studio
 
-`e2e/studio.spec.ts` comprueba que la ruta de inicio de sesión es pública y que
-las rutas protegidas redirigen sin credenciales. El flujo autenticado abre la
+`e2e/studio.spec.ts` comprueba que, con
+`FRAMEKIT_AUTH_ENABLED=true`, la ruta de inicio de sesión es pública y las rutas
+protegidas redirigen sin credenciales. El flujo autenticado abre la
 ruta de la plantilla generada, comprueba los metadatos y las dimensiones
 declaradas, cambia de variante, edita campos de texto, número, color, opción y
 booleano, y verifica que un borrador de número incompleto no sustituya el valor
@@ -38,9 +39,12 @@ encabezado y dimensiones declaradas.
 
 ### Flujo de la API de imágenes
 
-`e2e/image-api.spec.ts` comprueba la API de imágenes de producción autenticada con una
-sesión de Studio y un token de API. Verifica el acceso no autenticado rechazado,
-los encabezados de respuesta PNG, la firma PNG y las dimensiones renderizadas.
+`e2e/image-api.spec.ts` comprueba la API de imágenes de producción autenticada
+con una sesión de Studio y un token de API. Verifica el rechazo de acceso no
+autenticado, los encabezados de respuesta PNG, la firma PNG y las dimensiones
+renderizadas. La comprobación de imágenes en modo abierto debe establecer
+explícitamente `FRAMEKIT_AUTH_ENABLED=false` y se cubre por separado en los
+smokes de tarballs y Docker.
 
 El comando E2E es una comprobación del recorrido crítico en Chromium. No
 promete cobertura de regresiones visuales de píxeles, una matriz completa de
@@ -69,8 +73,9 @@ Después verifica dos recorridos de consumidores aislados:
   `framekit generate`, `framekit check` y `framekit build`;
 - un consumidor creado por el tarball de `@mauriciodmo/create-framekit`, que
   incluye una instalación limpia, bindings generados, `generate`, `check`,
-  `build` de producción, `start` independiente, disponibilidad HTTP,
-  comprobaciones de autenticación y rutas, y un cierre limpio.
+  `build` de producción, `start` independiente, disponibilidad HTTP, un
+  baseline explícito en modo abierto, un inicio autenticado con bootstrap de
+  usuario y cobertura de tokens/renderizado, y un cierre limpio.
 
 Este smoke demuestra que los artefactos empaquetados pueden instalarse y usarse
 fuera del checkout. No es una suite de Vitest, no construye una imagen ni ejecuta
@@ -90,9 +95,10 @@ pnpm smoke:docker -- <exact-published-framekit-version>
 consumidor canónico a un directorio temporal, crea un lockfile usando el
 paquete publicado, compila la imagen de Docker generada y la ejecuta con un
 volumen persistente. Comprueba el usuario `node` sin privilegios de la imagen y
-el entrypoint `tini`, espera a que esté disponible, rechaza una solicitud de
-imagen no autenticada, inicia sesión, crea un token de API y verifica una
-respuesta PNG. También reemplaza el contenedor para comprobar el comportamiento
+el entrypoint `tini`, espera a que esté disponible, verifica un contenedor
+explícitamente configurado en modo abierto y después inicia otro con
+`FRAMEKIT_AUTH_ENABLED=true`, rechaza una solicitud de imagen no autenticada,
+inicia sesión, crea un token de API y verifica una respuesta PNG. También reemplaza el contenedor para comprobar el comportamiento
 persistente de la cuenta y el token, y confirma que un trabajo de renderizado
 temporal no se conserva después del reemplazo.
 

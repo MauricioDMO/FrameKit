@@ -1,4 +1,4 @@
-import { isAuthenticationEnabled } from '../config'
+import { isAuthenticationEnabled } from '@/server/access/config'
 import { isSameOrigin } from './origin'
 import { errorResponse, responseForError } from './errors'
 import { account, login, logout, password, token, tokens, user, userPassword, userTokens, users } from './routes'

@@ -1,4 +1,4 @@
-import type { TextFieldDescriptor } from '../../types'
+import type { TextFieldDescriptor } from '@/types'
 
 export function text (
   params: {

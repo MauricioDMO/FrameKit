@@ -5,8 +5,8 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { frameKitMessages } from '@/studio/i18n/messages'
-import type { StudioUser } from '../../types'
-import { StudioSidebar } from '../studio-sidebar'
+import type { StudioUser } from '@/studio/types'
+import { StudioSidebar } from '@/studio/shell/studio-sidebar'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>

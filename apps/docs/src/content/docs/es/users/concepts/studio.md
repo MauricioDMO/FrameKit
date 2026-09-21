@@ -9,25 +9,38 @@ FrameKit Studio es la interfaz del navegador para explorar plantillas generadas 
 
 ## Límite de acceso
 
-`/login` es el punto de entrada público. Un inicio de sesión correcto crea la sesión `framekit_session` que usa Studio. Las secciones de Studio requieren una sesión válida antes de que se renderice el cliente:
+Studio tiene dos modos de acceso controlados únicamente por
+`FRAMEKIT_AUTH_ENABLED`:
+
+- En el modo abierto, cuando la variable falta o es `false`, `/editor` y
+  `/brand` se renderizan sin sesión, `/login` redirige a `/editor` y
+  `/settings` responde como no encontrado. La API de acceso no existe y el
+  renderizado de imágenes no necesita credenciales.
+- Cuando la variable es `true`, `/login` es el punto de entrada público. Un
+  inicio de sesión correcto crea la sesión `framekit_session` que usa Studio, y
+  las secciones de Studio requieren una sesión válida antes de que se renderice
+  el cliente:
 
 - `/editor` y `/editor/<template-slug>` para plantillas;
 - `/brand` y `/brand/<brand-slug>` para vistas previas de componentes de marca; y
 - `/settings` para los ajustes de cuenta y acceso.
 
-Una solicitud no autenticada a una sección protegida redirige a `/login`. Si una sesión válida visita `/login`, la página de inicio de sesión redirige a `/editor`. Una sección desconocida produce un 404 en lugar de un estado de Studio.
+En el modo autenticado, una solicitud no autenticada a una sección protegida
+redirige a `/login`, y una sesión válida que visita `/login` redirige a
+`/editor`. Una sección desconocida produce un 404 en lugar de un estado de
+Studio.
 
 La URL raíz del proyecto generado redirige a `/editor`. Consulta [crear un proyecto](/es/users/getting-started/create-project) o [integrar un proyecto existente](/es/users/getting-started/existing-project) para ver la configuración de la ruta y del layout raíz.
 
 ## Estructura de navegación
 
-La estructura rodea las tres secciones autenticadas. Su barra lateral proporciona:
+La estructura rodea las secciones disponibles de Studio. Su barra lateral proporciona:
 
 - una pestaña Plantillas que enlaza a `/editor`;
 - una pestaña Marca que enlaza a `/brand`;
 - carpetas anidadas y enlaces creados a partir de los manifiestos generados;
 - un control para contraer y expandir; y
-- un menú de apariencia para el idioma de la interfaz, el tema y `/settings`.
+- un menú de apariencia para el idioma de la interfaz, el tema y `/settings` cuando la autenticación está activada.
 
 Las entradas de plantillas y marcas usan sus segmentos del manifiesto como carpetas y se ordenan por su título visible. La entrada seleccionada permanece visible cuando sus carpetas están contraídas. Si una nueva entrada de origen no está visible, vuelve a generar el proyecto antes de editar la salida generada. Consulta [estructura del proyecto](/es/users/getting-started/project-structure) para ver los archivos generados.
 
@@ -105,11 +118,11 @@ El zoom personalizado está limitado entre el 10 % y el 400 %. El catálogo de m
 
 Las cargas de imágenes están habilitadas por el servidor de desarrollo de FrameKit para los campos de imagen. El control de carga envía `POST /framekit/assets`, un endpoint exclusivo de ese servidor y disponible únicamente mientras `pnpm framekit dev` está en ejecución o mientras se ejecuta su equivalente `pnpm dev` del proyecto generado. No está disponible desde un comando arbitrario `pnpm dev` o `next dev` que no ejecute FrameKit. El editor no muestra el control de carga en producción. Selecciona un archivo PNG, JPEG, WebP o GIF desde un campo de imagen.
 
-El scope del campo determina el destino: un campo `variant` usa el directorio de la variante seleccionada, mientras que un campo `common` usa `assets/common`. El servidor de desarrollo valida la imagen, acepta archivos de hasta 8 MB, reemplaza el asset correspondiente del campo, regenera el manifiesto y vuelve a cargar Studio. Se requiere una sesión válida de Studio del mismo origen. Consulta [usar recursos de imagen](/es/users/guides/use-image-assets) para conocer el layout de origen y las reglas de scope.
+El scope del campo determina el destino: un campo `variant` usa el directorio de la variante seleccionada, mientras que un campo `common` usa `assets/common`. El servidor de desarrollo valida la imagen, acepta archivos de hasta 8 MB, reemplaza el asset correspondiente del campo, regenera el manifiesto y vuelve a cargar Studio. Las cargas requieren una solicitud del mismo origen; el modo abierto no necesita sesión, mientras que el modo autenticado requiere una sesión válida de Studio del mismo origen. Consulta [usar recursos de imagen](/es/users/guides/use-image-assets) para conocer el layout de origen y las reglas de scope.
 
 ## Salida PNG respaldada por servidor
 
-La vista previa del navegador es local. Descargar PNG y Copiar PNG usan el servidor y envían `POST /api/framekit/images/render`; el renderizador autenticado del servidor resuelve la definición y los assets, valida los datos y devuelve un PNG en lugar de usar la vista previa del navegador como origen de la exportación.
+La vista previa del navegador es local. Descargar PNG y Copiar PNG usan el servidor y envían `POST /api/framekit/images/render`; en el modo abierto la solicitud no necesita credenciales, mientras que el modo autenticado usa la sesión del mismo origen. En ambos modos, el renderizador del servidor resuelve la definición y los assets, valida los datos y devuelve un PNG en lugar de usar la vista previa del navegador como origen de la exportación.
 
 Descargar guarda la imagen devuelta como un archivo PNG. Copiar escribe los datos `image/png` devueltos en el portapapeles del navegador y requiere compatibilidad del portapapeles con imágenes. Si la validación falla, Studio marca los campos afectados y enfoca el primero; si falla el renderizado o la compatibilidad del portapapeles, muestra el estado de error de exportación localizado.
 

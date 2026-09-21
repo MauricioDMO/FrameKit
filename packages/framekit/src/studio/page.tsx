@@ -2,8 +2,8 @@ import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import type { ComponentType } from 'react'
 
-import { isAuthenticationEnabled } from '../server/access/config'
-import { getSession } from '../server/access/sessions'
+import { isAuthenticationEnabled } from '@/server/access/config'
+import { getSession } from '@/server/access/sessions'
 import { FrameKitLoginForm } from './login/login-form'
 import type { FrameKitStudioSection, StudioUser } from './types'
 

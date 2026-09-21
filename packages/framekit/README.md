@@ -67,7 +67,7 @@ covers discovery, validation, variants, and Studio.
 | `@mauriciodmo/framekit/studio` | The complete Studio interface |
 | `@mauriciodmo/framekit/studio/root` | The Studio root and shell |
 | `@mauriciodmo/framekit/client` | Client-side render components |
-| `@mauriciodmo/framekit/server` | Authenticated image API and server rendering |
+| `@mauriciodmo/framekit/server` | Optional-auth image API and server rendering |
 | `@mauriciodmo/framekit/dev` | Development server integration |
 | `@mauriciodmo/framekit/styles.css` | Shared Studio/editor styles |
 
@@ -89,6 +89,11 @@ Add the FrameKit commands to a Next.js project:
 The CLI discovers `src/templates/**/template.tsx`, validates definitions, and
 generates the template registry. Install Chromium explicitly before server-side
 rendering with `framekit browser install`.
+
+The generated Studio and image API use open mode by default. Set
+`FRAMEKIT_AUTH_ENABLED=true` to enable users, sessions, API tokens, and protected
+access routes. Before exposing production to an untrusted network, set that
+variable explicitly; no `NODE_ENV`, credential, or SQLite fallback enables auth.
 
 ## Documentation
 
