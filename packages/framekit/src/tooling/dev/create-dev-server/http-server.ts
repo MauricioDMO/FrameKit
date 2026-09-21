@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
 
+import { snapshotEnv } from '@/env'
 import { handleAssetUpload } from '@/tooling/dev/asset-upload'
 import { authorizeAssetRequest } from './asset-authorization'
 
@@ -17,11 +18,14 @@ export function createDevHttpServer (options: {
   requestHandler: RequestHandler
   upgradeHandler: UpgradeHandler
   generate: () => Promise<void>
+  env?: NodeJS.ProcessEnv
 }): DevHttpServer {
+  const env = options.env ?? snapshotEnv()
+
   const httpServer = createServer((request, response) => {
     const pathname = new URL(request.url ?? '/', 'http://framekit.local').pathname
     if (pathname === '/framekit/assets') {
-      if (!authorizeAssetRequest(request, response)) return
+      if (!authorizeAssetRequest(request, response, env)) return
       handleAssetUpload(request, response, {
         projectRoot: options.projectRoot,
         regenerate: options.generate

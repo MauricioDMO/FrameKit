@@ -9,7 +9,7 @@ import { countUsers, withImmediateTransaction } from './repository'
 import { isValidUsername } from './validation'
 
 export async function bootstrapUsers (env: NodeJS.ProcessEnv = process.env): Promise<StudioUser | undefined> {
-  const database = getDatabase()
+  const database = getDatabase(env)
   const alreadyInitialized = withImmediateTransaction(database, () => countUsers(database) > 0)
   if (alreadyInitialized) return undefined
 

@@ -86,13 +86,13 @@ function isRevocationActor (value: unknown): value is Pick<StudioUser, 'id' | 'r
   return isRecord(value) && typeof value.id === 'string' && value.id.length > 0 && isUserRole(value.role)
 }
 
-export function createApiToken (userId: unknown, name: unknown): CreatedApiToken {
+export function createApiToken (userId: unknown, name: unknown, env: NodeJS.ProcessEnv = process.env): CreatedApiToken {
   const ownerId = requireUserId(userId)
   const tokenName = requireTokenName(name)
   const token = `${generatedTokenPrefix}${randomBytes(tokenSecretBytes).toString('base64url')}`
   const tokenId = randomUUID()
   const now = Date.now()
-  const database = getDatabase()
+  const database = getDatabase(env)
 
   const metadata = withImmediateTransaction(database, () => {
     if (readUserState(database, ownerId) === undefined) throw userNotFoundError()
@@ -115,9 +115,9 @@ export function createApiToken (userId: unknown, name: unknown): CreatedApiToken
   return { ...metadata, token }
 }
 
-export function listApiTokens (userId: unknown): ApiTokenMetadata[] {
+export function listApiTokens (userId: unknown, env: NodeJS.ProcessEnv = process.env): ApiTokenMetadata[] {
   const ownerId = requireUserId(userId)
-  const rows = getDatabase().prepare(`
+  const rows = getDatabase(env).prepare(`
     SELECT id, name, token_prefix, created_at, last_used_at, revoked_at
     FROM api_tokens
     WHERE user_id = ?
@@ -129,10 +129,10 @@ export function listApiTokens (userId: unknown): ApiTokenMetadata[] {
     .filter((token): token is ApiTokenMetadata => token !== undefined)
 }
 
-export function authenticateApiToken (credential: unknown): StudioUser | undefined {
+export function authenticateApiToken (credential: unknown, env: NodeJS.ProcessEnv = process.env): StudioUser | undefined {
   if (!isCredential(credential)) return undefined
 
-  const database = getDatabase()
+  const database = getDatabase(env)
   const row = database.prepare(`
     SELECT api_tokens.id AS token_id, users.id, users.username, users.role, users.active
     FROM api_tokens
@@ -152,10 +152,10 @@ export function authenticateApiToken (credential: unknown): StudioUser | undefin
   return user
 }
 
-export function revokeApiToken (tokenId: unknown, actor: unknown): boolean {
+export function revokeApiToken (tokenId: unknown, actor: unknown, env: NodeJS.ProcessEnv = process.env): boolean {
   if (typeof tokenId !== 'string' || tokenId.length === 0 || !isRevocationActor(actor)) return false
 
-  const database = getDatabase()
+  const database = getDatabase(env)
   const statement = actor.role === 'admin'
     ? database.prepare('UPDATE api_tokens SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL')
     : database.prepare('UPDATE api_tokens SET revoked_at = ? WHERE id = ? AND user_id = ? AND revoked_at IS NULL')

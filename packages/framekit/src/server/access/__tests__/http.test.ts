@@ -156,6 +156,7 @@ describe('createStudioAccessHandler', () => {
   it('hides matched routes in open mode before method, origin, body, or database work', async () => {
     process.env.FRAMEKIT_AUTH_ENABLED = 'false'
     process.env.FRAMEKIT_ADMIN_PASSWORD = password
+    handler = createStudioAccessHandler()
 
     const requests = [
       rawRequest('/api/framekit/login', 'POST', '{', { Origin: 'https://other.test' }),
@@ -176,6 +177,7 @@ describe('createStudioAccessHandler', () => {
 
   it('hides account access in open mode and requires a session when enabled', async () => {
     process.env.FRAMEKIT_AUTH_ENABLED = 'false'
+    handler = createStudioAccessHandler()
     const openRequest = emptyRequest('/api/framekit/account', 'GET')
     const openResponse = await handler(openRequest)
 
@@ -186,6 +188,7 @@ describe('createStudioAccessHandler', () => {
     expect(existsSync(path.join(temporaryRoot, 'framekit.sqlite'))).toBe(false)
 
     process.env.FRAMEKIT_AUTH_ENABLED = 'true'
+    handler = createStudioAccessHandler()
     const authenticatedResponse = await handler(emptyRequest('/api/framekit/account', 'GET'))
 
     expect(authenticatedResponse.status).toBe(401)
@@ -195,6 +198,7 @@ describe('createStudioAccessHandler', () => {
 
   it('maps invalid authentication configuration to an internal error', async () => {
     process.env.FRAMEKIT_AUTH_ENABLED = 'invalid'
+    handler = createStudioAccessHandler()
 
     const response = await handler(jsonRequest('/api/framekit/login', 'POST', { username: 'admin', password }))
 
@@ -210,6 +214,7 @@ describe('createStudioAccessHandler', () => {
     vi.setSystemTime(now)
     process.env.FRAMEKIT_ADMIN_PASSWORD = password
     vi.stubEnv('NODE_ENV', 'production')
+    handler = createStudioAccessHandler()
 
     const response = await handler(jsonRequest('/api/framekit/login', 'POST', { username: 'admin', password }))
     const body = await responseBody(response)
@@ -232,6 +237,7 @@ describe('createStudioAccessHandler', () => {
   it('accepts same-origin HTTPS login and account mutation through an HTTP reverse proxy', async () => {
     const user = insertUser('proxy-user', 'ProxyUser')
     vi.stubEnv('NODE_ENV', 'production')
+    handler = createStudioAccessHandler()
     const proxyHeaders = {
       'x-forwarded-proto': 'https',
       'x-forwarded-host': 'framekit.example.com'

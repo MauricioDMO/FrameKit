@@ -201,7 +201,7 @@ describe('createDevServer', () => {
       const { response } = sendRequest(getHttpServer(), localHeaders)
 
       expect(response.body).toBeUndefined()
-      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret)
+      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret, { env: expect.any(Object) })
       expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
     } finally {
       await server.close()
@@ -277,7 +277,7 @@ describe('createDevServer', () => {
       expect(response.statusCode).toBe(401)
       expect(response.body).toBe(JSON.stringify({ error: 'Unauthorized' }))
       expect(mocks.isValidSessionSecret).toHaveBeenCalledWith(sessionSecret)
-      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret)
+      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret, { env: expect.any(Object) })
       expect(mocks.handleAssetUpload).not.toHaveBeenCalled()
       expect(mocks.writeTemplateModule).toHaveBeenCalledTimes(generationCalls)
     } finally {
@@ -315,7 +315,7 @@ describe('createDevServer', () => {
         'x-forwarded-host': 'framekit.example.com, 127.0.0.1:40000'
       })
 
-      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret)
+      expect(mocks.getSession).toHaveBeenCalledWith(sessionSecret, { env: expect.any(Object) })
       expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
     } finally {
       await server.close()

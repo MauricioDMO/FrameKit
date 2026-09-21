@@ -30,14 +30,14 @@ function closeQuietly (database: DatabaseSync): void {
   }
 }
 
-function resolveDatabasePath (): string {
-  const configuredPath = process.env.FRAMEKIT_DATABASE_PATH ?? defaultDatabasePath
+function resolveDatabasePath (env: NodeJS.ProcessEnv): string {
+  const configuredPath = env.FRAMEKIT_DATABASE_PATH ?? defaultDatabasePath
   if (configuredPath === ':memory:') return configuredPath
   return path.resolve(process.cwd(), configuredPath)
 }
 
-export function getDatabase (): DatabaseSync {
-  const databasePath = resolveDatabasePath()
+export function getDatabase (env: NodeJS.ProcessEnv = process.env): DatabaseSync {
+  const databasePath = resolveDatabasePath(env)
   const state = getDatabaseState()
   const existing = state.connections.get(databasePath)
   if (existing !== undefined) return existing

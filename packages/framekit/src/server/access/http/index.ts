@@ -1,3 +1,4 @@
+import { snapshotEnv } from '@/env'
 import { isAuthenticationEnabled } from '@/server/access/config'
 import { isSameOrigin } from './origin'
 import { errorResponse, responseForError } from './errors'
@@ -5,7 +6,7 @@ import { account, login, logout, password, token, tokens, user, userPassword, us
 
 type AccessRoute = {
   methods: readonly string[]
-  handle: (request: Request, parameters: readonly string[]) => Promise<Response>
+  handle: (request: Request, env: NodeJS.ProcessEnv, parameters: readonly string[]) => Promise<Response>
 }
 
 const routesByPath = new Map<string, AccessRoute>([
@@ -52,7 +53,7 @@ function matchRoute (pathname: string): { route: AccessRoute; parameters: readon
   return { route, parameters: [id] }
 }
 
-export function createStudioAccessHandler (): (request: Request) => Promise<Response> {
+export function createStudioAccessHandler (env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
   return async function studioAccessHandler (request: Request): Promise<Response> {
     let pathname: string
     try {
@@ -65,13 +66,13 @@ export function createStudioAccessHandler (): (request: Request) => Promise<Resp
     if (matchedRoute === undefined) return errorResponse('not_found', 404)
 
     try {
-      if (!isAuthenticationEnabled()) return errorResponse('not_found', 404)
+      if (!isAuthenticationEnabled(env)) return errorResponse('not_found', 404)
 
       const { route, parameters } = matchedRoute
       if (!route.methods.includes(request.method)) return errorResponse('method_not_allowed', 405, { Allow: route.methods.join(', ') })
       if (request.method !== 'GET' && !isSameOrigin(request)) return errorResponse('forbidden', 403)
 
-      return await route.handle(request, parameters)
+      return await route.handle(request, env, parameters)
     } catch (error) {
       return responseForError(error)
     }

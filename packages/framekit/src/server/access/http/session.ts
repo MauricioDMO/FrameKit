@@ -21,21 +21,21 @@ export function readSessionCookie (request: Request): string | undefined {
   return value
 }
 
-function cookieAttributes (expires: string, maxAge: number): string {
-  return `HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}; Expires=${expires}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+function cookieAttributes (expires: string, maxAge: number, env: NodeJS.ProcessEnv): string {
+  return `HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}; Expires=${expires}${env.NODE_ENV === 'production' ? '; Secure' : ''}`
 }
 
-export function sessionCookie (secret: string): string {
+export function sessionCookie (secret: string, env: NodeJS.ProcessEnv = process.env): string {
   const expires = new Date(Date.now() + sessionLifetimeMs).toUTCString()
-  return `${sessionCookieName}=${secret}; ${cookieAttributes(expires, sessionLifetimeSeconds)}`
+  return `${sessionCookieName}=${secret}; ${cookieAttributes(expires, sessionLifetimeSeconds, env)}`
 }
 
-export function expiredSessionCookie (): string {
-  return `${sessionCookieName}=; ${cookieAttributes(new Date(0).toUTCString(), 0)}`
+export function expiredSessionCookie (env: NodeJS.ProcessEnv = process.env): string {
+  return `${sessionCookieName}=; ${cookieAttributes(new Date(0).toUTCString(), 0, env)}`
 }
 
-export function requireSession (request: Request): StudioUser {
-  const user = getSession(readSessionCookie(request))
+export function requireSession (request: Request, env: NodeJS.ProcessEnv = process.env): StudioUser {
+  const user = getSession(readSessionCookie(request), { env })
   if (user === undefined) fail('unauthorized', 401)
   return user
 }

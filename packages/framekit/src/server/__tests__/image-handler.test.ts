@@ -148,12 +148,11 @@ describe('createStudioImageHandler', () => {
     expect(mocks.render).not.toHaveBeenCalled()
   })
 
-  it('parses PORT per request and rejects invalid values', async () => {
+  it('captures PORT when the handler is created and rejects invalid values', async () => {
     const entry = createEntry()
-    const handler = createStudioImageHandler([entry])
     vi.stubEnv('PORT', '65536')
 
-    const unconfigured = await handler(requestFor({ template: entry.slug }))
+    const unconfigured = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     expect(unconfigured.status).toBe(503)
     expect(await responseJson(unconfigured)).toEqual({
       error: 'api_not_configured',
@@ -161,12 +160,12 @@ describe('createStudioImageHandler', () => {
     })
 
     setEnvironment({ PORT: '4321' })
-    const configured = await handler(requestFor({ template: entry.slug }))
+    const configured = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     expect(configured.status).toBe(200)
     expect(mocks.render.mock.calls[0][0].config.internalOrigin.href).toBe('http://localhost:4321/')
 
     setEnvironment()
-    const defaultPort = await handler(requestFor({ template: entry.slug }))
+    const defaultPort = await createStudioImageHandler([entry])(requestFor({ template: entry.slug }))
     expect(defaultPort.status).toBe(200)
     expect(mocks.render.mock.calls[1][0].config.internalOrigin.href).toBe('http://localhost:3000/')
   })

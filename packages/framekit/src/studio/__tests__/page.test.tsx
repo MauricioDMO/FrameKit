@@ -45,15 +45,12 @@ function StudioClient () {
   return <div data-testid="studio-client" />
 }
 
-const StudioPage = createStudioPage(StudioClient)
-const LoginPage = createLoginPage()
-
 async function renderPage (params: { section: string, slug?: string[] }) {
-  return StudioPage({ params: Promise.resolve(params) })
+  return createStudioPage(StudioClient, { ...process.env })({ params: Promise.resolve(params) })
 }
 
 async function renderLoginPage () {
-  return LoginPage()
+  return createLoginPage({ ...process.env })()
 }
 
 beforeEach(() => {

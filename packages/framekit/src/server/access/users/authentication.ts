@@ -14,7 +14,7 @@ async function verifyDummyPassword (password: unknown, verify: typeof verifyPass
 export async function authenticateUser (
   username: unknown,
   password: unknown,
-  options: { verifyPassword?: typeof verifyPassword } = {}
+  options: { env?: NodeJS.ProcessEnv; verifyPassword?: typeof verifyPassword } = {}
 ): Promise<StudioUser | undefined> {
   const verify = options.verifyPassword ?? verifyPassword
   if (!isValidUsername(username) || !isValidPassword(password)) {
@@ -22,7 +22,7 @@ export async function authenticateUser (
     return undefined
   }
 
-  const row = readAuthenticationUser(getDatabase(), username)
+  const row = readAuthenticationUser(getDatabase(options.env ?? process.env), username)
   const user = toStudioUser(row)
   if (row === undefined || user === undefined || row.active !== 1 || typeof row.password_hash !== 'string') {
     await verifyDummyPassword(password, verify)

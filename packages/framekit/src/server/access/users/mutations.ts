@@ -56,24 +56,24 @@ function toManagedUser (value: unknown): ManagedUser | undefined {
   }
 }
 
-export function getUserById (userId: unknown): StudioUser | undefined {
+export function getUserById (userId: unknown, env: NodeJS.ProcessEnv = process.env): StudioUser | undefined {
   if (typeof userId !== 'string' || userId.length === 0) return undefined
-  const row = readUserById(getDatabase(), userId)
+  const row = readUserById(getDatabase(env), userId)
   return toStudioUser(row)
 }
 
-export function getManagedUserById (userId: unknown): ManagedUser | undefined {
+export function getManagedUserById (userId: unknown, env: NodeJS.ProcessEnv = process.env): ManagedUser | undefined {
   if (typeof userId !== 'string' || userId.length === 0) return undefined
-  return toManagedUser(readManagedUserById(getDatabase(), userId))
+  return toManagedUser(readManagedUserById(getDatabase(env), userId))
 }
 
-export function listUsers (): ManagedUser[] {
-  return readUsers(getDatabase())
+export function listUsers (env: NodeJS.ProcessEnv = process.env): ManagedUser[] {
+  return readUsers(getDatabase(env))
     .map(toManagedUser)
     .filter((user): user is ManagedUser => user !== undefined)
 }
 
-export async function createUser (input: CreateUserInput): Promise<StudioUser> {
+export async function createUser (input: CreateUserInput, env: NodeJS.ProcessEnv = process.env): Promise<StudioUser> {
   const value: Record<string, unknown> = isRecord(input) ? input : {}
   const username = requireUsername(value.username)
   const password = requirePassword(value.password)
@@ -83,7 +83,7 @@ export async function createUser (input: CreateUserInput): Promise<StudioUser> {
   const passwordHash = await hashPassword(password)
   const userId = randomUUID()
   const now = Date.now()
-  const database = getDatabase()
+  const database = getDatabase(env)
 
   try {
     return withImmediateTransaction(database, () => {
@@ -100,10 +100,10 @@ export async function createUser (input: CreateUserInput): Promise<StudioUser> {
   }
 }
 
-export function updateUser (userId: unknown, input: UpdateUserInput): StudioUser {
+export function updateUser (userId: unknown, input: UpdateUserInput, env: NodeJS.ProcessEnv = process.env): StudioUser {
   const id = requireUserId(userId)
   const updates = normalizeUpdate(input)
-  const database = getDatabase()
+  const database = getDatabase(env)
 
   try {
     return withImmediateTransaction(database, () => {
@@ -131,16 +131,16 @@ export function updateUser (userId: unknown, input: UpdateUserInput): StudioUser
   }
 }
 
-export function updateUsername (userId: unknown, username: unknown): StudioUser {
-  return updateUser(userId, { username: requireUsername(username) })
+export function updateUsername (userId: unknown, username: unknown, env: NodeJS.ProcessEnv = process.env): StudioUser {
+  return updateUser(userId, { username: requireUsername(username) }, env)
 }
 
-export async function setPassword (userId: unknown, password: unknown): Promise<void> {
+export async function setPassword (userId: unknown, password: unknown, env: NodeJS.ProcessEnv = process.env): Promise<void> {
   const id = requireUserId(userId)
   const validPassword = requirePassword(password)
   const passwordHash = await hashPassword(validPassword)
 
-  const database = getDatabase()
+  const database = getDatabase(env)
   withImmediateTransaction(database, () => {
     if (readUserState(database, id) === undefined) throw userNotFoundError()
     database.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, Date.now(), id)
@@ -148,13 +148,13 @@ export async function setPassword (userId: unknown, password: unknown): Promise<
   })
 }
 
-export function countActiveAdministrators (): number {
-  return countActiveAdministratorsIn(getDatabase())
+export function countActiveAdministrators (env: NodeJS.ProcessEnv = process.env): number {
+  return countActiveAdministratorsIn(getDatabase(env))
 }
 
-export function deleteUser (userId: unknown): void {
+export function deleteUser (userId: unknown, env: NodeJS.ProcessEnv = process.env): void {
   const id = requireUserId(userId)
-  const database = getDatabase()
+  const database = getDatabase(env)
   withImmediateTransaction(database, () => {
     const current = readUserState(database, id)
     if (current === undefined) throw userNotFoundError()

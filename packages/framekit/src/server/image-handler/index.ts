@@ -1,3 +1,4 @@
+import { snapshotEnv } from '@/env'
 import { authenticateApiToken } from '@/server/access/api-tokens'
 import { isAuthenticationEnabled } from '@/server/access/config'
 import { getSession } from '@/server/access/sessions'
@@ -22,33 +23,34 @@ function readBearerCredential (authorization: string | null): string | undefined
   return match[1]
 }
 
-function authenticateStudioImageRequest (request: Request): boolean {
+function authenticateStudioImageRequest (request: Request, env: NodeJS.ProcessEnv): boolean {
   const authorization = request.headers.get('authorization')
   if (authorization !== null) {
     const credential = readBearerCredential(authorization)
-    return credential !== undefined && authenticateApiToken(credential) !== undefined
+    return credential !== undefined && authenticateApiToken(credential, env) !== undefined
   }
 
   if (!isSameOrigin(request)) return false
-  return getSession(readSessionCookie(request)) !== undefined
+  return getSession(readSessionCookie(request), { env }) !== undefined
 }
 
 function createStudioImageHandlerInternal (
-  templates: readonly TemplateRegistryEntry[]
+  templates: readonly TemplateRegistryEntry[],
+  env: NodeJS.ProcessEnv
 ): (request: Request) => Promise<Response> {
   return async function imageHandler (request: Request): Promise<Response> {
     let config: ImageRenderRuntimeConfig
     let authenticationEnabled: boolean
     try {
-      config = parseImageRenderConfig(process.env)
-      authenticationEnabled = isAuthenticationEnabled()
+      config = parseImageRenderConfig(env)
+      authenticationEnabled = isAuthenticationEnabled(env)
     } catch (error) {
       return errorResponse(failure('api_not_configured', error))
     }
 
     const deadline = createRequestDeadline(request, config.renderTimeoutMs)
     try {
-      if (authenticationEnabled && !authenticateStudioImageRequest(request)) {
+      if (authenticationEnabled && !authenticateStudioImageRequest(request, env)) {
         return errorResponse(failure('unauthorized'))
       }
 
@@ -79,6 +81,6 @@ function createStudioImageHandlerInternal (
   }
 }
 
-export function createStudioImageHandler (templates: readonly TemplateRegistryEntry[]): (request: Request) => Promise<Response> {
-  return createStudioImageHandlerInternal(templates)
+export function createStudioImageHandler (templates: readonly TemplateRegistryEntry[], env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
+  return createStudioImageHandlerInternal(templates, env)
 }

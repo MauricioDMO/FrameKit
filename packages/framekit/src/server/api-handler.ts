@@ -1,4 +1,5 @@
 import type { TemplateRegistryEntry } from '@/types'
+import { snapshotEnv } from '@/env'
 
 import { createStudioAccessHandler } from './access/http'
 import { errorResponse } from './access/http/errors'
@@ -6,9 +7,9 @@ import { createStudioImageHandler } from './image-handler'
 
 const imageRenderPath = '/api/framekit/images/render'
 
-export function createFrameKitApiHandler (templates: readonly TemplateRegistryEntry[]): (request: Request) => Promise<Response> {
-  const accessHandler = createStudioAccessHandler()
-  const imageHandler = createStudioImageHandler(templates)
+export function createFrameKitApiHandler (templates: readonly TemplateRegistryEntry[], env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
+  const accessHandler = createStudioAccessHandler(env)
+  const imageHandler = createStudioImageHandler(templates, env)
 
   return async function frameKitApiHandler (request: Request): Promise<Response> {
     let pathname: string

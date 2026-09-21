@@ -1,5 +1,6 @@
 import next from 'next'
 
+import { snapshotEnv } from '@/env'
 import { createDevHttpServer, listenDevHttpServer, type DevHttpServer } from './http-server'
 import { createTemplateGenerator } from './template-generation'
 import { watchTemplates, type TemplateWatcher } from '@/tooling/dev/watch-templates'
@@ -8,6 +9,7 @@ export interface DevServerOptions {
   projectRoot: string
   hostname: string
   port: number
+  env?: NodeJS.ProcessEnv
   onError?: (error: Error) => void
 }
 
@@ -16,6 +18,8 @@ export interface DevServer {
 }
 
 export async function createDevServer (options: DevServerOptions): Promise<DevServer> {
+  const env = options.env ?? snapshotEnv()
+
   function reportError (error: unknown): void {
     const normalizedError = error instanceof Error ? error : new Error(String(error))
 
@@ -76,7 +80,8 @@ export async function createDevServer (options: DevServerOptions): Promise<DevSe
       projectRoot: options.projectRoot,
       requestHandler: app.getRequestHandler(),
       upgradeHandler: app.getUpgradeHandler(),
-      generate: generator.generate
+      generate: generator.generate,
+      env
     })
 
     templateWatcher = watchTemplates({

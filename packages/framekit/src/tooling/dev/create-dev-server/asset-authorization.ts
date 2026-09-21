@@ -64,10 +64,10 @@ function isSameOrigin (request: IncomingMessage): boolean {
   return origin === expectedOrigin
 }
 
-export function authorizeAssetRequest (request: IncomingMessage, response: ServerResponse): boolean {
+export function authorizeAssetRequest (request: IncomingMessage, response: ServerResponse, env: NodeJS.ProcessEnv = process.env): boolean {
   let authenticationEnabled: boolean
   try {
-    authenticationEnabled = isAuthenticationEnabled()
+    authenticationEnabled = isAuthenticationEnabled(env)
   } catch {
     sendJson(response, 500, { error: 'Internal server error' })
     return false
@@ -93,7 +93,7 @@ export function authorizeAssetRequest (request: IncomingMessage, response: Serve
   }
 
   try {
-    if (getSession(secret) === undefined) {
+    if (getSession(secret, { env }) === undefined) {
       sendJson(response, 401, { error: 'Unauthorized' })
       return false
     }

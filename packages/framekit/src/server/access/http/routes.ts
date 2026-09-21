@@ -5,9 +5,10 @@ import { exactBody, readAccessJson } from './request'
 import { deleteSession, expiredSessionCookie, requireSession, sessionCookie, createSession, readSessionCookie } from './session'
 
 type PathParameters = readonly string[]
+type Environment = NodeJS.ProcessEnv
 
-function requireAdministrator (request: Request) {
-  const user = requireSession(request)
+function requireAdministrator (request: Request, env: Environment) {
+  const user = requireSession(request, env)
   if (user.role !== 'admin') fail('forbidden', 403)
   return user
 }
@@ -18,107 +19,107 @@ function requirePathId (parameters: PathParameters): string {
   return id
 }
 
-function requireManagedUser (id: string) {
-  const user = getManagedUserById(id)
+function requireManagedUser (id: string, env: Environment) {
+  const user = getManagedUserById(id, env)
   if (user === undefined) fail('not_found', 404)
   return user
 }
 
-export async function login (request: Request): Promise<Response> {
+export async function login (request: Request, env: Environment = process.env): Promise<Response> {
   const body = exactBody(await readAccessJson(request), ['username', 'password'])
-  await bootstrapUsers()
+  await bootstrapUsers(env)
 
-  const user = await authenticateUser(body.username, body.password)
+  const user = await authenticateUser(body.username, body.password, { env })
   if (user === undefined) fail('unauthorized', 401)
 
-  const secret = createSession(user.id)
-  return jsonResponse(200, user, { 'Set-Cookie': sessionCookie(secret) })
+  const secret = createSession(user.id, { env })
+  return jsonResponse(200, user, { 'Set-Cookie': sessionCookie(secret, env) })
 }
 
-export async function logout (request: Request): Promise<Response> {
+export async function logout (request: Request, env: Environment = process.env): Promise<Response> {
   try {
-    deleteSession(readSessionCookie(request))
+    deleteSession(readSessionCookie(request), { env })
   } catch {
-    return errorResponse('internal_error', 500, { 'Set-Cookie': expiredSessionCookie() })
+    return errorResponse('internal_error', 500, { 'Set-Cookie': expiredSessionCookie(env) })
   }
-  return jsonResponse(200, { status: 'ok' }, { 'Set-Cookie': expiredSessionCookie() })
+  return jsonResponse(200, { status: 'ok' }, { 'Set-Cookie': expiredSessionCookie(env) })
 }
 
-export async function account (request: Request): Promise<Response> {
-  if (request.method === 'GET') return jsonResponse(200, requireSession(request))
+export async function account (request: Request, env: Environment = process.env): Promise<Response> {
+  if (request.method === 'GET') return jsonResponse(200, requireSession(request, env))
 
-  const user = requireSession(request)
+  const user = requireSession(request, env)
   const body = exactBody(await readAccessJson(request), ['username'])
-  return jsonResponse(200, updateUsername(user.id, body.username))
+  return jsonResponse(200, updateUsername(user.id, body.username, env))
 }
 
-export async function password (request: Request): Promise<Response> {
-  const user = requireSession(request)
+export async function password (request: Request, env: Environment = process.env): Promise<Response> {
+  const user = requireSession(request, env)
   const body = exactBody(await readAccessJson(request), ['currentPassword', 'newPassword'])
-  const authenticated = await authenticateUser(user.username, body.currentPassword)
+  const authenticated = await authenticateUser(user.username, body.currentPassword, { env })
   if (authenticated?.id !== user.id) fail('unauthorized', 401)
 
-  await setPassword(user.id, body.newPassword)
-  return jsonResponse(200, { status: 'ok' }, { 'Set-Cookie': expiredSessionCookie() })
+  await setPassword(user.id, body.newPassword, env)
+  return jsonResponse(200, { status: 'ok' }, { 'Set-Cookie': expiredSessionCookie(env) })
 }
 
-export async function tokens (request: Request): Promise<Response> {
-  const user = requireSession(request)
-  if (request.method === 'GET') return jsonResponse(200, listApiTokens(user.id))
+export async function tokens (request: Request, env: Environment = process.env): Promise<Response> {
+  const user = requireSession(request, env)
+  if (request.method === 'GET') return jsonResponse(200, listApiTokens(user.id, env))
 
   const body = exactBody(await readAccessJson(request), ['name'])
-  return jsonResponse(201, createApiToken(user.id, body.name))
+  return jsonResponse(201, createApiToken(user.id, body.name, env))
 }
 
-export async function token (request: Request, parameters: PathParameters = []): Promise<Response> {
-  const user = requireSession(request)
+export async function token (request: Request, env: Environment = process.env, parameters: PathParameters = []): Promise<Response> {
+  const user = requireSession(request, env)
   const id = requirePathId(parameters)
-  if (!revokeApiToken(id, user)) fail('not_found', 404)
+  if (!revokeApiToken(id, user, env)) fail('not_found', 404)
   return jsonResponse(200, { status: 'ok' })
 }
 
-export async function users (request: Request): Promise<Response> {
-  requireAdministrator(request)
-  if (request.method === 'GET') return jsonResponse(200, listUsers())
+export async function users (request: Request, env: Environment = process.env): Promise<Response> {
+  requireAdministrator(request, env)
+  if (request.method === 'GET') return jsonResponse(200, listUsers(env))
 
   const body = exactBody(await readAccessJson(request), ['username', 'password'], ['role'])
-  const user = await createUser(body as unknown as Parameters<typeof createUser>[0])
+  const user = await createUser(body as unknown as Parameters<typeof createUser>[0], env)
   return jsonResponse(201, user)
 }
 
-export async function user (request: Request, parameters: PathParameters = []): Promise<Response> {
-  const actor = requireAdministrator(request)
+export async function user (request: Request, env: Environment = process.env, parameters: PathParameters = []): Promise<Response> {
+  const actor = requireAdministrator(request, env)
   const id = requirePathId(parameters)
-  requireManagedUser(id)
+  requireManagedUser(id, env)
 
   if (request.method === 'PATCH') {
     const body = exactBody(await readAccessJson(request), [], ['username', 'role', 'active'])
-    const updated = updateUser(id, body as unknown as Parameters<typeof updateUser>[1])
-    const extraHeaders: Record<string, string> = actor.id === id && body.active === false ? { 'Set-Cookie': expiredSessionCookie() } : {}
+    const updated = updateUser(id, body as unknown as Parameters<typeof updateUser>[1], env)
+    const extraHeaders: Record<string, string> = actor.id === id && body.active === false ? { 'Set-Cookie': expiredSessionCookie(env) } : {}
     return jsonResponse(200, updated, extraHeaders)
   }
 
-  deleteUser(id)
-  const extraHeaders: Record<string, string> = actor.id === id ? { 'Set-Cookie': expiredSessionCookie() } : {}
+  deleteUser(id, env)
+  const extraHeaders: Record<string, string> = actor.id === id ? { 'Set-Cookie': expiredSessionCookie(env) } : {}
   return jsonResponse(200, { status: 'ok' }, extraHeaders)
 }
 
-export async function userPassword (request: Request, parameters: PathParameters = []): Promise<Response> {
-  const actor = requireAdministrator(request)
+export async function userPassword (request: Request, env: Environment = process.env, parameters: PathParameters = []): Promise<Response> {
+  const actor = requireAdministrator(request, env)
   const id = requirePathId(parameters)
-  requireManagedUser(id)
+  requireManagedUser(id, env)
   const body = exactBody(await readAccessJson(request), ['password'])
 
-  await setPassword(id, body.password)
-  const extraHeaders: Record<string, string> = actor.id === id ? { 'Set-Cookie': expiredSessionCookie() } : {}
+  await setPassword(id, body.password, env)
+  const extraHeaders: Record<string, string> = actor.id === id ? { 'Set-Cookie': expiredSessionCookie(env) } : {}
   return jsonResponse(200, { status: 'ok' }, extraHeaders)
 }
 
-export async function userTokens (request: Request, parameters: PathParameters = []): Promise<Response> {
-  const actor = requireSession(request)
+export async function userTokens (request: Request, env: Environment = process.env, parameters: PathParameters = []): Promise<Response> {
+  const actor = requireSession(request, env)
   const id = requirePathId(parameters)
-  const target = requireManagedUser(id)
+  const target = requireManagedUser(id, env)
   if (actor.role !== 'admin' && actor.id !== target.id) fail('forbidden', 403)
 
-  return jsonResponse(200, listApiTokens(target.id))
+  return jsonResponse(200, listApiTokens(target.id, env))
 }

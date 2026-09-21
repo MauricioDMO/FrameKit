@@ -10,6 +10,7 @@ const sessionSecretPattern = /^[A-Za-z0-9_-]+$/
 
 interface SessionOptions {
   now?: () => number
+  env?: NodeJS.ProcessEnv
 }
 
 interface SessionUserRow {
@@ -40,8 +41,8 @@ function hashSessionSecret (secret: string): string {
   return createHash('sha256').update(secret, 'utf8').digest('hex')
 }
 
-function deleteExpiredSessions (now: number): void {
-  getDatabase().prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now)
+function deleteExpiredSessions (now: number, env: NodeJS.ProcessEnv): void {
+  getDatabase(env).prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now)
 }
 
 function currentTime (options: SessionOptions): number {
@@ -51,7 +52,7 @@ function currentTime (options: SessionOptions): number {
 export function createSession (userId: string, options: SessionOptions = {}): string {
   const now = currentTime(options)
   const secret = randomBytes(sessionSecretBytes).toString('base64url')
-  const database = getDatabase()
+  const database = getDatabase(options.env ?? process.env)
   database.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now)
   database.prepare(`
     INSERT INTO sessions (token_hash, user_id, created_at, expires_at)
@@ -62,11 +63,12 @@ export function createSession (userId: string, options: SessionOptions = {}): st
 
 export function getSession (value?: unknown, options: SessionOptions = {}): StudioUser | undefined {
   const now = currentTime(options)
-  deleteExpiredSessions(now)
+  const env = options.env ?? process.env
+  deleteExpiredSessions(now, env)
   const secret = parseSessionSecret(value)
   if (secret === undefined) return undefined
 
-  const row = getDatabase().prepare(`
+  const row = getDatabase(env).prepare(`
     SELECT users.id, users.username, users.role
     FROM sessions
     INNER JOIN users ON users.id = sessions.user_id
@@ -77,9 +79,10 @@ export function getSession (value?: unknown, options: SessionOptions = {}): Stud
 
 export function deleteSession (value?: unknown, options: SessionOptions = {}): void {
   const now = currentTime(options)
-  deleteExpiredSessions(now)
+  const env = options.env ?? process.env
+  deleteExpiredSessions(now, env)
   const secret = parseSessionSecret(value)
   if (secret === undefined) return
 
-  getDatabase().prepare('DELETE FROM sessions WHERE token_hash = ?').run(hashSessionSecret(secret))
+  getDatabase(env).prepare('DELETE FROM sessions WHERE token_hash = ?').run(hashSessionSecret(secret))
 }

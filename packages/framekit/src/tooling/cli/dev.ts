@@ -1,10 +1,12 @@
 import process from 'node:process'
 
+import { snapshotEnv } from '@/env'
 import { createDevServer } from '@/tooling/dev/create-dev-server'
 import { getServerOptions } from '@/tooling/dev/server-options'
 
 export async function dev (projectRoot: string): Promise<never> {
-  const { hostname, port } = getServerOptions(process.env)
+  const env = snapshotEnv()
+  const { hostname, port } = getServerOptions(env)
   let rejectFailure: (error: Error) => void = () => undefined
   const failure = new Promise<never>((_resolve, reject) => {
     rejectFailure = reject
@@ -12,7 +14,7 @@ export async function dev (projectRoot: string): Promise<never> {
   let server
 
   try {
-    server = await createDevServer({ projectRoot, hostname, port, onError: rejectFailure })
+    server = await createDevServer({ projectRoot, hostname, port, env, onError: rejectFailure })
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error))
     process.exit(1)
