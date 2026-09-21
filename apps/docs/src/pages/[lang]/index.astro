@@ -3,6 +3,7 @@ import "../../styles/global.css";
 import type { LandingLanguage } from "../../content/landing";
 import { landingContent as en } from "../../content/landing/en";
 import { landingContent as es } from "../../content/landing/es";
+import Analytics from "../../components/analytics/Analytics.astro";
 import LandingFooter from "../../components/landing/LandingFooter.astro";
 import LandingHeader from "../../components/landing/LandingHeader.astro";
 import LandingHero from "../../components/landing/LandingHero.astro";
@@ -62,6 +63,8 @@ const structuredData = {
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+
+    <Analytics />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="FrameKit" />

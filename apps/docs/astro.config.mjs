@@ -20,6 +20,9 @@ export default defineConfig({
             title: 'FrameKit Docs',
             description: 'Template-based image editor with visual Studio, CLI, and code generation for React and Next.js',
             customCss: ['./src/styles/starlight.css'],
+            components: {
+                Head: './src/components/analytics/StarlightHead.astro',
+            },
             favicon: '/favicon.svg',
             head: [
                 {
