@@ -1,5 +1,7 @@
 # Fase 3 - Studio y codegen
 
+- **Estado:** Completada; el exit gate está satisfecho.
+
 ## Objetivo
 
 Permitir el uso completo de Editor y Brand sin sesión, retirar las superficies de

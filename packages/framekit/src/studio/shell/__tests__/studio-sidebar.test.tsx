@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { frameKitMessages } from '@/studio/i18n/messages'
+import type { StudioUser } from '../../types'
 import { StudioSidebar } from '../studio-sidebar'
 
 vi.mock('next/link', () => ({
@@ -13,12 +14,15 @@ vi.mock('next/link', () => ({
 
 afterEach(cleanup)
 
-function StatefulSidebar ({ section = 'editor' }: { section?: 'editor' | 'brand' | 'settings' }) {
+const normalUser: StudioUser = { id: 'user-1', username: 'owner', role: 'user' }
+
+function StatefulSidebar ({ section = 'editor', authenticated = true }: { section?: 'editor' | 'brand' | 'settings', authenticated?: boolean }) {
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
     <StudioSidebar
+      user={authenticated ? normalUser : undefined}
       section={section}
       navigation={[]}
       messages={frameKitMessages.es}
@@ -62,6 +66,16 @@ describe('StudioSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Expandir navegación' }))
     expect(screen.getByRole('navigation').getAttribute('aria-label')).toBe('Plantillas')
     expect(screen.getByRole('button', { name: 'Opciones' }).getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('hides the account settings link without a user but keeps appearance controls', () => {
+    render(<StatefulSidebar authenticated={false} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Opciones' }))
+
+    expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Cambiar tema' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Ajustes' })).toBeNull()
   })
 
   it.each([

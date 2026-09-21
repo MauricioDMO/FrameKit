@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createLoginPage, createStudioPage } from '@/studio/page'
 import { FrameKitLoginForm } from '@/studio/login/login-form'
@@ -57,6 +57,7 @@ async function renderLoginPage () {
 }
 
 beforeEach(() => {
+  vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
   pageMocks.state.cookieValue = 'valid-session'
   pageMocks.state.sessionUser = { id: 'user-1', username: 'admin', role: 'admin' }
   pageMocks.cookieStore.get.mockClear()
@@ -64,6 +65,10 @@ beforeEach(() => {
   pageMocks.getSession.mockClear()
   pageMocks.notFound.mockClear()
   pageMocks.redirect.mockClear()
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
 })
 
 describe('createStudioPage', () => {
@@ -81,11 +86,49 @@ describe('createStudioPage', () => {
   })
 
   it('calls notFound for every section other than editor, brand, and settings', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'invalid')
+
     for (const section of ['', 'Editor', 'preview', 'editor/other']) {
       await expect(renderPage({ section })).rejects.toBe(pageMocks.notFoundError)
     }
 
     expect(pageMocks.notFound).toHaveBeenCalledTimes(4)
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('renders editor and brand without authentication', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+
+    for (const section of ['editor', 'brand']) {
+      const element = await renderPage({ section }) as ReactElement
+
+      expect(element.type).toBe(StudioClient)
+      expect(element.props).toEqual({})
+    }
+
+    expect(pageMocks.notFound).not.toHaveBeenCalled()
+    expect(pageMocks.redirect).not.toHaveBeenCalled()
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('calls notFound for settings without authentication', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+
+    await expect(renderPage({ section: 'settings' })).rejects.toBe(pageMocks.notFoundError)
+
+    expect(pageMocks.notFound).toHaveBeenCalledOnce()
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('throws for invalid authentication configuration before request work', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'invalid')
+
+    await expect(renderPage({ section: 'editor' })).rejects.toThrow('FRAMEKIT_AUTH_ENABLED must be exactly "true" or "false" when set')
+    await expect(renderLoginPage()).rejects.toThrow('FRAMEKIT_AUTH_ENABLED must be exactly "true" or "false" when set')
+
     expect(pageMocks.cookies).not.toHaveBeenCalled()
     expect(pageMocks.getSession).not.toHaveBeenCalled()
   })
@@ -126,5 +169,16 @@ describe('createLoginPage', () => {
     expect(element.type).toBe(FrameKitLoginForm)
     expect(element.props).toEqual({})
     expect(pageMocks.redirect).not.toHaveBeenCalled()
+  })
+
+  it('redirects directly to the editor without authentication', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+
+    await expect(renderLoginPage()).rejects.toBe(pageMocks.redirectError)
+
+    expect(pageMocks.redirect).toHaveBeenCalledOnce()
+    expect(pageMocks.redirect).toHaveBeenCalledWith('/editor')
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
   })
 })

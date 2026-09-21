@@ -1,12 +1,13 @@
 import { IconAdjustmentsHorizontal } from '@tabler/icons-react'
 
 import type { FrameKitLocale, FrameKitStudioMessages } from '../i18n/messages'
-import type { FrameKitStudioSection } from '../types'
+import type { FrameKitStudioSection, StudioUser } from '../types'
 import { FrameKitStudioSettings } from './sidebar-settings'
 
 type SidebarMessages = FrameKitStudioMessages['sidebar']
 
 type SidebarFooterProps = {
+  user?: StudioUser
   section: FrameKitStudioSection
   messages: SidebarMessages
   locale: FrameKitLocale
@@ -15,14 +16,21 @@ type SidebarFooterProps = {
   onToggleSettings: () => void
 }
 
-export function SidebarFooter ({ section, messages, locale, onLocaleChange, settingsOpen, onToggleSettings }: SidebarFooterProps) {
+export function SidebarFooter ({ user, section, messages, locale, onLocaleChange, settingsOpen, onToggleSettings }: SidebarFooterProps) {
   return (
     <div className="relative mt-auto shrink-0 border-t border-white/10 px-5 py-4">
       <p className="text-center text-[10px] text-fk-sage-300">
         {messages.developedBy} <a href="https://mauriciodmo.com" className="font-bold text-fk-mint-200 hover:underline" target="_blank">MauricioDMO</a>
       </p>
       <div className="relative mt-3">
-        <FrameKitStudioSettings open={settingsOpen} section={section} locale={locale} messages={messages} onLocaleChange={onLocaleChange} />
+        <FrameKitStudioSettings
+          user={user}
+          open={settingsOpen}
+          section={section}
+          locale={locale}
+          messages={messages}
+          onLocaleChange={onLocaleChange}
+        />
         <button
           type="button"
           onClick={onToggleSettings}

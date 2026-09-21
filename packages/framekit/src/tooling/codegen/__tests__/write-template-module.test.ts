@@ -146,6 +146,7 @@ async function executeGeneratedLoaders (root: string): Promise<{
   brandRegistryMarker: string | null
   studioTemplateSlugs: string[]
   studioBrandSlugs: string[]
+  studioUserWithoutUser: Record<string, unknown> | null
   studioUser: Record<string, unknown>
   renderTemplateSlugs: string[]
 }> {
@@ -171,7 +172,8 @@ const firstBrand = brandModule.brands[0]
 const registryResult = firstBrand
   ? await brandModule.brandRegistry[firstBrand.slug]()
   : null
-const studioElement = studioClientModule.StudioClient({ user: { id: 'user-1', username: 'admin', role: 'admin' } })
+const studioElementWithoutUser = studioClientModule.StudioClient({})
+const studioElementWithUser = studioClientModule.StudioClient({ user: { id: 'user-1', username: 'admin', role: 'admin' } })
 
 console.log(JSON.stringify({
   templateMetadata: templateModule.templates.map(({ load: _, ...metadata }) => metadata),
@@ -181,9 +183,10 @@ console.log(JSON.stringify({
   templateMarkers,
   brandMarkers,
   brandRegistryMarker: registryResult?.default.marker ?? null,
-  studioTemplateSlugs: studioElement.props.templates.map(({ slug }) => slug),
-  studioBrandSlugs: studioElement.props.brands.map(({ slug }) => slug),
-  studioUser: studioElement.props.user,
+  studioTemplateSlugs: studioElementWithoutUser.props.templates.map(({ slug }) => slug),
+  studioBrandSlugs: studioElementWithoutUser.props.brands.map(({ slug }) => slug),
+  studioUserWithoutUser: studioElementWithoutUser.props.user ?? null,
+  studioUser: studioElementWithUser.props.user,
   renderTemplateSlugs: renderClientModule.RenderClient.templates.map(({ slug }) => slug),
 }))
 `, 'utf8')
@@ -299,7 +302,7 @@ describe('writeTemplateModule', () => {
       expect(generatedStudioClient).toContain("'use client'")
       expect(generatedStudioClient).toContain("import { FrameKitStudio } from '@mauriciodmo/framekit/studio'")
       expect(generatedStudioClient).toContain("import type { StudioUser } from '@mauriciodmo/framekit/studio'")
-      expect(generatedStudioClient).toContain('user: StudioUser')
+      expect(generatedStudioClient).toContain('export function StudioClient ({ user }: { user?: StudioUser })')
       expect(generatedStudioClient).toContain("import { templates } from './templates'")
       expect(generatedStudioClient).toContain("import { brands } from './brands'")
       expect(generatedStudioClient).not.toContain('@mauriciodmo/framekit/server')
@@ -317,6 +320,7 @@ describe('writeTemplateModule', () => {
       expect(generated.templateMarkers).toEqual(['template-loader', 'escaped-template-loader'])
       expect(generated.studioTemplateSlugs).toEqual(['alpha/post', 'zeta/launch'])
       expect(generated.studioBrandSlugs).toEqual(['alpha-brand', 'zulu-brand'])
+      expect(generated.studioUserWithoutUser).toBeNull()
       expect(generated.studioUser).toEqual({ id: 'user-1', username: 'admin', role: 'admin' })
       expect(generated.renderTemplateSlugs).toEqual(['alpha/post', 'zeta/launch'])
 

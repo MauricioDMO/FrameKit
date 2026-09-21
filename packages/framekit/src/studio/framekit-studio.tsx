@@ -41,7 +41,7 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
   }
 
   let content: ReactNode
-  if (section === 'settings') content = <FrameKitStudioSettings user={user} locale={locale} messages={messages.settings} />
+  if (section === 'settings') content = user ? <FrameKitStudioSettings user={user} locale={locale} messages={messages.settings} /> : null
   else if (!slug) content = <EmptyState section={section} messages={messages} />
   else if (loadState.status === 'loading') content = <LoadingState label={section === 'brand' ? messages.brand.loadingLabel : messages.editor.loadingLabel} />
   else if (loadState.status === 'ready' && loadState.kind === 'template') content = <FrameKitEditor key={slug} template={loadState.entry} definition={loadState.definition} messages={messages.editor} sidebarCollapsed={sidebarCollapsed} />
@@ -51,7 +51,7 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
   else content = <NotFoundState section={section} messages={messages} />
 
   return (
-    <FrameKitStudioShell section={section} navigation={navigation} messages={messages} locale={locale} onLocaleChange={setLocale} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar}>
+    <FrameKitStudioShell user={user} section={section} navigation={navigation} messages={messages} locale={locale} onLocaleChange={setLocale} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar}>
       {content}
     </FrameKitStudioShell>
   )

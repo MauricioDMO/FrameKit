@@ -5,19 +5,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { defineTemplate, field } from '@/index'
 import type { TemplateDefinition, TemplateRegistryEntry } from '@/types'
+import type { StudioUser } from '@/studio/types'
 
 import { FrameKitStudio } from '../framekit-studio'
 import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
+import { frameKitMessages } from '@/studio/i18n/messages'
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>
 }))
 
 const route = vi.hoisted(() => ({ params: {} as { slug?: string[] }, pathname: '/editor' }))
+const router = vi.hoisted(() => ({ replace: vi.fn() }))
+const normalUser: StudioUser = { id: 'user-1', username: 'owner', role: 'user' }
 
 vi.mock('next/navigation', () => ({
   useParams: () => route.params,
-  usePathname: () => route.pathname
+  usePathname: () => route.pathname,
+  useRouter: () => router
 }))
 
 const initialLocalStorage = new Map<string, string>()
@@ -55,6 +60,8 @@ afterEach(() => {
   cleanup()
   route.params = {}
   route.pathname = '/editor'
+  router.replace.mockReset()
+  vi.unstubAllGlobals()
   restoreBrowserState()
 })
 
@@ -121,6 +128,19 @@ describe('FrameKitStudio empty state', () => {
 })
 
 describe('FrameKitStudio integration', () => {
+  it('renders the editor without a user', async () => {
+    route.params = { slug: ['social', 'campaign'] }
+    const entry = createTemplateEntry()
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[entry]} />
+      </FrameKitLocaleProvider>
+    )
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Registry title' })).toBeTruthy())
+  })
+
   it('shows the exact initial brand state without a selected slug', () => {
     route.pathname = '/brand'
 
@@ -133,6 +153,40 @@ describe('FrameKitStudio integration', () => {
     expect(screen.getByRole('heading', { name: 'Select a component' }).textContent).toBe('Select a component')
     expect(screen.getByText('Choose a brand component to view its preview and learn its purpose.').textContent).toBe('Choose a brand component to view its preview and learn its purpose.')
     expect(screen.getByText('No brand components are available.').textContent).toBe('No brand components are available.')
+  })
+
+  it('does not render authenticated settings without a user', () => {
+    route.pathname = '/settings'
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[]} />
+      </FrameKitLocaleProvider>
+    )
+
+    expect(screen.queryByRole('heading', { name: frameKitMessages.en.settings.title })).toBeNull()
+    expect(screen.queryByRole('heading', { name: frameKitMessages.en.settings.account.title })).toBeNull()
+    expect(screen.queryByRole('heading', { name: frameKitMessages.en.settings.tokens.title })).toBeNull()
+    expect(screen.queryByRole('heading', { name: frameKitMessages.en.settings.users.title })).toBeNull()
+    expect(screen.queryByText(frameKitMessages.en.settings.account.sessionRequired)).toBeNull()
+    expect(router.replace).not.toHaveBeenCalled()
+  })
+
+  it('renders authenticated settings through FrameKitStudio', async () => {
+    route.pathname = '/settings'
+    const fetchMock = vi.fn(async () => new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[]} user={normalUser} />
+      </FrameKitLocaleProvider>
+    )
+
+    expect(screen.getByRole('heading', { name: frameKitMessages.en.settings.title })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: frameKitMessages.en.settings.account.title })).toBeTruthy()
+    expect(screen.queryByText(frameKitMessages.en.settings.account.sessionRequired)).toBeNull()
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/framekit/tokens', { method: 'GET' }))
   })
 
   it('closes settings when the production shell collapses and expands', () => {
@@ -531,7 +585,7 @@ describe('FrameKitStudio integration', () => {
     expect(screen.queryByText('private loader failure')).toBeNull()
   })
 
-  it('loads and renders a brand preview successfully', async () => {
+  it('loads and renders a brand preview without a user', async () => {
     route.pathname = '/brand/communication/hero'
     route.params = { slug: ['communication', 'hero'] }
     const { brand } = createBrandEntry()

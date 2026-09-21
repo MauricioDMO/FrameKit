@@ -31,6 +31,14 @@ describe('FrameKitStudioSettings', () => {
     expect(onLocaleChange).toHaveBeenCalledExactlyOnceWith('en')
   })
 
+  it('hides the settings link without a user but keeps appearance controls', () => {
+    render(<FrameKitStudioSettings open section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
+
+    expect(screen.getByRole('combobox', { name: 'Idioma de la interfaz' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Cambiar tema' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Ajustes' })).toBeNull()
+  })
+
   it('toggles the document theme and persists it in a cookie', () => {
     render(<FrameKitStudioSettings open section="editor" locale="es" messages={frameKitMessages.es.sidebar} onLocaleChange={vi.fn()} />)
 

@@ -25,7 +25,7 @@ import type { StudioUser } from '@mauriciodmo/framekit/studio'
 import { templates } from '${templatesImport}'
 import { brands } from '${brandsImport}'
 
-export function StudioClient ({ user }: { user: StudioUser }) {
+export function StudioClient ({ user }: { user?: StudioUser }) {
   return <FrameKitStudio templates={templates} brands={brands} user={user} />
 }
 `
