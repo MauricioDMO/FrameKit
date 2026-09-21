@@ -1,13 +1,11 @@
 import { isProductionAnalytics } from './core';
 import { initCopyTracking } from './copy';
-import { initLocaleTracking } from './locale';
 import { initNavigationTracking } from './navigation';
 import { initPageTracking } from './page';
 import { initSearchTracking } from './search';
 
 if (isProductionAnalytics()) {
   const init = () => {
-    initLocaleTracking();
     initPageTracking();
     initCopyTracking();
     initNavigationTracking();

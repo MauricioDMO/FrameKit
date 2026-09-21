@@ -89,17 +89,13 @@ const recordSuccessfulCopy = (button: HTMLButtonElement) => {
   const code = getCopiedCode(button);
   const commandKind = detectCommandKind(code);
   const packageManager = detectPackageManager(code);
-  const eventName = ['create-project', 'install-package'].includes(commandKind)
-    ? 'install-command-copy'
-    : 'code-copy';
+  if (!['create-project', 'install-package'].includes(commandKind)) return;
 
   waitForCopySuccess(button, () => {
-    track(eventName, {
+    track('install-command-copy', {
       commandKind,
       packageManager,
     });
-
-    if (eventName !== 'install-command-copy') return;
 
     const progress = getSessionJson<GettingStartedProgress>(GETTING_STARTED_STORAGE_KEY);
     setSessionJson(GETTING_STARTED_STORAGE_KEY, {

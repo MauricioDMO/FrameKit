@@ -28,16 +28,9 @@ const track404 = () => {
   });
 };
 
-const trackGettingStarted = () => {
+const trackGettingStartedCompletion = () => {
   const match = window.location.pathname.match(/^\/(?:en|es)\/users\/getting-started(?:\/([^/]+))?\/?$/);
-  if (!match) return;
-
-  const step = match[1] || 'index';
-  track('getting-started-step-view', { step });
-
-  if (step !== 'first-template') return;
-
-  track('first-template-open');
+  if (!match || match[1] !== 'first-template') return;
 
   const progress = getSessionJson<GettingStartedProgress>(GETTING_STARTED_STORAGE_KEY);
   if (!progress.installed || progress.completed) return;
@@ -51,15 +44,6 @@ const trackGettingStarted = () => {
   setSessionJson(GETTING_STARTED_STORAGE_KEY, {
     ...progress,
     completed: true,
-  });
-};
-
-const trackMigration = () => {
-  const match = window.location.pathname.match(/^\/(?:en|es)\/users\/migrations(?:\/([^/]+))?\/?$/);
-  if (!match) return;
-
-  track('migration-open', {
-    version: match[1] || 'index',
   });
 };
 
@@ -103,7 +87,6 @@ const initScrollDepthTracking = () => {
 
 export const initPageTracking = () => {
   track404();
-  trackGettingStarted();
-  trackMigration();
+  trackGettingStartedCompletion();
   initScrollDepthTracking();
 };

@@ -1,4 +1,4 @@
-import { getDocsDestination, getExternalCategory, track } from './core';
+import { getExternalCategory, track } from './core';
 
 const trackPackageManagerTab = (target: Element) => {
   const tab = target.closest('[role="tab"]');
@@ -16,19 +16,20 @@ const trackInternalNavigation = (anchor: HTMLAnchorElement, url: URL) => {
   const isLandingPage = /^\/(?:en|es)\/$/.test(window.location.pathname);
 
   if (anchor.matches('.sl-anchor-link')) {
-    track('heading-anchor-click', {
+    track('docs-anchor-click', {
+      source: 'heading',
       target: url.hash.replace(/^#/, '') || 'unknown',
     });
-  }
-
-  if (anchor.closest('starlight-toc, mobile-starlight-toc') && url.hash) {
-    track('toc-click', {
+  } else if (anchor.closest('starlight-toc, mobile-starlight-toc') && url.hash) {
+    track('docs-anchor-click', {
+      source: 'toc',
       target: url.hash.replace(/^#/, ''),
     });
   }
 
   if (anchor.rel === 'prev' || anchor.rel === 'next') {
-    track(anchor.rel === 'prev' ? 'docs-prev-click' : 'docs-next-click', {
+    track('docs-pagination-click', {
+      direction: anchor.rel,
       destination: url.pathname,
     });
   }
@@ -37,39 +38,12 @@ const trackInternalNavigation = (anchor: HTMLAnchorElement, url: URL) => {
     track('get-started-click', { location: 'landing-hero' });
   }
 
-  if (isLandingPage && url.hash === '#workflow') {
-    track('workflow-click', { location: 'landing-hero' });
-  }
-
   if (isLandingPage && /\/users\/getting-started\/create-project\/?$/.test(url.pathname)) {
     track('starting-path-click', { path: 'new-project' });
   }
 
   if (isLandingPage && /\/users\/getting-started\/existing-project\/?$/.test(url.pathname)) {
     track('starting-path-click', { path: 'existing-project' });
-  }
-
-  const docsDestination = getDocsDestination(url.pathname);
-  if (docsDestination) {
-    track('docs-section-open', docsDestination);
-
-    if (docsDestination.audience === 'contributors') {
-      track('contributor-docs-open', {
-        section: docsDestination.section,
-      });
-    }
-  }
-
-  if (/\/users\/guides(?:\/|$)/.test(url.pathname)) {
-    track('guide-open');
-  }
-
-  if (/\/users\/reference\/http-api(?:\/|$)/.test(url.pathname)) {
-    track('api-reference-open');
-  }
-
-  if (/\/users\/troubleshooting(?:\/|$)/.test(url.pathname)) {
-    track('troubleshooting-open');
   }
 };
 
@@ -80,20 +54,6 @@ const trackExternalNavigation = (url: URL) => {
     category,
     hostname: url.hostname,
   });
-
-  if (category === 'github') {
-    const isFrameKitRepository = url.pathname.toLowerCase().startsWith('/mauriciodmo/framekit');
-    track('github-click', {
-      target: isFrameKitRepository ? 'framekit-repository' : 'github',
-    });
-  }
-
-  if (category === 'npm') {
-    const isFrameKitPackage = url.pathname.toLowerCase().includes('/package/@mauriciodmo/framekit');
-    track('npm-click', {
-      target: isFrameKitPackage ? 'framekit-package' : 'npm',
-    });
-  }
 };
 
 export const initNavigationTracking = () => {

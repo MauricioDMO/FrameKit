@@ -1,5 +1,4 @@
 export const PRODUCTION_HOST = 'framekit.mauriciodmo.com';
-export const LOCALE_STORAGE_KEY = 'framekit:docs-locale';
 export const GETTING_STARTED_STORAGE_KEY = 'framekit:getting-started-progress';
 
 export type AnalyticsValue = string | number | boolean;
@@ -73,16 +72,6 @@ export const getSessionJson = <T extends object>(key: string): Partial<T> => {
 
 export const setSessionJson = (key: string, value: object) => {
   window.sessionStorage.setItem(key, JSON.stringify(value));
-};
-
-export const getDocsDestination = (pathname: string) => {
-  const match = pathname.match(/^\/(?:en|es)\/(users|contributors)(?:\/([^/]+))?(?:\/|$)/);
-  if (!match) return null;
-
-  return {
-    audience: match[1] as 'users' | 'contributors',
-    section: match[2] || 'index',
-  };
 };
 
 export const getExternalCategory = (hostname: string) => {
