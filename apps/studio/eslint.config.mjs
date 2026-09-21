@@ -3,6 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
 import tailwindcss from 'eslint-plugin-tailwindcss'
 import standard from '../../tooling/eslint-standard.mjs'
+import { consumerImportBoundary } from '../../tooling/eslint-boundaries.mjs'
 
 const nextConfig = nextVitals.map((config) => config.plugins?.import
   ? { ...config, plugins: { ...config.plugins, import: standard.plugins.import } }
@@ -31,6 +32,18 @@ const eslintConfig = defineConfig([
         { whitelist: ['studio-select(?:--dark)?'] }
       ],
       'tailwindcss/no-unnecessary-arbitrary-value': 'off'
+    }
+  },
+  {
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': consumerImportBoundary
+    }
+  },
+  {
+    files: ['src/**/__tests__/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off'
     }
   },
   // Override default ignores of eslint-config-next.

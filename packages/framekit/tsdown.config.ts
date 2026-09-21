@@ -16,6 +16,9 @@ export default defineConfig({
   dts: true,
   clean: true,
   unbundle: true,
+  alias: {
+    '@': './src'
+  },
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   sourcemap: false,
   logLevel: 'error',

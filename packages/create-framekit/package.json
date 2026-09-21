@@ -46,7 +46,7 @@
   "scripts": {
     "build": "tsdown && pnpm check:dist",
     "check:dist": "tsx ../framekit/scripts/check-dist.ts .",
-    "lint": "eslint src tsdown.config.ts eslint.config.mjs",
+    "lint": "eslint src template/src tsdown.config.ts eslint.config.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "pnpm build",
