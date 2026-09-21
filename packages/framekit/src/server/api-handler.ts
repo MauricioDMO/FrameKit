@@ -7,11 +7,25 @@ import { createStudioImageHandler } from './image-handler'
 
 const imageRenderPath = '/api/framekit/images/render'
 
-export function createFrameKitApiHandler (templates: readonly TemplateRegistryEntry[], env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
-  const accessHandler = createStudioAccessHandler(env)
-  const imageHandler = createStudioImageHandler(templates, env)
+export function createFrameKitApiHandler (templates: readonly TemplateRegistryEntry[], env?: NodeJS.ProcessEnv): (request: Request) => Promise<Response> {
+  let handlers: {
+    access: ReturnType<typeof createStudioAccessHandler>
+    image: ReturnType<typeof createStudioImageHandler>
+  } | undefined
+
+  function getHandlers () {
+    if (handlers !== undefined) return handlers
+
+    const runtimeEnv = env ?? snapshotEnv()
+    handlers = {
+      access: createStudioAccessHandler(runtimeEnv),
+      image: createStudioImageHandler(templates, runtimeEnv)
+    }
+    return handlers
+  }
 
   return async function frameKitApiHandler (request: Request): Promise<Response> {
+    const { access, image } = getHandlers()
     let pathname: string
     try {
       pathname = new URL(request.url).pathname
@@ -19,8 +33,8 @@ export function createFrameKitApiHandler (templates: readonly TemplateRegistryEn
       return errorResponse('not_found', 404)
     }
 
-    if (pathname !== imageRenderPath) return accessHandler(request)
+    if (pathname !== imageRenderPath) return access(request)
     if (request.method !== 'POST') return errorResponse('method_not_allowed', 405, { Allow: 'POST' })
-    return imageHandler(request)
+    return image(request)
   }
 }
