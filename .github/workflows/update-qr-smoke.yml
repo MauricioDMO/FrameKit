@@ -1,0 +1,38 @@
+name: Update QR smoke contract
+
+on:
+  push:
+    branches:
+      - feat/qr-code-component
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feat/qr-code-component
+      - name: Add QR export to tarball contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tooling/smoke-tarballs.mjs')
+          source = path.read_text()
+          before = "for (const subpath of ['client', 'next', 'server']) {"
+          after = "for (const subpath of ['client', 'qr', 'next', 'server']) {"
+          if before not in source:
+              raise SystemExit('expected smoke export list not found')
+          path.write_text(source.replace(before, after, 1))
+          PY
+      - name: Commit smoke update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tooling/smoke-tarballs.mjs
+          git commit -m "test: cover QR package export in tarball smoke"
+          git push origin HEAD:feat/qr-code-component
