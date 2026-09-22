@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     editor: 'src/editor.ts',
     client: 'src/client/index.ts',
+    qr: 'src/qr.ts',
     next: 'src/next.ts',
     studio: 'src/studio.ts',
     'studio-root': 'src/studio-root.ts',
@@ -22,6 +23,6 @@ export default defineConfig({
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   sourcemap: false,
   logLevel: 'error',
-  external: ['next', 'react', 'react-dom', '@tabler/icons-react', 'chokidar', 'tsx', 'playwright-core'],
+  external: ['next', 'react', 'react-dom', '@tabler/icons-react', 'chokidar', 'tsx', 'playwright-core', 'qrcode.react'],
   outDir: 'dist'
 })

@@ -140,7 +140,7 @@ export const studioRootAdapterImportBoundary = ['error', {
 export const consumerImportBoundary = ['error', {
   patterns: [
     {
-      regex: '^@mauriciodmo/framekit/(?!client$|editor$|next$|studio$|studio/root$|dev$|server$|styles\\.css$).*',
+      regex: '^@mauriciodmo/framekit/(?!client$|editor$|qr$|next$|studio$|studio/root$|dev$|server$|styles\\.css$).*',
       message: 'Consumers must use a supported FrameKit package entrypoint'
     },
     {

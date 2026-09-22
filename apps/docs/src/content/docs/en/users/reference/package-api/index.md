@@ -12,6 +12,7 @@ FrameKit publishes a small set of explicit package entrypoints. Import only from
 - [Core API](/en/users/reference/package-api/core) — shared template definitions, fields, validation, data helpers, and `Markdown`.
 - [Client API](/en/users/reference/package-api/client) — the client component used by the private render page.
 - [Editor API](/en/users/reference/package-api/editor) — interactive editor and navigation components.
+- [QR code API](/en/users/reference/package-api/qr) — SVG QR codes with a layout-friendly `div` wrapper for templates.
 - [Next.js API](/en/users/reference/package-api/next) — the supported Next.js configuration wrapper.
 - [Studio API](/en/users/reference/package-api/studio) — the client-side Studio surface and its messages and types.
 - [Studio root API](/en/users/reference/package-api/studio-root) — server-side document and page factories for Studio routes.

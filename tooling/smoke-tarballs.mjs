@@ -215,7 +215,7 @@ function isNodeBuiltin(specifier) {
 }
 
 async function assertCorePackageBoundary(packageRoot, manifest, label) {
-  for (const subpath of ['client', 'next', 'server']) {
+  for (const subpath of ['client', 'qr', 'next', 'server']) {
     assert.deepEqual(manifest.exports?.[`./${subpath}`], {
       types: `./dist/${subpath}.d.ts`,
       import: `./dist/${subpath}.js`,

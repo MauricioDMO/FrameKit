@@ -33,6 +33,11 @@
       "import": "./dist/client.js",
       "default": "./dist/client.js"
     },
+    "./qr": {
+      "types": "./dist/qr.d.ts",
+      "import": "./dist/qr.js",
+      "default": "./dist/qr.js"
+    },
     "./next": {
       "types": "./dist/next.d.ts",
       "import": "./dist/next.js",
@@ -94,6 +99,7 @@
     "chokidar": "^5.0.0",
     "@tabler/icons-react": "^3.45.0",
     "playwright-core": "1.62.1",
+    "qrcode.react": "^4.2.0",
     "tsx": "^4"
   },
   "peerDependencies": {

@@ -7,7 +7,7 @@
 - `packages/create-framekit/` is the public project-scaffolding CLI; its `template/` is the generated consumer project.
 - `apps/studio/` is the first-party private Next.js app. `packages/create-framekit/template/` is the canonical generated consumer project.
 - Put reusable consumer-facing code in `packages/framekit/src/`; keep Studio-only code in `apps/studio/src/` and scaffolding logic in `packages/create-framekit/src/`.
-- The supported `@mauriciodmo/framekit` imports are `.`, `./client`, `./editor`, `./studio`, `./studio/root`, `./dev`, `./next`, `./server`, and `./styles.css`; do not import `packages/framekit/src/*` as a consumer.
+- The supported `@mauriciodmo/framekit` imports are `.`, `./client`, `./editor`, `./qr`, `./studio`, `./studio/root`, `./dev`, `./next`, `./server`, and `./styles.css`; do not import `packages/framekit/src/*` as a consumer.
 - Repository-maintenance scripts live under root `tooling/`; package-specific build tooling stays with its owning package.
 
 ## Commands
