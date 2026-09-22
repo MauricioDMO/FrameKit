@@ -18,6 +18,7 @@ The current package publishes these exact entrypoints:
 | `@mauriciodmo/framekit` | `.` | `./dist/index.js` | `./dist/index.d.ts` |
 | `@mauriciodmo/framekit/editor` | `./editor` | `./dist/editor.js` | `./dist/editor.d.ts` |
 | `@mauriciodmo/framekit/client` | `./client` | `./dist/client.js` | `./dist/client.d.ts` |
+| `@mauriciodmo/framekit/qr` | `./qr` | `./dist/qr.js` | `./dist/qr.d.ts` |
 | `@mauriciodmo/framekit/next` | `./next` | `./dist/next.js` | `./dist/next.d.ts` |
 | `@mauriciodmo/framekit/studio` | `./studio` | `./dist/studio.js` | `./dist/studio.d.ts` |
 | `@mauriciodmo/framekit/studio/root` | `./studio/root` | `./dist/studio-root.js` | `./dist/studio-root.d.ts` |
@@ -85,6 +86,7 @@ CLI entry:
 src/index.ts          -> dist/index.js
 src/editor.ts         -> dist/editor.js
 src/client/index.ts   -> dist/client.js
+src/qr.ts             -> dist/qr.js
 src/next.ts           -> dist/next.js
 src/studio.ts         -> dist/studio.js
 src/studio-root.ts    -> dist/studio-root.js

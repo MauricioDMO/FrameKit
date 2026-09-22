@@ -12,6 +12,7 @@ FrameKit publica un pequeño conjunto de puntos de entrada explícitos del paque
 - [API principal](/es/users/reference/package-api/core) — las definiciones de plantillas compartidas, los campos, la validación, los auxiliares de datos y `Markdown`.
 - [API del cliente](/es/users/reference/package-api/client) — el componente de cliente utilizado por la página privada de renderizado.
 - [API del editor](/es/users/reference/package-api/editor) — componentes interactivos del editor y de navegación.
+- [API de códigos QR](/es/users/reference/package-api/qr) — códigos QR SVG con un `div` contenedor fácil de posicionar en plantillas.
 - [API de Next.js](/es/users/reference/package-api/next) — el wrapper de configuración de Next.js compatible.
 - [API de Studio](/es/users/reference/package-api/studio) — la superficie de Studio del lado del cliente y sus mensajes y tipos.
 - [API raíz de Studio](/es/users/reference/package-api/studio-root) — fábricas de documentos y páginas del lado del servidor para las rutas de Studio.

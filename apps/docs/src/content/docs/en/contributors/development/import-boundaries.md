@@ -19,6 +19,7 @@ Consumers import the public package, not its source tree. The current
 | `@mauriciodmo/framekit` | `.` | Foundation and core template contracts. |
 | `@mauriciodmo/framekit/editor` | `./editor` | Client-side Editor components, including `TemplateCanvas`. |
 | `@mauriciodmo/framekit/client` | `./client` | Client-side private render component factory. |
+| `@mauriciodmo/framekit/qr` | `./qr` | Browser-safe QR component for template rendering. |
 | `@mauriciodmo/framekit/next` | `./next` | Next.js build configuration. |
 | `@mauriciodmo/framekit/studio` | `./studio` | Client-side Studio composition and messages. |
 | `@mauriciodmo/framekit/studio/root` | `./studio/root` | Server-side document and page factories for Studio routes. |
@@ -38,9 +39,9 @@ tooling:
 - **Foundation** includes the root package entry and core template, field,
   validation, data, type, and Markdown modules. Foundation does not depend on
   Editor, Studio, Server, or Tooling.
-- **Editor and Studio** are client-facing UI layers. `TemplateCanvas` crosses
-  the public boundary through `./editor`; consumers import it from
-  `@mauriciodmo/framekit/editor`, never from an internal file path.
+- **Editor, QR, and Studio** are browser-facing layers. `TemplateCanvas` crosses
+  the public boundary through `./editor`, and QR rendering crosses through
+  `./qr`; consumers use the published entrypoints rather than internal paths.
 - **Server** owns Node/server-only access, image, render-job, browser, and HTTP
   behavior exposed through `./server`. Keep this facade out of browser bundles
   and client components.
@@ -59,15 +60,15 @@ from client code.
 
 ## Keep client and server graphs separate
 
-Client code does not import `./server`. Use `@mauriciodmo/framekit/client` or
-`@mauriciodmo/framekit/editor` behind the appropriate client boundary, and keep
-`@mauriciodmo/framekit/server` in Node/server route modules. Server code prepares
-the render payload; the client render component receives that payload at its
-client boundary.
+Client code does not import `./server`. Use `@mauriciodmo/framekit/client`,
+`@mauriciodmo/framekit/editor`, or `@mauriciodmo/framekit/qr` behind the
+appropriate browser-facing boundary, and keep `@mauriciodmo/framekit/server` in
+Node/server route modules. Server code prepares the render payload; the client
+render component receives that payload at its client boundary.
 
 Node built-ins such as `node:fs`, `node:path`, `node:crypto`, and
 `node:module` stay in Server and Tooling where appropriate. Do not pull Node or
-Playwright dependencies into Foundation, Editor, or browser-facing client
+Playwright dependencies into Foundation, Editor, QR, or browser-facing client
 bundles.
 
 ## Treat generated code as output

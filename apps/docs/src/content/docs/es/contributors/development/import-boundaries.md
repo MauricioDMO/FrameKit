@@ -20,6 +20,7 @@ Los consumidores importan el paquete público, no su árbol de código fuente. E
 | `@mauriciodmo/framekit` | `.` | Contratos de la base y de las plantillas principales. |
 | `@mauriciodmo/framekit/editor` | `./editor` | Componentes de Editor del lado del cliente, incluido `TemplateCanvas`. |
 | `@mauriciodmo/framekit/client` | `./client` | Fábrica privada de componentes de renderizado del lado del cliente. |
+| `@mauriciodmo/framekit/qr` | `./qr` | Componente QR seguro para navegador usado al renderizar plantillas. |
 | `@mauriciodmo/framekit/next` | `./next` | Configuración de compilación de Next.js. |
 | `@mauriciodmo/framekit/studio` | `./studio` | Composición y mensajes de Studio del lado del cliente. |
 | `@mauriciodmo/framekit/studio/root` | `./studio/root` | Fábricas de documentos y páginas del lado del servidor para las rutas de Studio. |
@@ -40,7 +41,7 @@ FrameKit separa el código reutilizable de base, la interfaz de producto, el
 runtime de servidor y el tooling:
 
 - **Foundation** incluye el entrypoint raíz del paquete y los módulos de plantillas, campos, validación, datos, tipos y Markdown principales. Foundation no depende de Editor, Studio, Server ni Tooling.
-- **Editor y Studio** son capas de interfaz orientadas al cliente. `TemplateCanvas` cruza el límite público mediante `./editor`; los consumidores lo importan desde `@mauriciodmo/framekit/editor`, nunca desde una ruta de archivo interna.
+- **Editor, QR y Studio** son capas orientadas al navegador. `TemplateCanvas` cruza el límite público mediante `./editor` y el renderizado QR lo hace mediante `./qr`; los consumidores usan los entrypoints publicados en lugar de rutas internas.
 - **Server** posee el acceso exclusivo de Node/servidor, las imágenes, los trabajos de renderizado, el navegador y el comportamiento HTTP expuestos mediante `./server`. Mantén esta fachada fuera de los bundles del navegador y de los componentes del cliente.
 - **Tooling** posee el descubrimiento, la generación de código, la observación de archivos, el servidor de desarrollo y el ciclo de vida de la CLI mediante `./dev` y la CLI del paquete. Mantén su trabajo con el sistema de archivos y los procesos fuera de los grafos reutilizables del cliente.
 
@@ -58,15 +59,15 @@ SQLite, ni exponer el almacenamiento de acceso desde el código cliente.
 El código del cliente no importa `./server` en tiempo de ejecución. Se permiten
 las importaciones exclusivamente de tipos (`import type`) de tipos de payload del
 servidor, como `ResolvedRenderPayload`, porque no añaden una dependencia de
-ejecución. Usa `@mauriciodmo/framekit/client` o
-`@mauriciodmo/framekit/editor` detrás del límite de cliente correspondiente, y
-mantén `@mauriciodmo/framekit/server` en los módulos de rutas de Node/servidor.
+ejecución. Usa `@mauriciodmo/framekit/client`, `@mauriciodmo/framekit/editor` o
+`@mauriciodmo/framekit/qr` detrás del límite orientado al navegador correspondiente,
+y mantén `@mauriciodmo/framekit/server` en los módulos de rutas de Node/servidor.
 El código del servidor prepara el payload de renderizado; el componente de
 renderizado del cliente recibe ese payload en su límite de cliente.
 
 Los módulos integrados de Node como `node:fs`, `node:path`, `node:crypto` y
 `node:module` permanecen en Server y Tooling cuando corresponde. No introduzcas
-dependencias de Node o Playwright en Foundation, Editor ni los bundles del
+dependencias de Node o Playwright en Foundation, Editor, QR ni los bundles del
 cliente orientados al navegador.
 
 ## Trata el código generado como salida
