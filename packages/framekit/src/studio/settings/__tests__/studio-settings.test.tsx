@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FrameKitLocaleProvider } from '@/studio/i18n/locale-provider'
+import type { FrameKitLocale } from '@/studio/i18n/messages'
 import { frameKitMessages } from '@/studio/i18n/messages'
 import { FrameKitStudioSettings } from '@/studio/settings/studio-settings'
 import type { ManagedStudioUser, StudioTokenMetadata } from '@/studio/settings/types'
@@ -29,21 +30,21 @@ function apiResponse (body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 }
 
-function StatefulSettings ({ user }: { user: StudioUser }) {
+function StatefulSettings ({ user, locale }: { user: StudioUser, locale: FrameKitLocale }) {
   const [currentUser, setCurrentUser] = useState(user)
 
   function updateUser (nextUser: StudioUser) {
     setCurrentUser((current) => current.id === nextUser.id ? nextUser : current)
   }
 
-  return <FrameKitStudioSettings user={currentUser} locale="en" messages={frameKitMessages.en.settings} onUserChange={updateUser} />
+  return <FrameKitStudioSettings user={currentUser} locale={locale} messages={frameKitMessages[locale].settings} onUserChange={updateUser} />
 }
 
-function renderSettings (user = normalUser, pathname = '/settings/account') {
+function renderSettings (user = normalUser, pathname = '/settings/account', locale: FrameKitLocale = 'en') {
   route.pathname = pathname
   return render(
-    <FrameKitLocaleProvider initialLocale="en">
-      <StatefulSettings user={user} />
+    <FrameKitLocaleProvider initialLocale={locale}>
+      <StatefulSettings user={user} locale={locale} />
     </FrameKitLocaleProvider>
   )
 }
@@ -53,7 +54,11 @@ function submitNamedForm (name: string) {
 }
 
 afterEach(() => {
+  document.querySelectorAll<HTMLButtonElement>('[data-framekit-toast-dismiss]').forEach((button) => {
+    act(() => fireEvent.click(button))
+  })
   cleanup()
+  vi.useRealTimers()
   route.pathname = '/settings/account'
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
@@ -74,6 +79,10 @@ describe('FrameKitStudioSettings account workflows', () => {
     submitNamedForm('Save username')
 
     await waitFor(() => expect(screen.getByText('renamed-owner')).toBeTruthy())
+    const successToast = await waitFor(() => screen.getByRole('status'))
+    expect(successToast.textContent).toContain('Username updated.')
+    expect(successToast.parentElement?.className).toContain('top-0')
+    expect(successToast.parentElement?.className).toContain('left-1/2')
     const accountRequest = fetchMock.mock.calls.find(([url, init]) => url === '/api/framekit/account' && init?.method === 'PATCH')
     expect(accountRequest?.[1]).toMatchObject({
       method: 'PATCH',
@@ -159,11 +168,16 @@ describe('FrameKitStudioSettings token workflows', () => {
     submitNamedForm('Create token')
 
     await waitFor(() => expect(screen.getByText(createdToken.token)).toBeTruthy())
+    const creationToast = await waitFor(() => screen.getByRole('status'))
+    expect(creationToast.textContent).toContain('Token created.')
+    expect(creationToast.parentElement?.className).toContain('top-0')
+    expect(creationToast.parentElement?.className).toContain('left-1/2')
     expect(screen.getByText('Old token')).toBeTruthy()
     expect(screen.queryByText('old secret')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Copy token' }))
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(createdToken.token))
+    await waitFor(() => expect(screen.getAllByRole('status').some((toast) => toast.textContent?.includes('Token copied.'))).toBe(true))
     fireEvent.click(screen.getByRole('button', { name: 'I have copied the token' }))
     expect(screen.queryByText(createdToken.token)).toBeNull()
 
@@ -468,13 +482,42 @@ describe('FrameKitStudioSettings administrator workflows', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'updated-target' } })
     fireEvent.submit(screen.getByRole('button', { name: 'Save changes' }).closest('form') as HTMLFormElement)
     await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => url === '/api/framekit/users/user-2' && init?.method === 'PATCH')).toBe(true))
+    const saveToast = await waitFor(() => screen.getByRole('status'))
+    expect(saveToast.textContent).toContain('Save changes')
+    expect(saveToast.parentElement?.className).toContain('top-0')
+    expect(saveToast.parentElement?.className).toContain('left-1/2')
     expect(fetchMock.mock.calls.some(([url, init]) => url === '/api/framekit/users/user-2' && init?.body === JSON.stringify({ username: 'updated-target', role: 'user', active: true }))).toBe(true)
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete user' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete user' }))
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('no longer available'))
+    const notFoundAlert = await waitFor(() => {
+      const alert = screen.getByRole('alert')
+      expect(alert.textContent).toContain('no longer available')
+      return alert
+    })
+    await waitFor(() => expect(document.activeElement).toBe(notFoundAlert))
     expect(fetchMock.mock.calls.some(([url, init]) => url === '/api/framekit/users/user-2' && init?.method === 'DELETE')).toBe(true)
+  })
+
+  it('focuses a localized safe error when the initial users list fails to load', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/framekit/users' && init?.method === 'GET') return apiResponse({ error: 'internal_error', message: 'private server detail' }, 500)
+      return apiResponse({})
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    renderSettings(administrator, '/settings/users')
+
+    const alert = await waitFor(() => {
+      const currentAlert = screen.getByRole('alert')
+      expect(currentAlert.textContent).toBe(frameKitMessages.en.settings.errors.server)
+      expect(currentAlert.getAttribute('role')).toBe('alert')
+      expect(currentAlert.textContent).not.toContain('private server detail')
+      return currentAlert
+    })
+    await waitFor(() => expect(document.activeElement).toBe(alert))
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(fetchMock).toHaveBeenCalledWith('/api/framekit/users', { method: 'GET' })
   })
 
   it('supports user creation, updates, password reset, token inspection, token revocation, and deletion', async () => {
@@ -526,11 +569,12 @@ describe('FrameKitStudioSettings administrator workflows', () => {
     submitNamedForm('Create user')
     await waitFor(() => expect(screen.getByText('created-user')).toBeTruthy())
     expect(fetchMock.mock.calls.some(([url, init]) => url === '/api/framekit/users' && init?.method === 'POST' && init.body === JSON.stringify({ username: 'created-user', password: 'temporary password with length', role: 'admin' }))).toBe(true)
+    expect(screen.queryByRole('status')).toBeNull()
 
     route.pathname = '/settings/users/user-2'
     view.rerender(
       <FrameKitLocaleProvider initialLocale="en">
-        <StatefulSettings user={administrator} />
+        <StatefulSettings user={administrator} locale="en" />
       </FrameKitLocaleProvider>
     )
     const targetEditor = await waitFor(() => screen.getByText('target').closest('li') as HTMLElement)
@@ -559,7 +603,7 @@ describe('FrameKitStudioSettings administrator workflows', () => {
 })
 
 describe('FrameKitStudioSettings safe failures', () => {
-  it('maps conflict status to a focused localized message without exposing response text', async () => {
+  it('maps conflict status to a transient localized toast without exposing response text', async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (url === '/api/framekit/account' && init?.method === 'PATCH') return apiResponse({ error: 'conflict', message: 'private server detail' }, 409)
       return apiResponse({})
@@ -573,6 +617,23 @@ describe('FrameKitStudioSettings safe failures', () => {
     const alert = await waitFor(() => screen.getByRole('alert'))
     expect(alert.textContent).toContain('last active administrator')
     expect(alert.textContent).not.toContain('private server detail')
-    await waitFor(() => expect(document.activeElement).toBe(alert))
+    expect(alert.parentElement?.className).toContain('top-0')
+    expect(alert.parentElement?.className).toContain('left-1/2')
+    expect(within(alert).getByRole('button', { name: 'Close' })).toBeTruthy()
+  })
+
+  it('uses the localized Spanish close label for error toasts', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/framekit/account' && init?.method === 'PATCH') return apiResponse({ error: 'conflict' }, 409)
+      return apiResponse({})
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    renderSettings(normalUser, '/settings/account', 'es')
+
+    fireEvent.change(screen.getByLabelText('Usuario'), { target: { value: 'nuevo-usuario' } })
+    submitNamedForm('Guardar usuario')
+
+    const alert = await waitFor(() => screen.getByRole('alert'))
+    expect(within(alert).getByRole('button', { name: 'Cerrar' })).toBeTruthy()
   })
 })

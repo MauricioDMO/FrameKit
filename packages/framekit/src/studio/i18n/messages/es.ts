@@ -89,6 +89,7 @@ const esMessages = {
     title: 'Ajustes',
     description: 'Administra tu cuenta, tokens de API y usuarios de Studio.',
     navigationLabel: 'Secciones de ajustes',
+    closeLabel: 'Cerrar',
     account: {
       title: 'Cuenta',
       description: 'Administra tu identidad y sesión.',

@@ -89,6 +89,7 @@ const enMessages = {
     title: 'Settings',
     description: 'Manage your account, API tokens, and Studio users.',
     navigationLabel: 'Settings sections',
+    closeLabel: 'Close',
     account: {
       title: 'Account',
       description: 'Manage your identity and session.',

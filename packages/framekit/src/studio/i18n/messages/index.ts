@@ -24,7 +24,7 @@ export interface FrameKitStudioMessages {
     emptyTitle: string, emptyDescription: string, notFoundTitle: string, notFoundDescription: string
   }
   settings: {
-    title: string, description: string, navigationLabel: string
+    title: string, description: string, navigationLabel: string, closeLabel: string
     account: {
       title: string, description: string, usernameLabel: string, roleLabel: string
       administratorRole: string, userRole: string, saveUsernameLabel: string

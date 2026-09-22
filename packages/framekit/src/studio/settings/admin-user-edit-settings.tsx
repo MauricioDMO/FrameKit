@@ -14,6 +14,7 @@ type AdminUserEditSettingsProps = {
   userId: string
   currentUser: StudioUser
   locale: FrameKitLocale
+  closeLabel: string
   messages: SettingsMessages['users']
   tokenMessages: SettingsMessages['tokens']
   errors: SettingsMessages['errors']
@@ -21,7 +22,7 @@ type AdminUserEditSettingsProps = {
   onSessionEnded: () => void
 }
 
-export function AdminUserEditSettings ({ userId, currentUser, locale, messages, tokenMessages, errors, onUserChange, onSessionEnded }: AdminUserEditSettingsProps) {
+export function AdminUserEditSettings ({ userId, currentUser, locale, closeLabel, messages, tokenMessages, errors, onUserChange, onSessionEnded }: AdminUserEditSettingsProps) {
   const [managedUser, setManagedUser] = useState<ManagedStudioUser>()
   const [loading, setLoading] = useState(true)
   const [feedback, setFeedback] = useState<FeedbackState>()
@@ -63,7 +64,7 @@ export function AdminUserEditSettings ({ userId, currentUser, locale, messages, 
       {!loading && <div className="mt-3"><Feedback {...feedback} /></div>}
       {!loading && managedUser && (
         <ul className="mt-4 divide-y divide-fk-ivory-400 border-y border-fk-ivory-400 dark:divide-white/10 dark:border-white/10">
-          <ManagedUserRow managedUser={managedUser} currentUser={currentUser} locale={locale} messages={messages} tokenMessages={tokenMessages} errors={errors} onRefresh={refreshUser} onUserChange={onUserChange} onSessionEnded={onSessionEnded} />
+          <ManagedUserRow managedUser={managedUser} currentUser={currentUser} locale={locale} closeLabel={closeLabel} messages={messages} tokenMessages={tokenMessages} errors={errors} onRefresh={refreshUser} onUserChange={onUserChange} onSessionEnded={onSessionEnded} />
         </ul>
       )}
     </SettingsCard>

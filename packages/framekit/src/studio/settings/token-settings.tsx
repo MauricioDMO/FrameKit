@@ -3,32 +3,34 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
+import { toast } from '@/editor/toast'
 import type { FrameKitLocale } from '@/studio/i18n/messages'
 import { requestStudioJson } from './api'
 import { ConfirmationDialog } from './confirmation-dialog'
 import { Feedback, SettingsCard } from './settings-components'
-import type { CreatedStudioToken, FeedbackState, SettingsMessages, StudioTokenMetadata } from './types'
+import type { CreatedStudioToken, SettingsMessages, StudioTokenMetadata } from './types'
 import { errorMessage, inputClass, jsonRequest, primaryButtonClass, readOwnTokens, secondaryButtonClass } from './settings-utils'
 import { TokenMetadataList } from './token-list'
 
 type TokenSettingsProps = {
   locale: FrameKitLocale
+  closeLabel: string
   messages: SettingsMessages['tokens']
   errors: SettingsMessages['errors']
   enabled: boolean
 }
 
-export function TokenSettings ({ locale, messages, errors, enabled }: TokenSettingsProps) {
+export function TokenSettings ({ locale, closeLabel, messages, errors, enabled }: TokenSettingsProps) {
   const [tokens, setTokens] = useState<StudioTokenMetadata[]>([])
   const [loading, setLoading] = useState(enabled)
   const [listFeedback, setListFeedback] = useState<string>()
-  const [actionFeedback, setActionFeedback] = useState<FeedbackState>()
   const [tokenName, setTokenName] = useState('')
   const [newToken, setNewToken] = useState<CreatedStudioToken>()
   const [createPending, setCreatePending] = useState(false)
   const [confirmingToken, setConfirmingToken] = useState<StudioTokenMetadata>()
   const createPendingRef = useRef(false)
   const revokePendingRef = useRef(false)
+  const toastOptions = { closeLabel, position: 'top-center' as const }
 
   useEffect(() => {
     if (!enabled) return
@@ -61,15 +63,14 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
 
     createPendingRef.current = true
     setCreatePending(true)
-    setActionFeedback(undefined)
     try {
       const created = await requestStudioJson<CreatedStudioToken>('/api/framekit/tokens', jsonRequest('POST', { name: tokenName }))
       setNewToken(created)
       setTokenName('')
-      setActionFeedback({ message: messages.createdMessage, tone: 'success' })
+      toast.success(messages.createdMessage, toastOptions)
       await refreshTokens()
     } catch (error) {
-      setActionFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
     } finally {
       createPendingRef.current = false
       setCreatePending(false)
@@ -85,7 +86,7 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
       setConfirmingToken(undefined)
       await refreshTokens()
     } catch (error) {
-      setActionFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
       setConfirmingToken(undefined)
     } finally {
       revokePendingRef.current = false
@@ -97,12 +98,10 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
       <form onSubmit={createToken} aria-busy={createPending} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <label htmlFor="framekit-settings-token-name" className="block min-w-0 flex-1 text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
           {messages.nameLabel}
-          <input id="framekit-settings-token-name" name="name" type="text" required maxLength={80} value={tokenName} disabled={createPending} onChange={(event) => { setTokenName(event.target.value); setActionFeedback(undefined) }} className={inputClass} />
+          <input id="framekit-settings-token-name" name="name" type="text" required maxLength={80} value={tokenName} disabled={createPending} onChange={(event) => setTokenName(event.target.value)} className={inputClass} />
         </label>
         <button type="submit" disabled={createPending} className={primaryButtonClass}>{createPending ? messages.creatingLabel : messages.createLabel}</button>
       </form>
-      <div className="mt-3"><Feedback {...actionFeedback} /></div>
-
       {newToken && (
         <aside aria-label={messages.createdLabel} className="mt-5 border-y border-fk-mint-300/40 py-4 dark:border-fk-mint-200/40">
           <p className="text-sm font-black text-fk-forest-400 dark:text-fk-mint-100">{messages.createdLabel}</p>
@@ -113,9 +112,9 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
               try {
                 if (!navigator.clipboard) throw new Error('Clipboard unavailable')
                 await navigator.clipboard.writeText(newToken.token)
-                setActionFeedback({ message: messages.copiedLabel, tone: 'success' })
+                toast.success(messages.copiedLabel, toastOptions)
               } catch {
-                setActionFeedback({ message: messages.copyError, tone: 'error' })
+                toast.error(messages.copyError, toastOptions)
               }
             }} className={primaryButtonClass}>{messages.copyLabel}</button>
             <button type="button" onClick={() => setNewToken(undefined)} className={secondaryButtonClass}>{messages.dismissSecretLabel}</button>

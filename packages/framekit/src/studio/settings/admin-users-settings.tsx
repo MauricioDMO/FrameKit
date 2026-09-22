@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import Link from 'next/link'
 
+import { toast } from '@/editor/toast'
 import type { StudioUser } from '@/studio/types'
 import { requestStudioJson } from './api'
 import { Feedback, SettingsCard } from './settings-components'
@@ -11,11 +12,12 @@ import type { FeedbackState, ManagedStudioUser, SettingsMessages } from './types
 import { errorMessage, inputClass, jsonRequest, primaryButtonClass, readUsers, roleLabel, secondaryButtonClass, selectClass } from './settings-utils'
 
 type AdminUsersSettingsProps = {
+  closeLabel: string
   messages: SettingsMessages['users']
   errors: SettingsMessages['errors']
 }
 
-export function AdminUsersSettings ({ messages, errors }: AdminUsersSettingsProps) {
+export function AdminUsersSettings ({ closeLabel, messages, errors }: AdminUsersSettingsProps) {
   const [users, setUsers] = useState<ManagedStudioUser[]>([])
   const [loading, setLoading] = useState(true)
   const [feedback, setFeedback] = useState<FeedbackState>()
@@ -24,6 +26,7 @@ export function AdminUsersSettings ({ messages, errors }: AdminUsersSettingsProp
   const [role, setRole] = useState<StudioUser['role']>('user')
   const [createPending, setCreatePending] = useState(false)
   const createPendingRef = useRef(false)
+  const toastOptions = { closeLabel, position: 'top-center' as const }
 
   useEffect(() => {
     let cancelled = false
@@ -64,7 +67,7 @@ export function AdminUsersSettings ({ messages, errors }: AdminUsersSettingsProp
       setRole('user')
       await refreshUsers()
     } catch (error) {
-      setFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
     } finally {
       createPendingRef.current = false
       setCreatePending(false)
@@ -73,7 +76,7 @@ export function AdminUsersSettings ({ messages, errors }: AdminUsersSettingsProp
 
   return (
     <SettingsCard id="framekit-settings-users" title={messages.title} description={messages.description} className="xl:col-span-2">
-      <form onSubmit={createUser} aria-busy={createPending} className="mt-5 border-y border-fk-ivory-400 py-4 dark:border-white/10 sm:py-5">
+      <form onSubmit={createUser} aria-busy={createPending} className="mt-5 border-t border-fk-ivory-400 py-4 dark:border-white/10 sm:py-5">
         <h3 className="text-base font-black text-fk-forest-400 dark:text-fk-sage-100">{messages.createTitle}</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           <label htmlFor="framekit-settings-new-user" className="block text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
@@ -92,11 +95,12 @@ export function AdminUsersSettings ({ messages, errors }: AdminUsersSettingsProp
             </select>
           </label>
         </div>
-        <button type="submit" disabled={createPending} className={`${primaryButtonClass} mt-3`}>{createPending ? messages.creatingLabel : messages.createLabel}</button>
+        <button type="submit" disabled={createPending} className={`${primaryButtonClass} mt-3 outline outline-fk-ivory-400/50`}>{createPending ? messages.creatingLabel : messages.createLabel}</button>
       </form>
-      <div className="mt-3"><Feedback {...feedback} /></div>
-
-      <div className="mt-6 border-t border-fk-ivory-400 pt-5 dark:border-white/10">
+      {feedback && (
+        <div className="mt-3"><Feedback {...feedback} /></div>
+      )}
+      <div className="mt-4 dark:border-white/10">
         {loading && <p aria-busy="true" className="mt-4 text-sm text-fk-sage-400 dark:text-fk-sage-200">{messages.loadingLabel}</p>}
         {!loading && users.length === 0 && <p className="mt-4 text-sm text-fk-sage-400 dark:text-fk-sage-200">{messages.empty}</p>}
         {!loading && users.length > 0 && (

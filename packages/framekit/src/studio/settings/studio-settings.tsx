@@ -49,12 +49,12 @@ export function FrameKitStudioSettings ({ user, locale, messages, onUserChange }
 
         <div>
           {pathname === '/settings/tokens'
-            ? <TokenSettings locale={locale} messages={messages.tokens} errors={messages.errors} enabled />
+            ? <TokenSettings locale={locale} closeLabel={messages.closeLabel} messages={messages.tokens} errors={messages.errors} enabled />
             : pathname === '/settings/users' && user.role === 'admin'
-              ? <AdminUsersSettings messages={messages.users} errors={messages.errors} />
+              ? <AdminUsersSettings closeLabel={messages.closeLabel} messages={messages.users} errors={messages.errors} />
               : userEditId !== undefined && user.role === 'admin'
-                ? <AdminUserEditSettings userId={userEditId} currentUser={user} locale={locale} messages={messages.users} tokenMessages={messages.tokens} errors={messages.errors} onUserChange={onUserChange} onSessionEnded={endSession} />
-                : <AccountSettings user={user} messages={messages.account} errors={messages.errors} onUserChange={onUserChange} onSessionEnded={endSession} />}
+                ? <AdminUserEditSettings userId={userEditId} currentUser={user} locale={locale} closeLabel={messages.closeLabel} messages={messages.users} tokenMessages={messages.tokens} errors={messages.errors} onUserChange={onUserChange} onSessionEnded={endSession} />
+                : <AccountSettings user={user} closeLabel={messages.closeLabel} messages={messages.account} errors={messages.errors} onUserChange={onUserChange} onSessionEnded={endSession} />}
         </div>
       </div>
     </div>

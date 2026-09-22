@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import Link from 'next/link'
 
+import { toast } from '@/editor/toast'
 import type { FrameKitLocale } from '@/studio/i18n/messages'
 import type { StudioUser } from '@/studio/types'
 import { requestStudioJson } from './api'
@@ -17,6 +18,7 @@ type ManagedUserRowProps = {
   managedUser: ManagedStudioUser
   currentUser: StudioUser
   locale: FrameKitLocale
+  closeLabel: string
   messages: SettingsMessages['users']
   tokenMessages: SettingsMessages['tokens']
   errors: SettingsMessages['errors']
@@ -25,7 +27,7 @@ type ManagedUserRowProps = {
   onSessionEnded: () => void
 }
 
-export function ManagedUserRow ({ managedUser, currentUser, locale, messages, tokenMessages, errors, onRefresh, onUserChange, onSessionEnded }: ManagedUserRowProps) {
+export function ManagedUserRow ({ managedUser, currentUser, locale, closeLabel, messages, tokenMessages, errors, onRefresh, onUserChange, onSessionEnded }: ManagedUserRowProps) {
   const [username, setUsername] = useState(managedUser.username)
   const [role, setRole] = useState<StudioUser['role']>(managedUser.role)
   const [active, setActive] = useState(managedUser.active)
@@ -38,6 +40,7 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
   const updatePendingRef = useRef(false)
   const resetPendingRef = useRef(false)
   const tokenPendingRef = useRef(false)
+  const toastOptions = { closeLabel, position: 'top-center' as const }
   const rowId = managedUser.id.replace(/[^a-zA-Z0-9_-]/g, '-')
   const isCurrentUser = managedUser.id === currentUser.id
 
@@ -53,7 +56,6 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
 
     updatePendingRef.current = true
     setPendingAction(true)
-    setFeedback(undefined)
     try {
       const updated = await requestStudioJson<StudioUser>(`/api/framekit/users/${encodeURIComponent(managedUser.id)}`, jsonRequest('PATCH', { username, role, active }))
       if (isCurrentUser && !active) {
@@ -62,9 +64,9 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
       }
       onUserChange(updated)
       await onRefresh()
-      setFeedback({ message: messages.saveLabel, tone: 'success' })
+      toast.success(messages.saveLabel, toastOptions)
     } catch (error) {
-      setFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
     } finally {
       updatePendingRef.current = false
       setPendingAction(false)
@@ -77,14 +79,13 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
 
     resetPendingRef.current = true
     setPendingAction(true)
-    setFeedback(undefined)
     try {
       await requestStudioJson<{ status: string }>(`/api/framekit/users/${encodeURIComponent(managedUser.id)}/password`, jsonRequest('POST', { password }))
       setPassword('')
       if (isCurrentUser) onSessionEnded()
-      else setFeedback({ message: messages.resetPasswordTitle, tone: 'success' })
+      else toast.success(messages.resetPasswordTitle, toastOptions)
     } catch (error) {
-      setFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
     } finally {
       resetPendingRef.current = false
       setPendingAction(false)
@@ -114,7 +115,7 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
       if (isCurrentUser) onSessionEnded()
       else await onRefresh()
     } catch (error) {
-      setFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
       setConfirmingAction(undefined)
     } finally {
       tokenPendingRef.current = false
@@ -132,7 +133,7 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
       setConfirmingAction(undefined)
       await loadUserTokens()
     } catch (error) {
-      setFeedback({ message: errorMessage(error, errors), tone: 'error' })
+      toast.error(errorMessage(error, errors), toastOptions)
       setConfirmingAction(undefined)
     } finally {
       tokenPendingRef.current = false
