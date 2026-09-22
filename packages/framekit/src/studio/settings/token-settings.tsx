@@ -94,21 +94,21 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
 
   return (
     <SettingsCard id="framekit-settings-tokens" title={messages.title} description={messages.description} className="xl:col-span-2">
-      <form onSubmit={createToken} aria-busy={createPending} className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
+      <form onSubmit={createToken} aria-busy={createPending} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <label htmlFor="framekit-settings-token-name" className="block min-w-0 flex-1 text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
           {messages.nameLabel}
           <input id="framekit-settings-token-name" name="name" type="text" required maxLength={80} value={tokenName} disabled={createPending} onChange={(event) => { setTokenName(event.target.value); setActionFeedback(undefined) }} className={inputClass} />
         </label>
         <button type="submit" disabled={createPending} className={primaryButtonClass}>{createPending ? messages.creatingLabel : messages.createLabel}</button>
       </form>
-      <div className="mt-4"><Feedback {...actionFeedback} /></div>
+      <div className="mt-3"><Feedback {...actionFeedback} /></div>
 
       {newToken && (
-        <aside aria-label={messages.createdLabel} className="mt-6 rounded-2xl border-2 border-fk-mint-300 bg-fk-mint-100/50 p-4 dark:border-fk-mint-200/40 dark:bg-fk-mint-200/10">
+        <aside aria-label={messages.createdLabel} className="mt-5 border-y border-fk-mint-300/40 py-4 dark:border-fk-mint-200/40">
           <p className="text-sm font-black text-fk-forest-400 dark:text-fk-mint-100">{messages.createdLabel}</p>
-          <p className="mt-2 break-all rounded-xl bg-white px-3 py-3 font-mono text-sm text-fk-forest-400 shadow-inner dark:bg-fk-forest-100 dark:text-white">{newToken.token}</p>
-          <p className="mt-3 text-sm leading-6 text-fk-forest-400 dark:text-fk-sage-100">{messages.secretWarning}</p>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <p className="mt-2 break-all border-y border-fk-mint-300/40 py-3 font-mono text-sm text-fk-forest-400 dark:border-fk-mint-200/30 dark:text-fk-sage-100">{newToken.token}</p>
+          <p className="mt-2 text-sm leading-6 text-fk-forest-400 dark:text-fk-sage-100">{messages.secretWarning}</p>
+          <div className="mt-3 flex flex-wrap gap-3">
             <button type="button" onClick={async () => {
               try {
                 if (!navigator.clipboard) throw new Error('Clipboard unavailable')
@@ -123,8 +123,8 @@ export function TokenSettings ({ locale, messages, errors, enabled }: TokenSetti
         </aside>
       )}
 
-      <div className="mt-7 border-t border-black/5 pt-6 dark:border-white/10">
-        {loading && <p aria-busy="true" className="mt-5 text-sm text-fk-sage-400 dark:text-fk-sage-200">{messages.loadingLabel}</p>}
+      <div className="mt-6 border-t border-fk-ivory-400 pt-5 dark:border-white/10">
+        {loading && <p aria-busy="true" className="mt-4 text-sm text-fk-sage-400 dark:text-fk-sage-200">{messages.loadingLabel}</p>}
         <Feedback message={listFeedback} />
         {!loading && !listFeedback && <TokenMetadataList tokens={tokens} locale={locale} messages={messages} onRequestRevoke={setConfirmingToken} />}
       </div>

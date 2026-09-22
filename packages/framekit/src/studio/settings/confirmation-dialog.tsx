@@ -69,10 +69,10 @@ export function ConfirmationDialog ({ open, title, description, confirmLabel, ca
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-fk-forest-400/60 p-5" role="presentation">
-      <div ref={dialogRef} role="dialog" tabIndex={pending ? 0 : -1} aria-modal="true" aria-labelledby="framekit-confirm-title" aria-describedby="framekit-confirm-description" className="w-full max-w-md rounded-3xl border border-black/10 bg-fk-ivory-100 p-6 shadow-2xl dark:border-white/10 dark:bg-fk-forest-200 sm:p-8">
+      <div ref={dialogRef} role="dialog" tabIndex={pending ? 0 : -1} aria-modal="true" aria-labelledby="framekit-confirm-title" aria-describedby="framekit-confirm-description" className="w-full max-w-md rounded-lg border border-fk-ivory-400 bg-fk-ivory-100 p-5 shadow-lg dark:border-white/10 dark:bg-fk-forest-200 sm:p-6">
         <h2 id="framekit-confirm-title" className="text-2xl font-black tracking-[-0.03em] text-fk-forest-400 dark:text-fk-sage-100">{title}</h2>
-        <p id="framekit-confirm-description" className="mt-3 leading-7 text-fk-sage-400 dark:text-fk-sage-200">{description}</p>
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <p id="framekit-confirm-description" className="mt-2 leading-6 text-fk-sage-400 dark:text-fk-sage-200">{description}</p>
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
           <button ref={cancelRef} type="button" disabled={pending} onClick={onCancel} className={secondaryButtonClass}>{cancelLabel}</button>
           <button ref={confirmRef} type="button" disabled={pending} onClick={() => { confirm() }} className={dangerButtonClass}>{confirmLabel}</button>
         </div>

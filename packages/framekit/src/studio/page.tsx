@@ -20,7 +20,7 @@ function isStudioSection (section: string): section is FrameKitStudioSection {
 
 export function createStudioPage (StudioClient: ComponentType<{ user?: StudioUser }>, env: NodeJS.ProcessEnv = snapshotEnv()) {
   return async function StudioPage ({ params }: StudioPageProps) {
-    const { section } = await params
+    const { section, slug } = await params
     if (!isStudioSection(section)) notFound()
 
     if (!isAuthenticationEnabled(env)) {
@@ -28,9 +28,17 @@ export function createStudioPage (StudioClient: ComponentType<{ user?: StudioUse
       return <StudioClient />
     }
 
+    if (section === 'settings') {
+      if (slug === undefined || slug.length === 0) redirect('/settings/account')
+      const validSubsection = slug.length === 1 && ['account', 'tokens', 'users'].includes(slug[0])
+      const validUserEdit = slug.length === 2 && slug[0] === 'users' && slug[1].length > 0
+      if (!validSubsection && !validUserEdit) notFound()
+    }
+
     const cookieStore = await cookies()
     const sessionUser = getSession(cookieStore.get(sessionCookieName)?.value, { env })
     if (sessionUser === undefined) redirect('/login')
+    if (section === 'settings' && slug?.[0] === 'users' && sessionUser.role !== 'admin') notFound()
 
     return <StudioClient user={sessionUser} />
   }

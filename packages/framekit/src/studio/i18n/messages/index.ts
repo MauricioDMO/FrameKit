@@ -45,7 +45,7 @@ export interface FrameKitStudioMessages {
     users: {
       title: string, description: string, createTitle: string, usernameLabel: string
       passwordLabel: string, roleLabel: string, userRole: string, administratorRole: string
-      createLabel: string, creatingLabel: string, loadingLabel: string, empty: string
+      editLabel: string, createLabel: string, creatingLabel: string, loadingLabel: string, empty: string
       activeLabel: string, inactiveLabel: string, saveLabel: string, savingLabel: string
       resetPasswordTitle: string, resetPasswordLabel: string, resettingPasswordLabel: string
       deleteLabel: string, deleteTitle: string, deleteDescription: string

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import Link from 'next/link'
 
 import type { FrameKitLocale } from '@/studio/i18n/messages'
 import type { StudioUser } from '@/studio/types'
@@ -55,10 +56,13 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
     setFeedback(undefined)
     try {
       const updated = await requestStudioJson<StudioUser>(`/api/framekit/users/${encodeURIComponent(managedUser.id)}`, jsonRequest('PATCH', { username, role, active }))
+      if (isCurrentUser && !active) {
+        onSessionEnded()
+        return
+      }
       onUserChange(updated)
       await onRefresh()
-      if (isCurrentUser && !active) onSessionEnded()
-      else setFeedback({ message: messages.saveLabel, tone: 'success' })
+      setFeedback({ message: messages.saveLabel, tone: 'success' })
     } catch (error) {
       setFeedback({ message: errorMessage(error, errors), tone: 'error' })
     } finally {
@@ -140,15 +144,16 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
   const confirmedToken = typeof confirmingAction === 'object' ? confirmingAction : undefined
 
   return (
-    <li className="rounded-2xl border border-black/5 bg-white/60 p-4 dark:border-white/10 dark:bg-fk-forest-100/60 sm:p-5">
+    <li className="py-5 first:pt-0 last:pb-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="break-all font-bold text-fk-forest-400 dark:text-fk-sage-100">{managedUser.username}</h3>
           <p className="mt-1 text-sm text-fk-sage-400 dark:text-fk-sage-300">{roleLabel(managedUser.role, messages)} · {managedUser.active ? messages.activeLabel : messages.inactiveLabel}</p>
         </div>
+        <Link href={`/settings/users/${encodeURIComponent(managedUser.id)}`} className={secondaryButtonClass}>{messages.editLabel}</Link>
       </div>
 
-      <form onSubmit={updateManagedUser} aria-busy={pendingAction} className="mt-5 grid gap-4 border-t border-black/5 pt-5 dark:border-white/10 sm:grid-cols-2 xl:grid-cols-4">
+      <form onSubmit={updateManagedUser} aria-busy={pendingAction} className="mt-4 grid gap-3 border-t border-fk-ivory-400 pt-4 dark:border-white/10 sm:grid-cols-2 xl:grid-cols-4">
         <label htmlFor={`framekit-user-${rowId}-username`} className="block text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
           {messages.usernameLabel}
           <input id={`framekit-user-${rowId}-username`} name="username" type="text" required minLength={3} maxLength={64} value={username} disabled={pendingAction} onChange={(event) => setUsername(event.target.value)} className={inputClass} />
@@ -160,14 +165,14 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
             <option value="admin">{messages.administratorRole}</option>
           </select>
         </label>
-        <label htmlFor={`framekit-user-${rowId}-active`} className="flex min-h-11 items-center gap-3 self-end rounded-xl border border-fk-ivory-400 px-3 text-sm font-bold text-fk-forest-400 dark:border-white/15 dark:text-fk-sage-100">
+        <label htmlFor={`framekit-user-${rowId}-active`} className="flex min-h-10 items-center gap-2 self-end px-1 text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
           <input id={`framekit-user-${rowId}-active`} name="active" type="checkbox" checked={active} disabled={pendingAction} onChange={(event) => setActive(event.target.checked)} className="size-4 accent-fk-forest-300" />
           {messages.activeLabel}
         </label>
         <button type="submit" disabled={pendingAction} className={`${primaryButtonClass} self-end`}>{pendingAction ? messages.savingLabel : messages.saveLabel}</button>
       </form>
 
-      <form onSubmit={resetPassword} aria-busy={pendingAction} className="mt-5 grid gap-4 border-t border-black/5 pt-5 sm:grid-cols-[1fr_auto] dark:border-white/10">
+      <form onSubmit={resetPassword} aria-busy={pendingAction} className="mt-4 grid gap-3 border-t border-fk-ivory-400 pt-4 dark:border-white/10 sm:grid-cols-[1fr_auto]">
         <label htmlFor={`framekit-user-${rowId}-password`} className="block text-sm font-bold text-fk-forest-400 dark:text-fk-sage-100">
           {messages.resetPasswordLabel}
           <input id={`framekit-user-${rowId}-password`} name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={256} value={password} disabled={pendingAction} onChange={(event) => setPassword(event.target.value)} className={inputClass} />
@@ -175,13 +180,13 @@ export function ManagedUserRow ({ managedUser, currentUser, locale, messages, to
         <button type="submit" disabled={pendingAction} className={`${secondaryButtonClass} self-end`}>{pendingAction ? messages.resettingPasswordLabel : messages.resetPasswordTitle}</button>
       </form>
 
-      <div className="mt-5 flex flex-wrap gap-3 border-t border-black/5 pt-5 dark:border-white/10">
+      <div className="mt-4 flex flex-wrap gap-3 border-t border-fk-ivory-400 pt-4 dark:border-white/10">
         <button type="button" onClick={() => { loadUserTokens() }} aria-expanded={tokens !== undefined} className={secondaryButtonClass}>{messages.tokensLabel}</button>
         <button type="button" onClick={() => setConfirmingAction('delete')} className={dangerButtonClass}>{messages.deleteLabel}</button>
       </div>
-      <div className="mt-4"><Feedback {...feedback} /></div>
+      <div className="mt-3"><Feedback {...feedback} /></div>
 
-      {tokensLoading && <p aria-busy="true" className="mt-4 text-sm text-fk-sage-400 dark:text-fk-sage-200">{tokenMessages.loadingLabel}</p>}
+      {tokensLoading && <p aria-busy="true" className="mt-3 text-sm text-fk-sage-400 dark:text-fk-sage-200">{tokenMessages.loadingLabel}</p>}
       {tokens !== undefined && !tokensLoading && <UserTokens tokens={tokens} locale={locale} messages={tokenMessages} emptyLabel={messages.noTokens} onRequestRevoke={(token) => setConfirmingAction(token)} />}
 
       <ConfirmationDialog

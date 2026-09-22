@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { FrameKitEditor } from '@/editor/framekit-editor'
@@ -29,6 +29,12 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
       : 'editor'
   const { locale, setLocale, messages } = useFrameKitLocale()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [currentUser, setCurrentUser] = useState(user)
+
+  useEffect(() => {
+    setCurrentUser(user)
+  }, [user])
+
   const navigation = section === 'brand'
     ? manifestToNavigation(brands, '/brand')
     : section === 'editor'
@@ -40,8 +46,12 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
     setSidebarCollapsed((collapsed) => !collapsed)
   }
 
+  function updateUser (nextUser: NonNullable<typeof user>) {
+    setCurrentUser((current) => current?.id === nextUser.id ? nextUser : current)
+  }
+
   let content: ReactNode
-  if (section === 'settings') content = user ? <FrameKitStudioSettings user={user} locale={locale} messages={messages.settings} /> : null
+  if (section === 'settings') content = currentUser ? <FrameKitStudioSettings user={currentUser} locale={locale} messages={messages.settings} onUserChange={updateUser} /> : null
   else if (!slug) content = <EmptyState section={section} messages={messages} />
   else if (loadState.status === 'loading') content = <LoadingState label={section === 'brand' ? messages.brand.loadingLabel : messages.editor.loadingLabel} />
   else if (loadState.status === 'ready' && loadState.kind === 'template') content = <FrameKitEditor key={slug} template={loadState.entry} definition={loadState.definition} messages={messages.editor} sidebarCollapsed={sidebarCollapsed} />
@@ -51,7 +61,7 @@ export function FrameKitStudio ({ templates = emptyTemplates, brands = emptyBran
   else content = <NotFoundState section={section} messages={messages} />
 
   return (
-    <FrameKitStudioShell user={user} section={section} navigation={navigation} messages={messages} locale={locale} onLocaleChange={setLocale} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar}>
+    <FrameKitStudioShell user={currentUser} section={section} navigation={navigation} messages={messages} locale={locale} onLocaleChange={setLocale} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar}>
       {content}
     </FrameKitStudioShell>
   )

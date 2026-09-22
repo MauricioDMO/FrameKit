@@ -139,6 +139,7 @@ const esMessages = {
     users: {
       title: 'Usuarios',
       description: 'Administra las cuentas y el acceso a Studio.',
+      editLabel: 'Editar',
       createTitle: 'Crear usuario',
       usernameLabel: 'Usuario',
       passwordLabel: 'Contraseña temporal',

@@ -173,7 +173,7 @@ describe('FrameKitStudio integration', () => {
   })
 
   it('renders authenticated settings through FrameKitStudio', async () => {
-    route.pathname = '/settings'
+    route.pathname = '/settings/account'
     const fetchMock = vi.fn(async () => new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -186,7 +186,39 @@ describe('FrameKitStudio integration', () => {
     expect(screen.getByRole('heading', { name: frameKitMessages.en.settings.title })).toBeTruthy()
     expect(screen.getByRole('heading', { name: frameKitMessages.en.settings.account.title })).toBeTruthy()
     expect(screen.queryByText(frameKitMessages.en.settings.account.sessionRequired)).toBeNull()
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/framekit/tokens', { method: 'GET' }))
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('removes the users link and falls back to Account when the current administrator is demoted', async () => {
+    route.pathname = '/settings/users/admin-1'
+    const administrator: StudioUser = { id: 'admin-1', username: 'administrator', role: 'admin' }
+    let role: StudioUser['role'] = 'admin'
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/framekit/users' && init?.method === 'GET') return new Response(JSON.stringify([{ ...administrator, role, active: true, createdAt: 1, updatedAt: 1 }]), { status: 200, headers: { 'content-type': 'application/json' } })
+      if (url === '/api/framekit/users/admin-1' && init?.method === 'PATCH') {
+        role = 'user'
+        return new Response(JSON.stringify({ ...administrator, role }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <FrameKitLocaleProvider initialLocale="en">
+        <FrameKitStudio templates={[]} user={administrator} />
+      </FrameKitLocaleProvider>
+    )
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Users' })).toBeTruthy())
+    expect(screen.getAllByRole('link', { name: 'Users' }).some((link) => link.getAttribute('href') === '/settings/users')).toBe(true)
+
+    const row = screen.getByText('administrator').closest('li') as HTMLElement
+    fireEvent.change(within(row).getByRole('combobox'), { target: { value: 'user' } })
+    fireEvent.submit(within(row).getByRole('button', { name: 'Save changes' }).closest('form') as HTMLFormElement)
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Account' })).toBeTruthy())
+    expect(screen.queryByRole('link', { name: 'Users' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Users' })).toBeNull()
   })
 
   it('closes settings when the production shell collapses and expands', () => {

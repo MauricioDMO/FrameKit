@@ -139,6 +139,7 @@ const enMessages = {
     users: {
       title: 'Users',
       description: 'Manage Studio accounts and their access.',
+      editLabel: 'Edit',
       createTitle: 'Create user',
       usernameLabel: 'Username',
       passwordLabel: 'Temporary password',

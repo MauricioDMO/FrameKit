@@ -34,7 +34,7 @@ function SidebarCollapsed ({ messages, onToggleSidebar }: { messages: SidebarMes
         title={messages.expandLabel}
         className="inline-flex h-20.5 w-full shrink-0 items-center justify-center border-b border-white/10 text-fk-mint-200 transition hover:bg-white/10 focus:ring-2 focus:ring-inset focus:ring-fk-mint-200 focus:outline-none"
       >
-        <span className="flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10">
+        <span className="flex size-10 items-center justify-center rounded-lg border border-white/20 bg-white/10">
           <IconLayoutSidebarLeftExpand size={18} />
         </span>
       </button>
@@ -91,8 +91,8 @@ export function StudioSidebar ({
   return (
     <>
       <SidebarHeader messages={sidebarMessages} onToggleSidebar={onToggle} />
-      <SidebarNavigation section={section} navigation={navigation} messages={sidebarMessages} />
-      <SidebarFooter user={user} section={section} messages={sidebarMessages} locale={locale} onLocaleChange={onLocaleChange} settingsOpen={settingsOpen} onToggleSettings={onToggleSettings} />
+      <SidebarNavigation user={user} section={section} navigation={navigation} messages={sidebarMessages} settingsMessages={messages.settings} />
+      <SidebarFooter user={user} messages={sidebarMessages} locale={locale} onLocaleChange={onLocaleChange} settingsOpen={settingsOpen} onToggleSettings={onToggleSettings} />
     </>
   )
 }

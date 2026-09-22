@@ -103,6 +103,10 @@
     padding: 0.25rem;
   }
 
+  .studio-select--settings::picker(select) {
+    border-radius: 0.5rem;
+  }
+
   .studio-select option {
     border-radius: 0.5rem;
     cursor: pointer;

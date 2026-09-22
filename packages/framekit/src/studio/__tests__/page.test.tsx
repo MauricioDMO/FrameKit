@@ -69,8 +69,8 @@ afterEach(() => {
 })
 
 describe('createStudioPage', () => {
-  it('renders the client with only the safe session DTO for every Studio section', async () => {
-    for (const section of ['editor', 'brand', 'settings']) {
+  it('renders the client with only the safe session DTO for editor and brand', async () => {
+    for (const section of ['editor', 'brand']) {
       const element = await renderPage({ section, slug: ['social', 'post'] }) as ReactElement
 
       expect(element.type).toBe(StudioClient)
@@ -79,7 +79,33 @@ describe('createStudioPage', () => {
 
     expect(pageMocks.notFound).not.toHaveBeenCalled()
     expect(pageMocks.redirect).not.toHaveBeenCalled()
-    expect(pageMocks.getSession).toHaveBeenCalledTimes(3)
+    expect(pageMocks.getSession).toHaveBeenCalledTimes(2)
+  })
+
+  it('redirects the settings root to the account subsection', async () => {
+    await expect(renderPage({ section: 'settings' })).rejects.toBe(pageMocks.redirectError)
+
+    expect(pageMocks.redirect).toHaveBeenCalledOnce()
+    expect(pageMocks.redirect).toHaveBeenCalledWith('/settings/account')
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('renders valid settings subsections for an administrator', async () => {
+    for (const subsection of ['account', 'tokens', 'users']) {
+      const element = await renderPage({ section: 'settings', slug: [subsection] }) as ReactElement
+
+      expect(element.type).toBe(StudioClient)
+      expect(element.props).toEqual({ user: { id: 'user-1', username: 'admin', role: 'admin' } })
+    }
+
+    const editElement = await renderPage({ section: 'settings', slug: ['users', 'user-2'] }) as ReactElement
+    expect(editElement.type).toBe(StudioClient)
+    expect(editElement.props).toEqual({ user: { id: 'user-1', username: 'admin', role: 'admin' } })
+
+    expect(pageMocks.notFound).not.toHaveBeenCalled()
+    expect(pageMocks.redirect).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).toHaveBeenCalledTimes(4)
   })
 
   it('calls notFound for every section other than editor, brand, and settings', async () => {
@@ -118,6 +144,33 @@ describe('createStudioPage', () => {
     expect(pageMocks.notFound).toHaveBeenCalledOnce()
     expect(pageMocks.cookies).not.toHaveBeenCalled()
     expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('calls notFound for unknown settings subsections', async () => {
+    for (const slug of [['unknown'], ['account', 'extra'], ['users', ''], ['users', 'user-1', 'extra']]) {
+      await expect(renderPage({ section: 'settings', slug })).rejects.toBe(pageMocks.notFoundError)
+    }
+
+    expect(pageMocks.notFound).toHaveBeenCalledTimes(4)
+    expect(pageMocks.cookies).not.toHaveBeenCalled()
+    expect(pageMocks.getSession).not.toHaveBeenCalled()
+  })
+
+  it('denies the users subsection to non-administrator sessions', async () => {
+    pageMocks.state.sessionUser = { id: 'user-1', username: 'user', role: 'user' }
+
+    for (const subsection of ['account', 'tokens']) {
+      const element = await renderPage({ section: 'settings', slug: [subsection] }) as ReactElement
+
+      expect(element.type).toBe(StudioClient)
+    }
+
+    for (const slug of [['users'], ['users', 'user-2']]) {
+      await expect(renderPage({ section: 'settings', slug })).rejects.toBe(pageMocks.notFoundError)
+    }
+
+    expect(pageMocks.notFound).toHaveBeenCalledTimes(2)
+    expect(pageMocks.getSession).toHaveBeenCalledTimes(4)
   })
 
   it('throws for invalid authentication configuration before request work', async () => {
