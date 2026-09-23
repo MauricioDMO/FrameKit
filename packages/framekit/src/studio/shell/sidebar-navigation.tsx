@@ -64,7 +64,7 @@ export function SidebarNavigation ({ user, section, navigation, messages, settin
       {section !== 'settings' && <nav aria-label={messages.navigationLabel} className="max-h-[38vh] overflow-y-auto p-3 lg:max-h-none lg:min-h-0 lg:flex-1">
         {navigation.length === 0
           ? <p className="px-3 py-4 text-sm text-fk-sage-300">{section === 'brand' ? messages.noBrands : messages.noTemplates}</p>
-          : <FrameKitNavigationTree nodes={navigation} />}
+          : <FrameKitNavigationTree nodes={navigation} pathname={pathname} />}
       </nav>}
     </>
   )

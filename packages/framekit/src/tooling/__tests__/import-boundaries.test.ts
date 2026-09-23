@@ -36,6 +36,16 @@ describe('import boundaries', () => {
         expected: patternMessage('../server', 'Editor cannot import Studio, Server, Tooling, or Node built-ins')
       },
       {
+        filePath: 'src/editor/navigation/boundary-fixture.tsx',
+        source: "import { usePathname } from 'next/navigation'\nexport { usePathname }\n",
+        expected: patternMessage('next/navigation', 'Editor and client render code must receive the pathname from their caller')
+      },
+      {
+        filePath: 'src/client/render-client.tsx',
+        source: "import { usePathname } from 'next/navigation'\nexport { usePathname }\n",
+        expected: patternMessage('next/navigation', 'Editor and client render code must receive the pathname from their caller')
+      },
+      {
         filePath: 'src/studio/boundary-fixture.ts',
         source: "import { value } from '../server'\nexport { value }\n",
         expected: patternMessage('../server', 'Reusable Studio cannot import Server, Tooling, or Node built-ins')

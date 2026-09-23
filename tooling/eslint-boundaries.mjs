@@ -5,6 +5,7 @@ const nodeBuiltinPatterns = [
   { regex: '^node:', message: 'Node built-in imports are restricted to Server and Tooling' },
   { regex: `^(?:${builtinModules.map(escapeRegex).join('|')})(?:/|$)`, message: 'Node built-in imports are restricted to Server and Tooling' }
 ]
+const nextNavigationImport = { regex: '^next/navigation$', message: 'Editor and client render code must receive the pathname from their caller' }
 
 function layerPattern (layers, excluded = []) {
   const exclusion = excluded.length === 0 ? '' : `(?!(?:${excluded.map(escapeRegex).join('|')})$)`
@@ -31,11 +32,13 @@ export const editorImportBoundary = restrictedImports(
   'Editor cannot import Studio, Server, Tooling, or Node built-ins',
   true
 )
+editorImportBoundary[1].patterns.push(nextNavigationImport)
 
 export const clientImportBoundary = ['error', {
   patterns: [
     { regex: layerPattern(['server', 'tooling']), message: 'Client cannot import Server or Tooling' },
     { regex: '^(?:(?:\\.\\.?/|@/)+editor/|@mauriciodmo/framekit/editor/)', message: 'Client must consume render-safe Editor components through the public editor entrypoint' },
+    nextNavigationImport,
     ...nodeBuiltinPatterns
   ]
 }]

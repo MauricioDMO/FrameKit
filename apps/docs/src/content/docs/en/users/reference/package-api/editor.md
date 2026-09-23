@@ -8,7 +8,7 @@ sidebar:
 **Import:** `@mauriciodmo/framekit/editor`  
 **Environment:** client.
 
-The editor entrypoint exports `FrameKitEditor`, `TemplateCanvas`, `FrameKitNavigation`, `humanizeSegment`, and `manifestToNavigation`. It also exports editor message and navigation types.
+The editor entrypoint exports `FrameKitEditor`, `TemplateCanvas`, `FrameKitNavigation`, `humanizeSegment`, `manifestToNavigation`, `toast`, `ErrorToast`, `InfoToast`, and `SuccessToast`. It also exports `EditorMessages`, the navigation types `TemplateNavigationFolder`, `TemplateNavigationItem`, and `TemplateNavigationNode`, and the toast types `BasicToastProps`, `ToastOptions`, and `ToastPosition`.
 
 ## Minimal example
 
@@ -19,16 +19,20 @@ The editor entrypoint exports `FrameKitEditor`, `TemplateCanvas`, `FrameKitNavig
 
 import { FrameKitNavigation, manifestToNavigation } from '@mauriciodmo/framekit/editor'
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
+import { usePathname } from 'next/navigation'
 
 export function Navigation ({ templates }: { templates: readonly TemplateRegistryEntry[] }) {
   const nodes = manifestToNavigation(templates)
+  const pathname = usePathname()
   return (
     <nav>
-      {nodes.map((node) => <FrameKitNavigation key={node.id} node={node} />)}
+      {nodes.map((node) => <FrameKitNavigation key={node.id} node={node} pathname={pathname} />)}
     </nav>
   )
 }
 ```
+
+`pathname` is optional for compatibility with existing calls. Pass the current pathname to enable current-item highlighting and automatically open folders containing that item; without it, no item is marked current.
 
 `FrameKitEditor` instead receives a registry entry, its loaded definition, an `EditorMessages` catalog, and optionally `sidebarCollapsed`. `TemplateCanvas` renders a definition at its declared dimensions.
 

@@ -2,7 +2,6 @@
 
 import { IconChevronRight, IconFolder, IconPhoto } from '@tabler/icons-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useState } from 'react'
 
 import type { TemplateNavigationNode } from './navigation'
@@ -13,22 +12,25 @@ type NavigationState = Record<string, boolean>
 
 export function FrameKitNavigation ({
   node,
-  level = 0
+  level = 0,
+  pathname
 }: {
   node: TemplateNavigationNode
   level?: number
+  pathname?: string
 }) {
-  return <FrameKitNavigationTree nodes={[node]} level={level} />
+  return <FrameKitNavigationTree nodes={[node]} level={level} pathname={pathname} />
 }
 
 export function FrameKitNavigationTree ({
   nodes,
-  level = 0
+  level = 0,
+  pathname
 }: {
   nodes: readonly TemplateNavigationNode[]
   level?: number
+  pathname?: string
 }) {
-  const pathname = usePathname()
   const [expandedById, setExpandedById] = useState<NavigationState | null>(null)
 
   useNavigationEffect(() => {
@@ -94,7 +96,7 @@ function NavigationNode ({
 }: {
   node: TemplateNavigationNode
   level: number
-  pathname: string
+  pathname?: string
   expandedById: NavigationState
   onToggleFolder: (id: string) => void
 }) {
@@ -122,7 +124,7 @@ function NavigationNode ({
   return <NavigationFolder node={node} level={level} open={open || containsSelectedTemplate(node, pathname)} onToggle={() => onToggleFolder(node.id)} pathname={pathname} expandedById={expandedById} onToggleFolder={onToggleFolder} />
 }
 
-function containsSelectedTemplate (node: Extract<TemplateNavigationNode, { type: 'folder' }>, pathname: string): boolean {
+function containsSelectedTemplate (node: Extract<TemplateNavigationNode, { type: 'folder' }>, pathname?: string): boolean {
   return node.children.some((child) => child.type === 'template' ? child.href === pathname : containsSelectedTemplate(child, pathname))
 }
 
@@ -139,7 +141,7 @@ function NavigationFolder ({
   level: number
   open: boolean
   onToggle: () => void
-  pathname: string
+  pathname?: string
   expandedById: NavigationState
   onToggleFolder: (id: string) => void
 }) {

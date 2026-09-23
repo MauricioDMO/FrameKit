@@ -10,10 +10,6 @@ vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: React.PropsWithChildren<{ href: string }>) => <a href={href} {...props}>{children}</a>
 }))
 
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/editor/catalog/category/first'
-}))
-
 const navigation = {
   type: 'folder' as const,
   id: 'catalog',
@@ -139,7 +135,7 @@ describe('FrameKitNavigation', () => {
   })
 
   it('renders the template href without marking an unselected pathname', () => {
-    render(<FrameKitNavigationTree nodes={[unselectedNavigation]} />)
+    render(<FrameKitNavigationTree nodes={[unselectedNavigation]} pathname="/editor/catalog/category/missing" />)
 
     const link = screen.getByRole('link', { name: 'Other' })
     expect(link.getAttribute('href')).toBe('/editor/catalog/category/other')
@@ -147,8 +143,16 @@ describe('FrameKitNavigation', () => {
     expect(link.className).not.toContain('font-bold')
   })
 
+  it('supports omitting pathname without marking a template selected', () => {
+    render(<FrameKitNavigation node={navigation} />)
+
+    const link = screen.getByRole('link', { name: 'First' })
+    expect(link.getAttribute('aria-current')).toBeNull()
+    expect(link.className).not.toContain('font-bold')
+  })
+
   it('keeps selected templates subdued and draws scope lines only for folders', () => {
-    render(<FrameKitNavigationTree nodes={[navigation]} />)
+    render(<FrameKitNavigationTree nodes={[navigation]} pathname="/editor/catalog/category/first" />)
 
     const link = screen.getByRole('link', { name: 'First' })
     expect(link.getAttribute('href')).toBe('/editor/catalog/category/first')
@@ -164,7 +168,7 @@ describe('FrameKitNavigation', () => {
   })
 
   it('keeps folders and template links keyboard-focusable with visible focus styles', () => {
-    render(<FrameKitNavigationTree nodes={[navigation]} />)
+    render(<FrameKitNavigationTree nodes={[navigation]} pathname="/editor/catalog/category/first" />)
 
     const folder = screen.getByRole('button', { name: 'Catalog' })
     const link = screen.getByRole('link', { name: 'First' })
@@ -185,7 +189,7 @@ describe('FrameKitNavigation', () => {
   it('keeps the selected template visible when its folders are collapsed', () => {
     localStorage.setItem('framekit:navigation:v1', JSON.stringify({ catalog: false, 'catalog/category': false }))
 
-    render(<FrameKitNavigationTree nodes={[navigation]} />)
+    render(<FrameKitNavigationTree nodes={[navigation]} pathname="/editor/catalog/category/first" />)
 
     expect(screen.getByRole('button', { name: 'Catalog' }).getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByRole('button', { name: 'Category' }).getAttribute('aria-expanded')).toBe('true')

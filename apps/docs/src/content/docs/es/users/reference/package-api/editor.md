@@ -19,16 +19,20 @@ El punto de entrada del editor exporta `FrameKitEditor`, `TemplateCanvas`, `Fram
 
 import { FrameKitNavigation, manifestToNavigation } from '@mauriciodmo/framekit/editor'
 import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'
+import { usePathname } from 'next/navigation'
 
 export function Navigation ({ templates }: { templates: readonly TemplateRegistryEntry[] }) {
   const nodes = manifestToNavigation(templates)
+  const pathname = usePathname()
   return (
     <nav>
-      {nodes.map((node) => <FrameKitNavigation key={node.id} node={node} />)}
+      {nodes.map((node) => <FrameKitNavigation key={node.id} node={node} pathname={pathname} />)}
     </nav>
   )
 }
 ```
+
+`pathname` es opcional para mantener la compatibilidad con las llamadas existentes. Pasa la ruta actual para habilitar el resaltado del elemento actual y abrir automáticamente las carpetas que lo contienen; si se omite, ningún elemento se marcará como actual.
 
 En cambio, `FrameKitEditor` recibe una entrada del registro, su definición cargada, un catálogo `EditorMessages` y, opcionalmente, `sidebarCollapsed`. `TemplateCanvas` representa una definición con las dimensiones que esta declara.
 
