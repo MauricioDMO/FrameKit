@@ -286,6 +286,20 @@ Después ejecuta el bloque de registry smoke documentado allí desde fuera del
 checkout y registra specs, versiones resueltas, tags, runtime y resultado. No se
 promueve ningún tag desde dentro del smoke.
 
+### Registry smoke 1.0.0 — 2026-09-22
+
+- Registry: `https://registry.npmjs.org/`.
+- Specs exactas: `@mauriciodmo/framekit@1.0.0` y
+  `@mauriciodmo/create-framekit@1.0.0`.
+- Versiones resueltas: `1.0.0` para ambos paquetes; tag temporal `next` para
+  ambos. `latest` permanece en `0.8.1` y `0.8.3` respectivamente.
+- Runtime del smoke: Node.js `v24.15.0`, npm `11.12.1`.
+- Resultado: **PASS** — instalación de los paquetes, resolución de exports,
+  dependencia exacta del creator, consumer generado, `generate`, `check`,
+  `build`, Chromium, login, token y render PNG autenticado.
+- El runner capturó el `start.log` antes de limpiar el consumer temporal; el log
+  tenía 144 bytes y no se retuvo fuera de esa ejecución.
+
 ## Checklist final
 
 - [x] Fases 1-3 aprobadas (estado registrado en el plan maestro).
@@ -295,7 +309,7 @@ promueve ningún tag desde dentro del smoke.
 - [x] Límites arquitectónicos aplicados y testeados (lint y tests locales).
 - [x] Consumer de seis archivos funciona desde tarballs (`smoke:tarballs`, open/auth).
 - [x] E2E autenticado y cobertura abierta pasan (E2E 3/3 y checks locales de runtime).
-- [ ] Docker prueba ambos modos, Chromium y persistencia entre contenedores.
+- [x] Docker prueba ambos modos, Chromium y persistencia entre contenedores (`pnpm smoke:docker -- 1.0.0`, PASS).
 - [x] Documentación EN/ES, READMEs, migración, changelog y skills coinciden (build local de docs aprobado).
 - [x] Gates locales del repositorio pasan (`check:runtime`, lint, test, typecheck,
       build, E2E y tarball smoke).
@@ -303,8 +317,8 @@ promueve ningún tag desde dentro del smoke.
       vivo (la build local no acredita este gate).
 - [ ] CI final pasa en Linux Node 22.13/24, Windows consumer y Chromium E2E.
 - [ ] `@mauriciodmo/framekit@1.0.0` pasa Docker desde npm.
-- [ ] `@mauriciodmo/create-framekit@1.0.0` genera un consumer válido desde npm.
-- [ ] Ambos paquetes pasan el smoke de registry con specs exactas.
+- [x] `@mauriciodmo/create-framekit@1.0.0` genera un consumer válido desde npm (tag temporal `next`).
+- [x] Ambos paquetes pasan el smoke de registry con specs exactas bajo el tag temporal `next`.
 - [ ] Ambos paquetes están promovidos al dist-tag final.
 
 ## Exit gate

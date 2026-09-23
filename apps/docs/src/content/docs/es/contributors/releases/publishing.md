@@ -184,6 +184,9 @@ set -eu
 
 CORE_VERSION="$(npm view "$CORE_SPEC" version)"
 CREATOR_VERSION="$(npm view "$CREATOR_SPEC" version)"
+REGISTRY="$(npm config get registry)"
+NPM_VERSION="$(npm --version)"
+export CORE_VERSION CREATOR_VERSION REGISTRY NPM_VERSION
 test "$CORE_SPEC" = "@mauriciodmo/framekit@$CORE_VERSION"
 test "$CREATOR_SPEC" = "@mauriciodmo/create-framekit@$CREATOR_VERSION"
 
@@ -194,11 +197,19 @@ test "$(npm view @mauriciodmo/create-framekit "dist-tags.$EXPECTED_CREATE_FRAMEK
 SMOKE_DIR="$(mktemp -d)"
 SERVER_PID=""
 cleanup() {
+  status=$?
   if test -n "$SERVER_PID"; then
     kill "$SERVER_PID" 2>/dev/null || true
     wait "$SERVER_PID" 2>/dev/null || true
   fi
+  if test -f "$SMOKE_DIR/start.log"; then
+    node --input-type=module - "$SMOKE_DIR/start.log" <<'NODE'
+import { readFile } from 'node:fs/promises'
+process.stdout.write(`--- standalone start.log ---\n${await readFile(process.argv[2], 'utf8')}\n`)
+NODE
+  fi
   rm -rf "$SMOKE_DIR"
+  exit "$status"
 }
 trap cleanup EXIT
 
@@ -248,10 +259,22 @@ NODE
 npx --no-install framekit generate
 npx --no-install framekit check
 npx --no-install framekit build
+npx --no-install framekit browser install --with-deps
 test -f src/generated/framekit/templates.ts
 
-PORT=4318
-FRAMEKIT_AUTH_ENABLED=true FRAMEKIT_ADMIN_PASSWORD=framekit-registry-smoke-password FRAMEKIT_DATABASE_PATH=:memory: HOSTNAME=127.0.0.1 PORT="$PORT" npx --no-install framekit start > "$SMOKE_DIR/start.log" 2>&1 &
+PORT="$(node --input-type=module <<'NODE'
+import { createServer } from 'node:net'
+
+const server = createServer()
+server.listen(0, 'localhost', () => {
+  const address = server.address()
+  if (!address || typeof address === 'string') throw new Error('Could not reserve a local port')
+  console.log(address.port)
+  server.close()
+})
+NODE
+)"
+FRAMEKIT_AUTH_ENABLED=true FRAMEKIT_ADMIN_PASSWORD=framekit-registry-smoke-password FRAMEKIT_DATABASE_PATH=:memory: HOSTNAME=localhost PORT="$PORT" node node_modules/@mauriciodmo/framekit/bin/framekit.js start > "$SMOKE_DIR/start.log" 2>&1 &
 SERVER_PID=$!
 node --input-type=module - "$PORT" <<'NODE'
 const port = process.argv[2]
@@ -259,7 +282,7 @@ const deadline = Date.now() + 30_000
 
 while (Date.now() < deadline) {
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/login`)
+    const response = await fetch(`http://localhost:${port}/login`)
     if (response.ok) process.exit(0)
   } catch {
     // The standalone server may still be starting.
@@ -273,7 +296,7 @@ NODE
 
 node --input-type=module - "$PORT" <<'NODE'
 const port = process.argv[2]
-const origin = `http://127.0.0.1:${port}`
+const origin = `http://localhost:${port}`
 const request = { template: 'example' }
 
 const missingAuth = await fetch(`${origin}/api/framekit/images/render`, {
@@ -314,6 +337,18 @@ if (image.status !== 200 || image.headers.get('content-type') !== 'image/png' ||
   throw new Error(`PNG render failed: ${image.status} ${image.headers.get('content-type')}`)
 }
 console.log('Authenticated registry smoke passed: login, token, and PNG render')
+console.log(JSON.stringify({
+  registry: process.env.REGISTRY,
+  node: process.version,
+  npm: process.env.NPM_VERSION,
+  coreSpec: process.env.CORE_SPEC,
+  coreVersion: process.env.CORE_VERSION,
+  coreTag: process.env.EXPECTED_FRAMEKIT_DIST_TAG,
+  creatorSpec: process.env.CREATOR_SPEC,
+  creatorVersion: process.env.CREATOR_VERSION,
+  creatorTag: process.env.EXPECTED_CREATE_FRAMEKIT_DIST_TAG,
+  result: 'PASS'
+}, null, 2))
 NODE
 ```
 
