@@ -1,4 +1,3 @@
-import { snapshotEnv } from '@/env'
 import { isAuthenticationEnabled } from '@/server/access/config'
 import { isSameOrigin } from './origin'
 import { errorResponse, responseForError } from './errors'
@@ -53,7 +52,7 @@ function matchRoute (pathname: string): { route: AccessRoute; parameters: readon
   return { route, parameters: [id] }
 }
 
-export function createStudioAccessHandler (env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
+export function createStudioAccessHandler (env: NodeJS.ProcessEnv = process.env): (request: Request) => Promise<Response> {
   return async function studioAccessHandler (request: Request): Promise<Response> {
     let pathname: string
     try {

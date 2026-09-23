@@ -84,6 +84,28 @@ afterEach(() => {
 })
 
 describe('createFrameKitApiHandler', () => {
+  it('reads the live process environment for each request', async () => {
+    const handler = createFrameKitApiHandler([])
+    const request = new Request('http://framekit.test/api/framekit/login', { method: 'GET' })
+
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    expect((await handler(request)).status).toBe(404)
+
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
+    expect((await handler(request)).status).toBe(405)
+  })
+
+  it('preserves an explicitly injected environment object', async () => {
+    const env: NodeJS.ProcessEnv = { ...process.env, FRAMEKIT_AUTH_ENABLED: 'false' }
+    const handler = createFrameKitApiHandler([], env)
+    const request = new Request('http://framekit.test/api/framekit/login', { method: 'GET' })
+
+    expect((await handler(request)).status).toBe(404)
+
+    env.FRAMEKIT_AUTH_ENABLED = 'true'
+    expect((await handler(request)).status).toBe(405)
+  })
+
   it('dispatches the canonical image route without requiring Origin', async () => {
     const entry = createEntry()
     const response = await createFrameKitApiHandler([entry])(imageRequest('POST', '/api/framekit/images/render', { template: entry.slug }))

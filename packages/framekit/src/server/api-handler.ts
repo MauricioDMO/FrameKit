@@ -1,5 +1,4 @@
 import type { TemplateRegistryEntry } from '@/types'
-import { snapshotEnv } from '@/env'
 
 import { createStudioAccessHandler } from './access/http'
 import { errorResponse } from './access/http/errors'
@@ -16,7 +15,7 @@ export function createFrameKitApiHandler (templates: readonly TemplateRegistryEn
   function getHandlers () {
     if (handlers !== undefined) return handlers
 
-    const runtimeEnv = env ?? snapshotEnv()
+    const runtimeEnv = env ?? process.env
     handlers = {
       access: createStudioAccessHandler(runtimeEnv),
       image: createStudioImageHandler(templates, runtimeEnv)

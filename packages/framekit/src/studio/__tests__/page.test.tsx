@@ -69,6 +69,18 @@ afterEach(() => {
 })
 
 describe('createStudioPage', () => {
+  it('reads the live process environment for each render', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const page = createStudioPage(StudioClient)
+
+    const unauthenticated = await page({ params: Promise.resolve({ section: 'editor' }) }) as ReactElement
+    expect(unauthenticated.props).toEqual({})
+
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
+    const authenticated = await page({ params: Promise.resolve({ section: 'editor' }) }) as ReactElement
+    expect(authenticated.props).toEqual({ user: { id: 'user-1', username: 'admin', role: 'admin' } })
+  })
+
   it('renders the client with only the safe session DTO for editor and brand', async () => {
     for (const section of ['editor', 'brand']) {
       const element = await renderPage({ section, slug: ['social', 'post'] }) as ReactElement
@@ -200,6 +212,18 @@ describe('createStudioPage', () => {
 })
 
 describe('createLoginPage', () => {
+  it('reads the live process environment for each render', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const page = createLoginPage()
+
+    await expect(page()).rejects.toBe(pageMocks.redirectError)
+
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
+    pageMocks.state.sessionUser = undefined
+    const element = await page() as ReactElement
+    expect(element.type).toBe(FrameKitLoginForm)
+  })
+
   it('redirects an existing session to the editor', async () => {
     await expect(renderLoginPage()).rejects.toBe(pageMocks.redirectError)
 

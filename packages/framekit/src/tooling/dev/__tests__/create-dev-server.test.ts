@@ -147,6 +147,27 @@ function getHttpServer (): MockHttpServer {
 }
 
 describe('createDevServer', () => {
+  it('reads the live process environment for each asset upload request', async () => {
+    vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'false')
+    const server = await createDevServer(options)
+
+    try {
+      const unauthenticated = sendRequest(getHttpServer(), {
+        host: localHeaders.host,
+        origin: localHeaders.origin
+      })
+      expect(unauthenticated.response.body).toBeUndefined()
+
+      vi.stubEnv('FRAMEKIT_AUTH_ENABLED', 'true')
+      const authenticated = sendRequest(getHttpServer(), localHeaders)
+      expect(authenticated.response.statusCode).toBe(401)
+      expect(authenticated.response.body).toBe(JSON.stringify({ error: 'Unauthorized' }))
+      expect(mocks.handleAssetUpload).toHaveBeenCalledOnce()
+    } finally {
+      await server.close()
+    }
+  })
+
   it('passes the project and network options to Next', async () => {
     const server = await createDevServer({ ...options, hostname: 'studio.test', port: 4_321 })
     const httpServer = getHttpServer()

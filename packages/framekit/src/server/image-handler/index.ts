@@ -1,4 +1,3 @@
-import { snapshotEnv } from '@/env'
 import { authenticateApiToken } from '@/server/access/api-tokens'
 import { isAuthenticationEnabled } from '@/server/access/config'
 import { getSession } from '@/server/access/sessions'
@@ -81,6 +80,6 @@ function createStudioImageHandlerInternal (
   }
 }
 
-export function createStudioImageHandler (templates: readonly TemplateRegistryEntry[], env: NodeJS.ProcessEnv = snapshotEnv()): (request: Request) => Promise<Response> {
+export function createStudioImageHandler (templates: readonly TemplateRegistryEntry[], env: NodeJS.ProcessEnv = process.env): (request: Request) => Promise<Response> {
   return createStudioImageHandlerInternal(templates, env)
 }

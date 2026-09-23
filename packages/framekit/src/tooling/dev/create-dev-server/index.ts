@@ -1,6 +1,5 @@
 import next from 'next'
 
-import { snapshotEnv } from '@/env'
 import { createDevHttpServer, listenDevHttpServer, type DevHttpServer } from './http-server'
 import { createTemplateGenerator } from './template-generation'
 import { watchTemplates, type TemplateWatcher } from '@/tooling/dev/watch-templates'
@@ -18,7 +17,7 @@ export interface DevServer {
 }
 
 export async function createDevServer (options: DevServerOptions): Promise<DevServer> {
-  const env = options.env ?? snapshotEnv()
+  const env = options.env ?? process.env
 
   function reportError (error: unknown): void {
     const normalizedError = error instanceof Error ? error : new Error(String(error))

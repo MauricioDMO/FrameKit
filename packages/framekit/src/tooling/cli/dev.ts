@@ -5,8 +5,8 @@ import { createDevServer } from '@/tooling/dev/create-dev-server'
 import { getServerOptions } from '@/tooling/dev/server-options'
 
 export async function dev (projectRoot: string): Promise<never> {
-  const env = snapshotEnv()
-  const { hostname, port } = getServerOptions(env)
+  const env = process.env
+  const { hostname, port } = getServerOptions(snapshotEnv())
   let rejectFailure: (error: Error) => void = () => undefined
   const failure = new Promise<never>((_resolve, reject) => {
     rejectFailure = reject

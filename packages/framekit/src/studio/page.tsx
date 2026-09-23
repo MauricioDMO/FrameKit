@@ -2,7 +2,6 @@ import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import type { ComponentType } from 'react'
 
-import { snapshotEnv } from '@/env'
 import { isAuthenticationEnabled } from '@/server/access/config'
 import { getSession } from '@/server/access/sessions'
 import { FrameKitLoginForm } from './login/login-form'
@@ -18,7 +17,7 @@ function isStudioSection (section: string): section is FrameKitStudioSection {
   return section === 'editor' || section === 'brand' || section === 'settings'
 }
 
-export function createStudioPage (StudioClient: ComponentType<{ user?: StudioUser }>, env: NodeJS.ProcessEnv = snapshotEnv()) {
+export function createStudioPage (StudioClient: ComponentType<{ user?: StudioUser }>, env: NodeJS.ProcessEnv = process.env) {
   return async function StudioPage ({ params }: StudioPageProps) {
     const { section, slug } = await params
     if (!isStudioSection(section)) notFound()
@@ -44,7 +43,7 @@ export function createStudioPage (StudioClient: ComponentType<{ user?: StudioUse
   }
 }
 
-export function createLoginPage (env: NodeJS.ProcessEnv = snapshotEnv()) {
+export function createLoginPage (env: NodeJS.ProcessEnv = process.env) {
   return async function LoginPage () {
     if (!isAuthenticationEnabled(env)) redirect('/editor')
 
