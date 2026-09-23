@@ -2,7 +2,7 @@
 title: Current contract migration
 description: Checklist for updating templates, generated output, persistence, access, and server-side export to the current FrameKit contract.
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Use this checklist for an existing project. It describes the contract implemented by the current package and generated template; it does not choose a release version.

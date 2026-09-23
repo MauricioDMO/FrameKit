@@ -49,3 +49,11 @@
 
 - Only `@mauriciodmo/framekit` and `@mauriciodmo/create-framekit` are public packages; the root and Studio are not publish targets.
 - For packaging changes, run `pnpm --filter @mauriciodmo/framekit pack` and `pnpm --filter @mauriciodmo/create-framekit pack`, then follow the [generated consumer guide](https://framekit.mauriciodmo.com/en/contributors/distribution/generated-consumer/) for the external consumer smoke test.
+
+## Changelog and Breaking Changes
+
+- Record user-facing changes to public packages in the root `CHANGELOG.md` under `Unreleased`, preserving its existing heading style. Do not add internal refactors, test-only work, or CI results.
+- Mark incompatible consumer-facing changes `BREAKING` and describe the impact. When consumers must change code, configuration, or data, add a version-specific migration guide under `apps/docs/src/content/docs/en/users/migrations/`, link it from the changelog and migration index, and add its Spanish equivalent under `apps/docs/src/content/docs/es/users/migrations/`.
+- A migration guide states the source and target package versions, affected package(s), required steps, and verification. Include backup, data conversion, or rollback guidance when relevant. Preserve prior version-specific guides as historical records instead of rewriting them for a new release.
+- Version a public package with a breaking change as a major release; the two public packages are versioned independently.
+- During release preparation, move the relevant `Unreleased` entries into the release heading and leave a fresh `Unreleased` section at the top.

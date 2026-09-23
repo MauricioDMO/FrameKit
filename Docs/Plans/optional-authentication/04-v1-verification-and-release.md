@@ -100,6 +100,34 @@ Reglas mínimas:
 - imports dinámicos y strings generados se inventariarán por separado, sin afirmar
   que ESLint los valida.
 
+### Inventario manual de imports dinámicos y strings generados
+
+ESLint comprueba imports estáticos del código fuente, pero no valida los
+specifiers de `import()` ni el contenido de los strings que producen módulos.
+Este inventario es manual; su cobertura ejecutable viene de las pruebas de
+generación y del smoke de consumers.
+
+| Fuente | Destino y forma emitida | Cobertura existente |
+|---|---|---|
+| `findTemplates` descubre `src/templates/**/template.tsx`; `create-template-module.ts` (`createTemplateModule`) | `src/generated/framekit/templates.ts` emite `load: () => import(<specifier relativo>)` para cada `template` descubierto. | `apps/studio/src/__tests__/framekit/generation.integration.test.ts` carga el módulo, ejecuta cada `entry.load()` y valida definición y metadata. El smoke del consumer empaquetado genera y ejecuta el registro. |
+| `create-template-module.ts` (`createTemplateModule`) | `src/generated/framekit/templates.ts` también emite el import estático de tipo `import type { TemplateRegistryEntry } from '@mauriciodmo/framekit'`. | La prueba de integración importa el módulo generado; el build del consumer empaquetado procesa el import de tipo. |
+| `findBrandComponents` identifica directorios de marca mediante `component.tsx` y exige `preview.tsx` y `README.md`; `create-brand-module.ts` (`createBrandModule`) genera sus entradas. | `src/generated/framekit/brands.ts` emite loaders dinámicos relativos a `preview`, además de `brandManifest` y `brandRegistry`; el módulo no emite imports estáticos. | La prueba de integración ejecuta cada `brand.load()` y un loader de `brandRegistry`. El smoke del consumer empaquetado verifica la generación. |
+| `collect-template-summaries.ts` (`collectTemplateSummaries`) | El runner temporal `.framekit/summary-*/templates.mts` emite imports estáticos de `node:fs/promises` y `@mauriciodmo/framekit`, además de los imports dinámicos indicados en la fila siguiente. Se elimina en `finally`. | La prueba de integración alcanza el runner mediante `writeTemplateModule`; la generación del consumer empaquetado también lo ejecuta. |
+| `collect-template-summaries.ts` (`collectTemplateSummaries`) | El mismo `.framekit/summary-*/templates.mts` importa dinámicamente cada `template.tsx` descubierto mediante specifiers relativos. | La prueba de integración ejercita la carga durante `writeTemplateModule`; el smoke del consumer empaquetado ejecuta la generación. |
+| `tooling/cli/check.ts` (`check`) | El runner temporal `.framekit/check-*/templates.mts` emite el import estático `import { resolveTemplateData, validateTemplateData, validateTemplateDefinition } from '@mauriciodmo/framekit'`, además de los imports dinámicos de la fila siguiente. Se elimina en `finally`. | Tanto el consumer independiente como el consumer generado por el creator ejecutan `check` durante la validación empaquetada. |
+| `tooling/cli/check.ts` (`check`) | El mismo `.framekit/check-*/templates.mts` importa dinámicamente las plantillas descubiertas mediante specifiers relativos. | `pnpm smoke:tarballs` ejecuta este `check` en ambos consumers durante la fase de validación empaquetada. |
+| `write-template-module.ts` (`createStudioClientModule`, `createRenderClientModule`) | Emite `studio-client.tsx` con imports estáticos de `@mauriciodmo/framekit/studio`, `./templates` y `./brands`; emite `render-client.tsx` con imports de `@mauriciodmo/framekit/client` y `./templates`. | La prueba de integración afirma estos imports emitidos; el build del consumer empaquetado procesa los bindings generados. |
+
+En `pnpm smoke:tarballs`, tanto el consumer independiente como el consumer
+generado por el creator ejecutan `check` durante la validación empaquetada. Solo
+el consumer generado por el creator continúa a `runStartSmoke`; sus
+verificaciones open/auth posteriores son smoke tests de runtime del servidor,
+no invocaciones adicionales de `check`.
+
+Por tanto, ESLint no se considera validación de imports dinámicos o strings
+generados: esa frontera queda registrada manualmente y cubierta por ejecución de
+los loaders generados y los consumers empaquetados.
+
 ## Consumer y Docker
 
 El consumer empaquetado debe conservar exactamente seis archivos mantenidos bajo
@@ -135,7 +163,7 @@ Actualizar antes de versionar:
 - páginas EN/ES de getting started, configuración, Studio, APIs, seguridad,
   deployment, troubleshooting, distribución y releases bajo
   `apps/docs/src/content/docs/`;
-- migración del próximo release y `CHANGELOG.md`;
+- guías de migración EN/ES versionadas de `0.8.x` a `1.0.0` y `CHANGELOG.md`;
 - skills canónicas bajo `Docs/skills/`, seguidas por `pnpm sync:skills`.
 
 La documentación debe declarar que auth está desactivada por defecto, que
@@ -157,6 +185,10 @@ abierto usa `false` o la variable ausente. La migración ordena configurar
 `FRAMEKIT_AUTH_ENABLED=true` en despliegues privados existentes antes de instalar
 o desplegar `1.0.0`; no se usa la presencia de usuarios o credenciales como
 fallback.
+
+La guía versionada EN/ES para la migración de `0.8.x` a `1.0.0` vive bajo
+`apps/docs/src/content/docs/{en,es}/users/migrations/` y debe enlazarse desde
+ambos índices de migraciones y desde la entrada `BREAKING` del changelog.
 
 La migración también explica el camino inverso: una instalación que se usó
 primero en modo abierto necesita `FRAMEKIT_AUTH_ENABLED=true` y un
@@ -189,6 +221,27 @@ pnpm smoke:tarballs
 
 Inspeccionar además ambos tarballs y confirmar que el consumer aislado ejecuta
 `generate`, `check`, `build`, `start` y HTTP readiness fuera del workspace.
+
+### Estado de verificación local — 2026-09-22
+
+Las comprobaciones finales de este worktree se registraron como aprobadas:
+
+- `pnpm check:runtime`;
+- `pnpm lint`;
+- `pnpm test` (todos los workspaces);
+- `pnpm typecheck`;
+- `pnpm build`;
+- `pnpm test:e2e` (3/3);
+- `pnpm smoke:tarballs` (ambos tarballs `1.0.0` y consumers open/auth);
+- `pnpm sync:skills` (terminó correctamente; no produjo cambios visibles en las
+  fuentes ni en las copias sincronizadas).
+
+Warnings no bloqueantes observados: el warning ESLint existente por un `<img>`
+de ejemplo, warnings de tamaño de chunks y ruta 404 en docs, y el warning de
+trazado dinámico del filesystem de Studio. La build local de docs no verifica el
+despliegue ni los enlaces del sitio público. Estos resultados locales tampoco
+sustituyen el CI final, Docker contra npm, el registry smoke ni los gates de
+publicación y promoción.
 
 Antes de publicar debe pasar el CI del commit final: matrices Linux Node 22.13 y
 24, lane Windows del consumer generado y lane Chromium E2E. Un gate local no
@@ -235,16 +288,19 @@ promueve ningún tag desde dentro del smoke.
 
 ## Checklist final
 
-- [ ] Fases 1-3 aprobadas.
-- [ ] Matriz auth off/on cubierta.
-- [ ] SQLite no se inicializa en modo abierto.
-- [ ] Defensas de renderer y upload dev revalidadas.
-- [ ] Límites arquitectónicos aplicados y testeados.
-- [ ] Consumer de seis archivos funciona desde tarballs.
-- [ ] E2E autenticado y cobertura abierta pasan.
+- [x] Fases 1-3 aprobadas (estado registrado en el plan maestro).
+- [x] Matriz auth off/on cubierta (`check:runtime` y tests locales).
+- [x] SQLite no se inicializa en modo abierto (`check:runtime` y tests locales).
+- [x] Defensas de renderer y upload dev revalidadas (tests locales).
+- [x] Límites arquitectónicos aplicados y testeados (lint y tests locales).
+- [x] Consumer de seis archivos funciona desde tarballs (`smoke:tarballs`, open/auth).
+- [x] E2E autenticado y cobertura abierta pasan (E2E 3/3 y checks locales de runtime).
 - [ ] Docker prueba ambos modos, Chromium y persistencia entre contenedores.
-- [ ] Documentación EN/ES, READMEs, migración, changelog y skills coinciden.
-- [ ] Gates completos del repositorio pasan.
+- [x] Documentación EN/ES, READMEs, migración, changelog y skills coinciden (build local de docs aprobado).
+- [x] Gates locales del repositorio pasan (`check:runtime`, lint, test, typecheck,
+      build, E2E y tarball smoke).
+- [ ] Sitio público EN/ES desplegado; rutas principales y enlaces verificados en
+      vivo (la build local no acredita este gate).
 - [ ] CI final pasa en Linux Node 22.13/24, Windows consumer y Chromium E2E.
 - [ ] `@mauriciodmo/framekit@1.0.0` pasa Docker desde npm.
 - [ ] `@mauriciodmo/create-framekit@1.0.0` genera un consumer válido desde npm.

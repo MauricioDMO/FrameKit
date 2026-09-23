@@ -2,7 +2,7 @@
 title: Migración al contrato actual
 description: Lista de comprobación para actualizar plantillas, salida generada, persistencia, acceso y exportación del lado del servidor al contrato actual de FrameKit.
 sidebar:
-  order: 3
+  order: 4
 ---
 
 Usa esta lista de comprobación para un proyecto existente. Describe el contrato implementado por el paquete y la plantilla generada actuales; no selecciona una versión de lanzamiento.
@@ -54,11 +54,13 @@ El editor almacena las sobrescrituras en el `localStorage` del navegador, bajo `
 
 ## Acceso opcional a SQLite
 
-- Define `FRAMEKIT_AUTH_ENABLED=true` para activar usuarios, sesiones, tokens de API y SQLite. En modo abierto no se inicializa la base de datos de acceso.
-- Establece `FRAMEKIT_DATABASE_PATH` cuando la base de datos deba estar fuera de la ubicación predeterminada `.framekit-data/framekit.sqlite`.
+- Define `FRAMEKIT_AUTH_ENABLED=false` o déjala sin definir para usar el modo abierto. En este modo, `/editor` y `/brand` funcionan sin iniciar sesión, `/login` redirige a `/editor`, `/settings` y las rutas de acceso no están disponibles, y el endpoint de imágenes no requiere credenciales sin dejar de aplicar las defensas del renderizador.
+- Define `FRAMEKIT_AUTH_ENABLED=true` para activar usuarios, sesiones, tokens de API, Studio protegido, rutas de acceso y SQLite. Solo en este modo establece `FRAMEKIT_DATABASE_PATH` si la base de datos debe estar fuera de la ubicación predeterminada `.framekit-data/framekit.sqlite`.
 - Mantén la ruta de la base de datos en almacenamiento persistente para los despliegues autenticados. La base de datos de acceso se inicializa de forma diferida, usa el modo WAL de SQLite y contiene las tablas actuales de usuarios, sesiones y tokens de API.
 - El esquema actual es la versión de migración `1`. Una base de datos con una versión de esquema más reciente se rechaza en lugar de reescribirse.
 - Mantén la aplicación en el runtime de Node.js para el acceso y el renderizado del lado del servidor. Los trabajos de renderizado permanecen en el proceso y no se almacenan en SQLite.
+
+`FRAMEKIT_ADMIN_PASSWORD` y `FRAMEKIT_ADMIN_USERNAME` inicializan el primer administrador solo cuando la autenticación está activada. El modo abierto no crea un administrador anónimo ni inicializa SQLite. Al cambiar de `true` a `false`, no se eliminan los usuarios, las sesiones ni los tokens almacenados.
 
 Consulta [configuración](/es/users/reference/configuration) y [Docker y persistencia](/es/users/deployment/docker-and-persistence).
 
