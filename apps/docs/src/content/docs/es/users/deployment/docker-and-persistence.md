@@ -1,19 +1,30 @@
 ---
 title: Docker y persistencia
-description: Compila y ejecuta el contenedor canónico de FrameKit con Chromium, autenticación opcional, un proceso sin privilegios de root y almacenamiento SQLite persistente.
+description: Compila y ejecuta el contenedor canónico de FrameKit, entiende cada etapa del Dockerfile y persiste de forma segura el estado autenticado.
 sidebar:
   order: 3
 ---
 
-La plantilla generada para consumidores incluye un Dockerfile de varias etapas para el despliegue compatible de un proceso Node.js de larga duración. Compila la salida `standalone` de Next.js, instala Chromium con las dependencias de Linux, se ejecuta como el usuario `node` y se inicia mediante `tini`.
+El proyecto generado por FrameKit incluye un `Dockerfile` de varias etapas orientado a producción. Compila la salida `standalone` de Next.js, instala Chromium solo en la imagen de ejecución, ejecuta la aplicación como el usuario `node` sin privilegios de root y arranca mediante `tini`.
 
 ## Compilar y ejecutar
 
-Desde un proyecto generado que contenga el `Dockerfile` canónico, `package.json`, `pnpm-lock.yaml` y `pnpm-workspace.yaml`:
+Desde un proyecto generado que contenga el `Dockerfile` canónico, `pnpm-lock.yaml` y `pnpm-workspace.yaml`:
 
 ```bash
 docker build --tag framekit-app .
 docker volume create framekit-data
+docker run --detach \
+  --publish 3000:3000 \
+  --env FRAMEKIT_AUTH_ENABLED=false \
+  --mount type=volume,source=framekit-data,target=/data \
+  --name framekit-app \
+  framekit-app
+```
+
+Este ejemplo usa modo abierto y no requiere login, usuarios, tokens ni base de datos SQLite. Para un despliegue autenticado, activa la autenticación y proporciona la contraseña de bootstrap:
+
+```bash
 docker run --detach \
   --publish 3000:3000 \
   --env FRAMEKIT_AUTH_ENABLED=true \
@@ -23,34 +34,127 @@ docker run --detach \
   framekit-app
 ```
 
-El Dockerfile de la plantilla usa pnpm y requiere `package.json`, `pnpm-lock.yaml` y `pnpm-workspace.yaml`. Si la creación del proyecto omitió la instalación de dependencias, ejecuta `pnpm install` desde la raíz del proyecto antes de `docker build`. Pasa el resto de la configuración pública mediante el entorno del contenedor según sea necesario. No copies un archivo `.env` secreto en la imagen. El contenedor escucha en el puerto `3000` de forma predeterminada y la imagen establece `/data/framekit.sqlite` como `FRAMEKIT_DATABASE_PATH`; el entorno de ejecución puede sobrescribir `FRAMEKIT_AUTH_ENABLED`, `PORT` y la ruta de SQLite. El Dockerfile no fuerza ningún modo de autenticación.
+No copies un `.env` con secretos dentro de la imagen. Pasa los secretos en tiempo de ejecución. El contenedor escucha en el puerto `3000` y usa `/data/framekit.sqlite` como valor predeterminado de `FRAMEKIT_DATABASE_PATH`.
 
-**Advertencia:** No uses `.env.example` sin modificar como `--env-file` del contenedor. Su valor `FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite` reemplaza el valor predeterminado de Docker, `/data/framekit.sqlite`, por lo que SQLite no usará el volumen montado en `/data`. Omite esa variable para el contenedor o establécela explícitamente como `/data/framekit.sqlite`, y conserva los demás secretos en el entorno de ejecución.
+:::caution
+No uses `.env.example` sin modificar como `--env-file` del contenedor. Su ruta local para SQLite reemplazaría `/data/framekit.sqlite` e impediría que la base de datos use el volumen montado en `/data`.
+:::
 
-## Qué hace la imagen
+## Etapas del Dockerfile
 
-Las etapas de compilación usan Node 22 y pnpm `11.14.0`. El `builder` ejecuta `pnpm build` y comprueba que exista `.framekit/next/standalone/server.js`. La etapa `prod-deps` instala las dependencias de producción; el `runner` las copia y ejecuta `./node_modules/.bin/framekit browser install --with-deps`.
+El Dockerfile separa las dependencias de compilación de las dependencias necesarias en producción.
 
-El `runner` establece estas variables a nivel de imagen:
+### `base`
 
-| Variable | Valor en la imagen | Significado |
+```dockerfile
+FROM node:22-bookworm-slim AS base
+```
+
+Esta etapa sirve como base compartida para las siguientes. Hace lo siguiente:
+
+- usa Node.js 22 sobre Debian Bookworm slim;
+- activa Corepack y pnpm `11.14.0`;
+- establece `/app` como directorio de trabajo; e
+- instala únicamente `ca-certificates` como dependencia del sistema compartida.
+
+Centralizar esta configuración evita repetir la preparación de Node y pnpm.
+
+### `build-deps`
+
+Instala todas las dependencias necesarias para compilar la aplicación:
+
+```dockerfile
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
+```
+
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` evita que Playwright descargue Chromium durante `pnpm install`. El navegador no es necesario para instalar paquetes ni para compilar y descargarlo en esta etapa duplicaría archivos entre capas de Docker.
+
+El store de pnpm usa un cache mount de BuildKit para reutilizar paquetes descargados entre compilaciones.
+
+### `prod-deps`
+
+Instala solamente las dependencias de producción:
+
+```dockerfile
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --prod --frozen-lockfile
+```
+
+La imagen final copia `node_modules` desde esta etapa y no arrastra las dependencias de desarrollo del builder.
+
+### `builder`
+
+El builder copia el código fuente y ejecuta:
+
+```bash
+pnpm build
+```
+
+FrameKit genera la salida `standalone` de Next.js en `.framekit/next/standalone/`. Después, el Dockerfile comprueba explícitamente que exista:
+
+```text
+.framekit/next/standalone/server.js
+```
+
+Así, el build de la imagen falla de inmediato si no se generó el artefacto de producción esperado.
+
+### `runner`
+
+La etapa final contiene únicamente lo necesario para ejecutar la aplicación compilada.
+
+Copia las dependencias de producción, instala `tini` y ejecuta:
+
+```bash
+./node_modules/.bin/framekit browser install --with-deps
+```
+
+Este comando instala Chromium y las bibliotecas de Linux requeridas por el renderizador de FrameKit. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` mantiene el navegador en una ubicación predecible dentro de la imagen.
+
+Después, la etapa copia la aplicación standalone generada, crea `/data`, cambia su propietario al usuario `node`, elimina privilegios de root, expone el puerto `3000` e inicia la aplicación con:
+
+```text
+/usr/bin/tini -- node server.js
+```
+
+`tini` actúa como PID 1 y reenvía correctamente las señales Unix, lo que ayuda a que el proceso de Node se cierre limpiamente cuando se detiene el contenedor.
+
+## Variables de la imagen
+
+El runner define estos valores predeterminados:
+
+| Variable | Valor | Significado |
 | --- | --- | --- |
-| `NODE_ENV` | `production` | Modo de ejecución. |
-| `HOSTNAME` | `0.0.0.0` | Nombre de host al que se enlaza el contenedor. |
-| `PORT` | `3000` | Puerto del contenedor y del renderizador. |
+| `NODE_ENV` | `production` | Ejecuta la aplicación en modo producción. |
+| `HOSTNAME` | `0.0.0.0` | Permite recibir tráfico desde fuera del contenedor. |
+| `PORT` | `3000` | Puerto de la aplicación y del renderizador. |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Ubicación de Chromium instalado. |
-| `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | Ruta predeterminada de SQLite establecida por la imagen; el entorno de ejecución puede sobrescribirla. Solo se usa cuando la autenticación está activada. |
+| `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | Ruta predeterminada de SQLite en despliegues autenticados. |
 
-`NODE_ENV`, `HOSTNAME` y `PLAYWRIGHT_BROWSERS_PATH` son ajustes operativos de la imagen, no opciones de configuración pública de FrameKit. `FRAMEKIT_AUTH_ENABLED`, `FRAMEKIT_ADMIN_PASSWORD`, `FRAMEKIT_ADMIN_USERNAME`, `FRAMEKIT_ALLOWED_IMAGE_HOSTS` y los límites de renderizado siguen siendo valores del entorno de despliegue. En modo abierto, omite las variables de bootstrap y no necesitas montar `/data` para autenticación.
+El Dockerfile no activa la autenticación. Define `FRAMEKIT_AUTH_ENABLED` explícitamente en tiempo de ejecución.
 
-La imagen final crea `/data`, permite que `node` escriba en ella, expone el puerto `3000`, elimina los privilegios de root mediante `USER node` y usa `/usr/bin/tini --` como punto de entrada antes de `node server.js`.
+## Por qué la aplicación se ejecuta como `node`
+
+La instalación del navegador necesita privilegios de root porque instala paquetes de Linux mediante `apt`. Una vez preparada la imagen, FrameKit no necesita ejecutarse como root.
+
+Por eso el Dockerfile crea `/data`, se lo asigna a `node` y cambia a:
+
+```dockerfile
+USER node
+```
+
+Esto reduce los privilegios del proceso de aplicación y mantiene la capacidad de escribir la base SQLite en `/data`.
 
 ## Persistencia de SQLite
 
-Monta `/data` como almacenamiento persistente si `FRAMEKIT_AUTH_ENABLED=true` y los usuarios, las sesiones y los metadatos de los tokens de API deben sobrevivir al reemplazo del contenedor. Sin un montaje persistente, el directorio preparado de la imagen forma parte del sistema de archivos del contenedor y puede perderse cuando se reemplace el contenedor. Asegúrate de que un montaje de enlace o un volumen permita escribir al usuario `node`.
+Monta `/data` como almacenamiento persistente cuando la autenticación esté activa y necesites conservar usuarios, sesiones o metadatos de tokens de API después de reemplazar el contenedor.
 
-La persistencia de SQLite no conserva los trabajos de renderizado. Los trabajos de renderizado se mantienen en la memoria del proceso, tienen un TTL de 120 segundos y no están disponibles intencionadamente después de reiniciar el proceso. Un contenedor de reemplazo puede recuperar el estado de las cuentas y de los tokens respaldado por la base de datos, pero se pierde cualquier trabajo de renderizado en curso o de prueba.
+Sin un volumen o bind mount persistente, la base queda dentro del sistema de archivos desechable del contenedor.
 
-## Comprobar el reinicio
+El modo abierto no inicializa SQLite, por lo que `/data` no es necesario para persistencia de cuentas cuando `FRAMEKIT_AUTH_ENABLED=false`.
 
-En modo autenticado, después del primer inicio de sesión y de crear un token, reinicia o reemplaza el contenedor manteniendo el mismo volumen `/data`. La base de datos de cuentas y sesiones debería seguir disponible. No debe esperarse que un trabajo de renderizado creado antes del reemplazo del proceso siga disponible; envía una nueva solicitud de imagen.
+La persistencia de SQLite no conserva trabajos de renderizado. Los trabajos viven en memoria y se pierden intencionalmente cuando el proceso se reinicia o reemplaza.
+
+## Comprobar un reinicio
+
+En modo autenticado, después del primer inicio de sesión y de crear un token, reinicia o reemplaza el contenedor conservando el mismo volumen `/data`. Las cuentas y tokens deberían seguir disponibles.
+
+No se debe esperar que un trabajo de renderizado creado antes del reemplazo del proceso sobreviva; envía una nueva solicitud de renderizado.

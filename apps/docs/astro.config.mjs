@@ -45,52 +45,136 @@ export default defineConfig({
             social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/MauricioDMO/FrameKit' }],
             sidebar: [
                 {
-                    label: 'Using FrameKit',
-                    translations: { es: 'Usar FrameKit' },
+                    label: 'Start',
+                    translations: { es: 'Empezar' },
                     items: [
-                        { slug: 'users' },
                         {
-                            label: 'Getting started',
-                            translations: { es: 'Primeros pasos' },
-                            items: [{ autogenerate: { directory: 'users/getting-started' } }],
+                            slug: 'users/getting-started/create-project',
+                            label: 'Quick start',
+                            translations: { es: 'Inicio rápido' },
                         },
                         {
-                            label: 'Concepts',
-                            items: [
-                                { slug: 'users/concepts' },
-                                {
-                                    label: 'Templates',
-                                    items: [{ autogenerate: { directory: 'users/concepts/templates' } }],
-                                },
-                                { slug: 'users/concepts/brand-components', label: 'Brand components' },
-                                { slug: 'users/concepts/studio', label: 'Studio' },
-                            ],
+                            slug: 'users/getting-started/existing-project',
+                            label: 'Add FrameKit to an existing project',
+                            translations: { es: 'Añadir FrameKit a un proyecto existente' },
                         },
                         {
-                            label: 'Guides',
-                            items: [{ autogenerate: { directory: 'users/guides' } }],
+                            slug: 'users/getting-started/project-structure',
+                            label: 'Project structure',
+                            translations: { es: 'Estructura del proyecto' },
+                        },
+                    ],
+                },
+                {
+                    label: 'Templates',
+                    translations: { es: 'Plantillas' },
+                    items: [
+                        {
+                            slug: 'users/guides/create-template',
+                            label: 'Create a template',
+                            translations: { es: 'Crear una plantilla' },
                         },
                         {
+                            slug: 'users/concepts/templates/fields',
+                            label: 'Fields',
+                            translations: { es: 'Campos' },
+                        },
+                        {
+                            slug: 'users/concepts/templates/content-and-variants',
+                            label: 'Content & variants',
+                            translations: { es: 'Contenido y variantes' },
+                        },
+                        {
+                            slug: 'users/concepts/templates/assets',
+                            label: 'Assets',
+                            translations: { es: 'Recursos' },
+                        },
+                        {
+                            slug: 'users/concepts/brand-components',
+                            label: 'Brand components',
+                            translations: { es: 'Componentes de marca' },
+                        },
+                    ],
+                },
+                {
+                    label: 'Studio',
+                    items: [
+                        {
+                            slug: 'users/guides/use-studio',
+                            label: 'Using Studio',
+                            translations: { es: 'Usar Studio' },
+                        },
+                        {
+                            slug: 'users/guides/authentication-and-access',
+                            label: 'Authentication & access',
+                            translations: { es: 'Autenticación y acceso' },
+                        },
+                    ],
+                },
+                {
+                    label: 'Automation',
+                    translations: { es: 'Automatización' },
+                    items: [
+                        {
+                            slug: 'users/guides/render-images-with-the-api',
+                            label: 'Render images with the API',
+                            translations: { es: 'Renderizar imágenes con la API' },
+                        },
+                        {
+                            slug: 'users/reference/http-api',
+                            label: 'HTTP API',
+                        },
+                    ],
+                },
+                {
+                    label: 'Configuration',
+                    translations: { es: 'Configuración' },
+                    items: [
+                        {
+                            slug: 'users/reference/configuration',
+                            label: 'Configuration',
+                            translations: { es: 'Configuración' },
+                        },
+                        {
+                            slug: 'users/deployment',
                             label: 'Deployment',
                             translations: { es: 'Despliegue' },
-                            items: [{ autogenerate: { directory: 'users/deployment' } }],
                         },
                         {
+                            slug: 'users/reference/cli',
+                            label: 'CLI',
+                        },
+                    ],
+                },
+                {
+                    label: 'Reference',
+                    translations: { es: 'Referencia' },
+                    collapsed: true,
+                    items: [
+                        {
+                            slug: 'users/reference/template',
+                            label: 'Template API',
+                            translations: { es: 'API de plantillas' },
+                        },
+                        {
+                            slug: 'users/reference/package-api',
+                            label: 'Package API',
+                            translations: { es: 'API de paquetes' },
+                        },
+                        {
+                            slug: 'users/reference/generated-files',
+                            label: 'Generated files',
+                            translations: { es: 'Archivos generados' },
+                        },
+                        {
+                            slug: 'users/migrations',
                             label: 'Migrations',
                             translations: { es: 'Migraciones' },
-                            collapsed: true,
-                            items: [{ autogenerate: { directory: 'users/migrations' } }],
                         },
                         {
+                            slug: 'users/troubleshooting',
                             label: 'Troubleshooting',
                             translations: { es: 'Solución de problemas' },
-                            collapsed: true,
-                            items: [{ autogenerate: { directory: 'users/troubleshooting' } }],
-                        },
-                        {
-                            label: 'Reference',
-                            collapsed: true,
-                            items: [{ autogenerate: { directory: 'users/reference' } }],
                         },
                     ],
                 },
