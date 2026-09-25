@@ -121,8 +121,9 @@ export default defineConfig({
                             translations: { es: 'Renderizar imágenes con la API' },
                         },
                         {
-                            slug: 'users/reference/http-api',
                             label: 'HTTP API',
+                            translations: { es: 'API HTTP' },
+                            items: [{ autogenerate: { directory: 'users/reference/http-api' } }],
                         },
                     ],
                 },
