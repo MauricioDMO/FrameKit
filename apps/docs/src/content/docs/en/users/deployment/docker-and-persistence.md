@@ -1,11 +1,11 @@
 ---
 title: Docker and persistence
-description: Build and run the canonical FrameKit container with Chromium, a non-root process, and optional durable SQLite storage.
+description: Build and run the canonical FrameKit container, understand each Dockerfile stage, and persist authenticated state safely.
 sidebar:
   order: 3
 ---
 
-The generated consumer template includes a multi-stage Dockerfile for the supported long-lived Node deployment. It builds the Next.js standalone output, installs Chromium with Linux dependencies, runs as the `node` user, and starts through `tini`.
+The generated FrameKit project includes a production-oriented multi-stage `Dockerfile`. It builds the Next.js standalone output, installs Chromium only in the runtime image, runs the application as the non-root `node` user, and starts through `tini`.
 
 ## Build and run
 
@@ -23,8 +23,7 @@ docker run --detach \
 ```
 
 This explicit open-mode example needs no login, user, token, or SQLite database.
-For an authenticated private deployment, pass the switch and bootstrap secret
-explicitly instead:
+For an authenticated deployment, enable auth and provide the bootstrap secret:
 
 ```bash
 docker run --detach \
@@ -36,42 +35,127 @@ docker run --detach \
   framekit-app
 ```
 
-The template Dockerfile uses pnpm and requires both `pnpm-lock.yaml` and `pnpm-workspace.yaml`. If project creation omitted dependency installation, run `pnpm install` from the project root before `docker build`. Pass the remaining public configuration through the container environment as needed. Do not copy a secret `.env` file into the image. The container listens on port `3000` and the image sets `/data/framekit.sqlite` as the default `FRAMEKIT_DATABASE_PATH`; the runtime environment can override it.
+Do not copy a secret `.env` file into the image. Pass secrets at runtime. The container listens on port `3000` and defaults `FRAMEKIT_DATABASE_PATH` to `/data/framekit.sqlite`.
 
-**Warning:** Do not use `.env.example` unchanged as the container's `--env-file`. Its `FRAMEKIT_DATABASE_PATH=.framekit-data/framekit.sqlite` overrides the Docker default `/data/framekit.sqlite`, so SQLite will not use the mounted `/data` volume. Omit that variable for the container or set it explicitly to `/data/framekit.sqlite`, and keep the other secrets in the runtime environment.
+:::caution
+Do not use `.env.example` unchanged as the container's `--env-file`. Its local-development database path would override `/data/framekit.sqlite`, which prevents SQLite from using the mounted `/data` volume.
+:::
 
-## What the image does
+## Dockerfile stages
 
-The build stages use Node 22 and pnpm `11.14.0`. The builder runs `pnpm build` and checks for `.framekit/next/standalone/server.js`. The runner installs production dependencies and executes `framekit browser install --with-deps`.
+The Dockerfile is split so build-time dependencies and runtime dependencies remain separate.
 
-The runner sets these image-level variables:
+### `base`
+
+```dockerfile
+FROM node:22-bookworm-slim AS base
+```
+
+This stage provides the shared foundation for every later stage. It:
+
+- uses Node.js 22 on Debian Bookworm slim;
+- enables Corepack and activates pnpm `11.14.0`;
+- sets `/app` as the working directory; and
+- installs only the shared system package `ca-certificates`.
+
+Keeping this setup in one stage avoids repeating Node and pnpm configuration.
+
+### `build-deps`
+
+This stage installs the full dependency graph required to compile the application:
+
+```dockerfile
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
+```
+
+`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` prevents Playwright from downloading Chromium during dependency installation. The browser is not needed to install packages or compile the application, and downloading it here would duplicate browser files across Docker layers.
+
+The pnpm store uses a BuildKit cache mount so repeated builds can reuse downloaded packages.
+
+### `prod-deps`
+
+This stage installs only production dependencies:
+
+```dockerfile
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --prod --frozen-lockfile
+```
+
+The final runtime image copies `node_modules` from this stage instead of carrying development dependencies from the builder.
+
+### `builder`
+
+The builder copies the source tree and runs:
+
+```bash
+pnpm build
+```
+
+FrameKit generates the production Next.js standalone output under `.framekit/next/standalone/`. The Dockerfile immediately checks for:
+
+```text
+.framekit/next/standalone/server.js
+```
+
+This makes the image build fail early if the expected production artifact was not generated.
+
+### `runner`
+
+The final stage contains only what is needed to execute the built application.
+
+It copies production dependencies, installs `tini`, and then runs:
+
+```bash
+./node_modules/.bin/framekit browser install --with-deps
+```
+
+This installs Chromium and the Linux libraries required by the FrameKit renderer. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` gives the browser a predictable location inside the image.
+
+The stage then copies the generated standalone application, creates `/data`, changes ownership to the `node` user, drops root privileges, exposes port `3000`, and starts the application with:
+
+```text
+/usr/bin/tini -- node server.js
+```
+
+`tini` acts as PID 1 and forwards Unix signals correctly, which helps the Node process shut down cleanly when the container is stopped.
+
+## Image environment
+
+The runner sets these image-level defaults:
 
 | Variable | Image value | Meaning |
 | --- | --- | --- |
-| `NODE_ENV` | `production` | Runtime mode. |
-| `HOSTNAME` | `0.0.0.0` | Container bind hostname. |
-| `PORT` | `3000` | Container and renderer port. |
-| `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Installed Chromium location. |
-| `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | Default SQLite path set by the image; the runtime environment can override it. |
+| `NODE_ENV` | `production` | Runs the application in production mode. |
+| `HOSTNAME` | `0.0.0.0` | Accepts traffic from outside the container. |
+| `PORT` | `3000` | Application and renderer port. |
+| `PLAYWRIGHT_BROWSERS_PATH` | `/ms-playwright` | Location of the installed Chromium browser. |
+| `FRAMEKIT_DATABASE_PATH` | `/data/framekit.sqlite` | Default SQLite location for authenticated deployments. |
 
-`NODE_ENV`, `HOSTNAME`, and `PLAYWRIGHT_BROWSERS_PATH` are image operational settings, not public FrameKit configuration choices. The Dockerfile does not force authentication. Pass `FRAMEKIT_AUTH_ENABLED` explicitly at runtime; `FRAMEKIT_ADMIN_PASSWORD` and `FRAMEKIT_ADMIN_USERNAME` are used only when it is `true`, while image-host and render-limit values remain deployment environment values.
+The Dockerfile does not enable authentication. Set `FRAMEKIT_AUTH_ENABLED` explicitly at runtime.
 
-The final image creates `/data`, makes it writable by `node`, exposes port `3000`, drops root privileges with `USER node`, and uses `/usr/bin/tini --` as its entrypoint before `node server.js`.
+## Why the image runs as `node`
+
+The browser installation step requires root privileges because Linux packages are installed with `apt`. After the image is prepared, FrameKit itself does not need to run as root.
+
+The Dockerfile therefore creates the writable `/data` directory, assigns it to `node`, and switches to:
+
+```dockerfile
+USER node
+```
+
+This reduces the privileges available to the application process while still allowing SQLite to write to `/data`.
 
 ## SQLite persistence
 
-Mount `/data` as durable storage when authentication is enabled and users,
-sessions, or API-token metadata must survive container replacement. Without a
-durable mount, the image's prepared directory is part of the container
-filesystem and can be lost when the container is replaced. Ensure a bind mount
-or volume is writable by the `node` user. Open mode does not initialize SQLite.
+Mount `/data` as durable storage when authentication is enabled and users, sessions, or API-token metadata must survive container replacement.
 
-SQLite persistence does not persist render jobs. Render jobs are held in process memory, have a 120-second TTL, and are intentionally unavailable after a process restart. A replacement container can recover the database-backed account and token state while an in-flight or test render job is gone.
+Without a durable volume or bind mount, the database lives in the disposable container filesystem.
+
+Open mode does not initialize SQLite, so `/data` is not required for account persistence when `FRAMEKIT_AUTH_ENABLED=false`.
+
+SQLite persistence does not persist render jobs. Render jobs live in process memory and are intentionally lost when the process is restarted or replaced.
 
 ## Restart check
 
-For authenticated mode, after the first login and token creation, restart or
-replace the container while keeping the same `/data` volume. The account and
-session database should remain available. Switching back to open mode does not
-delete that state. A render job created before the process replacement should
-not be expected to remain available; submit a new image request instead.
+For authenticated mode, after the first login and token creation, restart or replace the container while keeping the same `/data` volume. The account and token state should remain available.
+
+A render job created before process replacement should not be expected to survive; submit a new render request instead.
