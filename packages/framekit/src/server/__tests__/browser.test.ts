@@ -142,6 +142,17 @@ describe('browser manager', () => {
     expect(context.setDefaultNavigationTimeout).toHaveBeenCalledWith(1_500)
   })
 
+  it('caps large render viewports so oversized canvases can be captured in tiles', async () => {
+    const context = { setDefaultTimeout: vi.fn(), setDefaultNavigationTimeout: vi.fn() }
+    const browser = fakeBrowser(context)
+    vi.mocked(chromium.launch).mockResolvedValue(browser)
+
+    await createRenderContext({ width: 7874, height: 22047 })
+    expect(browser.newContext).toHaveBeenCalledWith(expect.objectContaining({
+      viewport: { width: 7874, height: Math.floor(16_777_216 / 7874) }
+    }))
+  })
+
   it('treats a legacy browser state without closing as open', async () => {
     const globalState = globalThis as typeof globalThis & Record<symbol, unknown>
     globalState[Symbol.for('framekit.server.browser')] = {

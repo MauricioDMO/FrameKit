@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+
+- Large image exports now capture the full canvas instead of silently clipping
+  scaled artwork. The default render timeout is 60 seconds to allow tiled captures.
+
 ## 1.0.0
 
 ### Changed

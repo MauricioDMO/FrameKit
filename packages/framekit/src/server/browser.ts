@@ -81,8 +81,10 @@ export async function createRenderContext (
   timeout?: number
 ): Promise<BrowserContext> {
   const browser = await getBrowser(timeout)
+  const width = Math.min(payload.width, 8192)
+  // ponytail: tiled captures change vh/vw layout; isolate raster tiles without resizing the layout viewport if templates need viewport-relative art.
   const context = await browser.newContext({
-    viewport: { width: payload.width, height: payload.height },
+    viewport: { width, height: Math.min(payload.height, Math.floor(16_777_216 / width)) },
     deviceScaleFactor: 1,
     acceptDownloads: false,
     serviceWorkers: 'block'

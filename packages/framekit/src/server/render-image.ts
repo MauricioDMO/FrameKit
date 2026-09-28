@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 
 import type { BrowserContext, Page } from 'playwright-core'
+import sharp from 'sharp'
 
 import type { ResolvedRenderPayload } from '@/types'
 import type { ImageRenderRuntimeConfig } from './config'
@@ -182,7 +183,40 @@ export async function renderTemplateImage (options: {
       for (const animation of document.getAnimations()) animation.cancel()
     }))
     await wait(page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; }' }))
-    const bytes = Buffer.from(await wait(root.screenshot({ type: 'png' })))
+    const viewport = page.viewportSize()
+    if (viewport === null) throw failure('Render viewport is missing')
+
+    let bytes: Buffer
+    if (viewport.width === options.payload.width && viewport.height === options.payload.height) {
+      bytes = Buffer.from(await wait(root.screenshot({ type: 'png' })))
+    } else {
+      const bounds = await wait(root.boundingBox())
+      if (bounds === null) throw failure('Render root is not visible')
+      const tiles: Array<{ input: Buffer, left: number, top: number }> = []
+
+      for (let top = 0; top < options.payload.height; top += viewport.height) {
+        const tileTop = Math.min(top, options.payload.height - viewport.height)
+        for (let left = 0; left < options.payload.width; left += viewport.width) {
+          const tileLeft = Math.min(left, options.payload.width - viewport.width)
+          const clip = await wait(page.evaluate(({ x, y, left, top }) => {
+            window.scrollTo({ left: x + left, top: y + top, behavior: 'instant' })
+            const root = document.querySelector('[data-framekit-render-root]')
+            if (!root) throw new Error('Render root is missing')
+            const rect = root.getBoundingClientRect()
+            return { x: rect.left + left, y: rect.top + top }
+          }, { x: bounds.x, y: bounds.y, left: tileLeft, top: tileTop }))
+          tiles.push({
+            input: Buffer.from(await wait(page.screenshot({ type: 'png', clip: { ...clip, width: viewport.width, height: viewport.height } }))),
+            left: tileLeft,
+            top: tileTop
+          })
+        }
+      }
+
+      bytes = await wait(sharp({
+        create: { width: options.payload.width, height: options.payload.height, channels: 4, background: '#00000000' }
+      }).composite(tiles).png().toBuffer())
+    }
     if (!isPng(bytes)) throw failure('Render screenshot is not a PNG')
     return bytes
   } catch (error) {

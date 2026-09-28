@@ -27,7 +27,7 @@ The generated template documents these variables:
 | `PORT` | `3000` | The server port. It must be an integer from `1` through `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Empty | A comma-separated allowlist of exact hostnames for HTTPS remote images. Entries are trimmed and lowercased; IP literals are not accepted. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | The maximum number of concurrent image renders. It must be an integer from `1` through `32`. |
-| `FRAMEKIT_RENDER_TIMEOUT_MS` | `30000` | The image-render timeout in milliseconds. It must be an integer from `1` through `120000`. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `60000` | The image-render timeout in milliseconds. It must be an integer from `1` through `120000`. |
 
 The development server also accepts `FRAMEKIT_HOST` and `HOST` for its bind hostname. `FRAMEKIT_HOST` takes precedence, then `HOST`, then `localhost`. `PORT` is shared with the image-render configuration and defaults to `3000` there as well.
 

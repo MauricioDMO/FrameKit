@@ -41,7 +41,7 @@ Estas son las variables de la aplicación en la plantilla canónica. El bootstra
 | `PORT` | `3000` | Puerto decimal de `1` a `65535`. Configura el puerto del servidor y el origen privado de loopback del renderizador. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Vacío | Nombres de host exactos separados por comas para entradas de imágenes remotas HTTPS. Los nombres de host se convierten a minúsculas, se limitan a 253 caracteres y se rechazan los literales IP. Un valor vacío desactiva la obtención de imágenes remotas. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | Entero positivo de `1` a `32`. Limita los renderizados activos en el proceso. |
-| `FRAMEKIT_RENDER_TIMEOUT_MS` | `30000` | Entero positivo de `1` a `120000` milisegundos. Aborta o cancela el trabajo de renderizado después de la duración configurada. La limpieza de la página y el contexto se intenta en `finally`; esa espera de limpieza no tiene un límite independiente documentado. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `60000` | Entero positivo de `1` a `120000` milisegundos. Aborta o cancela el trabajo de renderizado después de la duración configurada. La limpieza de la página y el contexto se intenta en `finally`; esa espera de limpieza no tiene un límite independiente documentado. |
 
 El controlador de imágenes analiza su configuración de renderizado cuando gestiona una solicitud de imagen. Un valor no válido de puerto, lista de permitidos, capacidad o tiempo de espera devuelve `api_not_configured` en lugar de usar silenciosamente un valor no válido.
 
@@ -71,4 +71,4 @@ El servidor de desarrollo también expone la ruta de carga protegida `POST /fram
 
 ## Ciclo de vida del renderizado
 
-El proceso permite únicamente el número configurado de renderizados simultáneos. Un renderizado usa un identificador de trabajo temporal y un token en un `Map` local al proceso; el trabajo tiene un TTL de 120 segundos y se elimina después de que se completa la solicitud. El almacén de trabajos se pierde al reiniciar. El renderizador crea un contexto de Chromium sin interfaz con las dimensiones de la plantilla, bloquea la navegación no relacionada, espera a que se carguen las fuentes y las imágenes, captura un PNG y cierra el contexto y la página de la solicitud.
+El proceso permite únicamente el número configurado de renderizados simultáneos. Un renderizado usa un identificador de trabajo temporal y un token en un `Map` local al proceso; el trabajo tiene un TTL de 120 segundos y se elimina después de que se completa la solicitud. El almacén de trabajos se pierde al reiniciar. El renderizador crea un contexto de Chromium sin interfaz, bloquea la navegación no relacionada, espera a que se carguen las fuentes y las imágenes, captura un PNG (por partes para lienzos grandes) y cierra el contexto y la página de la solicitud.

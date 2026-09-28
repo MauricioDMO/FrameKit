@@ -170,7 +170,7 @@ describe('parseImageRenderConfig', () => {
     const config: ImageRenderRuntimeConfig = parseImageRenderConfig(environment())
 
     expect(config.maxConcurrentRenders).toBe(2)
-    expect(config.renderTimeoutMs).toBe(30_000)
+    expect(config.renderTimeoutMs).toBe(60_000)
   })
 
   it('accepts bounded positive base-10 integers', () => {

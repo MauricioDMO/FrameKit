@@ -27,7 +27,7 @@ La plantilla generada documenta estas variables:
 | `PORT` | `3000` | El puerto del servidor. Debe ser un entero de `1` a `65535`. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Vacío | Una lista separada por comas de nombres de host exactos permitidos para imágenes remotas HTTPS. Las entradas se recortan y se convierten a minúsculas; los nombres de host tienen un máximo de 253 caracteres y no se aceptan literales de IP. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | El número máximo de renderizados de imágenes simultáneos. Debe ser un entero de `1` a `32`. |
-| `FRAMEKIT_RENDER_TIMEOUT_MS` | `30000` | El tiempo de espera del renderizado de imágenes en milisegundos. Debe ser un entero de `1` a `120000`. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `60000` | El tiempo de espera del renderizado de imágenes en milisegundos. Debe ser un entero de `1` a `120000`. |
 
 El servidor de desarrollo también acepta `FRAMEKIT_HOST` y `HOST` para el nombre de host de enlace. `FRAMEKIT_HOST` tiene prioridad, luego `HOST` y después `localhost`. `PORT` se comparte con la configuración del renderizado de imágenes y también tiene allí el valor predeterminado `3000`.
 

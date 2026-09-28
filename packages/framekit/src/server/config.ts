@@ -70,6 +70,6 @@ export function parseImageRenderConfig (env: NodeJS.ProcessEnv): ImageRenderRunt
     internalOrigin: new URL(`http://localhost:${port}`),
     allowedImageHosts: parseAllowedImageHosts(env.FRAMEKIT_ALLOWED_IMAGE_HOSTS),
     maxConcurrentRenders: parsePositiveInteger(env.FRAMEKIT_MAX_CONCURRENT_RENDERS, 2, 32),
-    renderTimeoutMs: parsePositiveInteger(env.FRAMEKIT_RENDER_TIMEOUT_MS, 30_000, 120_000)
+    renderTimeoutMs: parsePositiveInteger(env.FRAMEKIT_RENDER_TIMEOUT_MS, 60_000, 120_000)
   }
 }

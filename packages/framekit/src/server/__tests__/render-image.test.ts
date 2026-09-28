@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import sharp from 'sharp'
 
 import type { ImageRenderRuntimeConfig } from '@/server/config'
 import type { ResolvedRenderPayload } from '@/types'
@@ -26,14 +27,21 @@ const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
 
 function fakePage (rootCount = 1, screenshot = png, evaluateInPage = false) {
   const frame = {}
+  const root = {
+    count: vi.fn(async () => rootCount),
+    screenshot: vi.fn(async () => screenshot),
+    boundingBox: vi.fn(async () => ({ x: 0, y: 0 }))
+  }
   const page = {
     mainFrame: () => frame,
+    viewportSize: vi.fn(() => ({ width: payload.width, height: payload.height })),
     setDefaultTimeout: vi.fn(),
     setDefaultNavigationTimeout: vi.fn(),
     goto: vi.fn(async (): Promise<{ status: () => number }> => ({ status: () => 200 })),
     waitForFunction: vi.fn(async () => ({ jsonValue: async () => 'ready' })),
-    locator: vi.fn(() => ({ count: vi.fn(async () => rootCount), screenshot: vi.fn(async () => screenshot) })),
-    evaluate: vi.fn(async (callback?: () => Promise<unknown>) => evaluateInPage && callback !== undefined ? callback() : undefined),
+    locator: vi.fn(() => root),
+    screenshot: vi.fn(async () => screenshot),
+    evaluate: vi.fn(async (callback?: () => Promise<unknown>, position?: { top: number }) => position === undefined && evaluateInPage && callback !== undefined ? callback() : undefined),
     addStyleTag: vi.fn(async () => undefined),
     on: vi.fn(),
     close: vi.fn(async () => undefined)
@@ -70,6 +78,24 @@ describe('renderTemplateImage', () => {
     expect(page.goto).toHaveBeenCalledWith('http://127.0.0.1/framekit/render/' + 'a'.repeat(64), { waitUntil: 'load' })
     expect(context.close).toHaveBeenCalledOnce()
     expect(mocks.deleteJob).toHaveBeenCalledWith('a'.repeat(64))
+  })
+
+  it('captures large artwork in scrollable tiles so scaled content below the first viewport survives', async () => {
+    const { page } = fakePage()
+    page.viewportSize.mockReturnValue({ width: 1, height: 4096 })
+    page.evaluate.mockResolvedValueOnce(undefined).mockResolvedValue({ x: 0, y: 0 })
+    const colors = ['red', 'green', 'blue']
+    page.screenshot.mockImplementation(async () => sharp({
+      create: { width: 1, height: 4096, channels: 4, background: colors[page.screenshot.mock.calls.length - 1] }
+    }).png().toBuffer())
+    mocks.createContext.mockResolvedValue(fakeContext(page))
+
+    const bytes = await renderTemplateImage({ payload: { ...payload, width: 1, height: 8193 }, config })
+    const { data } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true })
+    expect([...data.subarray(4096 * 4, 4096 * 4 + 3)]).toEqual([0, 128, 0])
+    expect([...data.subarray(8192 * 4, 8192 * 4 + 3)]).toEqual([0, 0, 255])
+    expect(page.screenshot).toHaveBeenCalledTimes(3)
+    expect(page.evaluate.mock.calls.slice(1).map(([, position]) => position?.top)).toEqual([0, 4096, 4097])
   })
 
   it('scopes the token to the exact main-document GET and blocks external requests', async () => {

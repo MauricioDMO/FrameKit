@@ -41,7 +41,7 @@ These are the application variables in the canonical template. Values are read b
 | `PORT` | `3000` | A decimal port from `1` to `65535`. It configures the server port and the renderer's private loopback origin. |
 | `FRAMEKIT_ALLOWED_IMAGE_HOSTS` | Empty | Comma-separated exact hostnames for HTTPS remote image inputs. Hostnames are lowercased, limited to 253 characters, and IP literals are rejected. Empty disables remote image fetching. |
 | `FRAMEKIT_MAX_CONCURRENT_RENDERS` | `2` | Positive integer from `1` to `32`. It limits active renders in the process. |
-| `FRAMEKIT_RENDER_TIMEOUT_MS` | `30000` | Positive integer from `1` to `120000` milliseconds. It aborts or cancels render work after the configured duration. Page and context cleanup is attempted in `finally`; that cleanup wait has no separate documented limit. |
+| `FRAMEKIT_RENDER_TIMEOUT_MS` | `60000` | Positive integer from `1` to `120000` milliseconds. It aborts or cancels render work after the configured duration. Page and context cleanup is attempted in `finally`; that cleanup wait has no separate documented limit. |
 
 The image handler parses its render configuration when it handles an image request. An invalid port, allowlist, capacity, or timeout value returns `api_not_configured` rather than silently using an invalid value.
 
@@ -58,4 +58,4 @@ The development server also exposes the protected `POST /framekit/assets` upload
 
 ## Render lifecycle
 
-The process allows only the configured number of simultaneous renders. A render uses a temporary job identifier and token in a process-local `Map`; the job has a 120-second TTL and is deleted after the request completes. The job store is lost on restart. The renderer creates a headless Chromium context with the template dimensions, blocks unrelated navigation, waits for fonts and images, captures a PNG, and closes the request context and page.
+The process allows only the configured number of simultaneous renders. A render uses a temporary job identifier and token in a process-local `Map`; the job has a 120-second TTL and is deleted after the request completes. The job store is lost on restart. The renderer creates a headless Chromium context, blocks unrelated navigation, waits for fonts and images, captures a PNG (in tiles for large canvases), and closes the request context and page.
