@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.0.1
+
 ### Fixed
 
 - Large image exports now capture the full canvas instead of silently clipping
